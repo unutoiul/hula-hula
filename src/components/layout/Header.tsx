@@ -70,13 +70,13 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
         color: 'common.white', textShadow: '0 1px 6px rgba(0,0,0,.4)',
         transition: 'min-height .35s ease, padding .35s ease',
       }}>
-        <Stack component="nav" direction="row" spacing={{ md: 2.75, lg: 4 }} justifyContent="flex-end" sx={{ display: { xs: 'none', md: 'flex' } }}>
+        <Stack component="nav" direction="row" spacing={{ md: 2.75, lg: 4 }} justifyContent="flex-end" sx={{ display: { xs: 'none', md: 'flex' }, gridColumn: 1 }}>
           {leftNav.map(([label, href]) => <NavLink key={label} href={href} active={active === href}>{label}</NavLink>)}
         </Stack>
 
-        <ClubMark size={scrolled ? 'compact' : 'default'} />
+        <Box sx={{ gridColumn: 2 }}><ClubMark size={scrolled ? 'compact' : 'default'} /></Box>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ minWidth: 0 }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ minWidth: 0, gridColumn: 3 }}>
           <Stack component="nav" direction="row" spacing={{ md: 2.75, lg: 4 }} sx={{ display: { xs: 'none', md: 'flex' } }}>
             {rightNav.map(([label, href]) => <NavLink key={label} href={href} active={active === href}>{label}</NavLink>)}
           </Stack>
