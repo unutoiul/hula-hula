@@ -11,7 +11,7 @@ export function HotelSection() {
     <Container id="hotel" maxWidth="xl" sx={{ py: SECTION_Y, display: 'grid', gridTemplateColumns: { md: '25% 1fr' }, gap: 4, scrollMarginTop: SECTION_SCROLL_OFFSET }}>
       <MetaLabel>01 / The hotel</MetaLabel>
       <Box>
-        <Typography variant="h2" sx={{ maxWidth: 820, fontSize: { xs: 38, md: 66 }, lineHeight: .98 }}>A quiet stretch of Krabi coast, <Box component="em">between limestone hills and the Andaman Sea</Box>.</Typography>
+        <Typography variant="h2" sx={{ maxWidth: 820, fontSize: { xs: 32, md: 54 }, lineHeight: .98 }}>A quiet stretch of Krabi coast, <Box component="em">between limestone hills and the Andaman Sea</Box>.</Typography>
         <Link href="#ways" color="inherit" underline="none" variant="button" sx={{ display: 'inline-flex', alignItems: 'center', gap: 2.5, mt: 5, borderBottom: '1px solid', pb: 1 }}>Meet your hideaway <East /></Link>
       </Box>
     </Container>
@@ -34,7 +34,7 @@ export function HotelSection() {
       <Container maxWidth="xl">
         <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1}>
           <MetaLabel>A softer kind of luxury</MetaLabel>
-          <Typography variant="h3" sx={{ fontSize: 29, fontStyle: 'italic' }}>Here, Krabi does the talking.</Typography>
+          <Typography variant="h3" sx={{ fontSize: 24, fontStyle: 'italic' }}>Here, Krabi does the talking.</Typography>
         </Stack>
       </Container>
     </Box>

@@ -9,7 +9,7 @@ export function ArrivalSection() {
       <Stack direction={{ xs: 'column', lg: 'row' }} spacing={{ xs: 5, lg: 6 }} alignItems={{ lg: 'flex-start' }}>
         <Box sx={{ maxWidth: { lg: 340 }, flexShrink: 0 }}>
           <MetaLabel>Book your stay</MetaLabel>
-          <Typography variant="h2" sx={{ mt: 2.5, fontSize: { xs: 38, md: 44 }, lineHeight: 1.12 }}>Pick your dates.</Typography>
+          <Typography variant="h2" sx={{ mt: 2.5, fontSize: { xs: 32, md: 38 }, lineHeight: 1.12 }}>Pick your dates.</Typography>
           <Typography sx={{ mt: 2.5, fontSize: 15, lineHeight: 1.6, color: 'text.secondary' }}>Twenty minutes from Krabi International Airport. We'll handle the rest.</Typography>
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>

@@ -66,7 +66,7 @@ export function CarouselCard({ active, onClick, images, kicker, title, detail, w
       </>}
       <Box sx={{ p: { xs: 2.25, md: 3 } }}>
         <MetaLabel>{kicker}</MetaLabel>
-        <Typography variant="h3" sx={{ maxWidth: '80%', fontSize: { xs: 24, md: 28 }, lineHeight: .95, mt: 1.2, mb: .8 }}>{title}</Typography>
+        <Typography variant="h3" sx={{ maxWidth: '80%', fontSize: { xs: 20, md: 24 }, lineHeight: .95, mt: 1.2, mb: .8 }}>{title}</Typography>
         <Typography sx={{ maxWidth: '70%', fontSize: 12.5, lineHeight: 1.5, color: 'rgba(255,255,255,.78)' }}>{detail}</Typography>
         <AnimatePresence>
           {active && <MotionBox initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: .3 }} sx={{ mt: 2 }}>

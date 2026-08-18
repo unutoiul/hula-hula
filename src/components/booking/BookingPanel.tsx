@@ -1,6 +1,7 @@
 import { Box, Button, Stack, Typography, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { useDateRange } from '../../hooks/useDateRange';
+import { fonts } from '../../theme';
 import { GuestStepper } from './GuestStepper';
 import { RangeCalendar } from './RangeCalendar';
 
@@ -40,11 +41,11 @@ export function BookingPanel() {
       <Typography variant="overline" sx={{ color: 'text.secondary' }}>Your dates</Typography>
       <Stack direction="row" justifyContent="space-between" sx={{ mt: 1 }}>
         <Box>
-          <Typography sx={{ fontWeight: 600, fontSize: 17 }}>{panelDateFmt.format(checkIn)}</Typography>
+          <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>{panelDateFmt.format(checkIn)}</Typography>
           <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>Check-in</Typography>
         </Box>
         <Box sx={{ textAlign: 'right' }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 17 }}>{panelDateFmt.format(checkOut)}</Typography>
+          <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>{panelDateFmt.format(checkOut)}</Typography>
           <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>Check-out</Typography>
         </Box>
       </Stack>

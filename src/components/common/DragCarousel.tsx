@@ -71,25 +71,28 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
 
   // If the settled slot has drifted into the first or last copy, fold it back
   // into the middle copy and jump x by exactly one copy-width so nothing
-  // visibly moves (see comment above).
-  const foldIntoSafeBand = (settledIndex: number) => {
-    if (settledIndex < n) {
-      x.set(x.get() + n * slotWidth);
-      setActive(settledIndex + n);
-    } else if (settledIndex >= 2 * n) {
-      x.set(x.get() - n * slotWidth);
-      setActive(settledIndex - n);
-    }
-  };
-
+  // visibly moves (see comment above). Runs on every `active` change — not
+  // gated behind the previous spring finishing — so rapid clicks or drags
+  // can never outrun the fold and get stuck against the strip's outer edges.
   useEffect(() => {
+    if (active < n) {
+      x.set(x.get() - n * slotWidth);
+      setActive(active + n);
+      return;
+    }
+    if (active >= 2 * n) {
+      x.set(x.get() + n * slotWidth);
+      setActive(active - n);
+      return;
+    }
     const controls = animate(x, targetFor(active), { type: 'spring', stiffness: 260, damping: 30 });
-    controls.then(() => foldIntoSafeBand(active));
     return () => controls.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, slotWidth]);
 
-  const go = (dir: number) => setActive((i) => Math.min(total - 1, Math.max(0, i + dir)));
+  // Unclamped — the effect above folds any out-of-band value back on its very next
+  // run, so arrows never need to freeze at the strip's hard edges to stay in bounds.
+  const go = (dir: number) => setActive((i) => i + dir);
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     const viewport = viewportRef.current;
@@ -107,7 +110,7 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
 
   return <>
     <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'flex-end' }} sx={{ mb: { xs: 6, md: 8 } }}>
-      <Box><MetaLabel>{sectionKicker}</MetaLabel><Typography variant="h2" sx={{ fontSize: { xs: 52, md: 92 }, lineHeight: .87, mt: { xs: 3, md: -1 } }}>{heading}</Typography></Box>
+      <Box><MetaLabel>{sectionKicker}</MetaLabel><Typography variant="h2" sx={{ fontSize: { xs: 42, md: 74 }, lineHeight: .87, mt: { xs: 3, md: -1 } }}>{heading}</Typography></Box>
       <Stack direction="row" spacing={1.5} sx={{ display: { xs: 'none', md: 'flex' } }}>
         <CarouselArrow direction="prev" onDark={onDark} label={`Previous ${itemLabel}`} onClick={() => go(-1)} />
         <CarouselArrow direction="next" onDark={onDark} label={`Next ${itemLabel}`} onClick={() => go(1)} />

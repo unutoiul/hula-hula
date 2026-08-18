@@ -10,6 +10,7 @@ export const fonts = {
   serif: '"Playfair Display", serif', // display headlines (h1–h3)
   sans: '"DM Sans", sans-serif', // body copy and small text (the theme default)
   mono: '"DM Mono", monospace', // nav links, buttons — the site's "technical" accent
+  playful: '"Comic Neue", cursive', // round comic accent — headlines, booking numbers
 };
 
 const theme = createTheme({
@@ -32,18 +33,22 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: fonts.sans,
-    h1: { fontFamily: fonts.serif, fontWeight: 500, letterSpacing: '-0.06em' },
-    h2: { fontFamily: fonts.serif, fontWeight: 500, letterSpacing: '-0.05em' },
-    h3: { fontFamily: fonts.serif, fontWeight: 500, letterSpacing: '-0.04em' },
-    // The smallest text in the scale (kickers, labels, live meta) — DM Sans for
-    // readability at that size, distinct from the mono nav/button accent.
-    overline: { fontFamily: fonts.sans, fontSize: '0.64rem', fontWeight: 500, letterSpacing: '0.13em' },
+    h1: { fontFamily: fonts.playful, fontWeight: 300, letterSpacing: 0 },
+    h2: { fontFamily: fonts.playful, fontWeight: 300, letterSpacing: 0 },
+    h3: { fontFamily: fonts.playful, fontWeight: 300, letterSpacing: 0 },
+    // Kept in DM Sans, not the cartoon face — Chewy is a single-weight display
+    // font that turns illegible at kicker-label sizes.
+    overline: { fontFamily: fonts.sans, fontSize: '0.64rem', fontWeight: 600, letterSpacing: '0.13em' },
+    // Nav links/buttons stay in the mono "technical" accent, not the cartoon face —
+    // Chewy's bubble letterforms compress into an illegible smudge at this size.
     button: { fontFamily: fonts.mono, fontSize: '0.66rem', fontWeight: 500, letterSpacing: '0.12em' },
   },
   shape: { borderRadius: 0 },
   components: {
     MuiCssBaseline: {
-      styleOverrides: `@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap'); html { scroll-behavior: smooth; } body { overflow-x: hidden; }`,
+      // Fonts are loaded via a <link> tag in index.html, not a CSS @import here —
+      // see that file for why.
+      styleOverrides: `html { scroll-behavior: smooth; } body { overflow-x: hidden; }`,
     },
   },
 });

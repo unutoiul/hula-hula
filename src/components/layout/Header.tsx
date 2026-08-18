@@ -1,18 +1,12 @@
 import ArrowOutward from '@mui/icons-material/ArrowOutward';
-import Call from '@mui/icons-material/Call';
 import CloseRounded from '@mui/icons-material/CloseRounded';
-import Facebook from '@mui/icons-material/Facebook';
-import Instagram from '@mui/icons-material/Instagram';
 import MenuRounded from '@mui/icons-material/MenuRounded';
-import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Container, Drawer, IconButton, Link, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
-import { CONTACT } from '../../data/content';
 import { scrim } from '../../theme';
 import type { NavItem } from '../../types';
 import { ClubMark } from '../common/ClubMark';
-import { LineIcon } from '../common/LineIcon';
 import { NavLink } from './NavLink';
 
 export function Header({ navItems }: { navItems: NavItem[] }) {
@@ -64,7 +58,7 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
   })}>
     <Container maxWidth="xl">
       <Box sx={{
-        display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', columnGap: { xs: 2, md: 5 },
+        display: 'grid', gridTemplateColumns: { xs: 'auto 1fr auto', md: '1fr auto 1fr' }, alignItems: 'center', columnGap: { xs: 2, md: 5 },
         minHeight: scrolled ? { xs: 66, md: 84 } : { xs: 80, md: 108 },
         py: scrolled ? { xs: .5, md: 1 } : { xs: 1, md: 1.25 },
         color: 'common.white', textShadow: '0 1px 6px rgba(0,0,0,.4)',
@@ -74,7 +68,8 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
           {leftNav.map(([label, href]) => <NavLink key={label} href={href} active={active === href}>{label}</NavLink>)}
         </Stack>
 
-        <Box sx={{ gridColumn: 2 }}><ClubMark size={scrolled ? 'compact' : 'default'} /></Box>
+        {/* Left-aligned on mobile (nav columns are hidden there); centered once they appear at md+. */}
+        <Box sx={{ gridColumn: { xs: 1, md: 2 } }}><ClubMark size={scrolled ? 'compact' : 'default'} /></Box>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ minWidth: 0, gridColumn: 3 }}>
           <Stack component="nav" direction="row" spacing={{ md: 2.75, lg: 4 }} sx={{ display: { xs: 'none', md: 'flex' } }}>
@@ -104,16 +99,16 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
         <IconButton aria-label="Close menu" onClick={closeMenu} sx={{ color: 'inherit', border: '1px solid', borderColor: 'rgba(255,255,255,.25)' }}><CloseRounded /></IconButton>
       </Stack>
 
-      <Stack component="nav" sx={{ px: 3, py: 4, flex: 1, overflowY: 'auto' }}>
+      <Stack component="nav" sx={{ px: 3, pt: 4, pb: 4, flex: 1, overflowY: 'auto' }}>
         {navItems.map(([label, href], i) => {
           const isActive = active === href;
           return <Link key={label} href={href} onClick={closeMenu} color="inherit" underline="none" sx={{
-            display: 'flex', alignItems: 'center', gap: 1.5, py: 1.8,
+            display: 'flex', alignItems: 'center', gap: 1.5, py: 1.3,
             borderTop: i === 0 ? 'none' : '1px solid', borderColor: 'rgba(255,255,255,.1)',
             fontFamily: 'inherit',
           }}>
-            <Typography variant="overline" sx={{ width: 22, color: isActive ? 'secondary.main' : 'rgba(255,255,255,.4)' }}>{String(i + 1).padStart(2, '0')}</Typography>
-            <Typography variant="h3" sx={{ fontSize: 26, color: isActive ? 'secondary.main' : 'inherit', transition: 'color .2s ease' }}>{label}</Typography>
+            <Typography variant="overline" sx={{ width: 20, fontSize: '.6rem', color: isActive ? 'secondary.main' : 'rgba(255,255,255,.4)' }}>{String(i + 1).padStart(2, '0')}</Typography>
+            <Typography variant="h3" sx={{ fontSize: 17, color: isActive ? 'secondary.main' : 'inherit', transition: 'color .2s ease' }}>{label}</Typography>
           </Link>;
         })}
 
@@ -121,18 +116,6 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
           mt: 4, py: 1.4, borderRadius: 999, borderColor: 'rgba(255,255,255,.4)',
           '&:hover': { borderColor: 'info.main', bgcolor: 'info.main', color: 'info.contrastText' },
         }}>Book a stay</Button>
-      </Stack>
-
-      <Stack sx={{ p: 3, borderTop: '1px solid', borderColor: 'rgba(255,255,255,.14)' }} spacing={2.5}>
-        <Link href={CONTACT.tel} onClick={closeMenu} color="inherit" underline="none" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1.2, width: 'fit-content' }}>
-          <Call sx={{ fontSize: 18 }} /><Typography sx={{ fontSize: 14 }}>{CONTACT.phone}</Typography>
-        </Link>
-        <Stack direction="row" spacing={1.5}>
-          <IconButton component="a" href={CONTACT.facebook} target="_blank" rel="noopener noreferrer" aria-label="Hula Hula on Facebook" sx={{ color: 'inherit', border: '1px solid', borderColor: 'rgba(255,255,255,.25)' }}><Facebook sx={{ fontSize: 19 }} /></IconButton>
-          <IconButton component="a" href={CONTACT.instagram} target="_blank" rel="noopener noreferrer" aria-label="Hula Hula on Instagram" sx={{ color: 'inherit', border: '1px solid', borderColor: 'rgba(255,255,255,.25)' }}><Instagram sx={{ fontSize: 19 }} /></IconButton>
-          <IconButton component="a" href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Message Hula Hula on WhatsApp" sx={{ color: 'inherit', border: '1px solid', borderColor: 'rgba(255,255,255,.25)' }}><WhatsApp sx={{ fontSize: 19 }} /></IconButton>
-          <IconButton component="a" href={CONTACT.line} target="_blank" rel="noopener noreferrer" aria-label="Message Hula Hula on Line" sx={{ color: 'inherit', border: '1px solid', borderColor: 'rgba(255,255,255,.25)' }}><LineIcon /></IconButton>
-        </Stack>
       </Stack>
     </Drawer>
   </Box>;

@@ -42,7 +42,7 @@ export function RestaurantSection({ meals }: { meals: Meal[] }) {
   return <Container id="dine" maxWidth="xl" sx={{ py: SECTION_Y, scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Box sx={{ maxWidth: 620, mb: { xs: 6, md: 8 } }}>
       <MetaLabel>02 / Restaurant</MetaLabel>
-      <Typography variant="h2" sx={{ mt: 2, fontSize: { xs: 40, md: 68 }, lineHeight: .95 }}>Krabi on a plate,<br /><Box component="em">morning to night.</Box></Typography>
+      <Typography variant="h2" sx={{ mt: 2, fontSize: { xs: 34, md: 56 }, lineHeight: .95 }}>Krabi on a plate,<br /><Box component="em">morning to night.</Box></Typography>
       <Typography sx={{ mt: 3, maxWidth: 420, fontSize: 16, lineHeight: 1.6, color: 'text.secondary' }}>Thai flavors, fresh from Krabi's markets and fishing boats — cooked slow, served open-air above the garden.</Typography>
     </Box>
     <RestaurantShowcase meals={meals} />

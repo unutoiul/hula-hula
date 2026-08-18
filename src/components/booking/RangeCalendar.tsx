@@ -3,6 +3,7 @@ import West from '@mui/icons-material/West';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useState } from 'react';
+import { fonts } from '../../theme';
 
 const monthFmt = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
 const WEEKDAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -38,9 +39,9 @@ interface MonthGridProps {
 
 function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: MonthGridProps) {
   return <Box>
-    <Typography sx={{ fontSize: 12.5, fontWeight: 600, textAlign: 'center', mb: 1 }}>{monthFmt.format(new Date(year, month, 1))}</Typography>
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px' }}>
-      {WEEKDAY_LABELS.map((w) => <Typography key={w} sx={{ fontSize: 9.5, textAlign: 'center', color: 'text.secondary', pb: .25 }}>{w}</Typography>)}
+    <Typography sx={{ fontFamily: fonts.playful, fontSize: 13, fontWeight: 400, textAlign: 'center', mb: 1 }}>{monthFmt.format(new Date(year, month, 1))}</Typography>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px' }}>
+      {WEEKDAY_LABELS.map((w) => <Typography key={w} sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 10, textAlign: 'center', color: 'text.secondary', pb: .25 }}>{w}</Typography>)}
       {getMonthCells(year, month).map(({ date, current }) => {
         const disabled = !current || date < minDate;
         const isCheckIn = isSameDay(date, checkIn);
@@ -50,8 +51,8 @@ function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: Mon
           aria-label={date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           aria-current={isCheckIn || isCheckOut ? 'date' : undefined}
           onClick={() => onSelectDay(date)} sx={(theme) => ({
-            width: 28, height: 28, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11.5, fontFamily: 'inherit', border: 'none', borderRadius: '50%', cursor: disabled ? 'default' : 'pointer',
+            width: { xs: 34, sm: 28 }, height: { xs: 34, sm: 28 }, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: { xs: 13, sm: 11.5 }, fontFamily: fonts.playful, fontWeight: 400, border: 'none', borderRadius: '50%', cursor: disabled ? 'default' : 'pointer',
             color: isCheckIn || isCheckOut ? 'primary.contrastText' : disabled ? 'text.disabled' : 'text.primary',
             bgcolor: isCheckIn || isCheckOut ? 'primary.main' : inRange ? alpha(theme.palette.primary.main, .12) : 'transparent',
             transition: 'background-color .15s ease',

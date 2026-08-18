@@ -18,7 +18,7 @@ export function MealRow({ meal, active, first, onClick }: MealRowProps) {
     cursor: 'pointer', py: { xs: 2, md: 2.75 }, borderTop: first ? 'none' : '1px solid', borderColor: 'divider',
   }}>
     <Stack direction="row" justifyContent="space-between" alignItems="baseline" gap={2}>
-      <Typography variant="h3" sx={{ fontSize: active ? { xs: 26, md: 32 } : { xs: 20, md: 24 }, opacity: active ? 1 : .4, transition: 'font-size .35s ease, opacity .35s ease' }}>{meal.name}</Typography>
+      <Typography variant="h3" sx={{ fontSize: active ? { xs: 22, md: 26 } : { xs: 17, md: 20 }, opacity: active ? 1 : .4, transition: 'font-size .35s ease, opacity .35s ease' }}>{meal.name}</Typography>
       <Typography variant="overline" sx={{ flexShrink: 0, color: 'secondary.dark', opacity: active ? 1 : .4, transition: 'opacity .35s ease' }}>{meal.hours}</Typography>
     </Stack>
     <AnimatePresence>

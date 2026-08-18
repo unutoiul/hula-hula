@@ -2,7 +2,7 @@ import Search from '@mui/icons-material/Search';
 import { Box, Button, Popover, Stack, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
 import { useDateRange } from '../../hooks/useDateRange';
-import { scrim } from '../../theme';
+import { fonts, scrim } from '../../theme';
 import { GuestStepper } from './GuestStepper';
 import { RangeCalendar } from './RangeCalendar';
 
@@ -32,7 +32,7 @@ export function BookingSearchBar() {
     // up all the leftover width as dead space next to "1 adult". Full width
     // on mobile (xs) still makes sense since the segments stack there.
     width: { xs: '100%', sm: 'fit-content' }, maxWidth: { xs: 640, sm: 'none' },
-    border: '1px solid rgba(255,255,255,.28)', bgcolor: scrim(.5), backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255,255,255,.28)', bgcolor: scrim(.7), backdropFilter: 'blur(10px)',
   }}>
     <Box onClick={() => setDateOpen(true)} sx={{
       // A fixed width in row mode, not flex:1 — flex items don't shrink below their
@@ -45,7 +45,7 @@ export function BookingSearchBar() {
       transition: 'background-color .2s ease', '&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
     }}>
       <Typography variant="overline" sx={{ color: 'rgba(255,255,255,.55)', fontSize: '.58rem' }}>Dates</Typography>
-      <Typography sx={{ fontWeight: 600, fontSize: 13, mt: .15, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{bookingDateFmt.format(checkIn)} – {bookingDateFmt.format(checkOut)}</Typography>
+      <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 13, mt: .15, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{bookingDateFmt.format(checkIn)} – {bookingDateFmt.format(checkOut)}</Typography>
     </Box>
     <Box onClick={(e) => setGuestAnchor(e.currentTarget)} sx={{
       // Fixed width too, same reasoning as Dates above — sized to comfortably fit
@@ -54,11 +54,12 @@ export function BookingSearchBar() {
       transition: 'background-color .2s ease', '&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
     }}>
       <Typography variant="overline" sx={{ color: 'rgba(255,255,255,.55)', fontSize: '.58rem' }}>Guests</Typography>
-      <Typography sx={{ fontWeight: 600, fontSize: 13, mt: .15, whiteSpace: 'nowrap' }}>{adults} adult{adults !== 1 ? 's' : ''}{children > 0 ? ` · ${children} child${children !== 1 ? 'ren' : ''}` : ''}</Typography>
+      <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 13, mt: .15, whiteSpace: 'nowrap' }}>{adults} adult{adults !== 1 ? 's' : ''}{children > 0 ? ` · ${children} child${children !== 1 ? 'ren' : ''}` : ''}</Typography>
     </Box>
-    <Button href="#hotel" aria-label="Search availability" sx={{
+    <Button href="#hotel" aria-label="Search availability" color="inherit" sx={{
       minWidth: { xs: '100%', sm: 56 }, height: { sm: 'auto' }, py: { xs: 1, sm: 0 }, borderRadius: 0,
-      bgcolor: 'info.main', color: 'info.contrastText', '&:hover': { bgcolor: 'info.dark' },
+      bgcolor: 'primary.dark',
+      '&:hover': { bgcolor: 'info.main', color: 'info.contrastText' },
     }}><Search sx={{ fontSize: 20 }} /></Button>
 
     {/* Anchored to the whole bar and centered, not to the (much narrower) Dates
