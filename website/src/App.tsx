@@ -18,7 +18,9 @@ import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
 import { BeachBall, Bubbles, Gulls, Longtail, PaperBoat, RisingSun, SEAM, SectionSeam, SwimRing } from './components/common/SectionSeam';
 
 function ResortPage() {
-  return <Box component="main" id="top">
+  // Nothing tilted or bobbing near an edge may widen the page: clip sideways
+  // overflow here (clip, unlike hidden, doesn't create a scroll container).
+  return <Box component="main" id="top" sx={{ overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' } }}>
     <CookieConsent />
     <Header navItems={navItems} />
     <BookingSearchProvider>
