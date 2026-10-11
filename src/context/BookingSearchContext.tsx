@@ -8,7 +8,7 @@ export interface RoomResult {
   fromPrice: number;
 }
 
-interface PropertySummary { currencyIsoCode: string; bookingEngineUrl: string | null }
+interface PropertySummary { currencyIsoCode: string }
 interface Quote { roomTypeUuid: string; availability: number; lengthOfStay: number; price: { gross: number } }
 interface RoomType { uuid: string; name: string }
 type ApiError = { error: string };
@@ -24,7 +24,9 @@ interface BookingSearchState extends DateRange {
   results: RoomResult[];
   errorMessage: string | null;
   currency: string;
-  bookingEngineUrl: string | null;
+  // SiteMinder's hosted booking engine, deep-linked to the current dates and
+  // guests — where every "Check availability" / "Book now" button sends people.
+  bookingUrl: string;
   search: () => Promise<void>;
 }
 
@@ -32,6 +34,19 @@ const BookingSearchContext = createContext<BookingSearchState | null>(null);
 
 function toISODate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// The property's bookingEngineUrl from SiteMinder's API. Kept as a constant so
+// booking works even where the API keys aren't configured.
+const SITEMINDER_BOOKING_URL = 'https://book-directonline.com/properties/HulaHulaResortAonangBeach';
+
+function toBookingUrl(checkIn: Date, checkOut: Date, adults: number, children: number): string {
+  const params = new URLSearchParams({
+    locale: 'en', currency: 'THB',
+    checkInDate: toISODate(checkIn), checkOutDate: toISODate(checkOut),
+    'items[0][adults]': String(adults), 'items[0][children]': String(children), 'items[0][infants]': '0',
+  });
+  return `${SITEMINDER_BOOKING_URL}?${params}`;
 }
 
 // Property/room-type data barely changes stay to stay — fetched once per page
@@ -52,7 +67,6 @@ export function BookingSearchProvider({ children: providerChildren }: { children
   const [results, setResults] = useState<RoomResult[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currency, setCurrency] = useState('THB');
-  const [bookingEngineUrl, setBookingEngineUrl] = useState<string | null>(null);
 
   const search = useCallback(async () => {
     setStatus('loading');
@@ -73,7 +87,6 @@ export function BookingSearchProvider({ children: providerChildren }: { children
       cachedProperty = property;
       cachedRoomTypes = roomTypes;
       setCurrency(property.currencyIsoCode ?? 'THB');
-      setBookingEngineUrl(property.bookingEngineUrl ?? null);
 
       const quotes: Quote[] | ApiError = await quoteRes.json();
       if (!quoteRes.ok) throw new Error('error' in quotes ? quotes.error : 'Search failed');
@@ -109,8 +122,9 @@ export function BookingSearchProvider({ children: providerChildren }: { children
 
   const value = useMemo<BookingSearchState>(() => ({
     ...dateRange, adults, setAdults, children, setChildren,
-    status, results, errorMessage, currency, bookingEngineUrl, search,
-  }), [dateRange, adults, children, status, results, errorMessage, currency, bookingEngineUrl, search]);
+    status, results, errorMessage, currency, search,
+    bookingUrl: toBookingUrl(dateRange.checkIn, dateRange.checkOut, adults, children),
+  }), [dateRange, adults, children, status, results, errorMessage, currency, search]);
 
   return <BookingSearchContext.Provider value={value}>{providerChildren}</BookingSearchContext.Provider>;
 }

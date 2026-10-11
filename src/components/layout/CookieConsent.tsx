@@ -29,8 +29,8 @@ export function CookieConsent() {
         By clicking &ldquo;Accept all cookies&rdquo;, you agree to the storing of cookies on your device to enhance site navigation, analyse site usage, and assist in our marketing efforts.
       </Typography>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center" sx={{ mt: 4.5 }}>
-        <Button variant="outlined" color="inherit" onClick={() => resolve('settings')} sx={{ px: 3, py: 1.3, borderColor: 'text.primary', color: 'text.primary', '&:hover': { borderColor: 'primary.main', color: 'primary.main' } }}>Cookie settings</Button>
-        <Button variant="outlined" color="primary" onClick={() => resolve('accepted')} sx={{ px: 3, py: 1.3 }}>Accept all cookies</Button>
+        <Button variant="outlined" color="inherit" onClick={() => resolve('settings')} sx={{ borderColor: 'text.primary', color: 'text.primary', '&:hover': { borderColor: 'primary.main', color: 'primary.main' } }}>Cookie settings</Button>
+        <Button variant="outlined" color="primary" onClick={() => resolve('accepted')}>Accept all cookies</Button>
       </Stack>
     </Box>
   </Box>;

@@ -3,26 +3,18 @@ import { Box, Button, Stack, Typography } from '@mui/material';
 import { useBookingSearch } from '../../context/BookingSearchContext';
 import { fonts } from '../../theme';
 
-function toISODate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
 // Sits directly under the Arrival section's calendar/guest panel and renders
 // whatever the last search() produced — loading, no availability, an error,
 // or the room list. Nothing to show before a first search, so it renders
 // nothing at all rather than an empty shell.
 export function SearchResults() {
-  const { status, results, errorMessage, currency, bookingEngineUrl, checkIn, checkOut, adults, children } = useBookingSearch();
+  const { status, results, errorMessage, currency, bookingUrl } = useBookingSearch();
 
   if (status === 'idle') return null;
 
   const priceFmt = new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 0 });
-  const bookingParams = new URLSearchParams({
-    checkin: toISODate(checkIn), checkout: toISODate(checkOut),
-    adults: String(adults), children: String(children),
-  });
 
-  return <Box sx={{ width: '100%', maxWidth: 740, mx: 'auto', mt: 3 }}>
+  return <Box sx={{ width: '100%', maxWidth: 780, mx: 'auto', mt: 3 }}>
     {status === 'loading' && (
       <Typography sx={{ fontSize: 14, color: 'text.secondary', textAlign: 'center', py: 3 }}>Checking availability…</Typography>
     )}
@@ -52,9 +44,7 @@ export function SearchResults() {
                 <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>From</Typography>
                 <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 20 }}>{priceFmt.format(room.fromPrice)}</Typography>
               </Box>
-              <Button href={bookingEngineUrl ? `${bookingEngineUrl}?${bookingParams}` : '#arrival'} target="_blank" rel="noopener"
-                variant="outlined" color="inherit" size="small" endIcon={<East sx={{ fontSize: 16 }} />}
-                sx={{ borderColor: 'text.primary', color: 'text.primary', '&:hover': { borderColor: 'info.main', bgcolor: 'info.main', color: 'info.contrastText' } }}>
+              <Button href={bookingUrl} target="_blank" rel="noopener" variant="outlined" size="small" endIcon={<East sx={{ fontSize: 16 }} />}>
                 Book now
               </Button>
             </Stack>

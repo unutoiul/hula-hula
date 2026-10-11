@@ -30,7 +30,32 @@ const theme = createTheme({
   shape: { borderRadius: 18 },
   components: {
     MuiContainer: { styleOverrides: { root: { '@media (min-width: 1200px)': { paddingLeft: 48, paddingRight: 48 } } } },
-    MuiButton: { defaultProps: { disableElevation: true }, styleOverrides: { root: { borderRadius: 999, padding: '12px 24px' }, containedSecondary: { '&:hover': { backgroundColor: '#e4e208' } } } },
+    // One button system for the whole site: every pill is 48px tall (small: 40px,
+    // used for filter chips and in-card actions), outlined pills lose a pixel of
+    // padding to their border so they match contained ones exactly, and the text
+    // variant is always an underlined link-style CTA.
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: {
+        root: {
+          borderRadius: 999, minHeight: 48, padding: '12px 24px', lineHeight: 1.5,
+          variants: [
+            { props: { variant: 'outlined' }, style: { padding: '11px 23px' } },
+            { props: { size: 'small' }, style: { minHeight: 40, padding: '8px 18px', fontSize: '0.8rem' } },
+            { props: { size: 'small', variant: 'outlined' }, style: { padding: '7px 17px' } },
+            {
+              props: { variant: 'text' },
+              style: {
+                minWidth: 0, padding: '12px 2px', borderRadius: 0,
+                textDecoration: 'underline', textDecorationColor: '#50830d', textDecorationThickness: 2, textUnderlineOffset: 8,
+                '&:hover': { backgroundColor: 'transparent', textDecorationColor: 'currentColor' },
+              },
+            },
+          ],
+        },
+        containedSecondary: { '&:hover': { backgroundColor: '#e4e208' } },
+      },
+    },
     MuiIconButton: { styleOverrides: { root: { '&:focus-visible': { outline: '3px solid #50830d', outlineOffset: 3 } } } },
     MuiCssBaseline: { styleOverrides: `html{scroll-behavior:smooth}body{overflow-x:clip}::selection{background:#f9f70c;color:#173c2c}a:focus-visible,button:focus-visible{outline:3px solid #50830d;outline-offset:4px}em{font-style:normal}img{max-width:100%}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}` },
   },
