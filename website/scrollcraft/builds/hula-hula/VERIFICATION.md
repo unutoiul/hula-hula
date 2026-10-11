@@ -2,6 +2,14 @@
 
 Verified on 11 October 2026 using the session's supported Opera browser controls.
 
+## Current revision: static floating breakfast
+
+At the user's request, the breakfast scene is now static on all screen sizes. Removed its Scroll Craft act, stage and span, animated photo zoom, moving postcard/sticker, and ripple elements. It is ordinary document flow; the photos and inquiry button remain available.
+
+Desktop verification: section height 662 px at 1844 × 867, no stage or act attributes. After scrolling, the section top moves from 114.1 px to −58.9 px while the postcard transform remains the same fixed −5-degree rotation. Phone verification at 390 × 844: no horizontal overflow, no Scroll Craft attributes inside breakfast, both photos visible. The postcard caption fits one line inside its frame.
+
+TypeScript checks and the production build pass. Screenshots: `design-preview/breakfast-static-desktop.png` and `design-preview/breakfast-static-mobile.png`. Earlier animated-scene evidence below records the initial preview and is superseded by this revision.
+
 ## Build and assets
 
 - `npm run build` passed: TypeScript project build and Vite production build. Vite reports a non-blocking 576 kB JavaScript chunk warning.

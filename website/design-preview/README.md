@@ -2,7 +2,7 @@
 
 The site uses 48 selected photographs from `photos/` for the resort, seven room and villa categories, dining, activities, celebrations, and a filterable gallery. Original photographs are preserved. Floating breakfast, the resort fruit cart, and the full shuttle promotion are featured in their own scenes.
 
-Leaf green, turquoise, pineapple yellow, and their shades and white tints come from the original logo. The logo is displayed larger. Scroll Craft drives independent hero layers, a short floating-breakfast scene, photo entrances, and the shuttle route. Phones use a normal-flow breakfast composition. The header and mobile menu include a persistent motion pause control; the operating system's reduced-motion preference is also respected.
+Leaf green, turquoise, pineapple yellow, and their shades and white tints come from the original logo. The logo is displayed larger. Scroll Craft drives independent hero layers, photo entrances, and the shuttle route. Floating breakfast is a static photo composition on every screen, with no pinning, animated ripples, photo zoom, or moving postcard. The header and mobile menu include a persistent motion pause control; the operating system's reduced-motion preference is also respected.
 
 `scripts/prepare-resort-photos.py` creates 480, 960, and 1600 pixel WebP variants, respects EXIF orientation, and generates `src/data/photos.ts`. It requires Python and Pillow. The generated images are served locally from `public/images/hula-hula/`; the live site does not depend on Google Drive image links.
 
