@@ -1,6 +1,8 @@
 # Hula Hula tropical scroll preview
 
-The site uses 48 selected photographs from `photos/` for the resort, seven room and villa categories, dining, activities, celebrations, and a filterable gallery. Original photographs are preserved. Floating breakfast, the resort fruit cart, and the full shuttle promotion are featured in their own scenes.
+The site uses 49 selected photographs from `photos/` for the resort, seven room and villa categories, dining, activities, celebrations, and a filterable gallery. Original photographs are preserved. Floating breakfast, the resort fruit cart, and the full shuttle promotion are featured in their own scenes.
+
+The homepage opens with the sunlit reception counter and lounge photograph. Its Welcome photo selector, descriptive alt text, and responsive preload match the new image. The 480-pixel WebP is 45 kB and the 960-pixel WebP is 145 kB. The first photo switches manually, and the breakfast section stays static.
 
 Leaf green, turquoise, pineapple yellow, and their shades and white tints come from the original logo. The logo is displayed larger. Scroll Craft drives independent hero layers, photo entrances, and the shuttle route. Floating breakfast is a static photo composition on every screen, with no pinning, animated ripples, photo zoom, or moving postcard. The header and mobile menu include a persistent motion pause control; the operating system's reduced-motion preference is also respected.
 

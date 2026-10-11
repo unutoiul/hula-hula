@@ -2,6 +2,16 @@
 
 Verified on 11 October 2026 using the session's supported Opera browser controls.
 
+## Current homepage: reception and lounge
+
+At the user's request, the default hero uses `hula-hula-reception-counter-and-lounge-seating.jpg`. Three candidate lobby/arrival photographs were inspected before selection. The sunlit reception and lounge photograph was chosen for its welcome desk, tropical greenery, and seating.
+
+Generated 480/960/1600 WebP variants: 45,220 / 144,984 / 337,768 bytes. There are now 49 selected photographs and 147 WebP files, 15.40 MB total. Original photographs remain intact. The preparation script includes the new selection.
+
+Verified desktop at 1844 × 867 and phone at 390 × 844: photo loads with an appropriate crop and no horizontal overflow. The hero uses the 960-pixel variant on desktop and 480-pixel variant on phone. Its preload uses the same responsive sizes as the image. Breakfast and Welcome selectors work; Welcome is selected by default. TypeScript checks pass.
+
+Screenshots: `design-preview/reception-hero-desktop.png` and `design-preview/reception-hero-mobile.png`. The static breakfast revision below remains current.
+
 ## Current revision: static floating breakfast
 
 At the user's request, the breakfast scene is now static on all screen sizes. Removed its Scroll Craft act, stage and span, animated photo zoom, moving postcard/sticker, and ripple elements. It is ordinary document flow; the photos and inquiry button remain available.
@@ -9,6 +19,8 @@ At the user's request, the breakfast scene is now static on all screen sizes. Re
 Desktop verification: section height 662 px at 1844 × 867, no stage or act attributes. After scrolling, the section top moves from 114.1 px to −58.9 px while the postcard transform remains the same fixed −5-degree rotation. Phone verification at 390 × 844: no horizontal overflow, no Scroll Craft attributes inside breakfast, both photos visible. The postcard caption fits one line inside its frame.
 
 TypeScript checks and the production build pass. Screenshots: `design-preview/breakfast-static-desktop.png` and `design-preview/breakfast-static-mobile.png`. Earlier animated-scene evidence below records the initial preview and is superseded by this revision.
+
+Static update commit `8c44130` is deployed and Ready at the same branch preview URL. Live inspection confirms no breakfast act or stage, both images loaded, and the fixed postcard rotation. Live screenshot: `design-preview/breakfast-static-live.png`.
 
 ## Build and assets
 

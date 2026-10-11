@@ -22,6 +22,7 @@ SELECTION = {
     'poolLifestyle': 'hula-hula-guest-standing-beside-tropical-pool',
     'garden': 'hula-hula-palm-lined-walkway-between-villas',
     'lobby': 'hula-hula-high-ceiling-lobby-and-glass-gable',
+    'reception': 'hula-hula-reception-counter-and-lounge-seating',
     'deluxeBedroom': 'hula-hula-deluxe-garden-street-view-bedroom-and-garden-balcony',
     'deluxeRoom': 'hula-hula-deluxe-garden-street-view-bedroom-television-and-dressing-table',
     'deluxeBathroom': 'hula-hula-deluxe-garden-street-view-bathroom-walk-in-shower-and-vanity',

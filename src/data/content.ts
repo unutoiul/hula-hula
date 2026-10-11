@@ -6,7 +6,7 @@ export const navItems: NavItem[] = [
 ];
 
 export const heroSlides: HeroSlide[] = [
-  { image: p.heroPool.src, headline: ['Pool days,', 'happy days.'], text: 'Palms overhead. A pool at your feet. Welcome to your happy place.' },
+  { image: p.reception.src, headline: ['A warm', 'Hula welcome.'], text: 'A sunny lobby, tropical greenery, and a warm Hula Hula welcome.' },
   { image: p.heroBreakfast.src, headline: ['Breakfast with', 'a splash.'], text: 'Slow mornings taste even better with a floating breakfast.' },
   { image: p.heroGolf.src, headline: ['A little play', 'goes a long way.'], text: 'Gather your favourite people for a day at Hula Hula Golf Club.' },
 ];
