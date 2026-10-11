@@ -10,6 +10,8 @@ Desktop verification: section height 662 px at 1844 × 867, no stage or act attr
 
 TypeScript checks and the production build pass. Screenshots: `design-preview/breakfast-static-desktop.png` and `design-preview/breakfast-static-mobile.png`. Earlier animated-scene evidence below records the initial preview and is superseded by this revision.
 
+Static update commit `8c44130` is deployed and Ready at the same branch preview URL. Live inspection confirms no breakfast act or stage, both images loaded, and the fixed postcard rotation. Live screenshot: `design-preview/breakfast-static-live.png`.
+
 ## Build and assets
 
 - `npm run build` passed: TypeScript project build and Vite production build. Vite reports a non-blocking 576 kB JavaScript chunk warning.
