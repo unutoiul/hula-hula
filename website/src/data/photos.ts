@@ -93,6 +93,13 @@ export const photoAssets = {
     "height": 1067,
     "source": "photos/01 Resort and Grounds/Lobby and Reception/hula-hula-high-ceiling-lobby-and-glass-gable.jpg"
   },
+  "reception": {
+    "src": "/images/hula-hula/reception-1600.webp",
+    "srcSet": "/images/hula-hula/reception-480.webp 480w, /images/hula-hula/reception-960.webp 960w, /images/hula-hula/reception-1600.webp 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "photos/01 Resort and Grounds/Lobby and Reception/hula-hula-reception-counter-and-lounge-seating.jpg"
+  },
   "deluxeBedroom": {
     "src": "/images/hula-hula/deluxeBedroom-1600.webp",
     "srcSet": "/images/hula-hula/deluxeBedroom-480.webp 480w, /images/hula-hula/deluxeBedroom-960.webp 960w, /images/hula-hula/deluxeBedroom-1600.webp 1264w",

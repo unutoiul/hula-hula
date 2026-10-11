@@ -2,6 +2,16 @@
 
 Verified on 11 October 2026 using the session's supported Opera browser controls.
 
+## Current homepage: reception and lounge
+
+At the user's request, the default hero uses `hula-hula-reception-counter-and-lounge-seating.jpg`. Three candidate lobby/arrival photographs were inspected before selection. The sunlit reception and lounge photograph was chosen for its welcome desk, tropical greenery, and seating.
+
+Generated 480/960/1600 WebP variants: 45,220 / 144,984 / 337,768 bytes. There are now 49 selected photographs and 147 WebP files, 15.40 MB total. Original photographs remain intact. The preparation script includes the new selection.
+
+Verified desktop at 1844 × 867 and phone at 390 × 844: photo loads with an appropriate crop and no horizontal overflow. The hero uses the 960-pixel variant on desktop and 480-pixel variant on phone. Its preload uses the same responsive sizes as the image. Breakfast and Welcome selectors work; Welcome is selected by default. TypeScript checks pass.
+
+Screenshots: `design-preview/reception-hero-desktop.png` and `design-preview/reception-hero-mobile.png`. The static breakfast revision below remains current.
+
 ## Current revision: static floating breakfast
 
 At the user's request, the breakfast scene is now static on all screen sizes. Removed its Scroll Craft act, stage and span, animated photo zoom, moving postcard/sticker, and ripple elements. It is ordinary document flow; the photos and inquiry button remain available.
