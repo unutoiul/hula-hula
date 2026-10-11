@@ -19,11 +19,19 @@ export function RestaurantSection({ meals }: { meals: Meal[] }) {
         <Typography sx={{ maxWidth: 350, color: 'text.secondary', lineHeight: 1.8 }}>From floating breakfasts to pineapple rice and colourful cocktails. Come hungry. Leave happy.</Typography>
       </Stack>
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1.05fr 1fr' }, alignItems: 'center', gap: { xs: 5, md: 8 } }}>
-        <Box sx={{ position: 'relative', pb: 3 }}>
-          <Box sx={{ height: { xs: 370, md: 480 }, borderRadius: '28px 100px 28px 28px', overflow: 'hidden', bgcolor: 'white', border: '7px solid white', transform: 'rotate(-2deg)' }}><ResortPhoto image={meals[active].image} alt={meals[active].name} sx={{ objectFit: active > 1 ? 'contain' : 'cover', objectPosition: active === 1 ? 'center bottom' : 'center' }} /></Box>
-          <Sticker rotate={9} sx={{ position: 'absolute', right: -10, bottom: 0, width: 106, height: 106 }}>Made for<br />happy bellies.</Sticker>
+        {/* Every meal photo fills the frame (cover) — the studio shots used to be
+            letterboxed (contain), leaving their grey backdrop floating crooked
+            inside white bands. The frame's 4:3 / 5:4 shape is close to the 3:2
+            photos, so little is cropped; the shadow keeps the white-backed shots
+            from melting into the white border. The sticker stays inside the
+            frame's corner so it's never cut off at the screen edge. */}
+        <Box sx={{ position: 'relative', pb: { xs: 2, md: 3 } }}>
+          <Box sx={{ aspectRatio: { xs: '4 / 3', md: '5 / 4' }, borderRadius: { xs: '24px 64px 24px 24px', md: '28px 100px 28px 28px' }, overflow: 'hidden', bgcolor: 'white', border: '7px solid white', transform: 'rotate(-2deg)', boxShadow: '0 18px 44px rgba(23,60,44,.12)' }}>
+            <ResortPhoto image={meals[active].image} alt={meals[active].name} sizes="(max-width: 900px) 92vw, 50vw" sx={{ objectPosition: active === 1 ? 'center bottom' : 'center' }} />
+          </Box>
+          <Sticker rotate={9} sx={{ position: 'absolute', right: { xs: 6, md: -8 }, bottom: { xs: -10, md: -6 }, width: { xs: 92, md: 106 }, height: { xs: 92, md: 106 }, fontSize: { xs: 18, md: 21 } }}>Made for<br />happy bellies.</Sticker>
         </Box>
-        <Box>{meals.map((meal, i) => <MealRow key={meal.name} meal={meal} active={i === active} first={i === 0} onClick={() => setActive(i)} />)}<Button href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" color="inherit" endIcon={<ArrowOutward />} sx={{ mt: 3, px: 0 }}>Let’s talk food</Button></Box>
+        <Box>{meals.map((meal, i) => <MealRow key={meal.name} meal={meal} active={i === active} first={i === 0} onClick={() => setActive(i)} />)}<Button href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" color="inherit" endIcon={<ArrowOutward />} sx={{ mt: 3 }}>Let’s talk food</Button></Box>
       </Box>
       <Box aria-labelledby="dining-table-heading" sx={{ display: 'grid', gridTemplateColumns: { md: '1.25fr 1fr' }, gap: { xs: 4, md: 5 }, mt: { xs: 6, md: 8 }, pt: { xs: 4, md: 5 }, borderTop: '1px solid', borderColor: 'divider', alignItems: 'end' }}>
         <Box component="figure" sx={{ m: 0 }}>

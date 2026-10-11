@@ -37,13 +37,13 @@ interface MonthGridProps {
   onSelectDay: (day: Date) => void;
 }
 
-// On phones a single month spreads across the full width (columns share it,
-// days grow up to 40px); from sm up, two fixed-size months sit side by side.
+// Each month shares the calendar's width evenly (one month on phones, two from
+// sm up); day buttons grow with their column up to 40px.
 function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: MonthGridProps) {
-  return <Box sx={{ flex: { xs: 1, sm: 'none' }, minWidth: 0 }}>
+  return <Box sx={{ flex: 1, minWidth: 0 }}>
     {/* 40px tall to line up with the absolutely positioned month arrows. */}
     <Typography sx={{ fontFamily: fonts.playful, fontSize: { xs: 16, sm: 14 }, fontWeight: 400, textAlign: 'center', lineHeight: '40px', mb: .5 }}>{monthFmt.format(new Date(year, month, 1))}</Typography>
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(7, minmax(0, 1fr))', sm: 'repeat(7, 30px)' }, gap: '2px' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
       {WEEKDAY_LABELS.map((w) => <Typography key={w} sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: { xs: 12, sm: 10.5 }, textAlign: 'center', color: 'text.secondary', pb: .5 }}>{w}</Typography>)}
       {getMonthCells(year, month).map(({ date, current }) => {
         const disabled = !current || date < minDate;
@@ -55,7 +55,7 @@ function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: Mon
           aria-current={isCheckIn || isCheckOut ? 'date' : undefined}
           onClick={() => onSelectDay(date)} sx={(theme) => ({
             width: '100%', maxWidth: 40, aspectRatio: '1 / 1', p: 0, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: { xs: 14, sm: 12 }, fontFamily: fonts.playful, fontWeight: 400, border: 'none', borderRadius: '50%', cursor: disabled ? 'default' : 'pointer',
+            fontSize: { xs: 14, sm: 12.5 }, fontFamily: fonts.playful, fontWeight: 400, border: 'none', borderRadius: '50%', cursor: disabled ? 'default' : 'pointer',
             color: isCheckIn || isCheckOut ? 'primary.contrastText' : disabled ? 'text.disabled' : 'text.primary',
             bgcolor: isCheckIn || isCheckOut ? 'primary.main' : inRange ? alpha(theme.palette.primary.main, .12) : 'transparent',
             transition: 'background-color .15s ease',
@@ -86,14 +86,14 @@ export function RangeCalendar({ checkIn, checkOut, minDate, onSelectDay }: Range
   const anchor = new Date(minDate.getFullYear(), minDate.getMonth() + monthOffset, 1);
   const next = new Date(minDate.getFullYear(), minDate.getMonth() + monthOffset + 1, 1);
 
-  // Full width on phones; from sm up the two fixed-size months take their natural
-  // width and center, rather than stretching apart inside a wider container.
-  return <Box sx={{ position: 'relative', p: 2, width: { xs: '100%', sm: 'fit-content' }, mx: 'auto' }}>
+  // Fills its container (so callers size it), capped and centered so the two
+  // months don't drift apart inside a much wider one.
+  return <Box sx={{ position: 'relative', p: 2, width: '100%', maxWidth: { sm: 560 }, mx: 'auto' }}>
     <IconButton aria-label="Previous month" onClick={() => setMonthOffset((o) => Math.max(0, o - 1))} disabled={monthOffset === 0} sx={{ ...navArrowSx, left: 16 }}><West sx={{ fontSize: 16 }} /></IconButton>
     <IconButton aria-label="Next month" onClick={() => setMonthOffset((o) => o + 1)} sx={{ ...navArrowSx, right: 16 }}><East sx={{ fontSize: 16 }} /></IconButton>
-    <Stack direction="row" spacing={3}>
+    <Stack direction="row" spacing={2.5}>
       <MonthGrid year={anchor.getFullYear()} month={anchor.getMonth()} checkIn={checkIn} checkOut={checkOut} minDate={minDate} onSelectDay={onSelectDay} />
-      <Box sx={{ display: { xs: 'none', sm: 'block' } }}><MonthGrid year={next.getFullYear()} month={next.getMonth()} checkIn={checkIn} checkOut={checkOut} minDate={minDate} onSelectDay={onSelectDay} /></Box>
+      <Box sx={{ display: { xs: 'none', sm: 'block' }, flex: 1, minWidth: 0 }}><MonthGrid year={next.getFullYear()} month={next.getMonth()} checkIn={checkIn} checkOut={checkOut} minDate={minDate} onSelectDay={onSelectDay} /></Box>
     </Stack>
   </Box>;
 }

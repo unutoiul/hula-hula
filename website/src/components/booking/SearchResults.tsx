@@ -14,7 +14,7 @@ export function SearchResults() {
 
   const priceFmt = new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 0 });
 
-  return <Box sx={{ width: '100%', maxWidth: 740, mx: 'auto', mt: 3 }}>
+  return <Box sx={{ width: '100%', maxWidth: 780, mx: 'auto', mt: 3 }}>
     {status === 'loading' && (
       <Typography sx={{ fontSize: 14, color: 'text.secondary', textAlign: 'center', py: 3 }}>Checking availability…</Typography>
     )}

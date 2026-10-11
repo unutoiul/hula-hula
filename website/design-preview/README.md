@@ -2,13 +2,15 @@
 
 The site uses 49 selected photographs from `photos/` for the resort, seven room and villa categories, dining, activities, celebrations, and a filterable gallery. Original photographs are preserved. Floating breakfast, the resort fruit cart, and the full shuttle promotion are featured in their own scenes.
 
-The homepage opens with the sunlit reception counter and lounge photograph. Its Welcome photo selector, descriptive alt text, and responsive preload match the new image. The 480-pixel WebP is 45 kB and the 960-pixel WebP is 145 kB. The first photo switches manually, and the breakfast section stays static.
+The homepage opens with the resort video from the original site (`public/video/hero.mp4`) in a larger arched frame, with no captions or buttons over it. It is muted, loops, plays inline, and pauses with the motion control or the reduced-motion setting; its first frame (`public/video/hero-poster.jpg`) is the preloaded poster. The video is re-encoded to H.264 at CRF 25 without audio (1.4 MB, from 9.5 MB); the logo SVG is SVGO-optimized (107 KB, from 333 KB). The breakfast section stays static.
+
+Both "Check availability" buttons (hero search bar and Arrival panel) currently open SiteMinder's booking engine with the chosen dates and guests, instead of running the in-page availability search. All buttons share one size system in `src/theme.ts`: 48 px actions, 40 px chips and in-card actions, underlined text links.
 
 The dining photo strip is replaced by a static, asymmetric restaurant feature: a larger Chang Restaurant photograph beside a Thai sharing spread, a playful heading and sun illustration, and readable captions below the photographs. Both photos appear on phones. The disconnected studio drink photo is removed from this feature; the meal selectors remain functional.
 
 Leaf green, turquoise, pineapple yellow, and their shades and white tints come from the original logo. The logo is displayed larger. Scroll Craft drives independent hero layers, photo entrances, and the shuttle route. Floating breakfast is a static photo composition on every screen, with no pinning, animated ripples, photo zoom, or moving postcard. The header and mobile menu include a persistent motion pause control; the operating system's reduced-motion preference is also respected.
 
-`scripts/prepare-resort-photos.py` creates 480, 960, and 1600 pixel WebP variants, respects EXIF orientation, and generates `src/data/photos.ts`. It requires Python and Pillow. The generated images are served locally from `public/images/hula-hula/`; the live site does not depend on Google Drive image links.
+`scripts/prepare-resort-photos.py` creates 480, 960, and 1600 pixel AVIF variants (served first via `<picture>`) with WebP fallbacks, respects EXIF orientation, and generates `src/data/photos.ts`. It requires Python and Pillow. The generated images are served locally from `public/images/hula-hula/`; the live site does not depend on Google Drive image links.
 
 Fredoka and DM Sans are hosted in `public/fonts/`, together with their SIL Open Font License files. Sources: [Fredoka](https://github.com/google/fonts/tree/main/ofl/fredoka), [DM Sans](https://github.com/google/fonts/tree/main/ofl/dmsans).
 

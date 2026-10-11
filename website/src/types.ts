@@ -1,12 +1,5 @@
 // Shared shapes used across the page's sections and data files.
 
-export interface HeroSlide {
-  image: string;
-  /** Always exactly two lines — see the length note in data/content.ts. */
-  headline: [string, string];
-  text: string;
-}
-
 /**
  * One card in a DragCarousel (Activities, Rooms & villas, ...). `images` is
  * usually one photo (Activities) but can be several (Rooms) — the card

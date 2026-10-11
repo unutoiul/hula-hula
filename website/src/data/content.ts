@@ -1,14 +1,8 @@
-import type { CarouselCardData, ContactInfo, EventFact, HeroSlide, Meal, NavItem } from '../types';
+import type { CarouselCardData, ContactInfo, EventFact, Meal, NavItem } from '../types';
 import { photoAssets as p } from './photos';
 
 export const navItems: NavItem[] = [
   ['Stay', '#hotel'], ['Dine', '#dine'], ['Play', '#ways'], ['Celebrate', '#events'], ['Plan your stay', '#arrival'], ['Say hello', '#contact'],
-];
-
-export const heroSlides: HeroSlide[] = [
-  { image: p.reception.src, headline: ['A warm', 'Hula welcome.'], text: 'A sunny lobby, tropical greenery, and a warm Hula Hula welcome.' },
-  { image: p.heroBreakfast.src, headline: ['Breakfast with', 'a splash.'], text: 'Slow mornings taste even better with a floating breakfast.' },
-  { image: p.heroGolf.src, headline: ['A little play', 'goes a long way.'], text: 'Gather your favourite people for a day at Hula Hula Golf Club.' },
 ];
 
 export const rooms: CarouselCardData[] = [

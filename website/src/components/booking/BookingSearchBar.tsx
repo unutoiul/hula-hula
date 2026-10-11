@@ -41,7 +41,7 @@ export function BookingSearchBar() {
         border: 0, bgcolor: 'transparent', color: 'inherit', textAlign: 'left',
         flex: '1 1 0', minWidth: 0, px: 2.5, py: 1.6, cursor: 'pointer',
         borderBottom: { xs: '1px solid #d6e1ce', sm: 'none', md: '1px solid #d6e1ce', lg: 'none' }, borderRight: { sm: '1px solid #d6e1ce', md: 'none', lg: '1px solid #d6e1ce' },
-        transition: 'background-color .2s ease', '&:hover': { bgcolor: 'secondary.light' },
+        transition: 'background-color .2s ease', '&:hover': { bgcolor: 'secondary.light' }, '&:focus-visible': { outlineOffset: -4 },
       }}>
         <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: '.6rem' }}>Your dates</Typography>
         <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 13, mt: .15, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{bookingDateFmt.format(checkIn)} – {bookingDateFmt.format(checkOut)}</Typography>
@@ -49,7 +49,7 @@ export function BookingSearchBar() {
       <Box component="button" type="button" aria-label="Choose guests" aria-expanded={!!guestAnchor} onClick={(e) => setGuestAnchor(e.currentTarget)} sx={{
         border: 0, bgcolor: 'transparent', color: 'inherit', textAlign: 'left',
         flex: '1 1 0', minWidth: 0, px: 2.5, py: 1.6, cursor: 'pointer',
-        transition: 'background-color .2s ease', '&:hover': { bgcolor: 'secondary.light' },
+        transition: 'background-color .2s ease', '&:hover': { bgcolor: 'secondary.light' }, '&:focus-visible': { outlineOffset: -4 },
       }}>
         <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: '.6rem' }}>Your people</Typography>
         <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 13, mt: .15, whiteSpace: 'nowrap' }}>{adults} adult{adults !== 1 ? 's' : ''}{children > 0 ? ` · ${children} child${children !== 1 ? 'ren' : ''}` : ''}</Typography>
@@ -61,9 +61,9 @@ export function BookingSearchBar() {
         Dates sub-box — the two-month calendar is wider than that box, so
         left-anchoring it there left it hugging the bar's left edge instead of
         reading as attached to the search widget as a whole. On phones it takes a
-        fixed width (capped by MUI's default 100% - 32px) so the single-month grid
-        has room to spread out. */}
-    <Popover open={dateOpen} anchorEl={fieldsRef.current} onClose={() => setDateOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} transformOrigin={{ vertical: 'top', horizontal: 'center' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', width: { xs: 380, sm: 'auto' } } } }}>
+        fixed width (capped by MUI's default 100% - 32px), since the calendar
+        sizes itself to its container. */}
+    <Popover open={dateOpen} anchorEl={fieldsRef.current} onClose={() => setDateOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} transformOrigin={{ vertical: 'top', horizontal: 'center' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', width: { xs: 380, sm: 520 } } } }}>
       <RangeCalendar checkIn={checkIn} checkOut={checkOut} minDate={today} onSelectDay={selectDay} />
     </Popover>
     <Popover open={!!guestAnchor} anchorEl={guestAnchor} onClose={() => setGuestAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', minWidth: 240 } } }}>

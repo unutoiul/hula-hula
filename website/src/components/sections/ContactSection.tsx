@@ -14,7 +14,7 @@ export function ContactSection() {
       <Typography variant="h2" sx={{ mt: 2, fontSize: { xs: 44, md: 68 }, lineHeight: 1.04 }}>Got a little question?<br /><Box component="span" color="primary.main">We’re all ears.</Box></Typography>
       <Typography sx={{ mt: 2, maxWidth: 460, mx: 'auto', fontSize: 16, lineHeight: 1.6, color: 'text.secondary' }}>Call, message, or find us on social — whichever's easiest.</Typography>
       <Button href={CONTACT.tel} variant="outlined" color="inherit" startIcon={<Call />} sx={{
-        mt: 4, px: 3.5, py: 1.4, borderColor: 'primary.main', color: 'primary.main',
+        mt: 4, borderColor: 'primary.main', color: 'primary.main',
         '&:hover': { borderColor: 'info.main', bgcolor: 'info.main', color: 'info.contrastText' },
       }}>{CONTACT.phone}</Button>
       <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 5 }}>

@@ -20,7 +20,7 @@ export function HotelSection() {
         <Box>
           <Typography variant="h2" sx={{ fontSize: { xs: 42, md: 59 }, lineHeight: 1.06, mt: 2 }}>Check in.<br />Chill out.<br /><Box component="span" color="primary.main">Hula a little.</Box></Typography>
           <Typography sx={{ mt: 3, color: 'text.secondary', fontSize: 16, lineHeight: 1.8, maxWidth: 440 }}>Tucked into the tropical greenery of Ao Nang, our little corner of Krabi is made for easy mornings, poolside afternoons, and the people you love being with.</Typography>
-          <Stack direction="row" spacing={3} alignItems="center" sx={{ mt: 3 }}><Button href="#room-gallery" color="inherit" endIcon={<ArrowOutward />} sx={{ px: 0 }}>Come on in</Button><SunDoodle size={54} color="#50830d" /></Stack>
+          <Stack direction="row" spacing={3} alignItems="center" sx={{ mt: 3 }}><Button href="#room-gallery" color="inherit" endIcon={<ArrowOutward />}>Come on in</Button><SunDoodle size={54} color="#50830d" /></Stack>
         </Box>
       </Box>
       <Box id="room-gallery" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET }}>

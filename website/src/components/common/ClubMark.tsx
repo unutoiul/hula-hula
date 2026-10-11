@@ -4,8 +4,10 @@ import { Box, Link } from '@mui/material';
 // — much more margin baked in) — the same height reads noticeably bigger now,
 // so these are scaled back down from where they were tuned for the old file.
 const SIZES = {
+  small: { xs: 52, md: 60 },
   compact: { xs: 66, md: 84 },
   default: { xs: 76, md: 96 },
+  header: { xs: 80, md: 116 },
   large: { xs: 110, md: 138 },
 };
 
@@ -14,9 +16,10 @@ const SIZES = {
 // SVG's own aspect ratio (viewBox 159×137.25, a tighter crop than the
 // previous export).
 //
-// `size` drives which tier above is used; the header additionally animates
-// between compact/default on its own scroll state, so its height transitions
-// while the other contexts (footer, cookie dialog) render at a fixed size.
+// `size` drives which tier above is used; the header switches between
+// header (at the top of the page) and small (once scrolled), so its height
+// transitions while the other contexts (footer, cookie dialog) render at a
+// fixed size.
 export function ClubMark({ size = 'default' }: { size?: keyof typeof SIZES }) {
   return <Link href="#top" aria-label="Hula Hula Resort home" sx={{ display: 'inline-flex', lineHeight: 0 }}>
     <Box component="img" src="/logo/hula-hula.svg" alt="Hula Hula Resort" sx={{

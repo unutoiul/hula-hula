@@ -23,7 +23,7 @@ export function ResortPromotionsSection() {
         <Box>
           <Typography variant="h2" sx={{ fontSize: { xs: 42, md: 58 }, lineHeight: 1.08 }}>A little local charm.<br /><Box component="span" color="success.main">A whole lot of smiles.</Box></Typography>
           <Typography sx={{ mt: 3, fontSize: 16, lineHeight: 1.8, color: 'text.secondary', maxWidth: 420 }}>Our colourful fruit cart brings a little Hula Hula personality to your holiday. Green, yellow, and a warm welcome. Just like our happy little resort.</Typography>
-          <Button href="#gallery" color="inherit" endIcon={<ArrowOutward />} sx={{ mt: 2, px: 0 }}>Meet your happy place</Button>
+          <Button href="#gallery" color="inherit" endIcon={<ArrowOutward />} sx={{ mt: 2 }}>Meet your happy place</Button>
         </Box>
       </Box>
 
@@ -35,7 +35,7 @@ export function ResortPromotionsSection() {
             <svg viewBox="0 0 500 70" width="100%" height="100%" fill="none"><path className="shuttle-route-line" pathLength="1" d="M20 38 C100 5 120 68 195 35 S290 5 350 35 S430 65 480 25" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /><circle cx="20" cy="38" r="7" fill="#50830d" /><circle cx="480" cy="25" r="7" fill="#f9f70c" stroke="#50830d" strokeWidth="2" /></svg>
           </Box>
           <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} aria-label="Shuttle destination choices">
-            {destinations.map(value => <Button key={value} variant={destination === value ? 'contained' : 'outlined'} onClick={() => setDestination(value)} aria-pressed={destination === value} sx={{ fontSize: 12, py: 1, px: 1.8 }}>{value}</Button>)}
+            {destinations.map(value => <Button key={value} variant={destination === value ? 'contained' : 'outlined'} onClick={() => setDestination(value)} aria-pressed={destination === value} size="small">{value}</Button>)}
           </Stack>
           <Typography aria-live="polite" sx={{ mt: 2.5, fontSize: 14, fontWeight: 600 }}>Your next stop: {destination}.</Typography>
           <Button href={shuttleInquiry} target="_blank" rel="noopener noreferrer" variant="contained" color="secondary" startIcon={<DirectionsBusRounded />} sx={{ mt: 2 }}>Ask about the shuttle</Button>

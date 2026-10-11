@@ -1,17 +1,29 @@
-import { Box, Button, Stack, Typography } from '@mui/material';
-import type { HeroSlide } from '../../types';
-import { ResortPhoto } from '../common/ResortPhoto';
+import { Box } from '@mui/material';
+import { useEffect, useRef } from 'react';
+import { useMotionPreference } from '../../context/MotionPreferenceContext';
 
-export function HeroCarousel({ slides, index, onSelect }: { slides: HeroSlide[]; index: number; onSelect: (i: number) => void }) {
-  const slide = slides[index];
-  return <Box sx={{ position: 'relative', height: '100%' }}>
-    <ResortPhoto image={slide.image} alt={index === 0 ? 'Hula Hula reception counter and lounge with tropical plants' : slide.headline.join(' ')} eager sizes="(max-width: 900px) 90vw, 45vw" sx={{ objectPosition: index === 0 ? 'center 45%' : index === 2 ? 'center' : 'center 55%' }} />
-    <Box sx={{ position: 'absolute', inset: '45% 0 0', background: 'linear-gradient(transparent, rgba(18,78,57,.8))', pointerEvents: 'none' }} />
-    <Box sx={{ position: 'absolute', bottom: 22, left: { xs: 20, md: 30 }, right: 20, pl: { xs: 16, md: 19 }, color: 'white' }}>
-      <Typography variant="h3" sx={{ fontSize: { xs: 23, md: 28 }, lineHeight: 1.1, mb: 1.5 }}>{slide.headline.join(' ')}</Typography>
-      <Stack direction="row" spacing={.6} flexWrap="wrap" useFlexGap>
-        {['Welcome', 'Breakfast', 'Play time'].map((label, i) => <Button key={label} onClick={() => onSelect(i)} aria-pressed={i === index} aria-label={`Show ${label.toLowerCase()} photo`} size="small" sx={{ fontSize: 10, minWidth: 0, py: .6, px: 1.1, color: i === index ? 'text.primary' : 'white', bgcolor: i === index ? 'secondary.main' : 'rgba(255,255,255,.16)', '&:hover': { bgcolor: 'secondary.main', color: 'text.primary' } }}>{label}</Button>)}
-      </Stack>
-    </Box>
-  </Box>;
+const HERO_VIDEO_SRC = '/video/hero.mp4';
+// The video's own first frame, so nothing jumps when playback starts.
+const HERO_POSTER_SRC = '/video/hero-poster.webp';
+
+// The resort film from the original site, filling the hero frame on its own —
+// no captions or buttons over it, so the visuals get full attention. Muted,
+// looping and inline so browsers allow autoplay; it holds still while motion
+// is paused (the header toggle or the OS reduced-motion setting).
+export function HeroVideo() {
+  const { reduced } = useMotionPreference();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (reduced) video.pause();
+    else video.play().catch(() => { /* Autoplay refused (e.g. data saver): the poster stays up. */ });
+  }, [reduced]);
+
+  // disablePictureInPicture / disableRemotePlayback also stop browsers from
+  // laying their own pop-out or cast buttons over it.
+  return <Box component="video" ref={videoRef} aria-hidden muted loop playsInline autoPlay={!reduced} disablePictureInPicture disableRemotePlayback
+    preload={reduced ? 'metadata' : 'auto'} poster={HERO_POSTER_SRC} src={HERO_VIDEO_SRC}
+    sx={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }} />;
 }
