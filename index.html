@@ -3,18 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#155756" />
-    <meta name="description" content="Hula Hula Resort: a hotel in Krabi, Thailand, between karst cliffs and the Andaman Sea." />
-    <title>Hula Hula Resort | Hotel in Krabi</title>
-    <!-- Loaded as a real stylesheet link, not a CSS @import injected via JS \u2014 the
-         latter has to be the very first rule in its stylesheet or browsers drop it,
-         which silently broke font loading once other styles were injected first. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#fbfdf4" />
+    <meta name="description" content="Your happy place in Ao Nang, Krabi. Discover tropical pools, rooms and villas, floating breakfasts, and playful days at Hula Hula Resort." />
+    <title>Hula Hula Resort | Tropical Vibes &amp; Good Times in Krabi</title>
+    <link rel="preload" as="font" href="/fonts/fredoka-variable.ttf" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" />
+    <link rel="stylesheet" href="/vendor/scrollcraft/scrollcraft.css" />
+    <link rel="stylesheet" href="/styles/hula-scroll.css" />
+    <link rel="icon" type="image/svg+xml" href="/logo/hula-hula.svg" />
+    <link rel="preload" as="image" href="/images/hula-hula/heroPool-960.webp" imagesrcset="/images/hula-hula/heroPool-480.webp 480w, /images/hula-hula/heroPool-960.webp 960w, /images/hula-hula/heroPool-1600.webp 1600w" imagesizes="(min-width: 900px) 55vw, 100vw" />
   </head>
   <body>
     <div id="root"></div>
+    <script src="/vendor/scrollcraft/scrollcraft.js" defer></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,0 +1,19 @@
+# Hula Hula tropical scroll preview
+
+The site uses 48 selected photographs from `photos/` for the resort, seven room and villa categories, dining, activities, celebrations, and a filterable gallery. Original photographs are preserved. Floating breakfast, the resort fruit cart, and the full shuttle promotion are featured in their own scenes.
+
+Leaf green, turquoise, pineapple yellow, and their shades and white tints come from the original logo. The logo is displayed larger. Scroll Craft drives independent hero layers, a short floating-breakfast scene, photo entrances, and the shuttle route. Phones use a normal-flow breakfast composition. The header and mobile menu include a persistent motion pause control; the operating system's reduced-motion preference is also respected.
+
+`scripts/prepare-resort-photos.py` creates 480, 960, and 1600 pixel WebP variants, respects EXIF orientation, and generates `src/data/photos.ts`. It requires Python and Pillow. The generated images are served locally from `public/images/hula-hula/`; the live site does not depend on Google Drive image links.
+
+Fredoka and DM Sans are hosted in `public/fonts/`, together with their SIL Open Font License files. Sources: [Fredoka](https://github.com/google/fonts/tree/main/ofl/fredoka), [DM Sans](https://github.com/google/fonts/tree/main/ofl/dmsans).
+
+Verified: production build, TypeScript checks, desktop and phone layouts, tablet layout, breakfast entry/midpoint/exit, motion pause, shuttle destination inquiries, room photo switching and carousel boundaries, dining selection, gallery filtering and lightbox navigation, mobile menu, and synchronized date/guest selection. Live booking transactions were not exercised. Detailed evidence is in `scrollcraft/builds/hula-hula/VERIFICATION.md`.
+
+`desktop.png` and `mobile.png` show the refreshed design. `breakfast-midpoint.png`, `fruit-cart-desktop.png`, and `shuttle-desktop.png` show the featured experiences. `selected-photos.jpg` is a contact sheet of the selected assets.
+
+Publishable branch: `preview/hula-hula-tropical`. The existing production site is https://hulahula.vercel.app. A separate Vercel preview is published without promoting it to production.
+
+The local source remains in `website` on `design/tropical-scroll-preview`. The publishable branch lives in the isolated `.preview-release` worktree, with application files at the repository root to match Vercel's existing configuration. It is based on `origin/main`; it excludes the 2 GB archive and original photo collection from unpublished local history. Original files remain in the source workspace, and optimized photographs are included in the preview branch.
+
+Scroll Craft's vendored engine is unmodified and includes its MIT license. The skill from `nateherkai/a-bunch-of-skills` is installed under `.agents/skills/visualizations`; that repository currently supplies static visualization skills, so the website's motion uses Scroll Craft.

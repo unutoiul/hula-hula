@@ -1,0 +1,15 @@
+photos
+resources
+.agents
+scrollcraft
+design-preview
+scripts
+node_modules
+dist
+.git
+.preview-release
+vite.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

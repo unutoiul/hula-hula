@@ -85,8 +85,8 @@ export function RangeCalendar({ checkIn, checkOut, minDate, onSelectDay }: Range
   // the grid pinned to the left with dead space on the right. Capping + centering fixes both.
   return <Box sx={{ p: 2, maxWidth: 460, mx: 'auto' }}>
     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: .5 }}>
-      <IconButton size="small" onClick={() => setMonthOffset((o) => Math.max(0, o - 1))} disabled={monthOffset === 0} sx={{ visibility: monthOffset === 0 ? 'hidden' : 'visible' }}><West sx={{ fontSize: 14 }} /></IconButton>
-      <IconButton size="small" onClick={() => setMonthOffset((o) => o + 1)}><East sx={{ fontSize: 14 }} /></IconButton>
+      <IconButton size="small" aria-label="Previous month" onClick={() => setMonthOffset((o) => Math.max(0, o - 1))} disabled={monthOffset === 0} sx={{ visibility: monthOffset === 0 ? 'hidden' : 'visible' }}><West sx={{ fontSize: 14 }} /></IconButton>
+      <IconButton size="small" aria-label="Next month" onClick={() => setMonthOffset((o) => o + 1)}><East sx={{ fontSize: 14 }} /></IconButton>
     </Stack>
     <Stack direction="row" spacing={2.5}>
       <MonthGrid year={anchor.getFullYear()} month={anchor.getMonth()} checkIn={checkIn} checkOut={checkOut} minDate={minDate} onSelectDay={onSelectDay} />

@@ -1,40 +1,17 @@
-import { Box, Stack } from '@mui/material';
-import { useReducedMotion } from 'motion/react';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import type { HeroSlide } from '../../types';
+import { ResortPhoto } from '../common/ResortPhoto';
 
-const HERO_VIDEO_SRC = '/video/hero.mp4';
-
-interface HeroCarouselProps {
-  slides: HeroSlide[];
-  index: number;
-  onSelect: (i: number) => void;
-}
-
-// The background is a single looping video rather than a per-slide crossfade.
-// The rotating headline/text (driven by `index`, in Hero.tsx) still cycles on
-// its own timer independently of the video — the dots below double as a
-// message picker rather than a slide picker.
-export function HeroCarousel({ slides, index, onSelect }: HeroCarouselProps) {
-  const reduceMotion = useReducedMotion();
-
-  return <>
-    <Box aria-hidden sx={{ position: 'absolute', inset: 0, zIndex: -2, overflow: 'hidden' }}>
-      {reduceMotion ? (
-        // Respect prefers-reduced-motion: a still frame instead of an autoplaying video.
-        <Box sx={{ position: 'absolute', inset: 0, backgroundImage: `url(${slides[0].image})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-      ) : (
-        <Box component="video" autoPlay muted loop playsInline poster={slides[0].image} src={HERO_VIDEO_SRC} sx={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-        }} />
-      )}
+export function HeroCarousel({ slides, index, onSelect }: { slides: HeroSlide[]; index: number; onSelect: (i: number) => void }) {
+  const slide = slides[index];
+  return <Box sx={{ position: 'relative', height: '100%' }}>
+    <ResortPhoto image={slide.image} alt={slide.headline.join(' ')} eager sizes="(max-width: 900px) 90vw, 45vw" sx={{ objectPosition: index === 2 ? 'center' : 'center 55%' }} />
+    <Box sx={{ position: 'absolute', inset: '45% 0 0', background: 'linear-gradient(transparent, rgba(18,78,57,.8))', pointerEvents: 'none' }} />
+    <Box sx={{ position: 'absolute', bottom: 22, left: { xs: 20, md: 30 }, right: 20, pl: { xs: 16, md: 19 }, color: 'white' }}>
+      <Typography variant="h3" sx={{ fontSize: { xs: 23, md: 28 }, lineHeight: 1.1, mb: 1.5 }}>{slide.headline.join(' ')}</Typography>
+      <Stack direction="row" spacing={.6} flexWrap="wrap" useFlexGap>
+        {['Pool days', 'Breakfast', 'Play time'].map((label, i) => <Button key={label} onClick={() => onSelect(i)} aria-pressed={i === index} aria-label={`Show ${label.toLowerCase()} photo`} size="small" sx={{ fontSize: 10, minWidth: 0, py: .6, px: 1.1, color: i === index ? 'text.primary' : 'white', bgcolor: i === index ? 'secondary.main' : 'rgba(255,255,255,.16)', '&:hover': { bgcolor: 'secondary.main', color: 'text.primary' } }}>{label}</Button>)}
+      </Stack>
     </Box>
-    <Stack direction="row" spacing={1.1} sx={{ position: 'absolute', right: { xs: 24, md: 48 }, bottom: { xs: 24, md: 40 }, zIndex: 1 }}>
-      {slides.map((slide, i) => <Box key={slide.image} component="button" type="button" aria-label={`Show message: ${slide.headline.join(' ')}`} aria-current={i === index} onClick={() => onSelect(i)} sx={{
-        width: i === index ? 22 : 7, height: 7, p: 0, border: 'none', borderRadius: 4, cursor: 'pointer',
-        bgcolor: i === index ? 'info.main' : 'rgba(255,255,255,.45)',
-        transition: 'width .35s ease, background-color .35s ease',
-        '&:hover': { bgcolor: i === index ? 'info.main' : 'rgba(255,255,255,.75)' },
-      }} />)}
-    </Stack>
-  </>;
+  </Box>;
 }

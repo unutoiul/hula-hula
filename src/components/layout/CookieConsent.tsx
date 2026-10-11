@@ -23,7 +23,7 @@ export function CookieConsent() {
     position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center',
     bgcolor: scrim(.6), backdropFilter: 'blur(4px)', p: 3,
   }}>
-    <Box sx={{ bgcolor: 'background.default', color: 'text.primary', maxWidth: 480, width: '100%', p: { xs: 4, md: 5 }, textAlign: 'center', boxShadow: `0 30px 90px ${scrim(.4)}` }}>
+    <Box sx={{ bgcolor: 'background.default', color: 'text.primary', maxWidth: 480, width: '100%', p: { xs: 4, md: 5 }, borderRadius: 4, textAlign: 'center', boxShadow: `0 30px 90px ${scrim(.4)}` }}>
       <Stack alignItems="center"><ClubMark /></Stack>
       <Typography sx={{ mt: 3.5, fontSize: 14, lineHeight: 1.75, color: 'text.secondary' }}>
         By clicking &ldquo;Accept all cookies&rdquo;, you agree to the storing of cookies on your device to enhance site navigation, analyse site usage, and assist in our marketing efforts.
