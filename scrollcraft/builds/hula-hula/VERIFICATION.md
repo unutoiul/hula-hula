@@ -2,6 +2,14 @@
 
 Verified on 11 October 2026 using the session's supported Opera browser controls.
 
+## Current revision: static floating breakfast
+
+At the user's request, the breakfast scene is now static on all screen sizes. Removed its Scroll Craft act, stage and span, animated photo zoom, moving postcard/sticker, and ripple elements. It is ordinary document flow; the photos and inquiry button remain available.
+
+Desktop verification: section height 662 px at 1844 × 867, no stage or act attributes. After scrolling, the section top moves from 114.1 px to −58.9 px while the postcard transform remains the same fixed −5-degree rotation. Phone verification at 390 × 844: no horizontal overflow, no Scroll Craft attributes inside breakfast, both photos visible. The postcard caption fits one line inside its frame.
+
+TypeScript checks and the production build pass. Screenshots: `design-preview/breakfast-static-desktop.png` and `design-preview/breakfast-static-mobile.png`. Earlier animated-scene evidence below records the initial preview and is superseded by this revision.
+
 ## Build and assets
 
 - `npm run build` passed: TypeScript project build and Vite production build. Vite reports a non-blocking 576 kB JavaScript chunk warning.
@@ -37,6 +45,12 @@ Publishable branch: `preview/hula-hula-tropical`, based on `origin/main` commit 
 Existing production: https://hulahula.vercel.app, deployment `dpl_HXH5J6ZWuoTGDt8kRmgQoy2xXJXJ`. Vercel reports this deployment Ready. The redesign is published as a separate preview; production is not promoted or replaced.
 
 The project uses Vite and a root directory of `.`. The preview worktree matches that structure. No production project settings are changed.
+
+The branch was pushed successfully. Vercel preview commit `74e7ea0` is Ready at [the branch preview](https://hulahula-git-preview-hula-hula-tropical-gold-structure-engine.vercel.app), deployment `dpl_4NvWyhgFvwKoAF9xjsGsyQadiFHS`. The website and booking API TypeScript checks also pass in the release worktree. All three existing serverless endpoints were built.
+
+The first live check found that an unanchored `scrollcraft` ignore pattern excluded `public/vendor/scrollcraft`. Root-only exclusion patterns fixed the packaging. After redeployment, the live scene reports a sticky stage, progress 0.2158, and postcard translation 18.8/37.6 px. Both breakfast photographs load successfully. The existing production URL was opened and still displays its original design.
+
+Live screenshots: `design-preview/deployed-desktop.png` and `design-preview/deployed-breakfast.png`. No live booking transaction was submitted.
 
 ## Tooling and attribution
 
