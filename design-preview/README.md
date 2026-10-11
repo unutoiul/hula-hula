@@ -4,6 +4,8 @@ The site uses 49 selected photographs from `photos/` for the resort, seven room 
 
 The homepage opens with the sunlit reception counter and lounge photograph. Its Welcome photo selector, descriptive alt text, and responsive preload match the new image. The 480-pixel WebP is 45 kB and the 960-pixel WebP is 145 kB. The first photo switches manually, and the breakfast section stays static.
 
+The dining photo strip is replaced by a static, asymmetric restaurant feature: a larger Chang Restaurant photograph beside a Thai sharing spread, a playful heading and sun illustration, and readable captions below the photographs. Both photos appear on phones. The disconnected studio drink photo is removed from this feature; the meal selectors remain functional.
+
 Leaf green, turquoise, pineapple yellow, and their shades and white tints come from the original logo. The logo is displayed larger. Scroll Craft drives independent hero layers, photo entrances, and the shuttle route. Floating breakfast is a static photo composition on every screen, with no pinning, animated ripples, photo zoom, or moving postcard. The header and mobile menu include a persistent motion pause control; the operating system's reduced-motion preference is also respected.
 
 `scripts/prepare-resort-photos.py` creates 480, 960, and 1600 pixel WebP variants, respects EXIF orientation, and generates `src/data/photos.ts`. It requires Python and Pillow. The generated images are served locally from `public/images/hula-hula/`; the live site does not depend on Google Drive image links.
