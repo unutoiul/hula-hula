@@ -17,17 +17,7 @@ button:active, a.MuiButton-root:active { transform: translateY(1px); }
 
 .breakfast-scene { position: relative; isolation: isolate; background: #d9f5fc; }
 .breakfast-postcard { transform: rotate(-5deg); }
-.shuttle-route-line { stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--sc-p, 1)); }
 
-@media (max-width: 899px), (max-height: 700px) {
-  [data-sc-parallax] { transform: none !important; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .shuttle-route-line { stroke-dashoffset: 0; }
-}
-[data-motion='off'] [data-sc-parallax],
-[data-motion='off'] [data-sc-in] { transform: none !important; opacity: 1 !important; }
-[data-motion='off'] .shuttle-route-line { stroke-dashoffset: 0; }
 @media (hover: hover) and (pointer: fine) {
   .photo-postcard { transition: transform 180ms cubic-bezier(.23,1,.32,1); }
   .photo-postcard:hover { transform: rotate(0deg) translateY(-4px); }

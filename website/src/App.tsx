@@ -14,13 +14,10 @@ import { GallerySection } from './components/sections/GallerySection';
 import { RestaurantSection } from './components/sections/RestaurantSection';
 import { FloatingBreakfastSection } from './components/sections/FloatingBreakfastSection';
 import { ResortPromotionsSection } from './components/sections/ResortPromotionsSection';
-import { ScrollCraftRuntime } from './components/common/ScrollCraftRuntime';
-import { MotionPreferenceProvider, useMotionPreference } from './context/MotionPreferenceContext';
+import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
 
 function ResortPage() {
-  const { reduced } = useMotionPreference();
-  return <Box component="main" id="top" data-motion={reduced ? 'off' : 'on'}>
-    <ScrollCraftRuntime />
+  return <Box component="main" id="top">
     <CookieConsent />
     <Header navItems={navItems} />
     <BookingSearchProvider>

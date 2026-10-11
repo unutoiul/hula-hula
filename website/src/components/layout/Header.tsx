@@ -1,17 +1,15 @@
 import ArrowOutward from '@mui/icons-material/ArrowOutward';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import MenuRounded from '@mui/icons-material/MenuRounded';
-import WavesRounded from '@mui/icons-material/WavesRounded';
 import { Box, Button, Container, Drawer, IconButton, Link, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { NavItem } from '../../types';
 import { ClubMark } from '../common/ClubMark';
 import { SunDoodle } from '../common/VacationDecor';
+import { MotionToggleButton, MotionToggleMenuButton } from './MotionToggle';
 import { NavLink } from './NavLink';
-import { useMotionPreference } from '../../context/MotionPreferenceContext';
 
 export function Header({ navItems }: { navItems: NavItem[] }) {
-  const { reduced, toggle } = useMotionPreference();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState('');
@@ -35,7 +33,7 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
         <Stack direction="row" alignItems="center" justifyContent="flex-end" gap={{ xs: 1.5, lg: 3 }} sx={{ gridColumn: { xs: 2, lg: 3 } }}>
           <Stack component="nav" aria-label="More navigation" direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>{navItems.filter(([, href]) => href === '#events' || href === '#contact').map(([label, href]) => <NavLink key={href} href={href} active={active === href}>{label}</NavLink>)}</Stack>
           <Button href="#arrival" variant="contained" color="secondary" endIcon={<ArrowOutward sx={{ fontSize: 17 }} />}>Book happy</Button>
-          <IconButton onClick={toggle} aria-label={reduced ? 'Enable decorative motion' : 'Pause decorative motion'} aria-pressed={reduced} title={reduced ? 'Motion paused' : 'Pause motion'} sx={{ display: { xs: 'none', sm: 'inline-flex' }, width: 48, height: 48, color: 'primary.main', border: '1px solid', borderColor: 'divider' }}><WavesRounded /></IconButton>
+          <MotionToggleButton />
           <IconButton aria-label="Open menu" onClick={() => setOpen(true)} sx={{ display: { xs: 'inline-flex', lg: 'none' }, width: 48, height: 48, color: 'text.primary', border: '1px solid', borderColor: 'divider' }}><MenuRounded /></IconButton>
         </Stack>
       </Box>
@@ -45,7 +43,7 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
       <Stack component="nav" aria-label="Mobile navigation" spacing={1} sx={{ mt: 5 }}>{navItems.map(([label, href]) => <Link key={href} href={href} color="text.primary" underline="none" onClick={() => setOpen(false)} sx={{ py: 1.2, borderBottom: '1px solid', borderColor: 'divider' }}><Typography variant="h3" sx={{ fontSize: 32 }}>{label}</Typography></Link>)}</Stack>
       <SunDoodle color="#50830d" sx={{ mt: 5 }} />
       <Typography variant="h3" sx={{ mt: 2 }}>Your next happy chapter.</Typography>
-      <Button onClick={toggle} variant="outlined" color="inherit" startIcon={<WavesRounded />} aria-pressed={reduced} sx={{ mt: 3, borderColor: 'divider' }}>{reduced ? 'Enable decorative motion' : 'Pause decorative motion'}</Button>
+      <MotionToggleMenuButton />
       <Button href="#arrival" onClick={() => setOpen(false)} variant="contained" sx={{ mt: 1.5 }}>Let’s plan it</Button>
     </Drawer>
   </Box>;

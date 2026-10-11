@@ -3,6 +3,7 @@ import { useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CarouselArrow } from './CarouselArrow';
 import { MetaLabel } from './MetaLabel';
+import { Reveal, ScrollFloat } from './ScrollMotion';
 
 interface DragCarouselProps<T> {
   sectionKicker: string; heading: ReactNode; items: T[]; itemLabel: string;
@@ -35,18 +36,22 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
     if (node && slot) node.scrollTo({ left: slot.offsetLeft, behavior: reduceMotion ? 'instant' : 'smooth' });
   };
   return <>
-    <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'flex-end' }} gap={3} sx={{ mb: 5 }}>
+    <Reveal><Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'flex-end' }} gap={3} sx={{ mb: 5 }}>
       <Box>{onDark && <MetaLabel>{sectionKicker}</MetaLabel>}<Typography variant="h2" sx={{ fontSize: { xs: 40, md: 62 }, lineHeight: 1.04, mt: 1.5 }}>{heading}</Typography></Box>
       <Stack direction="row" spacing={1.2}>
         <CarouselArrow direction="prev" onDark={onDark} disabled={active === 0} label={`Previous ${itemLabel}`} onClick={() => select(Math.max(0, active - 1))} />
         <CarouselArrow direction="next" onDark={onDark} disabled={atEnd} label={`Next ${itemLabel}`} onClick={() => select(Math.min(items.length - 1, active + 1))} />
       </Stack>
-    </Stack>
+    </Stack></Reveal>
     <Box ref={viewport} role="region" aria-label={`${itemLabel} gallery`} tabIndex={0}
       onKeyDown={(event) => { if (event.target !== event.currentTarget) return; if (event.key === 'ArrowRight') { event.preventDefault(); select(Math.min(items.length - 1, active + 1)); } if (event.key === 'ArrowLeft') { event.preventDefault(); select(Math.max(0, active - 1)); } }}
       onScroll={updatePosition}
-      sx={{ position: 'relative', display: 'flex', alignItems: 'stretch', gap: 3, overflowX: 'auto', scrollSnapType: 'x mandatory', pb: 2, scrollbarWidth: 'thin', scrollbarColor: onDark ? '#f9f70c transparent' : '#006d8a #e9efde', WebkitOverflowScrolling: 'touch' }}>
-      {items.map((item, i) => <Box key={item.id} sx={{ flex: { xs: '0 0 88%', sm: '0 0 calc(50% - 12px)', lg: '0 0 calc(33.333% - 16px)' }, scrollSnapAlign: 'start', minWidth: 0, display: 'flex' }}>{renderCard(item, i === active, () => select(i))}</Box>)}
+      sx={{ position: 'relative', display: 'flex', alignItems: 'stretch', gap: 3, overflowX: 'auto', scrollSnapType: 'x mandatory', pt: 3, pb: 5, my: -3, scrollbarWidth: 'thin', scrollbarColor: onDark ? '#f9f70c transparent' : '#006d8a #e9efde', WebkitOverflowScrolling: 'touch' }}>
+      {items.map((item, i) => <Box key={item.id} sx={{ flex: { xs: '0 0 88%', sm: '0 0 calc(50% - 12px)', lg: '0 0 calc(33.333% - 16px)' }, scrollSnapAlign: 'start', minWidth: 0, display: 'flex' }}>
+        <Reveal delay={Math.min(i, 3) * 0.1} sx={{ display: 'flex', width: '100%' }}>
+          <ScrollFloat strength={i % 2 ? 22 : 10} sx={{ display: 'flex', width: '100%' }}>{renderCard(item, i === active, () => select(i))}</ScrollFloat>
+        </Reveal>
+      </Box>)}
     </Box>
     <Typography sx={{ mt: 2, fontSize: 12, opacity: .7 }}>Swipe, scroll, or use the arrows to explore {items.length} {itemLabel === 'room' ? 'places to stay' : 'ways to enjoy your holiday'}.</Typography>
   </>;
