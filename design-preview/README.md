@@ -12,7 +12,7 @@ Verified: production build, TypeScript checks, desktop and phone layouts, tablet
 
 `desktop.png` and `mobile.png` show the refreshed design. `breakfast-midpoint.png`, `fruit-cart-desktop.png`, and `shuttle-desktop.png` show the featured experiences. `selected-photos.jpg` is a contact sheet of the selected assets.
 
-Publishable branch: `preview/hula-hula-tropical`. The existing production site is https://hulahula.vercel.app. A separate Vercel preview is published without promoting it to production.
+Publishable branch: `preview/hula-hula-tropical`. Compare the [existing production site](https://hulahula.vercel.app) and [new Vercel preview](https://hulahula-git-preview-hula-hula-tropical-gold-structure-engine.vercel.app). The new version is a separate preview deployment.
 
 The local source remains in `website` on `design/tropical-scroll-preview`. The publishable branch lives in the isolated `.preview-release` worktree, with application files at the repository root to match Vercel's existing configuration. It is based on `origin/main`; it excludes the 2 GB archive and original photo collection from unpublished local history. Original files remain in the source workspace, and optimized photographs are included in the preview branch.
 
