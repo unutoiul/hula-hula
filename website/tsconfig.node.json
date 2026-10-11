@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "strict": true,
+    // Without this, `tsc -b` emits vite.config.js/.d.ts next to the source
+    // (composite projects need to emit *somewhere*). Vite's config-file
+    // search picks .js over .ts, so those emitted files silently shadow
+    // vite.config.ts for anything Vite loads directly, including `vite`
+    // and `vercel dev` — a build here can go stale relative to the real
+    // config and nothing complains. Emit somewhere that isn't the source
+    // dir instead.
+    "outDir": "./node_modules/.tsbuild/node"
+  },
+  "include": ["vite.config.ts"]
+}
