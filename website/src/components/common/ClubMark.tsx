@@ -4,9 +4,9 @@ import { Box, Link } from '@mui/material';
 // — much more margin baked in) — the same height reads noticeably bigger now,
 // so these are scaled back down from where they were tuned for the old file.
 const SIZES = {
-  compact: { xs: 46, md: 62 }, // header, scrolled/condensed
-  default: { xs: 60, md: 84 }, // header, parked at the top
-  large: { xs: 78, md: 104 }, // footer — plenty of room, reads as a closing signature
+  compact: { xs: 66, md: 84 },
+  default: { xs: 76, md: 96 },
+  large: { xs: 110, md: 138 },
 };
 
 // Vector, pre-cropped to the mark itself (no dead canvas to fight, unlike the

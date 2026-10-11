@@ -25,7 +25,7 @@ export function BookingPanel() {
         leaving the calendar and sidebar looking stranded apart from each other. */}
     <Box sx={{
       display: 'flex', flexDirection: { xs: 'column', md: 'row' }, width: '100%', maxWidth: 740, mx: 'auto',
-      border: '1px solid', borderColor: 'divider', bgcolor: 'background.default',
+      border: '1px solid', borderColor: 'divider', bgcolor: 'white', borderRadius: 3, overflow: 'hidden', boxShadow: '0 12px 32px rgba(23,60,44,.05)',
     }}>
       <Box sx={{ flex: { xs: '1 1 auto', md: '0 1 auto' }, minWidth: 0 }}>
         <RangeCalendar checkIn={checkIn} checkOut={checkOut} minDate={today} onSelectDay={selectDay} />
