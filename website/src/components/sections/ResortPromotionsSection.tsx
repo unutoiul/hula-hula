@@ -8,7 +8,7 @@ import { CONTACT } from '../../data/content';
 import { photoAssets as p } from '../../data/photos';
 import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
 import { ResortPhoto } from '../common/ResortPhoto';
-import { Reveal } from '../common/ScrollMotion';
+import { Reveal, ScrollTilt } from '../common/ScrollMotion';
 import { Sticker } from '../common/VacationDecor';
 
 const destinations = ['Ao Nang Beach', 'Krabi Town', 'Golf & footgolf'];
@@ -21,7 +21,7 @@ export function ResortPromotionsSection() {
     <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1.15fr .85fr' }, gap: { xs: 4, md: 8 }, alignItems: 'center', mb: { xs: 9, md: 12 } }}>
         <Reveal sx={{ position: 'relative' }}>
-          <Box className="photo-postcard" sx={{ border: '8px solid white', borderRadius: '24px 80px 24px 24px', overflow: 'hidden', transform: 'rotate(-2deg)', boxShadow: '0 18px 40px rgba(18,78,57,.1)' }}><ResortPhoto image={p.fruitCart.src} alt="Smiling Hula Hula host beside the resort’s bright green and yellow fruit cart" sizes="(max-width: 899px) 90vw, 48vw" sx={{ height: 'auto' }} /></Box>
+          <ScrollTilt amount={-3}><Box className="photo-postcard" sx={{ border: '8px solid white', borderRadius: '24px 80px 24px 24px', overflow: 'hidden', transform: 'rotate(-2deg)', boxShadow: '0 18px 40px rgba(18,78,57,.1)' }}><ResortPhoto image={p.fruitCart.src} alt="Smiling Hula Hula host beside the resort’s bright green and yellow fruit cart" sizes="(max-width: 899px) 90vw, 48vw" sx={{ height: 'auto' }} /></Box></ScrollTilt>
           <Box sx={{ position: 'absolute', right: -6, bottom: -32 }}><Sticker color="#f9f70c">Hello,<br />Hula!</Sticker></Box>
         </Reveal>
         <Reveal delay={0.12}>
@@ -31,7 +31,7 @@ export function ResortPromotionsSection() {
         </Reveal>
       </Box>
 
-      <Reveal sx={{ bgcolor: 'background.default', borderRadius: { xs: 4, md: '80px 28px 28px 28px' }, p: { xs: 3, md: 6 }, display: 'grid', gridTemplateColumns: { md: '1fr .7fr' }, gap: { xs: 4, md: 7 }, alignItems: 'center' }}>
+      <Reveal sx={{ position: 'relative', bgcolor: 'background.default', borderRadius: { xs: 4, md: '80px 28px 28px 28px' }, p: { xs: 3, md: 6 }, display: 'grid', gridTemplateColumns: { md: '1fr .7fr' }, gap: { xs: 4, md: 7 }, alignItems: 'center' }}>
         <Box>
           <Typography variant="h2" sx={{ fontSize: { xs: 40, md: 58 }, lineHeight: 1.07 }}>Hop on.<br /><Box component="span" color="primary.main">Head somewhere happy.</Box></Typography>
           <Typography sx={{ mt: 2.5, color: 'text.secondary', maxWidth: 480, lineHeight: 1.8 }}>Beach plans, a day in town, or a little time on the green. Ask our team about getting around with the Hula Hula shuttle.</Typography>
@@ -46,7 +46,7 @@ export function ResortPromotionsSection() {
           <Typography sx={{ mt: 1.5, fontSize: 12, lineHeight: 1.6, color: 'text.secondary', maxWidth: 440 }}>Confirm current routes, departure times, and charges with our team.</Typography>
         </Box>
         <Box component="figure" sx={{ m: 0 }}>
-          <Box className="photo-postcard" sx={{ border: '7px solid white', borderRadius: 3, overflow: 'hidden', transform: 'rotate(3deg)', boxShadow: '0 12px 34px rgba(18,78,57,.12)' }}><ResortPhoto image={p.shuttlePromotion.src} alt="Hula Hula shuttle truck promotion showing resort, Krabi Town, and Ao Nang Beach destinations" sizes="(max-width: 899px) 80vw, 30vw" sx={{ height: 'auto', objectFit: 'contain' }} /></Box>
+          <ScrollTilt amount={3.5}><Box className="photo-postcard" sx={{ border: '7px solid white', borderRadius: 3, overflow: 'hidden', transform: 'rotate(3deg)', boxShadow: '0 12px 34px rgba(18,78,57,.12)' }}><ResortPhoto image={p.shuttlePromotion.src} alt="Hula Hula shuttle truck promotion showing resort, Krabi Town, and Ao Nang Beach destinations" sizes="(max-width: 899px) 80vw, 30vw" sx={{ height: 'auto', objectFit: 'contain' }} /></Box></ScrollTilt>
           <Typography component="figcaption" sx={{ mt: 2, fontSize: 12, textAlign: 'center', color: 'text.secondary' }}>A familiar Hula Hula ride.</Typography>
         </Box>
       </Reveal>

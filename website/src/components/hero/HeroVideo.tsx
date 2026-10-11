@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import { useInView } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
 
@@ -9,17 +10,19 @@ const HERO_POSTER_SRC = '/video/hero-poster.webp';
 // The resort film from the original site, filling the hero frame on its own —
 // no captions or buttons over it, so the visuals get full attention. Muted,
 // looping and inline so browsers allow autoplay; it holds still while motion
-// is paused (the header toggle or the OS reduced-motion setting).
+// is paused (the header toggle or the OS reduced-motion setting), and while
+// it's scrolled out of view so it isn't decoding frames nobody sees.
 export function HeroVideo() {
   const { reduced } = useMotionPreference();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const inView = useInView(videoRef);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    if (reduced) video.pause();
+    if (reduced || !inView) video.pause();
     else video.play().catch(() => { /* Autoplay refused (e.g. data saver): the poster stays up. */ });
-  }, [reduced]);
+  }, [reduced, inView]);
 
   // disablePictureInPicture / disableRemotePlayback also stop browsers from
   // laying their own pop-out or cast buttons over it.

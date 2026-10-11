@@ -6,21 +6,17 @@ import { photoAssets as p } from '../../data/photos';
 import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
 import type { Meal } from '../../types';
 import { ResortPhoto } from '../common/ResortPhoto';
-import { Reveal } from '../common/ScrollMotion';
-import { PoolBubbles, Sticker, SunDoodle, WaveEdge } from '../common/VacationDecor';
+import { Reveal, ScrollTilt } from '../common/ScrollMotion';
+import { Sticker, SunDoodle } from '../common/VacationDecor';
 import { MealRow } from './MealRow';
+import { Pineapple } from '../common/SectionSeam';
 
 export function RestaurantSection({ meals }: { meals: Meal[] }) {
   const [active, setActive] = useState(0);
   return <Box id="dine" component="section" sx={{ bgcolor: '#e7f4cc', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
-    {/* The wave is filled with the breakfast section's pool blue above, so the
-        two sections flow into each other (no cream band between them). */}
-    <Box sx={{ position: 'relative' }}>
-      <WaveEdge flip fill="#d9f5fc" />
-      <PoolBubbles />
-    </Box>
     <Container maxWidth="xl" sx={{ py: { xs: 7, md: 9 } }}>
-      <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: 6 }}>
+      <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: 6, position: 'relative' }}>
+        <Pineapple sx={{ left: { xs: 'auto', md: 330 }, right: { xs: 6, md: 'auto' }, top: { xs: 2, md: 0 } }} />
         <Box><Typography variant="h2" sx={{ fontSize: { xs: 43, md: 64 }, lineHeight: 1.03, mt: 1.5 }}>A little yum.<br /><Box component="span" color="primary.main">A whole lot of mmm.</Box></Typography></Box>
         <Typography sx={{ maxWidth: 350, color: 'text.secondary', lineHeight: 1.8 }}>From floating breakfasts to pineapple rice and colourful cocktails. Come hungry. Leave happy.</Typography>
       </Stack></Reveal>
@@ -32,9 +28,9 @@ export function RestaurantSection({ meals }: { meals: Meal[] }) {
             from melting into the white border. The sticker stays inside the
             frame's corner so it's never cut off at the screen edge. */}
         <Reveal sx={{ position: 'relative', pb: { xs: 2, md: 3 } }}>
-          <Box sx={{ aspectRatio: { xs: '4 / 3', md: '5 / 4' }, borderRadius: { xs: '24px 64px 24px 24px', md: '28px 100px 28px 28px' }, overflow: 'hidden', bgcolor: 'white', border: '7px solid white', transform: 'rotate(-2deg)', boxShadow: '0 18px 44px rgba(23,60,44,.12)' }}>
+          <ScrollTilt amount={3}><Box sx={{ aspectRatio: { xs: '4 / 3', md: '5 / 4' }, borderRadius: { xs: '24px 64px 24px 24px', md: '28px 100px 28px 28px' }, overflow: 'hidden', bgcolor: 'white', border: '7px solid white', transform: 'rotate(-2deg)', boxShadow: '0 18px 44px rgba(23,60,44,.12)' }}>
             <ResortPhoto image={meals[active].image} alt={meals[active].name} sizes="(max-width: 900px) 92vw, 50vw" sx={{ objectPosition: active === 1 ? 'center bottom' : 'center' }} />
-          </Box>
+          </Box></ScrollTilt>
           <Sticker rotate={9} sx={{ position: 'absolute', right: { xs: 6, md: -8 }, bottom: { xs: -10, md: -6 }, width: { xs: 92, md: 106 }, height: { xs: 92, md: 106 }, fontSize: { xs: 18, md: 21 } }}>Made for<br />happy bellies.</Sticker>
         </Reveal>
         <Reveal delay={0.12}>{meals.map((meal, i) => <MealRow key={meal.name} meal={meal} active={i === active} first={i === 0} onClick={() => setActive(i)} />)}<Button href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" color="inherit" endIcon={<ArrowOutward />} sx={{ mt: 3 }}>Let’s talk food</Button></Reveal>
@@ -66,6 +62,5 @@ export function RestaurantSection({ meals }: { meals: Meal[] }) {
         </Reveal>
       </Box>
     </Container>
-    <WaveEdge />
   </Box>;
 }

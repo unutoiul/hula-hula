@@ -6,10 +6,9 @@ import { ClubMark } from '../common/ClubMark';
 export function Footer() {
   return <Box component="footer" sx={{
     py: { xs: 6, sm: 7 },
-    // A visible top border + a paper background, not just more copy on the
-    // same page background as the section above it — reads as its own
-    // closing block instead of the logo/address floating loose at the end.
-    borderTop: '1px solid', borderColor: 'divider', bgcolor: 'secondary.main',
+    // Its own sunny closing block; the SectionSeam above it (a sun rising
+    // behind the wave) is what separates it from the contact section.
+    bgcolor: 'secondary.main',
   }}>
     <Container maxWidth="xl">
       <Stack alignItems="center" spacing={2.5} textAlign="center">

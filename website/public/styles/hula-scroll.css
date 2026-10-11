@@ -16,7 +16,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 button:active, a.MuiButton-root:active { transform: translateY(1px); }
 
 .breakfast-scene { position: relative; isolation: isolate; background: #d9f5fc; }
-.breakfast-postcard { transform: rotate(-5deg); }
 
 @media (hover: hover) and (pointer: fine) {
   .photo-postcard { transition: transform 180ms cubic-bezier(.23,1,.32,1); }

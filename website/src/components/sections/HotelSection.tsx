@@ -6,7 +6,7 @@ import { SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { CarouselCard } from '../common/CarouselCard';
 import { DragCarousel } from '../common/DragCarousel';
 import { ResortPhoto } from '../common/ResortPhoto';
-import { Reveal } from '../common/ScrollMotion';
+import { Reveal, ScrollTilt } from '../common/ScrollMotion';
 import { Sticker, SunDoodle } from '../common/VacationDecor';
 
 export function HotelSection() {
@@ -14,8 +14,8 @@ export function HotelSection() {
     <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: { xs: 5, md: 9 }, alignItems: 'center', py: { xs: 5, md: 9 }, mb: { xs: 6, md: 8 } }}>
         <Reveal sx={{ position: 'relative', display: 'grid', gridTemplateColumns: '1.3fr .8fr', gap: 2, alignItems: 'center' }}>
-          <Box sx={{ height: { xs: 310, md: 420 }, borderRadius: '24px 24px 90px 24px', overflow: 'hidden' }}><ResortPhoto image={p.poolOverview.src} alt="Hula Hula's tropical swimming pool and swim-up bar" /></Box>
-          <Box sx={{ height: { xs: 260, md: 330 }, overflow: 'hidden', border: '6px solid white', borderRadius: 3, transform: 'rotate(5deg)' }}><ResortPhoto image={p.garden.src} alt="Palm-lined garden path between Hula Hula villas" sizes="25vw" /></Box>
+          <ScrollTilt amount={2}><Box sx={{ height: { xs: 310, md: 420 }, borderRadius: '24px 24px 90px 24px', overflow: 'hidden' }}><ResortPhoto image={p.poolOverview.src} alt="Hula Hula's tropical swimming pool and swim-up bar" /></Box></ScrollTilt>
+          <ScrollTilt amount={-4}><Box sx={{ height: { xs: 260, md: 330 }, overflow: 'hidden', border: '6px solid white', borderRadius: 3, transform: 'rotate(5deg)' }}><ResortPhoto image={p.garden.src} alt="Palm-lined garden path between Hula Hula villas" sizes="25vw" /></Box></ScrollTilt>
           <Sticker sx={{ position: 'absolute', bottom: -30, left: '45%' }}>Hello,<br />holiday!</Sticker>
         </Reveal>
         <Reveal delay={0.12}>

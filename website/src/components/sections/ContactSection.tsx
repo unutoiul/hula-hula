@@ -11,7 +11,7 @@ import { Reveal } from '../common/ScrollMotion';
 
 export function ContactSection() {
   return <Box id="contact" component="section" sx={{ py: SECTION_Y, scrollMarginTop: SECTION_SCROLL_OFFSET }}>
-    <Container maxWidth="xl" sx={{ textAlign: 'center' }}><Reveal>
+    <Container maxWidth="xl" sx={{ textAlign: 'center' }}><Reveal sx={{ position: 'relative' }}>
       <Typography variant="h2" sx={{ mt: 2, fontSize: { xs: 44, md: 68 }, lineHeight: 1.04 }}>Got a little question?<br /><Box component="span" color="primary.main">We’re all ears.</Box></Typography>
       <Typography sx={{ mt: 2, maxWidth: 460, mx: 'auto', fontSize: 16, lineHeight: 1.6, color: 'text.secondary' }}>Call, message, or find us on social — whichever's easiest.</Typography>
       <Button href={CONTACT.tel} variant="outlined" color="inherit" startIcon={<Call />} sx={{

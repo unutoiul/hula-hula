@@ -3,11 +3,11 @@ import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { photoAssets } from '../../data/photos';
 import { fonts } from '../../theme';
 import { BookingSearchBar } from '../booking/BookingSearchBar';
-import { ResortPhoto } from '../common/ResortPhoto';
-import { Sticker, SunDoodle } from '../common/VacationDecor';
+import { Polaroid, Sticker, SunDoodle } from '../common/VacationDecor';
 import { HeroHeadline } from './HeroHeadline';
 import { HeroMetaCompact } from './HeroMetaCompact';
 import { HeroVideo } from './HeroVideo';
+import { ScrollTilt } from '../common/ScrollMotion';
 
 export function Hero() {
   return <Box component="section" aria-label="Welcome to Hula Hula Resort" sx={{ pt: { xs: 15, md: 21 }, pb: { xs: 6, md: 9 }, overflow: 'hidden', position: 'relative' }}>
@@ -35,16 +35,17 @@ export function Hero() {
           </Box>
         </Box>
         <Box sx={{ position: 'relative', ml: { xs: 1, md: 2 }, mb: { xs: 4, md: 3 }, order: 2 }}>
-          <Box sx={{ border: '8px solid white', borderRadius: '140px 140px 30px 30px', height: { xs: 460, sm: 580, md: 680 }, overflow: 'hidden', transform: 'rotate(2deg)', boxShadow: '0 18px 55px rgba(23,60,44,.10)', bgcolor: 'primary.dark' }}>
-            <HeroVideo />
-          </Box>
+          <ScrollTilt amount={1.5}>
+            <Box sx={{ border: '8px solid white', borderRadius: '140px 140px 30px 30px', height: { xs: 460, sm: 580, md: 680 }, overflow: 'hidden', transform: 'rotate(2deg)', boxShadow: '0 18px 55px rgba(23,60,44,.10)', bgcolor: 'primary.dark' }}>
+              <HeroVideo />
+            </Box>
+          </ScrollTilt>
           <Sticker color="#e7f4cc" rotate={9} sx={{ position: 'absolute', top: { xs: 5, md: 22 }, right: { xs: -6, md: -18 }, width: { xs: 95, md: 122 }, height: { xs: 95, md: 122 }, fontSize: { xs: 20, md: 23 } }}>Less worry.<br />More Hula.</Sticker>
           <Box sx={{ position: 'absolute', bottom: -42, right: { sm: 28, md: 36 }, display: { xs: 'none', sm: 'block' } }}><SunDoodle size={92} color="#50830d" sx={{ transform: 'rotate(-10deg)' }} /></Box>
           <Box sx={{ position: 'absolute', width: { xs: 150, md: 202 }, height: { xs: 180, md: 232 }, left: { xs: -18, md: -46 }, bottom: { xs: -26, md: -33 } }}>
-          <Box sx={{ height: '100%', bgcolor: 'white', p: 1, pb: 4.5, transform: 'rotate(-9deg)', boxShadow: '0 12px 30px rgba(23,60,44,.16)', borderRadius: 1 }}>
-            <ResortPhoto image={photoAssets.breakfastPortrait.src} alt="Guest enjoying a floating breakfast in a Hula Hula private pool" sizes="210px" sx={{ objectPosition: 'center 60%' }} />
-            <Typography sx={{ textAlign: 'center', fontFamily: fonts.playful, fontSize: { xs: 15, md: 19 }, mt: .8 }}>Make a splash!</Typography>
-          </Box>
+          <ScrollTilt amount={-4} sx={{ height: '100%' }}>
+            <Polaroid image={photoAssets.breakfastPortrait.src} alt="Guest enjoying a floating breakfast in a Hula Hula private pool" caption="Make a splash!" rotate={-9} sizes="210px" objectPosition="center 60%" />
+          </ScrollTilt>
           </Box>
         </Box>
       </Box>
