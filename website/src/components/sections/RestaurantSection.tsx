@@ -6,7 +6,7 @@ import { photoAssets as p } from '../../data/photos';
 import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
 import type { Meal } from '../../types';
 import { ResortPhoto } from '../common/ResortPhoto';
-import { Sticker, WaveEdge } from '../common/VacationDecor';
+import { Sticker, SunDoodle, WaveEdge } from '../common/VacationDecor';
 import { MealRow } from './MealRow';
 
 export function RestaurantSection({ meals }: { meals: Meal[] }) {
@@ -25,8 +25,31 @@ export function RestaurantSection({ meals }: { meals: Meal[] }) {
         </Box>
         <Box>{meals.map((meal, i) => <MealRow key={meal.name} meal={meal} active={i === active} first={i === 0} onClick={() => setActive(i)} />)}<Button href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" color="inherit" endIcon={<ArrowOutward />} sx={{ mt: 3, px: 0 }}>Let’s talk food</Button></Box>
       </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1.4fr 1fr 1fr' }, gap: 2, mt: { xs: 6, md: 8 } }}>
-        {[{ image: p.restaurant.src, title: 'Garden-side dining', alt: 'Chang Restaurant dining tables and lounge sofas' }, { image: p.watermelon.src, title: 'Sip something sunny', alt: 'Pom Pom watermelon shake' }, { image: p.thaiFood.src, title: 'Share a taste of Thailand', alt: 'A spread of Thai dishes at Chang Restaurant' }].map((photo, i) => <Box component="figure" key={photo.image} sx={{ m: 0, position: 'relative', borderRadius: 3, overflow: 'hidden', height: { xs: 210, md: 245 }, display: i === 2 ? { xs: 'none', md: 'block' } : 'block' }}><ResortPhoto image={photo.image} alt={photo.alt} sizes="(max-width: 600px) 45vw, 30vw" /><Box component="figcaption" sx={{ position: 'absolute', left: 12, bottom: 12, bgcolor: 'background.default', borderRadius: 99, px: 1.7, py: .7, fontSize: 12, fontWeight: 700 }}>{photo.title}</Box></Box>)}
+      <Box aria-labelledby="dining-table-heading" sx={{ display: 'grid', gridTemplateColumns: { md: '1.25fr 1fr' }, gap: { xs: 4, md: 5 }, mt: { xs: 6, md: 8 }, pt: { xs: 4, md: 5 }, borderTop: '1px solid', borderColor: 'divider', alignItems: 'end' }}>
+        <Box component="figure" sx={{ m: 0 }}>
+          <Box sx={{ position: 'relative', aspectRatio: { xs: '4 / 3', md: '3 / 2' }, borderRadius: '8px 72px 8px 8px', overflow: 'hidden' }}>
+            <ResortPhoto image={p.restaurant.src} alt="Open-air tables and lounge seating at Chang Restaurant" sizes="(max-width: 900px) 90vw, 50vw" />
+          </Box>
+          <Box component="figcaption" sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', columnGap: 2, rowGap: .5, pt: 2 }}>
+            <Typography sx={{ fontWeight: 700 }}>Chang Restaurant</Typography>
+            <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Your table in the tropics.</Typography>
+          </Box>
+        </Box>
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+            <Typography id="dining-table-heading" variant="h3" sx={{ fontSize: { xs: 32, md: 42 }, lineHeight: 1.08, color: 'primary.main' }}>Good food.<br />Even better company.</Typography>
+            <SunDoodle size={64} color="#50830d" sx={{ ml: 'auto', width: { xs: 48, md: 64 }, height: { xs: 48, md: 64 }, transform: 'rotate(12deg)' }} />
+          </Box>
+          <Box component="figure" sx={{ m: 0 }}>
+            <Box sx={{ aspectRatio: '16 / 9', borderRadius: '8px 8px 48px 8px', overflow: 'hidden' }}>
+              <ResortPhoto image={p.thaiFood.src} alt="Thai sharing dishes served beside the tropical garden" sizes="(max-width: 900px) 90vw, 40vw" sx={{ objectPosition: 'center bottom' }} />
+            </Box>
+            <Box component="figcaption" sx={{ pt: 2 }}>
+              <Typography sx={{ fontWeight: 700 }}>A little of this. A taste of that.</Typography>
+              <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: .5, lineHeight: 1.6 }}>Pull up a chair, pass the plates, and share a taste of Thailand.</Typography>
+            </Box>
+          </Box>
+        </Box>
       </Box>
     </Container>
     <WaveEdge />

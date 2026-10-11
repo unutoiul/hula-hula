@@ -2,6 +2,12 @@
 
 Verified on 11 October 2026 using the session's supported Opera browser controls.
 
+## Current dining revision
+
+Replaced the three equal-height dining thumbnails with an asymmetric, static layout. Chang Restaurant has a larger photograph; the Thai sharing spread is bottom-aligned to keep the plates visible. The studio watermelon photo is removed from this feature. Captions sit below the images, with a playful heading and fixed sun illustration. No animation, scroll attributes, or new dependencies were added.
+
+Verified desktop at 1844 × 898 and phone at 390 × 844: both photographs load, both are present on phones, and there is no horizontal overflow. Selecting “A taste of Thailand” still updates the main dining photograph and pressed state. TypeScript checks pass. Screenshots: `design-preview/dining-redesign-desktop.png` and `design-preview/dining-redesign-mobile.png`.
+
 ## Current homepage: reception and lounge
 
 At the user's request, the default hero uses `hula-hula-reception-counter-and-lounge-seating.jpg`. Three candidate lobby/arrival photographs were inspected before selection. The sunlit reception and lounge photograph was chosen for its welcome desk, tropical greenery, and seating.
