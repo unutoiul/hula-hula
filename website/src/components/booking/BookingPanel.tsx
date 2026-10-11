@@ -1,6 +1,7 @@
-import { Box, Button, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Stack, Typography, useTheme } from '@mui/material';
 import { useBookingSearch } from '../../context/BookingSearchContext';
 import { fonts } from '../../theme';
+import { CheckAvailabilityButton } from './CheckAvailabilityButton';
 import { GuestStepper } from './GuestStepper';
 import { RangeCalendar } from './RangeCalendar';
 import { SearchResults } from './SearchResults';
@@ -10,13 +11,14 @@ const MS_PER_NIGHT = 1000 * 60 * 60 * 24;
 
 // The Arrival section's full booking widget: the same two-month calendar and
 // guest count as the hero search bar — literally the same state, via
-// BookingSearchContext, so a search started from either place shows up here.
-// "Check availability" runs that shared search and results render directly
-// below, in SearchResults.
+// BookingSearchContext, so dates picked in either place show up in both.
+// "Check availability" currently hands off to SiteMinder (see
+// CheckAvailabilityButton); SearchResults below renders the in-page search's
+// results once that is switched back on.
 export function BookingPanel() {
   const theme = useTheme();
   const today = new Date();
-  const { checkIn, checkOut, selectDay, adults, setAdults, children, setChildren, status, search } = useBookingSearch();
+  const { checkIn, checkOut, selectDay, adults, setAdults, children, setChildren } = useBookingSearch();
   const nights = Math.round((checkOut.getTime() - checkIn.getTime()) / MS_PER_NIGHT);
 
   return <>
@@ -25,7 +27,7 @@ export function BookingPanel() {
         leaving the calendar and sidebar looking stranded apart from each other. */}
     <Box sx={{
       display: 'flex', flexDirection: { xs: 'column', md: 'row' }, width: '100%', maxWidth: 740, mx: 'auto',
-      border: '1px solid', borderColor: 'divider', bgcolor: 'white', borderRadius: 3, overflow: 'hidden', boxShadow: '0 12px 32px rgba(23,60,44,.05)',
+      border: '1px solid', borderColor: 'divider', bgcolor: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 12px 32px rgba(23,60,44,.05)',
     }}>
       <Box sx={{ flex: { xs: '1 1 auto', md: '0 1 auto' }, minWidth: 0 }}>
         <RangeCalendar checkIn={checkIn} checkOut={checkOut} minDate={today} onSelectDay={selectDay} />
@@ -49,15 +51,12 @@ export function BookingPanel() {
         </Stack>
         <Typography variant="overline" sx={{ display: 'block', color: 'secondary.dark', mt: 1 }}>{nights} night{nights !== 1 ? 's' : ''}</Typography>
 
-        <Stack spacing={1.5} sx={{ mt: 3, pt: 2.5, borderTop: `1px solid ${theme.palette.divider}` }}>
+        <Stack spacing={2} sx={{ mt: 3, pt: 2.5, borderTop: `1px solid ${theme.palette.divider}` }}>
           <GuestStepper label="Adults" value={adults} min={1} onChange={setAdults} />
           <GuestStepper label="Children" value={children} min={0} onChange={setChildren} />
         </Stack>
 
-        <Button onClick={() => search()} disabled={status === 'loading'} fullWidth variant="outlined" color="inherit" sx={{
-          mt: 3, py: 1.2, borderColor: 'text.primary', color: 'text.primary',
-          '&:hover': { borderColor: 'info.main', bgcolor: 'info.main', color: 'info.contrastText' },
-        }}>{status === 'loading' ? 'Checking…' : 'Check availability'}</Button>
+        <Box sx={{ mt: 3 }}><CheckAvailabilityButton /></Box>
       </Box>
     </Box>
 

@@ -37,11 +37,14 @@ interface MonthGridProps {
   onSelectDay: (day: Date) => void;
 }
 
+// On phones a single month spreads across the full width (columns share it,
+// days grow up to 40px); from sm up, two fixed-size months sit side by side.
 function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: MonthGridProps) {
-  return <Box>
-    <Typography sx={{ fontFamily: fonts.playful, fontSize: 13, fontWeight: 400, textAlign: 'center', mb: 1 }}>{monthFmt.format(new Date(year, month, 1))}</Typography>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px' }}>
-      {WEEKDAY_LABELS.map((w) => <Typography key={w} sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 10, textAlign: 'center', color: 'text.secondary', pb: .25 }}>{w}</Typography>)}
+  return <Box sx={{ flex: { xs: 1, sm: 'none' }, minWidth: 0 }}>
+    {/* 40px tall to line up with the absolutely positioned month arrows. */}
+    <Typography sx={{ fontFamily: fonts.playful, fontSize: { xs: 16, sm: 14 }, fontWeight: 400, textAlign: 'center', lineHeight: '40px', mb: .5 }}>{monthFmt.format(new Date(year, month, 1))}</Typography>
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(7, minmax(0, 1fr))', sm: 'repeat(7, 30px)' }, gap: '2px' }}>
+      {WEEKDAY_LABELS.map((w) => <Typography key={w} sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: { xs: 12, sm: 10.5 }, textAlign: 'center', color: 'text.secondary', pb: .5 }}>{w}</Typography>)}
       {getMonthCells(year, month).map(({ date, current }) => {
         const disabled = !current || date < minDate;
         const isCheckIn = isSameDay(date, checkIn);
@@ -51,8 +54,8 @@ function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: Mon
           aria-label={date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           aria-current={isCheckIn || isCheckOut ? 'date' : undefined}
           onClick={() => onSelectDay(date)} sx={(theme) => ({
-            width: { xs: 34, sm: 28 }, height: { xs: 34, sm: 28 }, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: { xs: 13, sm: 11.5 }, fontFamily: fonts.playful, fontWeight: 400, border: 'none', borderRadius: '50%', cursor: disabled ? 'default' : 'pointer',
+            width: '100%', maxWidth: 40, aspectRatio: '1 / 1', p: 0, mx: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: { xs: 14, sm: 12 }, fontFamily: fonts.playful, fontWeight: 400, border: 'none', borderRadius: '50%', cursor: disabled ? 'default' : 'pointer',
             color: isCheckIn || isCheckOut ? 'primary.contrastText' : disabled ? 'text.disabled' : 'text.primary',
             bgcolor: isCheckIn || isCheckOut ? 'primary.main' : inRange ? alpha(theme.palette.primary.main, .12) : 'transparent',
             transition: 'background-color .15s ease',
@@ -64,6 +67,8 @@ function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: Mon
   </Box>;
 }
 
+const navArrowSx = { position: 'absolute', top: 16, zIndex: 1, width: 40, height: 40, border: '1px solid', borderColor: 'divider', '&.Mui-disabled': { opacity: .4 } } as const;
+
 interface RangeCalendarProps {
   checkIn: Date;
   checkOut: Date;
@@ -74,21 +79,19 @@ interface RangeCalendarProps {
 // Two months side by side, Airbnb-style: pick a check-in, then a check-out —
 // the range between fills with a soft tint, the endpoints solid. A single
 // pair of arrows (not per-month) pages both months forward together; back is
-// disabled once you're viewing the earliest selectable month.
+// disabled once you're viewing the earliest selectable month. The arrows sit
+// on the month-name row, so on phones the header reads "‹ Oct 2026 ›".
 export function RangeCalendar({ checkIn, checkOut, minDate, onSelectDay }: RangeCalendarProps) {
   const [monthOffset, setMonthOffset] = useState(0);
   const anchor = new Date(minDate.getFullYear(), minDate.getMonth() + monthOffset, 1);
   const next = new Date(minDate.getFullYear(), minDate.getMonth() + monthOffset + 1, 1);
 
-  // The two-month grid has a fixed intrinsic width — without a cap, it stretches to fill
-  // whatever (often much wider) container it's in, leaving the nav arrows spread apart and
-  // the grid pinned to the left with dead space on the right. Capping + centering fixes both.
-  return <Box sx={{ p: 2, maxWidth: 460, mx: 'auto' }}>
-    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: .5 }}>
-      <IconButton size="small" aria-label="Previous month" onClick={() => setMonthOffset((o) => Math.max(0, o - 1))} disabled={monthOffset === 0} sx={{ visibility: monthOffset === 0 ? 'hidden' : 'visible' }}><West sx={{ fontSize: 14 }} /></IconButton>
-      <IconButton size="small" aria-label="Next month" onClick={() => setMonthOffset((o) => o + 1)}><East sx={{ fontSize: 14 }} /></IconButton>
-    </Stack>
-    <Stack direction="row" spacing={2.5}>
+  // Full width on phones; from sm up the two fixed-size months take their natural
+  // width and center, rather than stretching apart inside a wider container.
+  return <Box sx={{ position: 'relative', p: 2, width: { xs: '100%', sm: 'fit-content' }, mx: 'auto' }}>
+    <IconButton aria-label="Previous month" onClick={() => setMonthOffset((o) => Math.max(0, o - 1))} disabled={monthOffset === 0} sx={{ ...navArrowSx, left: 16 }}><West sx={{ fontSize: 16 }} /></IconButton>
+    <IconButton aria-label="Next month" onClick={() => setMonthOffset((o) => o + 1)} sx={{ ...navArrowSx, right: 16 }}><East sx={{ fontSize: 16 }} /></IconButton>
+    <Stack direction="row" spacing={3}>
       <MonthGrid year={anchor.getFullYear()} month={anchor.getMonth()} checkIn={checkIn} checkOut={checkOut} minDate={minDate} onSelectDay={onSelectDay} />
       <Box sx={{ display: { xs: 'none', sm: 'block' } }}><MonthGrid year={next.getFullYear()} month={next.getMonth()} checkIn={checkIn} checkOut={checkOut} minDate={minDate} onSelectDay={onSelectDay} /></Box>
     </Stack>
