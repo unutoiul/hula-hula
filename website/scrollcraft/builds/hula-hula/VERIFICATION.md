@@ -38,6 +38,12 @@ Existing production: https://hulahula.vercel.app, deployment `dpl_HXH5J6ZWuoTGDt
 
 The project uses Vite and a root directory of `.`. The preview worktree matches that structure. No production project settings are changed.
 
+The branch was pushed successfully. Vercel preview commit `74e7ea0` is Ready at [the branch preview](https://hulahula-git-preview-hula-hula-tropical-gold-structure-engine.vercel.app), deployment `dpl_4NvWyhgFvwKoAF9xjsGsyQadiFHS`. The website and booking API TypeScript checks also pass in the release worktree. All three existing serverless endpoints were built.
+
+The first live check found that an unanchored `scrollcraft` ignore pattern excluded `public/vendor/scrollcraft`. Root-only exclusion patterns fixed the packaging. After redeployment, the live scene reports a sticky stage, progress 0.2158, and postcard translation 18.8/37.6 px. Both breakfast photographs load successfully. The existing production URL was opened and still displays its original design.
+
+Live screenshots: `design-preview/deployed-desktop.png` and `design-preview/deployed-breakfast.png`. No live booking transaction was submitted.
+
 ## Tooling and attribution
 
 - Scroll Craft skill and unmodified engine: https://github.com/nateherkai/scroll-craft. MIT license is included in `public/vendor/scrollcraft/LICENSE`.
