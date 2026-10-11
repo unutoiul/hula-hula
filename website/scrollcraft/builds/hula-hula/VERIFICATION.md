@@ -8,6 +8,8 @@ Replaced the three equal-height dining thumbnails with an asymmetric, static lay
 
 Verified desktop at 1844 × 898 and phone at 390 × 844: both photographs load, both are present on phones, and there is no horizontal overflow. Selecting “A taste of Thailand” still updates the main dining photograph and pressed state. TypeScript checks pass. Screenshots: `design-preview/dining-redesign-desktop.png` and `design-preview/dining-redesign-mobile.png`.
 
+Preview commit `db9ee0a` is Ready on Vercel, deployment `dpl_DErtjDZ6QonEitrXtGXrxGm7DEYS`. Live inspection confirms both dining photos load, the new heading is present, and there is no horizontal overflow. The reception homepage photo also loads from its 960-pixel WebP, completing the previous homepage deployment check. Live screenshot: `design-preview/dining-redesign-live.png`.
+
 ## Current homepage: reception and lounge
 
 At the user's request, the default hero uses `hula-hula-reception-counter-and-lounge-seating.jpg`. Three candidate lobby/arrival photographs were inspected before selection. The sunlit reception and lounge photograph was chosen for its welcome desk, tropical greenery, and seating.
