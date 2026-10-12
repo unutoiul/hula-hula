@@ -34,8 +34,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store');
 
   const body: Record<string, unknown> = typeof req.body === 'string' ? safeParse(req.body) : (req.body ?? {});
-  if (body.company || (typeof body.startedAt === 'number' && Date.now() - body.startedAt < 2500)) {
+  if (body.company) {
+    console.info('Contact submission ignored: honeypot filled');
     return res.status(200).json({ ok: true });
+  }
+  // Measure elapsed time in the browser; comparing its wall clock with the
+  // server clock can silently discard legitimate guests whose clock is ahead.
+  if (typeof body.elapsedMs === 'number' && Number.isFinite(body.elapsedMs) && body.elapsedMs < 2500) {
+    console.info('Contact submission rejected: submitted too quickly');
+    return res.status(429).json({ error: 'Please wait a few seconds and try again.' });
   }
 
   const field = (key: keyof typeof LIMITS) => (typeof body[key] === 'string' ? (body[key] as string).trim().slice(0, LIMITS[key]) : '');
@@ -52,6 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
+    console.error('Contact email is not configured: RESEND_API_KEY missing');
     return res.status(500).json({ error: 'Email is not configured on the server' });
   }
   const to = process.env.CONTACT_TO || 'contact@bluetrendy.com';
@@ -87,7 +95,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error('Resend refused the enquiry', upstream.status, await upstream.text());
       return res.status(502).json({ error: 'The email service refused the message' });
     }
-  } catch {
+    console.info('Resend accepted the contact enquiry');
+  } catch (error) {
+    console.error('Could not reach Resend for the contact enquiry', error);
     return res.status(502).json({ error: 'Could not reach the email service' });
   }
 
@@ -109,6 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }),
     });
     if (!confirmation.ok) console.error('Resend refused the guest confirmation', confirmation.status, await confirmation.text());
+    else console.info('Resend accepted the guest confirmation');
   } catch (error) {
     console.error('Could not send the guest confirmation', error);
   }

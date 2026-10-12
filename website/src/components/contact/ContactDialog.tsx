@@ -61,7 +61,7 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
     setMessage(request.message ?? '');
     setStatus('idle');
     setTriedSubmit(false);
-    startedAt.current = Date.now();
+    startedAt.current = performance.now();
   }, [open, request]);
 
   const subjects = SUBJECTS.includes(request.topic) ? SUBJECTS : [request.topic, ...SUBJECTS];
@@ -84,9 +84,10 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone: phoneNumber, message, topic, page: request.page, stay: includeStay ? stay : undefined, company, startedAt: startedAt.current }),
+        body: JSON.stringify({ name, email, phone: phoneNumber, message, topic, page: request.page, stay: includeStay ? stay : undefined, company, elapsedMs: performance.now() - startedAt.current }),
       });
-      setStatus(response.ok ? 'sent' : 'error');
+      const result: { ok?: boolean } = await response.json();
+      setStatus(response.ok && result.ok === true ? 'sent' : 'error');
     } catch {
       setStatus('error');
     }
