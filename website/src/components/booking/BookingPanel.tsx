@@ -42,11 +42,11 @@ export function BookingPanel() {
         <Stack direction="row" justifyContent="space-between" sx={{ mt: 1 }}>
           <Box>
             <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>{panelDateFmt.format(checkIn)}</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>Check-in</Typography>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Check-in</Typography>
           </Box>
           <Box sx={{ textAlign: 'right' }}>
             <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>{panelDateFmt.format(checkOut)}</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>Check-out</Typography>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Check-out</Typography>
           </Box>
         </Stack>
         <Typography variant="overline" sx={{ display: 'block', color: 'secondary.dark', mt: 1 }}>{nights} night{nights !== 1 ? 's' : ''}</Typography>

@@ -14,22 +14,22 @@ export function Hero() {
     <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1.12fr' }, alignItems: 'center', gap: { xs: 5, md: 6 }, minHeight: { md: 700 } }}>
         <Box sx={{ position: 'relative', zIndex: 2, display: { xs: 'contents', md: 'block' } }}>
-          <Box sx={{ order: 1 }}>
-          <Stack direction="row" alignItems="center" spacing={1.3} sx={{ mb: 2.5 }}>
+          <Box sx={{ order: 1, textAlign: { xs: 'center', md: 'left' } }}>
+          <Stack direction="row" alignItems="center" justifyContent={{ xs: 'center', md: 'flex-start' }} spacing={1.3} sx={{ mb: 2.5 }}>
             <Box sx={{ width: 28, height: 3, bgcolor: 'info.main', borderRadius: 2 }} />
             <Typography variant="overline" color="success.main">Your happy place in Ao Nang</Typography>
           </Stack>
           <HeroHeadline />
-          <Typography sx={{ fontSize: { xs: 16, md: 18 }, lineHeight: 1.75, color: 'text.secondary', maxWidth: 390, mt: 3 }}>
+          <Typography sx={{ fontSize: { xs: 16, md: 18 }, lineHeight: 1.75, color: 'text.secondary', maxWidth: 390, mx: { xs: 'auto', md: 0 }, mt: 3 }}>
             Pool dips. Pineapple sips. Good times with your favourite people. This is Hula Hula, Krabi.
           </Typography>
-          <Stack direction="row" spacing={1.8} flexWrap="wrap" useFlexGap sx={{ mt: 3.5 }}>
+          <Stack direction="row" justifyContent={{ xs: 'center', md: 'flex-start' }} spacing={1.8} flexWrap="wrap" useFlexGap sx={{ mt: 3.5 }}>
             <Button href="#hotel" variant="contained" endIcon={<ArrowOutward />}>Find your happy place</Button>
             <Button href="#floating-breakfast" color="inherit">Make breakfast float</Button>
           </Stack>
           </Box>
           <Box sx={{ mt: { xs: 0, md: 4 }, maxWidth: 530, order: 3 }}>
-            <Typography variant="overline" sx={{ display: 'block', mb: 1 }}>Good times start with a date</Typography>
+            <Typography variant="overline" sx={{ display: 'block', mb: 1, textAlign: { xs: 'center', md: 'left' } }}>Good times start with a date</Typography>
             <BookingSearchBar />
             <Box sx={{ mt: 2 }}><HeroMetaCompact /></Box>
           </Box>

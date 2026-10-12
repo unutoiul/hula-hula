@@ -32,7 +32,7 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
         <Box sx={{ gridColumn: { xs: 1, lg: 2 } }}><ClubMark size={scrolled ? 'small' : 'header'} /></Box>
         <Stack direction="row" alignItems="center" justifyContent="flex-end" gap={{ xs: 1.5, lg: 3 }} sx={{ gridColumn: { xs: 2, lg: 3 } }}>
           <Stack component="nav" aria-label="More navigation" direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>{navItems.filter(([, href]) => href === '#events' || href === '#contact').map(([label, href]) => <NavLink key={href} href={href} active={active === href}>{label}</NavLink>)}</Stack>
-          <Button href="#arrival" variant="contained" color="secondary" endIcon={<ArrowOutward sx={{ fontSize: 17 }} />}>Book happy</Button>
+          <Button href="#arrival" variant="contained" color="secondary" endIcon={<ArrowOutward sx={{ fontSize: 17 }} />} sx={{ whiteSpace: 'nowrap', flexShrink: 0, '@media (max-width: 359px)': { px: 2, '& .MuiButton-endIcon': { display: 'none' } } }}>Book happy</Button>
           <MotionToggleButton />
           <IconButton aria-label="Open menu" onClick={() => setOpen(true)} sx={{ display: { xs: 'inline-flex', lg: 'none' }, width: 48, height: 48, color: 'text.primary', border: '1px solid', borderColor: 'divider' }}><MenuRounded /></IconButton>
         </Stack>

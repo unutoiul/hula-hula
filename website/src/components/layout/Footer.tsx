@@ -12,7 +12,9 @@ export function Footer() {
   }}>
     <Container maxWidth="xl">
       <Stack alignItems="center" spacing={2.5} textAlign="center">
-        <Stack direction="row" alignItems="center" spacing={2}><SunDoodle size={60} /><Typography variant="h2" sx={{ fontSize: { xs: 31, md: 48 }, lineHeight: 1.1 }}>See you on the sunny side.</Typography></Stack>
+        {/* On phones the sun rising over the wave just above stands in for this
+            one, so the heading sits truly centred on its own. */}
+        <Stack direction="row" alignItems="center" justifyContent="center" spacing={2}><SunDoodle size={60} sx={{ display: { xs: 'none', sm: 'block' } }} /><Typography variant="h2" sx={{ fontSize: { xs: 31, md: 48 }, lineHeight: 1.1, maxWidth: { xs: 280, sm: 'none' } }}>See you on the sunny side.</Typography></Stack>
         <ClubMark size="large" />
         <Typography variant="overline" sx={{ maxWidth: 380, lineHeight: 1.6 }}>{CONTACT.address}</Typography>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: .75, sm: 2 }} alignItems="center" divider={<Box sx={{ display: { xs: 'none', sm: 'block' }, width: 3, height: 3, borderRadius: '50%', bgcolor: 'text.secondary' }} />}>

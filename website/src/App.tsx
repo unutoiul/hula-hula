@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import { eventFacts, experiences, meals, navItems } from './data/content';
 import { BookingSearchProvider } from './context/BookingSearchContext';
+import { ContactFormProvider } from './context/ContactFormContext';
 import { CookieConsent } from './components/layout/CookieConsent';
 import { Footer } from './components/layout/Footer';
 import { Header } from './components/layout/Header';
@@ -23,7 +24,7 @@ function ResortPage() {
   return <Box component="main" id="top" sx={{ overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' } }}>
     <CookieConsent />
     <Header navItems={navItems} />
-    <BookingSearchProvider>
+    <BookingSearchProvider><ContactFormProvider>
       <Hero />
       <HotelSection />
       {/* Every change of section colour gets the same wave; a few of them carry
@@ -41,11 +42,11 @@ function ResortPage() {
       <EventsSection eventFacts={eventFacts} />
       <SectionSeam from={SEAM.cream} to={SEAM.pool} mirror><PaperBoat left="82%" /></SectionSeam>
       <ArrivalSection />
-    </BookingSearchProvider>
-    <SectionSeam from={SEAM.pool} to={SEAM.cream} />
-    <ContactSection />
-    <SectionSeam from={SEAM.cream} to={SEAM.sun} mirror behind={<RisingSun left="78%" />} />
-    <Footer />
+      <SectionSeam from={SEAM.pool} to={SEAM.cream} />
+      <ContactSection />
+      <SectionSeam from={SEAM.cream} to={SEAM.sun} mirror behind={<RisingSun left="78%" />} />
+      <Footer />
+    </ContactFormProvider></BookingSearchProvider>
   </Box>;
 }
 

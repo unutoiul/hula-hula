@@ -7,10 +7,10 @@ import { ResortPhoto } from './ResortPhoto';
 
 interface CarouselCardProps extends CarouselCardData {
   active: boolean; onClick: () => void; width?: number | string;
-  ctaLabel: string; ctaHref: string; ctaIcon?: ReactNode; ctaIconPosition?: 'start' | 'end';
+  ctaLabel: string; ctaHref?: string; onCta?: () => void; ctaIcon?: ReactNode; ctaIconPosition?: 'start' | 'end';
 }
 
-export function CarouselCard({ images, kicker, title, detail, ctaLabel, ctaHref, ctaIcon, ctaIconPosition = 'end' }: CarouselCardProps) {
+export function CarouselCard({ images, kicker, title, detail, ctaLabel, ctaHref, onCta, ctaIcon, ctaIconPosition = 'end' }: CarouselCardProps) {
   const [index, setIndex] = useState(0);
   return <Box component="article" sx={{ width: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'white', color: 'text.primary', borderRadius: '22px', overflow: 'hidden', border: '1px solid rgba(23,60,44,.08)' }}>
     <Box sx={{ position: 'relative', aspectRatio: '4 / 3', overflow: 'hidden' }}>
@@ -21,11 +21,11 @@ export function CarouselCard({ images, kicker, title, detail, ctaLabel, ctaHref,
         <Box sx={{ position: 'absolute', bottom: 12, right: 12, borderRadius: 99, bgcolor: '#fbfdf4', fontSize: 11, fontWeight: 700, py: .4, px: 1.2 }} aria-live="polite">{index + 1} / {images.length}</Box>
       </>}
     </Box>
-    <Box sx={{ p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', flex: 1 }}>
-      <Typography variant="overline" sx={{ color: 'success.main', fontSize: 10 }}>{kicker}</Typography>
+    <Box sx={{ p: { xs: 2.5, md: 3 }, display: 'flex', flexDirection: 'column', flex: 1, textAlign: { xs: 'center', sm: 'left' } }}>
+      <Typography variant="overline" sx={{ color: 'success.main', fontSize: 11 }}>{kicker}</Typography>
       <Typography variant="h3" sx={{ fontSize: { xs: 26, md: 29 }, lineHeight: 1.1, mt: 1, mb: 1.5 }}>{title}</Typography>
       <Typography sx={{ fontSize: 14, lineHeight: 1.7, color: 'text.secondary', mb: 3 }}>{detail}</Typography>
-      <Stack direction="row" sx={{ mt: 'auto' }}><Button href={ctaHref} variant="outlined" size="small" startIcon={ctaIconPosition === 'start' ? ctaIcon : undefined} endIcon={ctaIconPosition === 'end' ? ctaIcon : undefined}>{ctaLabel}</Button></Stack>
+      <Stack direction="row" justifyContent={{ xs: 'center', sm: 'flex-start' }} sx={{ mt: 'auto' }}><Button {...(onCta ? { onClick: onCta } : { href: ctaHref })} variant="outlined" size="small" startIcon={ctaIconPosition === 'start' ? ctaIcon : undefined} endIcon={ctaIconPosition === 'end' ? ctaIcon : undefined}>{ctaLabel}</Button></Stack>
     </Box>
   </Box>;
 }

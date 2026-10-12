@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "email:publish": "node --env-file-if-exists=.env.local scripts/publish-contact-email.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -32,7 +32,18 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
   const activeRef = useRef(0); // the card a glide is heading to
   const [edges, setEdges] = useState({ start: true, end: false });
 
-  const cardStarts = () => Array.from(viewport.current?.children ?? []).map((card) => (card as HTMLElement).offsetLeft);
+  // Where the row's scroll position rests for each card: its left edge, or —
+  // on phones, where cards snap to the centre — the point that centres it.
+  const cardStarts = () => {
+    const row = viewport.current;
+    if (!row) return [];
+    const max = row.scrollWidth - row.clientWidth;
+    return Array.from(row.children).map((child) => {
+      const card = child as HTMLElement;
+      const left = getComputedStyle(card).scrollSnapAlign.includes('center') ? card.offsetLeft + card.offsetWidth / 2 - row.clientWidth / 2 : card.offsetLeft;
+      return Math.max(0, Math.min(max, left));
+    });
+  };
   const nearestCard = (left: number) => cardStarts().reduce((best, start, i, all) => Math.abs(start - left) < Math.abs(all[best] - left) ? i : best, 0);
 
   const update = () => {
@@ -151,7 +162,7 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
   const scrolls = !(edges.start && edges.end);
 
   return <>
-    <Reveal><Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'flex-end' }} gap={3} sx={{ mb: 5 }}>
+    <Reveal><Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'center', sm: 'flex-end' }} gap={3} sx={{ mb: 5, textAlign: { xs: 'center', sm: 'left' } }}>
       <Box>{onDark && <MetaLabel>{sectionKicker}</MetaLabel>}<Typography variant="h2" sx={{ fontSize: { xs: 40, md: 62 }, lineHeight: 1.04, mt: 1.5 }}>{heading}</Typography></Box>
       <Stack direction="row" spacing={1.2}>
         <CarouselArrow direction="prev" onDark={onDark} disabled={edges.start} label={`Previous ${itemLabel}`} onClick={() => scrollToCard(active - 1)} />
@@ -168,7 +179,9 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
       onClickCapture={(event) => { if (performance.now() - lastDragEnd.current < 250) { event.preventDefault(); event.stopPropagation(); } }}
       style={scrolls ? { maskImage: mask, WebkitMaskImage: mask } : undefined}
       sx={{
-        position: 'relative', display: 'flex', alignItems: 'stretch', gap: 3, pb: 1,
+        // On phones the current card sits centred with a peek either side; the
+        // side padding lets the first and last cards centre too.
+        position: 'relative', display: 'flex', alignItems: 'stretch', gap: { xs: 2, sm: 3 }, pb: 1, px: { xs: '8%', sm: 0 },
         // Sideways only: overflowY must be hidden, or the cards waiting to
         // rise in make the row a few px vertically scrollable and it swallows
         // the page's vertical wheel/trackpad scrolling.
@@ -177,13 +190,13 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
         '@media (pointer: fine)': { cursor: 'grab', userSelect: 'none' },
         '&:focus-visible': { outlineOffset: 6 },
       }}>
-      {items.map((item, i) => <Box key={item.id} sx={{ flex: { xs: '0 0 88%', sm: '0 0 calc(50% - 12px)', lg: '0 0 calc(33.333% - 16px)' }, scrollSnapAlign: 'start', minWidth: 0, display: 'flex' }}>
+      {items.map((item, i) => <Box key={item.id} sx={{ flex: { xs: '0 0 84%', sm: '0 0 calc(50% - 12px)', lg: '0 0 calc(33.333% - 16px)' }, scrollSnapAlign: { xs: 'center', sm: 'start' }, minWidth: 0, display: 'flex' }}>
         <Reveal delay={Math.min(i, 3) * 0.1} sx={{ display: 'flex', width: '100%' }}>{renderCard(item, i === active, () => scrollToCard(i))}</Reveal>
       </Box>)}
     </MotionBox>
-    <Stack direction="row" alignItems="center" gap={2} sx={{ mt: 3 }}>
+    <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" gap={{ xs: 1.5, sm: 2 }} sx={{ mt: 3, textAlign: { xs: 'center', sm: 'left' } }}>
       <Typography sx={{ fontSize: 12, opacity: .7 }}>Drag, swipe, or use the arrows to explore {items.length} {itemLabel === 'room' ? 'places to stay' : 'ways to enjoy your holiday'}.</Typography>
-      {scrolls && <Box aria-hidden sx={{ flex: '0 0 auto', width: { xs: 64, sm: 120 }, height: 4, ml: 'auto', borderRadius: 2, overflow: 'hidden', bgcolor: onDark ? 'rgba(255,255,255,.22)' : 'rgba(23,60,44,.12)' }}>
+      {scrolls && <Box aria-hidden sx={{ flex: '0 0 auto', width: { xs: 96, sm: 120 }, height: 4, ml: { xs: 0, sm: 'auto' }, borderRadius: 2, overflow: 'hidden', bgcolor: onDark ? 'rgba(255,255,255,.22)' : 'rgba(23,60,44,.12)' }}>
         <MotionBox style={{ scaleX: progress, originX: 0 }} sx={{ height: '100%', bgcolor: onDark ? 'secondary.main' : 'primary.main' }} />
       </Box>}
     </Stack>
