@@ -31,7 +31,7 @@ export function BookingSearchBar() {
 
   return <Box sx={{
     width: '100%', maxWidth: 640,
-    border: '1px solid', borderColor: 'divider', bgcolor: 'white', color: 'text.primary', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 5px 18px rgba(23,60,44,.04)',
+    border: '1px solid', borderColor: 'divider', borderTop: '4px solid #50830d', bgcolor: 'background.paper', color: 'text.primary', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(23,60,44,.07)',
   }}>
     {/* Dates and guests sit side by side where the bar is wide enough (sm, lg+)
         and stack where it isn't (phones, and the narrow md hero column). Equal

@@ -38,7 +38,7 @@ export function RestaurantSection({ meals }: { meals: Meal[] }) {
       </Box>
       <Box aria-labelledby="dining-table-heading" sx={{ display: 'grid', gridTemplateColumns: { md: '1.25fr 1fr' }, gap: { xs: 4, md: 5 }, mt: { xs: 6, md: 8 }, pt: { xs: 4, md: 5 }, borderTop: '1px solid', borderColor: 'divider', alignItems: 'end' }}>
         <Reveal sx={{ m: 0 }}><Box component="figure" sx={{ m: 0 }}>
-          <Box sx={{ position: 'relative', aspectRatio: { xs: '4 / 3', md: '3 / 2' }, borderRadius: '8px 72px 8px 8px', overflow: 'hidden' }}>
+          <Box sx={{ position: 'relative', aspectRatio: { xs: '4 / 3', md: '3 / 2' }, borderRadius: '8px 72px 8px 8px', overflow: 'hidden', border: '6px solid #fffef8', boxShadow: '0 8px 24px rgba(23,60,44,.08)' }}>
             <ResortPhoto image={p.restaurant.src} alt="Open-air tables and lounge seating at Chang Restaurant" sizes="(max-width: 900px) 90vw, 50vw" />
           </Box>
           <Box component="figcaption" sx={{ display: 'flex', flexWrap: 'wrap', flexDirection: { xs: 'column', md: 'row' }, justifyContent: { xs: 'center', md: 'space-between' }, alignItems: { xs: 'center', md: 'baseline' }, columnGap: 2, rowGap: .5, pt: 2 }}>
@@ -52,7 +52,7 @@ export function RestaurantSection({ meals }: { meals: Meal[] }) {
             <SunDoodle size={64} color="#50830d" sx={{ ml: { xs: 0, md: 'auto' }, width: { xs: 48, md: 64 }, height: { xs: 48, md: 64 }, transform: 'rotate(12deg)' }} />
           </Box>
           <Box component="figure" sx={{ m: 0 }}>
-            <Box sx={{ aspectRatio: '16 / 9', borderRadius: '8px 8px 48px 8px', overflow: 'hidden' }}>
+            <Box sx={{ aspectRatio: '16 / 9', borderRadius: '8px 8px 48px 8px', overflow: 'hidden', border: '6px solid #fffef8', boxShadow: '0 8px 24px rgba(23,60,44,.08)' }}>
               <ResortPhoto image={p.thaiFood.src} alt="Thai sharing dishes served beside the tropical garden" sizes="(max-width: 900px) 90vw, 40vw" sx={{ objectPosition: 'center bottom' }} />
             </Box>
             <Box component="figcaption" sx={{ pt: 2, textAlign: { xs: 'center', md: 'left' } }}>

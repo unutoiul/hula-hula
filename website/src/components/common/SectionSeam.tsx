@@ -6,9 +6,10 @@ import { useRef, type ReactNode } from 'react';
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
 import { MotionBox } from './motionPrimitives';
 import { SunDoodle } from './VacationDecor';
+import { vacationColors } from '../../theme';
 
 // Section backgrounds the seams flow between.
-export const SEAM = { cream: '#fbfdf4', pool: '#d9f5fc', lime: '#e7f4cc', sea: '#006d8a', sun: '#f9f70c' };
+export const SEAM = { cream: vacationColors.cream, pool: '#d9f5fc', lime: '#e7f4cc', sea: '#006d8a', sun: '#f9f70c' };
 
 const WAVE = 'M0 22 Q120 0 240 22 T480 22 T720 22 T960 22 T1200 22 T1440 22 V45 H0Z';
 

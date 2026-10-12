@@ -3,14 +3,14 @@ import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { photoAssets } from '../../data/photos';
 import { fonts } from '../../theme';
 import { BookingSearchBar } from '../booking/BookingSearchBar';
-import { Polaroid, Sticker, SunDoodle } from '../common/VacationDecor';
+import { Polaroid, Sticker } from '../common/VacationDecor';
 import { HeroHeadline } from './HeroHeadline';
 import { HeroMetaCompact } from './HeroMetaCompact';
 import { HeroVideo } from './HeroVideo';
 import { ScrollTilt } from '../common/ScrollMotion';
 
 export function Hero() {
-  return <Box component="section" aria-label="Welcome to Hula Hula Resort" sx={{ pt: { xs: 15, md: 21 }, pb: { xs: 6, md: 9 }, overflow: 'hidden', position: 'relative' }}>
+  return <Box component="section" aria-label="Welcome to Hula Hula Resort" sx={{ position: 'relative', pt: { xs: 15, md: 21 }, pb: { xs: 6, md: 9 }, overflow: 'hidden' }}>
     <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1.12fr' }, alignItems: 'center', gap: { xs: 5, md: 6 }, minHeight: { md: 700 } }}>
         <Box sx={{ position: 'relative', zIndex: 2, display: { xs: 'contents', md: 'block' } }}>
@@ -41,7 +41,6 @@ export function Hero() {
             </Box>
           </ScrollTilt>
           <Sticker color="#e7f4cc" rotate={9} sx={{ position: 'absolute', top: { xs: 5, md: 22 }, right: { xs: -6, md: -18 }, width: { xs: 95, md: 122 }, height: { xs: 95, md: 122 }, fontSize: { xs: 20, md: 23 } }}>Less worry.<br />More Hula.</Sticker>
-          <Box sx={{ position: 'absolute', bottom: -42, right: { sm: 28, md: 36 }, display: { xs: 'none', sm: 'block' } }}><SunDoodle size={92} color="#50830d" sx={{ transform: 'rotate(-10deg)' }} /></Box>
           <Box sx={{ position: 'absolute', width: { xs: 150, md: 202 }, height: { xs: 180, md: 232 }, left: { xs: -18, md: -46 }, bottom: { xs: -26, md: -33 } }}>
           <ScrollTilt amount={-4} sx={{ height: '100%' }}>
             <Polaroid image={photoAssets.breakfastPortrait.src} alt="Guest enjoying a floating breakfast in a Hula Hula private pool" caption="Make a splash!" rotate={-9} sizes="210px" objectPosition="center 60%" />

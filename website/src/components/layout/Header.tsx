@@ -8,6 +8,7 @@ import { ClubMark } from '../common/ClubMark';
 import { SunDoodle } from '../common/VacationDecor';
 import { MotionToggleButton, MotionToggleMenuButton } from './MotionToggle';
 import { NavLink } from './NavLink';
+import { TropicalBackdrop } from '../common/TropicalBackdrop';
 
 export function Header({ navItems }: { navItems: NavItem[] }) {
   const [scrolled, setScrolled] = useState(false);
@@ -25,7 +26,8 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
   }, [navItems]);
   // Tall with a big logo at the top of the page; once scrolled it slims to a
   // compact bar (and smaller logo) so it takes as little room as possible.
-  return <Box component="header" sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 20, bgcolor: 'rgba(251,253,244,.96)', backdropFilter: 'blur(14px)', borderBottom: '1px solid', borderColor: scrolled ? 'divider' : 'transparent', boxShadow: scrolled ? '0 3px 18px rgba(23,60,44,.06)' : 'none', transition: 'border-color .35s ease, box-shadow .35s ease' }}>
+  return <Box component="header" sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 20, bgcolor: 'rgba(255,253,243,.96)', backdropFilter: 'blur(14px)', borderBottom: '1px solid', borderColor: scrolled ? 'divider' : 'transparent', boxShadow: scrolled ? '0 3px 18px rgba(23,60,44,.06)' : 'none', transition: 'border-color .35s ease, box-shadow .35s ease' }}>
+    <TropicalBackdrop side="left" compact />
     <Container maxWidth="xl">
       <Box sx={{ minHeight: scrolled ? { xs: 72, md: 80 } : { xs: 100, md: 136 }, transition: 'min-height .35s ease', display: 'grid', gridTemplateColumns: { xs: 'auto 1fr', lg: '1fr auto 1fr' }, alignItems: 'center', gap: { xs: 1.5, md: 3 }, py: 1 }}>
         <Stack component="nav" aria-label="Main navigation" direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>{navItems.slice(0, 3).map(([label, href]) => <NavLink key={href} href={href} active={active === href}>{label}</NavLink>)}</Stack>

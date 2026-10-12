@@ -7,7 +7,7 @@ export const fonts = {
   playful: '"Fredoka", "Trebuchet MS", sans-serif',
 };
 
-export const vacationColors = { cream: '#fbfdf4', coral: '#50830d', pink: '#e7f4cc', leaf: '#50830d', yellow: '#f9f70c', sea: '#006d8a' };
+export const vacationColors = { cream: '#fffdf3', coral: '#50830d', pink: '#e7f4cc', leaf: '#50830d', yellow: '#f9f70c', sea: '#006d8a' };
 
 const theme = createTheme({
   palette: {
@@ -15,7 +15,7 @@ const theme = createTheme({
     secondary: { main: '#f9f70c', dark: '#686b0b', light: '#f9fbc5', contrastText: '#173c2c' },
     info: { main: '#50830d', light: '#e7f4cc', dark: '#315707', contrastText: '#ffffff' },
     success: { main: '#50830d', light: '#e7f4cc', dark: '#315707' },
-    background: { default: '#fbfdf4', paper: '#ffffff' },
+    background: { default: vacationColors.cream, paper: '#fffef8' },
     text: { primary: '#173c2c', secondary: '#4b6457' },
     divider: '#d6e1ce',
   },

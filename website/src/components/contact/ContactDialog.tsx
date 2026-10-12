@@ -97,7 +97,7 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
     slots={phone ? { transition: SlideUp } : undefined}
     slotProps={{
       container: { sx: { alignItems: { xs: 'flex-end', sm: 'center' } } },
-      paper: { sx: { m: { xs: 0, sm: 4 }, width: { xs: '100%', sm: 'calc(100% - 64px)' }, maxWidth: { xs: '100%', sm: 560 }, maxHeight: { xs: '92dvh', sm: 'calc(100% - 64px)' }, borderRadius: { xs: '24px 24px 0 0', sm: '24px' }, bgcolor: 'background.default', backgroundImage: 'none' } },
+      paper: { sx: { m: { xs: 0, sm: 4 }, width: { xs: '100%', sm: 'calc(100% - 64px)' }, maxWidth: { xs: '100%', sm: 560 }, maxHeight: { xs: '92dvh', sm: 'calc(100% - 64px)' }, borderRadius: { xs: '24px 24px 0 0', sm: '24px' }, borderTop: '5px solid #50830d', bgcolor: 'background.default', backgroundImage: 'none' } },
     }}>
     {/* On phones the sheet ends at the screen's bottom edge: keep its buttons clear of the iPhone home-indicator area. */}
     <Box sx={{ position: 'relative', px: { xs: 2.5, sm: 4 }, pt: { xs: 1.5, sm: 3.5 }, pb: { xs: 'calc(24px + env(safe-area-inset-bottom))', sm: 4 } }}>

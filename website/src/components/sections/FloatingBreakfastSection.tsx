@@ -9,7 +9,7 @@ import { useContactForm } from '../../context/ContactFormContext';
 
 export function FloatingBreakfastSection() {
   const openContact = useContactForm();
-  return <Box component="section" id="floating-breakfast" className="breakfast-scene" aria-label="Floating breakfast experience" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET, py: { xs: 7, md: 9 }, overflow: 'hidden' }}>
+  return <Box component="section" id="floating-breakfast" className="breakfast-scene" aria-label="Floating breakfast experience" sx={{ bgcolor: 'primary.light', scrollMarginTop: SECTION_SCROLL_OFFSET, py: { xs: 7, md: 9 }, overflow: 'hidden' }}>
       <Container maxWidth="xl">
         <Box sx={{ display: 'grid', gridTemplateColumns: { md: '.8fr 1.2fr' }, gap: { xs: 5, md: 7 }, alignItems: 'center' }}>
           <Reveal sx={{ position: 'relative', zIndex: 3, textAlign: { xs: 'center', md: 'left' } }}>

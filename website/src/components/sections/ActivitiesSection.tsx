@@ -9,7 +9,7 @@ import { useContactForm } from '../../context/ContactFormContext';
 
 export function ActivitiesSection({ experiences }: { experiences: CarouselCardData[] }) {
   const openContact = useContactForm();
-  return <Box id="ways" component="section" sx={{ bgcolor: 'primary.main', color: 'white', scrollMarginTop: SECTION_SCROLL_OFFSET, position: 'relative' }}>
+  return <Box id="ways" component="section" sx={{ position: 'relative', bgcolor: 'primary.main', color: 'white', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl" sx={{ py: { xs: 6, md: 8 }, position: 'relative' }}>
       <SunDoodle size={100} color="#f9f70c" sx={{ position: 'absolute', right: 180, top: 28, display: { xs: 'none', md: 'block' }, transform: 'rotate(12deg)' }} />
       <DragCarousel sectionKicker="Your holiday. Your kind of happy." heading={<>Do a little.<br /><Box component="span" color="secondary.main">Enjoy a lot.</Box></>} items={experiences} itemLabel="activity"

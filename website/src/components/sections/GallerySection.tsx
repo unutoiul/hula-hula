@@ -7,6 +7,7 @@ import { useRef, useState } from 'react';
 import { galleryPhotos } from '../../data/content';
 import { ResortPhoto } from '../common/ResortPhoto';
 import { Reveal } from '../common/ScrollMotion';
+import { fonts } from '../../theme';
 
 const categories = ['All the good times', ...new Set(galleryPhotos.map(photo => photo.category))];
 
@@ -30,10 +31,12 @@ export function GallerySection() {
         {categories.map(value => <Button key={value} onClick={() => setCategory(value)} aria-pressed={category === value} size="small" variant={category === value ? 'contained' : 'outlined'} color={category === value ? 'primary' : 'inherit'} sx={{ borderColor: 'divider' }}>{value}</Button>)}
       </Stack>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4,1fr)' }, gap: { xs: 1.5, md: 2.5 } }}>
-        {visible.map((item, index) => <Box key={item.image} component="button" type="button" onClick={() => setSelected(index)} aria-label={`View ${item.title.toLowerCase()}`} sx={{ display: 'block', width: '100%', p: 0, border: 0, bgcolor: 'primary.light', color: 'white', borderRadius: index % 3 === 1 ? '70px 20px 20px 20px' : '20px', overflow: 'hidden', position: 'relative', aspectRatio: '1 / 1.08', cursor: 'pointer', '& img': { transition: 'transform .4s ease' }, '@media (hover: hover)': { '&:hover img': { transform: 'scale(1.05)' }, '&:hover .photo-expand': { bgcolor: 'secondary.main', color: 'text.primary' } } }}>
+        {visible.map((item, index) => <Box key={item.image} component="button" type="button" onClick={() => setSelected(index)} aria-label={`View ${item.title.toLowerCase()}`} sx={{ display: 'flex', flexDirection: 'column', width: '100%', p: { xs: .7, md: 1 }, border: '1px solid #d6e1ce', bgcolor: 'background.paper', color: 'text.primary', borderRadius: '12px', position: 'relative', cursor: 'pointer', boxShadow: '0 6px 18px rgba(23,60,44,.06)', '& img': { transition: 'transform .4s ease' }, '@media (hover: hover)': { '&:hover img': { transform: 'scale(1.05)' }, '&:hover .photo-expand': { bgcolor: 'secondary.main', color: 'text.primary' } } }}>
+          <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', borderRadius: '6px', overflow: 'hidden' }}>
           <ResortPhoto image={item.image} alt={item.title} sizes="(max-width: 900px) 45vw, 23vw" />
-          <Box className="photo-expand" sx={{ position: 'absolute', top: 12, right: 12, width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(18,78,57,.6)' }}><OpenInFull sx={{ fontSize: 15 }} /></Box>
-          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 0, px: 2, pt: 5, pb: 2, textAlign: 'left', background: 'linear-gradient(transparent,rgba(18,78,57,.8))', fontSize: { xs: 12, md: 14 }, fontWeight: 600 }}>{item.title}</Box>
+          <Box className="photo-expand" sx={{ position: 'absolute', top: 12, right: 12, width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(18,78,57,.6)', color: 'white' }}><OpenInFull sx={{ fontSize: 15 }} /></Box>
+          </Box>
+          <Box sx={{ px: { xs: .4, md: 1 }, py: { xs: 1.1, md: 1.6 }, textAlign: 'center', fontFamily: fonts.playful, fontSize: { xs: 13, md: 17 }, lineHeight: 1.3, flex: 1, display: 'grid', alignItems: 'center' }}>{item.title}</Box>
         </Box>)}
       </Box>
       {/* A full-screen photo viewer: the photo at its natural shape on a deep-green
