@@ -24,7 +24,7 @@ const whatsappLink = (phone: string) => { const digits = phone.replace(/\D/g, ''
 // RESEND_CONTACT_CONFIRMATION_TEMPLATE_ID default to the template aliases.
 // CONTACT_TO (default contact@bluetrendy.com), CONTACT_FROM
 // (an address on a domain verified in Resend) and SITE_URL are optional
-// overrides. Bots that fill the hidden "company" field, or submit faster than
+// overrides. Bots that fill the hidden "hp_ref" field, or submit faster than
 // a person could, get a quiet success and no email.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store');
 
   const body: Record<string, unknown> = typeof req.body === 'string' ? safeParse(req.body) : (req.body ?? {});
-  if (body.company) {
+  if (body.hp_ref) {
     console.info('Contact submission ignored: honeypot filled');
     return res.status(200).json({ ok: true });
   }

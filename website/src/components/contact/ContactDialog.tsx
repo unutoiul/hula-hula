@@ -47,7 +47,7 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
   const [customSubject, setCustomSubject] = useState('');
   const [message, setMessage] = useState('');
   const [includeStay, setIncludeStay] = useState(false);
-  const [company, setCompany] = useState(''); // honeypot: people never see or fill it
+  const [hpRef, setHpRef] = useState(''); // honeypot: people never see or fill it
   const [status, setStatus] = useState<Status>('idle');
   const [triedSubmit, setTriedSubmit] = useState(false);
   const startedAt = useRef(0);
@@ -84,7 +84,7 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone: phoneNumber, message, topic, page: request.page, stay: includeStay ? stay : undefined, company, elapsedMs: performance.now() - startedAt.current }),
+        body: JSON.stringify({ name, email, phone: phoneNumber, message, topic, page: request.page, stay: includeStay ? stay : undefined, hp_ref: hpRef, elapsedMs: performance.now() - startedAt.current }),
       });
       const result: { ok?: boolean } = await response.json();
       setStatus(response.ok && result.ok === true ? 'sent' : 'error');
@@ -136,7 +136,7 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
           <FormControlLabel control={<Checkbox checked={includeStay} onChange={(e) => setIncludeStay(e.target.checked)} />}
             label={<Typography sx={{ fontSize: 14, lineHeight: 1.4 }}>Add my stay: <Box component="span" sx={{ fontWeight: 700 }}>{stay}</Box></Typography>} sx={{ alignItems: 'center', mr: 0 }} />
           {/* Honeypot for bots — hidden from people and screen readers. */}
-          <Box component="input" name="company" tabIndex={-1} autoComplete="off" aria-hidden value={company} onChange={(e) => setCompany(e.target.value)}
+          <Box component="input" name="hp_ref" tabIndex={-1} autoComplete="off" aria-hidden value={hpRef} onChange={(e) => setHpRef(e.target.value)}
             sx={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }} />
         </Stack>
 
