@@ -1,3 +1,5 @@
+import MailOutlineRounded from '@mui/icons-material/MailOutlineRounded';
+import PhoneRounded from '@mui/icons-material/PhoneRounded';
 import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRounded';
 import Call from '@mui/icons-material/Call';
 import Facebook from '@mui/icons-material/Facebook';
@@ -44,10 +46,11 @@ export function ContactSection() {
                 '&:hover': { borderColor: 'info.main', bgcolor: 'info.main', color: 'info.contrastText' },
               }}>{CONTACT.phone}</Button>
             </Stack>
-            <Typography sx={{ mt: 2.5, fontSize: 14, lineHeight: 1.8, color: 'text.secondary' }}>
-              Reservations: <Box component="a" href={`mailto:${CONTACT.email}`} sx={{ color: 'primary.main', fontWeight: 700, whiteSpace: 'nowrap' }}>{CONTACT.email}</Box><br />
-              Hotel: <Box component="a" href={CONTACT.landlineTel} sx={{ color: 'primary.main', fontWeight: 700, whiteSpace: 'nowrap' }}>{CONTACT.landline}</Box> · WhatsApp: <Box component="a" href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" sx={{ color: 'primary.main', fontWeight: 700, whiteSpace: 'nowrap' }}>{CONTACT.phone}</Box>
-            </Typography>
+            {/* One quiet line for the other ways in: the WhatsApp number is already on the button above. */}
+            <Stack direction="row" flexWrap="wrap" useFlexGap justifyContent={{ xs: 'center', md: 'flex-start' }} columnGap={2.5} rowGap={1} sx={{ mt: 2.5, fontSize: 14, fontWeight: 600, '& a': { color: 'primary.main', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', textDecoration: 'none' }, '@media (hover: hover)': { '& a:hover': { textDecoration: 'underline' } }, '& svg': { fontSize: 18 } }}>
+              <a href={`mailto:${CONTACT.email}`}><MailOutlineRounded />{CONTACT.email}</a>
+              <a href={CONTACT.landlineTel}><PhoneRounded />{CONTACT.landline}</a>
+            </Stack>
             <Stack direction="row" spacing={2} justifyContent={{ xs: 'center', md: 'flex-start' }} sx={{ mt: 3.5, pt: 3, borderTop: '1px dashed #d6e1ce' }}>
               <SocialIcon href={CONTACT.facebook} label="Hula Hula on Facebook"><Facebook /></SocialIcon>
               <SocialIcon href={CONTACT.instagram} label="Hula Hula on Instagram"><Instagram /></SocialIcon>
