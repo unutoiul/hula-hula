@@ -21,7 +21,7 @@ export function HeroMetaCompact() {
   const now = useKrabiClock();
   const temperature = useKrabiWeather();
 
-  return <Stack direction="row" flexWrap="wrap" alignItems="center" rowGap={.6} columnGap={1.3} sx={{
+  return <Stack direction="row" flexWrap="wrap" alignItems="center" justifyContent={{ xs: 'center', md: 'flex-start' }} rowGap={.6} columnGap={1.3} sx={{
     color: 'text.secondary',
     // Reserves height for the wrapped (2-line) case up front, at every breakpoint,
     // so a tick that happens to flip the wrap point never nudges the headline/search
@@ -30,9 +30,9 @@ export function HeroMetaCompact() {
   }}>
     <Stack direction="row" alignItems="center" spacing={.9}>
       <LiveDot />
-      <Typography variant="overline" sx={{ color: 'inherit', fontSize: 10 }}>KRABI, THAILAND</Typography>
+      <Typography variant="overline" sx={{ color: 'inherit', fontSize: 11 }}>KRABI, THAILAND</Typography>
     </Stack>
-    <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: 10, fontVariantNumeric: 'tabular-nums' }}>
+    <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: 11, fontVariantNumeric: 'tabular-nums' }}>
       {temperature !== null ? `${Math.round(temperature)}°C · ` : ''}{krabiDateFmt.format(now)} · {krabiTimeFmt.format(now)} ICT
     </Typography>
   </Stack>;

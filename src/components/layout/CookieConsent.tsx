@@ -19,11 +19,14 @@ export function CookieConsent() {
 
   if (!open) return null;
 
+  // The overlay scrolls, and the card centres with auto margins rather than
+  // align-items: center, so on short screens (a phone held sideways) the card
+  // can't overflow off the top with its buttons out of reach.
   return <Box role="dialog" aria-modal="true" aria-label="Cookie preferences" sx={{
-    position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    bgcolor: scrim(.6), backdropFilter: 'blur(4px)', p: 3,
+    position: 'fixed', inset: 0, zIndex: 50, display: 'flex', overflowY: 'auto', overscrollBehavior: 'contain',
+    bgcolor: scrim(.6), backdropFilter: 'blur(4px)', p: { xs: 2, sm: 3 },
   }}>
-    <Box sx={{ bgcolor: 'background.default', color: 'text.primary', maxWidth: 480, width: '100%', p: { xs: 4, md: 5 }, borderRadius: 4, textAlign: 'center', boxShadow: `0 30px 90px ${scrim(.4)}` }}>
+    <Box sx={{ m: 'auto', bgcolor: 'background.default', color: 'text.primary', maxWidth: 480, width: '100%', p: { xs: 3, sm: 4, md: 5 }, borderRadius: 4, textAlign: 'center', boxShadow: `0 30px 90px ${scrim(.4)}` }}>
       <Stack alignItems="center"><ClubMark /></Stack>
       <Typography sx={{ mt: 3.5, fontSize: 14, lineHeight: 1.75, color: 'text.secondary' }}>
         By clicking &ldquo;Accept all cookies&rdquo;, you agree to the storing of cookies on your device to enhance site navigation, analyse site usage, and assist in our marketing efforts.

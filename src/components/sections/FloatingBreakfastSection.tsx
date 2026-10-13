@@ -1,21 +1,22 @@
-import ArrowOutward from '@mui/icons-material/ArrowOutward';
+import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRounded';
 import { Box, Button, Container, Typography } from '@mui/material';
-import { CONTACT } from '../../data/content';
 import { photoAssets as p } from '../../data/photos';
 import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
 import { ResortPhoto } from '../common/ResortPhoto';
 import { Reveal, ScrollTilt } from '../common/ScrollMotion';
 import { Polaroid, Sticker, SunDoodle } from '../common/VacationDecor';
+import { useContactForm } from '../../context/ContactFormContext';
 
 export function FloatingBreakfastSection() {
-  return <Box component="section" id="floating-breakfast" className="breakfast-scene" aria-label="Floating breakfast experience" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET, py: { xs: 7, md: 9 }, overflow: 'hidden' }}>
+  const openContact = useContactForm();
+  return <Box component="section" id="floating-breakfast" className="breakfast-scene" aria-label="Floating breakfast experience" sx={{ bgcolor: 'primary.light', scrollMarginTop: SECTION_SCROLL_OFFSET, py: { xs: 7, md: 9 }, overflow: 'hidden' }}>
       <Container maxWidth="xl">
         <Box sx={{ display: 'grid', gridTemplateColumns: { md: '.8fr 1.2fr' }, gap: { xs: 5, md: 7 }, alignItems: 'center' }}>
-          <Reveal sx={{ position: 'relative', zIndex: 3 }}>
-            <SunDoodle color="#006d8a" size={64} sx={{ mb: 2 }} />
-            <Typography variant="h2" sx={{ fontSize: { xs: 43, md: 66 }, lineHeight: 1.04, maxWidth: 480 }}>Breakfast,<br /><Box component="span" color="primary.main">with a splash.</Box></Typography>
-            <Typography sx={{ mt: 3, fontSize: { xs: 16, md: 18 }, lineHeight: 1.7, color: 'text.secondary', maxWidth: 370 }}>Tropical fruit. A floating tray. Your favourite person. Now that’s our kind of morning.</Typography>
-            <Button href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" variant="contained" endIcon={<ArrowOutward />} sx={{ mt: 3 }}>Ask about breakfast</Button>
+          <Reveal sx={{ position: 'relative', zIndex: 3, textAlign: { xs: 'center', md: 'left' } }}>
+            <SunDoodle color="#006d8a" size={64} sx={{ mb: 2, mx: { xs: 'auto', md: 0 } }} />
+            <Typography variant="h2" sx={{ fontSize: { xs: 43, md: 66 }, lineHeight: 1.04, maxWidth: 480, mx: { xs: 'auto', md: 0 } }}>Breakfast,<br /><Box component="span" color="primary.main">with a splash.</Box></Typography>
+            <Typography sx={{ mt: 3, fontSize: { xs: 16, md: 18 }, lineHeight: 1.7, color: 'text.secondary', maxWidth: 370, mx: { xs: 'auto', md: 0 } }}>Tropical fruit. A floating tray. Your favourite person. Now that’s our kind of morning.</Typography>
+            <Button onClick={() => openContact({ topic: 'Floating breakfast', message: 'Hi Hula Hula! I’d love to arrange a floating breakfast during our stay.', page: 'Breakfast, with a splash' })} variant="contained" endIcon={<ChatBubbleOutlineRounded />} sx={{ mt: 3 }}>Ask about breakfast</Button>
             <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1.5 }}>Our team can help with arrangements and availability.</Typography>
           </Reveal>
           <Reveal delay={0.15} sx={{ position: 'relative', pb: { xs: 9, md: 4 }, pt: 2 }}>

@@ -27,7 +27,7 @@ export function BookingPanel() {
         leaving the calendar and sidebar looking stranded apart from each other. */}
     <Box sx={{
       display: 'flex', flexDirection: { xs: 'column', md: 'row' }, width: '100%', maxWidth: 780, mx: 'auto',
-      border: '1px solid', borderColor: 'divider', bgcolor: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 12px 32px rgba(23,60,44,.05)',
+      border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 16px 36px rgba(23,60,44,.09)',
     }}>
       <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
         <RangeCalendar checkIn={checkIn} checkOut={checkOut} minDate={today} onSelectDay={selectDay} />
@@ -37,16 +37,17 @@ export function BookingPanel() {
         width: { md: 264 }, flexShrink: 0, p: { xs: 2.5, md: 3 },
         borderTop: { xs: `1px solid ${theme.palette.divider}`, md: 'none' },
         borderLeft: { md: `1px solid ${theme.palette.divider}` },
+        backgroundImage: 'linear-gradient(165deg, rgba(231,244,204,.6), transparent 70%)',
       }}>
         <Typography variant="overline" sx={{ color: 'text.secondary' }}>Your dates</Typography>
         <Stack direction="row" justifyContent="space-between" sx={{ mt: 1 }}>
           <Box>
             <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>{panelDateFmt.format(checkIn)}</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>Check-in</Typography>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Check-in</Typography>
           </Box>
           <Box sx={{ textAlign: 'right' }}>
             <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>{panelDateFmt.format(checkOut)}</Typography>
-            <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>Check-out</Typography>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Check-out</Typography>
           </Box>
         </Stack>
         <Typography variant="overline" sx={{ display: 'block', color: 'secondary.dark', mt: 1 }}>{nights} night{nights !== 1 ? 's' : ''}</Typography>
