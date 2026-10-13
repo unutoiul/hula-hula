@@ -20,10 +20,7 @@ export function Footer() {
         <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
           <a href={CONTACT.tel}>{CONTACT.phone}</a> · <a href={CONTACT.landlineTel}>{CONTACT.landline}</a><br /><Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>{CONTACT.email}</Box>
         </Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: .75, sm: 2 }} alignItems="center" divider={<Box sx={{ display: { xs: 'none', sm: 'block' }, width: 3, height: 3, borderRadius: '50%', bgcolor: 'text.secondary' }} />}>
-          <Typography variant="overline">Krabi, Thailand</Typography>
           <Typography variant="overline">© {new Date().getFullYear()} Hula Hula Resort</Typography>
-        </Stack>
       </Stack>
     </Container>
   </Box>;
