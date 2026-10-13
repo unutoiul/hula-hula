@@ -1,5 +1,3 @@
-import MailOutlineRounded from '@mui/icons-material/MailOutlineRounded';
-import PhoneRounded from '@mui/icons-material/PhoneRounded';
 import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRounded';
 import Call from '@mui/icons-material/Call';
 import Facebook from '@mui/icons-material/Facebook';
@@ -14,6 +12,9 @@ import { Reveal } from '../common/ScrollMotion';
 import { useContactForm } from '../../context/ContactFormContext';
 import { fonts } from '../../theme';
 import { SunDoodle } from '../common/VacationDecor';
+
+// The two secondary contact buttons: same size, label over number.
+const quickActionSx = { justifyContent: 'flex-start', minHeight: 56, borderColor: 'primary.main', color: 'primary.main', '@media (hover: none)': { '&:hover': { bgcolor: 'transparent' } }, '@media (hover: hover)': { '&:hover': { borderColor: 'info.main', bgcolor: 'info.main', color: 'info.contrastText', '& svg': { color: 'inherit' } } } } as const;
 
 export function ContactSection() {
   const openContact = useContactForm();
@@ -39,22 +40,20 @@ export function ContactSection() {
             <Typography variant="overline" color="success.main" sx={{ mb: 2 }}>A little hello from paradise</Typography>
             <Typography id="contact-heading" variant="h2" sx={{ fontSize: { xs: 38, sm: 48, md: 48, lg: 56 }, lineHeight: 1.07 }}>Got a little<br />question?<br /><Box component="span" color="primary.main">We’re all ears.</Box></Typography>
             <Typography sx={{ mt: 2.5, maxWidth: 400, mx: { xs: 'auto', md: 0 }, fontSize: 16, lineHeight: 1.75, color: 'text.secondary' }}>A holiday plan, a little question, or just a hello. Drop us a note — a warm Hula Hula welcome is waiting.</Typography>
-            <Stack direction={{ xs: 'column', lg: 'row' }} spacing={1.5} alignItems={{ xs: 'center', md: 'flex-start', lg: 'center' }} sx={{ mt: 3.5 }}>
-              <Button onClick={() => openContact({ topic: 'General question', page: 'Got a little question?' })} variant="contained" startIcon={<ChatBubbleOutlineRounded />}>Send us a message</Button>
-              <Button href={CONTACT.tel} variant="outlined" color="inherit" startIcon={<Call />} sx={{
-                borderColor: 'primary.main', color: 'primary.main',
-                '&:hover': { borderColor: 'info.main', bgcolor: 'info.main', color: 'info.contrastText' },
-              }}>{CONTACT.phone}</Button>
-            </Stack>
-            {/* One quiet line for the other ways in: the WhatsApp number is already on the button above. */}
-            <Stack direction="row" flexWrap="wrap" useFlexGap justifyContent={{ xs: 'center', md: 'flex-start' }} columnGap={2.5} rowGap={1} sx={{ mt: 2.5, fontSize: 14, fontWeight: 600, '& a': { color: 'primary.main', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', textDecoration: 'none' }, '@media (hover: hover)': { '& a:hover': { textDecoration: 'underline' } }, '& svg': { fontSize: 18 } }}>
-              <a href={`mailto:${CONTACT.email}`}><MailOutlineRounded />{CONTACT.email}</a>
-              <a href={CONTACT.landlineTel}><PhoneRounded />{CONTACT.landline}</a>
-            </Stack>
+            {/* One clear main action, then two equal quick ways to reach a person:
+                chat on WhatsApp (the mobile line) or call the hotel's landline. */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5, mt: 3.5, maxWidth: 440, mx: { xs: 'auto', md: 0 } }}>
+              <Button onClick={() => openContact({ topic: 'General question', page: 'Got a little question?' })} variant="contained" startIcon={<ChatBubbleOutlineRounded />} sx={{ gridColumn: '1 / -1' }}>Send us a message</Button>
+              <Button href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" variant="outlined" startIcon={<WhatsApp sx={{ color: '#25a366' }} />} sx={quickActionSx}>
+                <Box component="span" sx={{ display: 'grid', textAlign: 'left', lineHeight: 1.2 }}>WhatsApp<Box component="span" sx={{ fontSize: 12, fontWeight: 500, opacity: .8 }}>{CONTACT.phone}</Box></Box>
+              </Button>
+              <Button href={CONTACT.landlineTel} variant="outlined" startIcon={<Call />} sx={quickActionSx}>
+                <Box component="span" sx={{ display: 'grid', textAlign: 'left', lineHeight: 1.2 }}>Call the hotel<Box component="span" sx={{ fontSize: 12, fontWeight: 500, opacity: .8 }}>{CONTACT.landline}</Box></Box>
+              </Button>
+            </Box>
             <Stack direction="row" spacing={2} justifyContent={{ xs: 'center', md: 'flex-start' }} sx={{ mt: 3.5, pt: 3, borderTop: '1px dashed #d6e1ce' }}>
               <SocialIcon href={CONTACT.facebook} label="Hula Hula on Facebook"><Facebook /></SocialIcon>
               <SocialIcon href={CONTACT.instagram} label="Hula Hula on Instagram"><Instagram /></SocialIcon>
-              <SocialIcon href={CONTACT.whatsapp} label="Message Hula Hula on WhatsApp"><WhatsApp /></SocialIcon>
               <SocialIcon href={CONTACT.line} label="Message Hula Hula on Line"><LineIcon /></SocialIcon>
             </Stack>
           </Box>
