@@ -31,8 +31,12 @@ export interface EventFact {
 export type NavItem = [label: string, href: string];
 
 export interface ContactInfo {
+  /** Mobile number, also the WhatsApp line. */
   phone: string;
   tel: string;
+  landline: string;
+  landlineTel: string;
+  email: string;
   address: string;
   facebook: string;
   instagram: string;

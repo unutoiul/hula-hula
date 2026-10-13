@@ -10,7 +10,7 @@ import { HeroVideo } from './HeroVideo';
 import { ScrollTilt } from '../common/ScrollMotion';
 
 export function Hero() {
-  return <Box component="section" aria-label="Welcome to Hula Hula Resort" sx={{ position: 'relative', pt: { xs: 15, md: 21 }, pb: { xs: 6, md: 9 }, overflow: 'hidden' }}>
+  return <Box component="section" aria-label="Welcome to Hula Hula Resort" sx={{ position: 'relative', pt: { xs: 19, md: 25 }, pb: { xs: 6, md: 9 }, overflow: 'hidden' }}>
     <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1.12fr' }, alignItems: 'center', gap: { xs: 5, md: 6 }, minHeight: { md: 700 } }}>
         <Box sx={{ position: 'relative', zIndex: 2, display: { xs: 'contents', md: 'block' } }}>

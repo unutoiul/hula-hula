@@ -16,7 +16,10 @@ export function Footer() {
       <Stack alignItems="center" spacing={2.5} textAlign="center">
         <Typography variant="h2" sx={{ fontSize: { xs: 31, md: 48 }, lineHeight: 1.1, maxWidth: { xs: 280, sm: 'none' } }}>See you on the sunny side.</Typography>
         <ClubMark size="large" />
-        <Typography variant="overline" sx={{ maxWidth: 380, lineHeight: 1.6 }}>{CONTACT.address}</Typography>
+        <Typography variant="overline" sx={{ maxWidth: 380, lineHeight: 1.6 }}>Hula Hula Resort Ao Nang Beach<br />{CONTACT.address}</Typography>
+        <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
+          <a href={CONTACT.tel}>{CONTACT.phone}</a> · <a href={CONTACT.landlineTel}>{CONTACT.landline}</a><br /><Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>{CONTACT.email}</Box>
+        </Typography>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: .75, sm: 2 }} alignItems="center" divider={<Box sx={{ display: { xs: 'none', sm: 'block' }, width: 3, height: 3, borderRadius: '50%', bgcolor: 'text.secondary' }} />}>
           <Typography variant="overline">Krabi, Thailand</Typography>
           <Typography variant="overline">© {new Date().getFullYear()} Hula Hula Resort</Typography>

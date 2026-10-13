@@ -22,7 +22,8 @@ const whatsappLink = (phone: string) => { const digits = phone.replace(/\D/g, ''
 // on the confirmation it's the resort inbox. Needs
 // RESEND_API_KEY; RESEND_CONTACT_ENQUIRY_TEMPLATE_ID and
 // RESEND_CONTACT_CONFIRMATION_TEMPLATE_ID default to the template aliases.
-// CONTACT_TO (default contact@bluetrendy.com), CONTACT_FROM
+// CONTACT_TO (default reservation@hulahularesort.com), CONTACT_CC (default
+// contact@bluetrendy.com; comma-separated, or empty for none), CONTACT_FROM
 // (an address on a domain verified in Resend) and SITE_URL are optional
 // overrides. Bots that fill the hidden "hp_ref" field, or submit faster than
 // a person could, get a quiet success and no email.
@@ -62,7 +63,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Contact email is not configured: RESEND_API_KEY missing');
     return res.status(500).json({ error: 'Email is not configured on the server' });
   }
-  const to = process.env.CONTACT_TO || 'contact@bluetrendy.com';
+  const to = process.env.CONTACT_TO || 'reservation@hulahularesort.com';
+  const cc = (process.env.CONTACT_CC ?? 'contact@bluetrendy.com').split(',').map((address) => address.trim()).filter(Boolean);
   const from = process.env.CONTACT_FROM || 'Hula Hula Website <onboarding@resend.dev>';
   const siteUrl = process.env.SITE_URL || `https://${req.headers['x-forwarded-host'] ?? req.headers.host}`;
   const whatsapp = whatsappLink(phone);
@@ -89,7 +91,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const upstream = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from, to: [to], reply_to: email, subject: `New enquiry: ${topic} — ${name}`, template: { id: TEMPLATE, variables } }),
+      body: JSON.stringify({ from, to: [to], ...(cc.length && { cc }), reply_to: email, subject: `New enquiry: ${topic} — ${name}`, template: { id: TEMPLATE, variables } }),
     });
     if (!upstream.ok) {
       console.error('Resend refused the enquiry', upstream.status, await upstream.text());
