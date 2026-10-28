@@ -82,8 +82,8 @@ export function ContentManager({ config }: { config: ContentConfig }) {
         {rows.map((row, index) => {
           const image = config.firstImage(row);
           const live = Boolean(row[config.liveKey]);
-          return <Stack key={row.id} direction="row" alignItems="center" spacing={2} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 3, bgcolor: 'background.paper', opacity: live ? 1 : .7 }}>
-            <Box sx={{ width: 72, height: 54, flexShrink: 0, borderRadius: 2, overflow: 'hidden', bgcolor: 'divider' }}>
+          return <Stack key={row.id} direction="row" alignItems="center" spacing={2} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: '18px', bgcolor: 'background.paper', opacity: live ? 1 : .7 }}>
+            <Box sx={{ width: 72, height: 54, flexShrink: 0, borderRadius: '12px', overflow: 'hidden', bgcolor: 'divider' }}>
               {image && <Box component="img" src={thumbOf(image)} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
             </Box>
             <Box sx={{ flex: 1, minWidth: 0 }}>

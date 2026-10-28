@@ -51,7 +51,7 @@ export function ImageField({ label, value, onChange, multiple, folder }: { label
   return <Box>
     <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 1 }}>{label}</Typography>
     <Stack direction="row" flexWrap="wrap" useFlexGap gap={1.5}>
-      {value.map((src, i) => <Box key={`${src}-${i}`} sx={{ position: 'relative', width: 120, height: 90, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+      {value.map((src, i) => <Box key={`${src}-${i}`} sx={{ position: 'relative', width: 120, height: 90, borderRadius: '12px', overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
         <Box component="img" src={thumbOf(src)} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <IconButton size="small" aria-label="Remove picture" onClick={() => onChange(value.filter((_, j) => j !== i))} sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'rgba(255,255,255,.9)', '&:hover': { bgcolor: 'white' } }}><CloseRounded sx={{ fontSize: 16 }} /></IconButton>
       </Box>)}
@@ -68,7 +68,7 @@ export function ImageField({ label, value, onChange, multiple, folder }: { label
       <DialogContent dividers>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 1.5 }}>
           {Object.entries(photoAssets).map(([name, photo]) => <Box key={name} component="button" type="button" onClick={() => { add(photo.src); setPicking(false); }}
-            sx={{ p: 0, border: '2px solid transparent', borderRadius: 2, overflow: 'hidden', cursor: 'pointer', bgcolor: 'transparent', '&:hover, &:focus-visible': { borderColor: 'primary.main' } }}>
+            sx={{ p: 0, border: '2px solid transparent', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', bgcolor: 'transparent', '&:hover, &:focus-visible': { borderColor: 'primary.main' } }}>
             <Box component="img" src={thumbOf(photo.src)} alt={name} loading="lazy" sx={{ display: 'block', width: '100%', aspectRatio: '4 / 3', objectFit: 'cover' }} />
           </Box>)}
         </Box>

@@ -46,7 +46,7 @@ export function BookingsPanel() {
       : <Stack spacing={1.5}>
         {rows.map((b) => {
           const rooms = b.items.reduce((sum, item) => sum + item.quantity, 0);
-          return <Box key={b.ref} sx={{ p: 2, border: '1px solid', borderColor: b.keyed_at ? 'divider' : 'secondary.dark', borderRadius: 3, bgcolor: 'background.paper' }}>
+          return <Box key={b.ref} sx={{ p: 2, border: '1px solid', borderColor: b.keyed_at ? 'divider' : 'secondary.dark', borderRadius: '18px', bgcolor: 'background.paper' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={1.5}>
               <Box>
                 <Typography sx={{ fontWeight: 700 }}>{b.ref} · {dayLabel(b.check_in)} → {dayLabel(b.check_out)}</Typography>
