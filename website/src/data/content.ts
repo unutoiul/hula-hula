@@ -1,18 +1,20 @@
-import type { CarouselCardData, ContactInfo, EventFact, Meal, NavItem } from '../types';
+import type { CarouselCardData, ContactInfo, EventFact, Meal, NavItem, RoomContent } from '../types';
 import { photoAssets as p } from './photos';
 
 export const navItems: NavItem[] = [
   ['Stay', '#hotel'], ['Dine', '#dine'], ['Play', '#ways'], ['Celebrate', '#events'], ['Plan your stay', '#arrival'], ['Say hello', '#contact'],
 ];
 
-export const rooms: CarouselCardData[] = [
-  { id: 'deluxe-garden', kicker: 'A sunny little escape', title: 'Deluxe Garden Street View', detail: 'Bright bedrooms, a garden outlook, and space to switch to holiday mode.', images: [p.deluxeBedroom.src, p.deluxeRoom.src, p.deluxeBathroom.src] },
-  { id: 'premier-pool-mountain', kicker: 'Views to wake up to', title: 'Premier Pool Mountain View', detail: 'Step onto your balcony and take in the pool and tropical surroundings.', images: [p.premierBedroom.src, p.premierRoom.src] },
-  { id: 'signature-spa-villa', kicker: 'Your own little retreat', title: 'Signature Spa Villa', detail: 'Warm wood, tropical touches, and a spa bath for a slower kind of evening.', images: [p.signatureBedroom.src, p.signatureRoom.src, p.spaBathroom.src] },
-  { id: 'two-storey-pool-villa', kicker: 'Extra room for good times', title: 'Two-Storey Pool Villa', detail: 'Your own pool terrace, a four-poster bedroom, and room to spread out.', images: [p.poolVillaTerrace.src, p.poolVillaBedroom.src, p.poolVillaLiving.src] },
-  { id: 'villa-spa-premier', kicker: 'Soak up the holiday', title: 'Villa Spa Premier', detail: 'A cosy villa, leafy balcony, and a spa bath made for unwinding.', images: [p.spaPremierBedroom.src, p.spaPremierBalcony.src, p.spaBathroom.src] },
-  { id: 'junior-pool-access', kicker: 'From bed to pool', title: 'Junior Suite Pool Access Mountain View', detail: 'Open the doors to a tropical terrace and make pool time part of your day.', images: [p.juniorBedroom.src, p.juniorTerrace.src, p.juniorBathroom.src] },
-  { id: 'family-two-bedrooms', kicker: 'Bring the whole crew', title: 'Family Two Bedrooms', detail: 'Space to come together, with a living area for all your holiday plans.', images: [p.familyLiving.src, p.familyBedroom.src, p.familyBathroom.src] },
+// siteminderRoomTypeUuid: from SiteMinder's room types (GET /room-types) — what
+// links these photos to the live rates on the booking page.
+export const rooms: RoomContent[] = [
+  { id: 'deluxe-garden', siteminderRoomTypeUuid: 'ko4xjqzq8de2d71f', kicker: 'A sunny little escape', title: 'Deluxe Garden Street View', detail: 'Bright bedrooms, a garden outlook, and space to switch to holiday mode.', images: [p.deluxeBedroom.src, p.deluxeRoom.src, p.deluxeBathroom.src] },
+  { id: 'premier-pool-mountain', siteminderRoomTypeUuid: 'jxo0iipkne09yfr1', kicker: 'Views to wake up to', title: 'Premier Pool Mountain View', detail: 'Step onto your balcony and take in the pool and tropical surroundings.', images: [p.premierBedroom.src, p.premierRoom.src] },
+  { id: 'signature-spa-villa', siteminderRoomTypeUuid: 'ee91a9e2-de45-4531-a420-65d82e746363', kicker: 'Your own little retreat', title: 'Signature Spa Villa', detail: 'Warm wood, tropical touches, and a spa bath for a slower kind of evening.', images: [p.signatureBedroom.src, p.signatureRoom.src, p.spaBathroom.src] },
+  { id: 'two-storey-pool-villa', siteminderRoomTypeUuid: 'g3iw6fvqhsxd57kg', kicker: 'Extra room for good times', title: 'Two-Storey Pool Villa', detail: 'Your own pool terrace, a four-poster bedroom, and room to spread out.', images: [p.poolVillaTerrace.src, p.poolVillaBedroom.src, p.poolVillaLiving.src] },
+  { id: 'villa-spa-premier', siteminderRoomTypeUuid: 'faeyygosyzpmeoct', kicker: 'Soak up the holiday', title: 'Villa Spa Premier', detail: 'A cosy villa, leafy balcony, and a spa bath made for unwinding.', images: [p.spaPremierBedroom.src, p.spaPremierBalcony.src, p.spaBathroom.src] },
+  { id: 'junior-pool-access', siteminderRoomTypeUuid: 'oxzl17s570y56fzr', kicker: 'From bed to pool', title: 'Junior Suite Pool Access Mountain View', detail: 'Open the doors to a tropical terrace and make pool time part of your day.', images: [p.juniorBedroom.src, p.juniorTerrace.src, p.juniorBathroom.src] },
+  { id: 'family-two-bedrooms', siteminderRoomTypeUuid: 'pkwcoegzppfhjixq', kicker: 'Bring the whole crew', title: 'Family Two Bedrooms', detail: 'Space to come together, with a living area for all your holiday plans.', images: [p.familyLiving.src, p.familyBedroom.src, p.familyBathroom.src] },
 ];
 
 export const meals: Meal[] = [

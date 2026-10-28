@@ -1,0 +1,126 @@
+<!doctype html>
+<!--
+  Resend template "booking-notification": goes to the reservations inbox when
+  a guest has booked and paid on the website (api/_lib/deliver.ts). Until
+  SiteMinder's SiteConnect API is connected, this email IS the hand-off: the
+  team enters the booking in SiteMinder from it — the rows below follow the
+  order they're keyed in — then presses "Entered in SiteMinder" in /admin →
+  Bookings. The guest is the reply-to. Once this is sent the website deletes
+  the guest's details, so this email is the resort's copy.
+  Edit it here, then run `npm run email:publish`. Same rules as
+  contact-enquiry.html, whose look it shares: one centred 600px table, inline
+  styles, web-safe fonts, a PNG logo, double-quoted attributes. FLAGS_DISPLAY
+  switches on the "please check" box and WHATSAPP_DISPLAY the WhatsApp button
+  ("none;mso-hide:all" hides them).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>New website booking {{{BOOKING_REF}}}</title>
+</head>
+<body style="margin:0;padding:0;background:#fbfdf4;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">{{{PREVIEW}}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbfdf4;">
+    <tr><td align="center" style="padding:28px 14px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border:1px solid #d6e1ce;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:8px;background:#f9f70c;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td align="center" style="padding:26px 28px 8px;">
+          <a href="{{{SITE_URL}}}"><img src="{{{SITE_URL}}}/email/hula-hula-logo.png" width="120" height="104" alt="Hula Hula Resort" style="display:block;border:0;width:120px;height:auto;"></a>
+        </td></tr>
+        <tr><td align="center" style="padding:6px 28px 0;">
+          <span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#e7f4cc;color:#50830d;font:700 11px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;">New booking · {{{BOOKING_REF}}}</span>
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px 4px;font:700 26px/1.2 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{GUEST_NAME}}} booked a stay</td></tr>
+        <tr><td align="center" style="padding:0 34px 22px;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">Paid online on the Hula Hula website. Please enter it in <strong style="color:#173c2c;">SiteMinder</strong>, then mark it “Entered in SiteMinder” in the website admin.</td></tr>
+
+        <tr><td style="padding:0 28px 18px;display:{{{FLAGS_DISPLAY}}};">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fbc5;border:1px solid #e4e208;border-radius:18px;">
+            <tr><td style="padding:16px 22px;font:400 14px/1.7 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#686b0b;">Please check before entering</span><br>{{{FLAGS_HTML}}}</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:0 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e7f4cc;border-radius:18px;">
+            <tr>
+              <td width="50%" style="padding:18px 22px 6px;font:400 15px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;vertical-align:top;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#50830d;">Check-in</span><br><strong>{{{CHECK_IN}}}</strong></td>
+              <td width="50%" style="padding:18px 22px 6px;font:400 15px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;vertical-align:top;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#50830d;">Check-out</span><br><strong>{{{CHECK_OUT}}}</strong></td>
+            </tr>
+            <tr><td colspan="2" style="padding:0 22px 18px;font:400 14px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">{{{NIGHTS}}} · {{{GUESTS}}}</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{{{ROOMS_HTML}}}</table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;border-top:2px solid #173c2c;">
+            <tr><td style="padding:10px 0 3px;">Total for the stay</td><td align="right" style="padding:10px 0 3px;"><strong>{{{TOTAL}}}</strong></td></tr>
+            <tr><td style="padding:3px 0;color:#50830d;">Paid online (2C2P)</td><td align="right" style="padding:3px 0;color:#50830d;"><strong>{{{PAID_AMOUNT}}}</strong></td></tr>
+            <tr><td style="padding:3px 0;">Balance to collect at the hotel</td><td align="right" style="padding:3px 0;"><strong>{{{BALANCE}}}</strong></td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Guest</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><strong>{{{GUEST_NAME}}}</strong></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Email</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><a href="mailto:{{{GUEST_EMAIL}}}" style="color:#006d8a;text-decoration:underline;">{{{GUEST_EMAIL}}}</a></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Phone</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{GUEST_PHONE}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Country</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{GUEST_COUNTRY}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Arrival</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{ARRIVAL_TIME}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Requests</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;white-space:pre-wrap;word-break:break-word;">{{{SPECIAL_REQUESTS}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Promo code</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{PROMO_CODE}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Paid</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{PAID_AT}}} (Krabi time) · {{{PAYMENT_CHANNEL}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">2C2P refs</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">Transaction {{{TRAN_REF}}} · invoice {{{INVOICE_NO}}} · approval {{{APPROVAL_CODE}}}</td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:12px 28px 6px;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Everything in one block, to copy</td></tr>
+        <tr><td style="padding:0 28px 8px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbfdf4;border:1px solid #d6e1ce;border-radius:18px;">
+            <tr><td style="padding:16px 20px;font:400 13px/1.7 Consolas, 'Courier New', monospace;color:#173c2c;word-break:break-word;">{{{KEY_BLOCK}}}</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 8px;">
+          <a href="mailto:{{{GUEST_EMAIL}}}?subject=Your%20Hula%20Hula%20booking%20{{{BOOKING_REF}}}" style="display:inline-block;margin:0 8px 10px 0;padding:13px 24px;border-radius:999px;background:#006d8a;color:#ffffff;font:700 14px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;text-decoration:none;">Reply by email</a><a href="{{{WHATSAPP_URL}}}" style="display:{{{WHATSAPP_DISPLAY}}};margin:0 8px 10px 0;padding:13px 24px;border-radius:999px;background:#50830d;color:#ffffff;font:700 14px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;text-decoration:none;">Reply on WhatsApp</a>
+        </td></tr>
+        <tr><td style="padding:6px 28px 26px;font:400 13px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">Tip: just hit reply — your answer goes straight to {{{GUEST_NAME}}}. Refunds are made in the 2C2P merchant portal. The website deletes the guest’s details once this email is sent, so keep it.</td></tr>
+        <tr><td align="center" style="padding:0 28px 20px;">
+          <img src="{{{SITE_URL}}}/email/hula-hula-pineapple.png" width="108" height="72" alt="" role="presentation" style="display:block;border:0;width:108px;max-width:100%;height:auto;">
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px;background:#fbfdf4;border-top:1px solid #d6e1ce;font:400 12px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">
+          Hula Hula Resort · 222 Moo 3, Klongheng Road, Ao Nang, Krabi 81180 · reservation@hulahularesort.com · <a href="{{{SITE_URL}}}/admin" style="color:#006d8a;">Open the website admin</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

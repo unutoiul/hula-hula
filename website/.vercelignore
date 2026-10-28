@@ -13,3 +13,5 @@ vite.log
 .env
 .env.*
 !.env.example
+/supabase
+/tests

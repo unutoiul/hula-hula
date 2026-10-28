@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "node --env-file-if-exists=.env.local scripts/dev-api.mjs",
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
+    "test:unit": "node --test tests/booking.test.ts",
     "preview": "vite preview",
     "email:publish": "node --env-file-if-exists=.env.local scripts/publish-contact-email.mjs"
   },
@@ -16,6 +18,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.3.1",
     "@mui/material": "^7.3.1",
+    "@supabase/supabase-js": "^2.118.0",
     "motion": "^13.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"

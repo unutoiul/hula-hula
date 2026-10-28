@@ -1,8 +1,10 @@
-// Uploads the contact-form emails in emails/ to Resend as templates (creating
-// each the first time, updating it after) and publishes them, which
-// /api/contact needs before it can send:
+// Uploads the emails in emails/ to Resend as templates (creating each the
+// first time, updating it after) and publishes them, which the api/ functions
+// need before they can send:
 //   contact-enquiry      → the resort inbox, with the guest's message
 //   contact-confirmation → the guest, a thank-you saying we got it
+//   booking-notification → the resort inbox: a paid website booking to enter in SiteMinder
+//   booking-confirmation → the guest, their booking confirmation
 // Run `npm run email:publish` after every edit; it reads RESEND_API_KEY from
 // .env.local or the shell. Variables with a fallback are optional — the API
 // leaves them out when the guest didn't give that detail.
@@ -42,6 +44,69 @@ const TEMPLATES = [
       { key: 'TOPIC', type: 'string' },
       { key: 'STAY', type: 'string', fallback_value: '' },
       { key: 'STAY_DISPLAY', type: 'string', fallback_value: 'none;mso-hide:all' },
+      SITE_URL,
+    ],
+  },
+  {
+    alias: 'booking-notification',
+    name: 'Website booking (to the resort)',
+    subject: 'New website booking',
+    file: 'booking-notification.html',
+    variables: [
+      { key: 'BOOKING_REF', type: 'string' },
+      { key: 'PREVIEW', type: 'string' },
+      { key: 'GUEST_NAME', type: 'string' },
+      { key: 'GUEST_EMAIL', type: 'string', fallback_value: 'Not given' },
+      { key: 'GUEST_PHONE', type: 'string', fallback_value: 'Not given' },
+      { key: 'GUEST_COUNTRY', type: 'string' },
+      { key: 'ARRIVAL_TIME', type: 'string', fallback_value: 'Not given' },
+      { key: 'SPECIAL_REQUESTS', type: 'string', fallback_value: 'None' },
+      { key: 'CHECK_IN', type: 'string' },
+      { key: 'CHECK_OUT', type: 'string' },
+      { key: 'NIGHTS', type: 'string' },
+      { key: 'GUESTS', type: 'string' },
+      { key: 'ROOMS_HTML', type: 'string' },
+      { key: 'TOTAL', type: 'string' },
+      { key: 'PAID_AMOUNT', type: 'string' },
+      { key: 'BALANCE', type: 'string' },
+      { key: 'PAID_AT', type: 'string', fallback_value: '—' },
+      { key: 'PAYMENT_CHANNEL', type: 'string', fallback_value: '—' },
+      { key: 'INVOICE_NO', type: 'string' },
+      { key: 'TRAN_REF', type: 'string', fallback_value: '—' },
+      { key: 'APPROVAL_CODE', type: 'string', fallback_value: '—' },
+      { key: 'PROMO_CODE', type: 'string', fallback_value: 'None' },
+      { key: 'FLAGS_HTML', type: 'string', fallback_value: '' },
+      { key: 'FLAGS_DISPLAY', type: 'string', fallback_value: 'none;mso-hide:all' },
+      { key: 'KEY_BLOCK', type: 'string' },
+      { key: 'WHATSAPP_URL', type: 'string', fallback_value: 'https://wa.me/' },
+      { key: 'WHATSAPP_DISPLAY', type: 'string', fallback_value: 'none;mso-hide:all' },
+      SITE_URL,
+    ],
+  },
+  {
+    alias: 'booking-confirmation',
+    name: 'Website booking confirmation (to the guest)',
+    subject: 'You’re booked! — Hula Hula Resort',
+    file: 'booking-confirmation.html',
+    variables: [
+      { key: 'GUEST_FIRST_NAME', type: 'string', fallback_value: 'there' },
+      { key: 'BOOKING_REF', type: 'string' },
+      { key: 'PREVIEW', type: 'string' },
+      { key: 'CHECK_IN', type: 'string' },
+      { key: 'CHECK_OUT', type: 'string' },
+      { key: 'CHECK_IN_TIME', type: 'string', fallback_value: '3:00 pm' },
+      { key: 'CHECK_OUT_TIME', type: 'string', fallback_value: '12:00 noon' },
+      { key: 'NIGHTS', type: 'string' },
+      { key: 'GUESTS', type: 'string' },
+      { key: 'ROOMS_HTML', type: 'string' },
+      { key: 'TOTAL', type: 'string' },
+      { key: 'PAID_NOW', type: 'string' },
+      { key: 'BALANCE', type: 'string' },
+      { key: 'BALANCE_DISPLAY', type: 'string', fallback_value: 'none;mso-hide:all' },
+      { key: 'CANCELLATION', type: 'string' },
+      { key: 'PAYMENT_REF', type: 'string' },
+      { key: 'PROMO_LINE', type: 'string', fallback_value: '' },
+      { key: 'PROMO_DISPLAY', type: 'string', fallback_value: 'none;mso-hide:all' },
       SITE_URL,
     ],
   },
