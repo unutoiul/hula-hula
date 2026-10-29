@@ -12,6 +12,12 @@ const shortDay = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'nume
 
 export const dayLabel = (iso: string) => longDay.format(asDay(iso));
 export const shortDayLabel = (iso: string) => shortDay.format(asDay(iso));
+const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' });
+const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short' });
+/** "23 Nov" */
+export const dayMonthLabel = (iso: string) => dayMonth.format(asDay(iso));
+/** "Mon" */
+export const weekdayLabel = (iso: string) => weekday.format(asDay(iso));
 export const stayLabel = (checkIn: string, checkOut: string) => `${shortDayLabel(checkIn)} – ${dayLabel(checkOut)}`;
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;

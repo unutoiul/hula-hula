@@ -8,9 +8,10 @@ import { guessCountry } from './countries';
 
 // Everything the booking pages share: the live room list for the current
 // search, the rooms picked (the cart), the guest's details and the payment
-// session started on 2C2P. Kept in sessionStorage so a reload — or the round
-// trip through 2C2P's payment page and the bank's 3-D Secure check — doesn't
-// lose anything, and cleared once the booking is confirmed.
+// session started on 2C2P. Only once a payment has started is any of it kept
+// in this tab's sessionStorage — just so the round trip through 2C2P's page
+// and the bank's check doesn't lose the booking. Before that, a reload starts
+// with nothing picked; and it's forgotten once confirmed or two hours later.
 
 export interface CartLine { roomTypeUuid: string; roomRateUuid: string; quantity: number }
 
@@ -50,6 +51,8 @@ interface BookingFlow {
   startPayment: (extras: { hp: string; elapsedMs: number }) => Promise<{ webPaymentUrl: string } | { error: string }>;
   /** After a declined payment: drop the old payment so the next try starts a fresh one. */
   resetPayment: () => void;
+  /** Empty the room selection (and drop any payment started for it). */
+  clearCart: () => void;
   forgetBooking: () => void;
 }
 
@@ -58,8 +61,14 @@ const EMPTY_GUEST: GuestForm = { firstName: '', lastName: '', email: '', emailCo
 
 interface Stored { searchKey: string; cart: CartLine[]; guest: GuestForm; payment: PaymentSession | null }
 
+const KEEP_AFTER_HOLD_MS = 2 * 3600_000;
+
 function readStored(): Stored | null {
-  try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null') as Stored | null; } catch { return null; }
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null') as Stored | null;
+    // Only a booking that went to payment, and not an old one.
+    return stored?.payment && Date.parse(stored.payment.expiresAt) > Date.now() - KEEP_AFTER_HOLD_MS ? stored : null;
+  } catch { return null; }
 }
 /** The search the stored cart belongs to — so a page with no search in its URL
  * (the confirmation page after a bank redirect) can pick the stay back up. */
@@ -146,7 +155,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, [needsRooms, selectingCheckout, searchParams, searchKey, reloads]);
 
-  useEffect(() => { writeStored({ searchKey: cartKey, cart: lines, guest, payment }); }, [cartKey, lines, guest, payment]);
+  useEffect(() => { writeStored(payment ? { searchKey: cartKey, cart: lines, guest, payment } : null); }, [cartKey, lines, guest, payment]);
 
   const data = availability.data;
   const cart = useMemo<ResolvedLine[]>(() => lines.flatMap((line) => {
@@ -225,6 +234,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
   }, [plan, expanded, guest, searchKey, searchParams, promoCode, payment, cartKey, lines]);
 
   const resetPayment = useCallback(() => setPayment(null), []);
+  const clearCart = useCallback(() => { setLines([]); setPayment(null); }, []);
 
   const forgetBooking = useCallback(() => {
     setLines([]);
@@ -235,8 +245,8 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
   const value = useMemo<BookingFlow>(() => ({
     searchKey, availability, reload: () => setReloads((n) => n + 1),
     cart, hasRooms: lines.length > 0, quantityOf, roomsLeft, setQuantity, totals, plan: expanded.length ? plan : null,
-    guest, updateGuest, payment, startPayment, resetPayment, forgetBooking,
-  }), [searchKey, availability, cart, lines, quantityOf, roomsLeft, setQuantity, totals, plan, expanded, guest, updateGuest, payment, startPayment, resetPayment, forgetBooking]);
+    guest, updateGuest, payment, startPayment, resetPayment, clearCart, forgetBooking,
+  }), [searchKey, availability, cart, lines, quantityOf, roomsLeft, setQuantity, totals, plan, expanded, guest, updateGuest, payment, startPayment, resetPayment, clearCart, forgetBooking]);
 
   return <BookingFlowContext.Provider value={value}>{children}</BookingFlowContext.Provider>;
 }

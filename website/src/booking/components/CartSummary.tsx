@@ -1,4 +1,5 @@
-import { Alert, Box, Divider, Stack, Typography } from '@mui/material';
+import CloseRounded from '@mui/icons-material/CloseRounded';
+import { Alert, Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 import { toISODate, useBookingSearch } from '../../context/BookingSearchContext';
 import { fonts } from '../../theme';
@@ -6,10 +7,11 @@ import { useBookingFlow } from '../BookingFlowContext';
 import { guestsLabel, mealsLabel, money, nightsLabel, stayLabel } from '../format';
 
 // The running total beside every step: the stay, each room picked, the total
-// and what's paid now versus at the hotel. `action` is the step's button.
-export function CartSummary({ action, showFit = true }: { action?: ReactNode; showFit?: boolean }) {
+// and what's paid now versus at the hotel. `action` is the step's button;
+// `editable` lets the guest take rooms out (✕ per room, or Clear all).
+export function CartSummary({ action, showFit = true, editable = false }: { action?: ReactNode; showFit?: boolean; editable?: boolean }) {
   const { checkIn, checkOut, adults, children } = useBookingSearch();
-  const { cart, totals, plan } = useBookingFlow();
+  const { cart, totals, plan, setQuantity, clearCart } = useBookingFlow();
   // From the dates on screen, so the summary never lags behind a search still loading.
   const nights = Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000);
   // At least one adult per room — the same rule the booking itself follows.
@@ -33,8 +35,12 @@ export function CartSummary({ action, showFit = true }: { action?: ReactNode; sh
             <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{line.quantity} × {roomType.name}</Typography>
             <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{rate.name}{mealsLabel(rate.meals).toLowerCase() !== rate.name.toLowerCase() ? ` · ${mealsLabel(rate.meals)}` : ''}</Typography>
           </Box>
-          <Typography sx={{ fontSize: 14, whiteSpace: 'nowrap' }}>{money(rate.total * line.quantity, totals.currency)}</Typography>
+          <Stack direction="row" alignItems="flex-start" spacing={.25} sx={{ flexShrink: 0 }}>
+            <Typography sx={{ fontSize: 14, whiteSpace: 'nowrap' }}>{money(rate.total * line.quantity, totals.currency)}</Typography>
+            {editable && <IconButton size="small" aria-label={`Remove ${roomType.name} (${rate.name})`} onClick={() => setQuantity(roomType, rate, 0)} sx={{ mt: '-5px', mr: '-8px', color: 'text.secondary' }}><CloseRounded sx={{ fontSize: 16 }} /></IconButton>}
+          </Stack>
         </Stack>)}
+        {editable && <Button size="small" onClick={clearCart} sx={{ alignSelf: 'flex-start', minHeight: 0, py: .25, fontSize: 12 }}>Clear all</Button>}
       </Stack>}
 
     {cart.length > 0 && <>

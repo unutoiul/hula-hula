@@ -1,4 +1,7 @@
 import Add from '@mui/icons-material/Add';
+import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
+import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
+import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import BedOutlined from '@mui/icons-material/BedOutlined';
 import BlockRounded from '@mui/icons-material/BlockRounded';
 import CardGiftcardRounded from '@mui/icons-material/CardGiftcardRounded';
@@ -11,8 +14,8 @@ import FreeBreakfastOutlined from '@mui/icons-material/FreeBreakfastOutlined';
 import PeopleOutlineRounded from '@mui/icons-material/PeopleOutlineRounded';
 import Remove from '@mui/icons-material/Remove';
 import SquareFootRounded from '@mui/icons-material/SquareFootRounded';
-import { Alert, Box, Button, Chip, Collapse, IconButton, Link, Popover, Skeleton, Stack, TextField, Typography } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import { Alert, Box, Button, Chip, IconButton, LinearProgress, Link, Popover, Skeleton, Stack, TextField, Typography } from '@mui/material';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import type { RateOffer, RoomTypeOffer } from '../../../shared/bookingContract';
 import { ResortPhoto } from '../../components/common/ResortPhoto';
 import { GuestStepper } from '../../components/booking/GuestStepper';
@@ -23,7 +26,7 @@ import { navigate } from '../../router';
 import { fonts } from '../../theme';
 import { useBookingFlow } from '../BookingFlowContext';
 import { CartSummary } from '../components/CartSummary';
-import { guestsLabel, mealsLabel, money, nightsLabel, plural, stayLabel } from '../format';
+import { dayMonthLabel, guestsLabel, mealsLabel, money, nightsLabel, plural, stayLabel, weekdayLabel } from '../format';
 import { roomContent } from '../roomContent';
 
 // Step 1: the rooms free for the stay, each with its rate plans (meal plan,
@@ -73,7 +76,7 @@ export function RoomsStep() {
     </Box>
 
     <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
-      <CartSummary action={continueButton} />
+      <CartSummary action={continueButton} editable />
     </Box>
 
     {/* Phones: the total and the way on, always within thumb's reach. */}
@@ -89,20 +92,44 @@ export function RoomsStep() {
   </Box>;
 }
 
-const fieldButton = {
-  border: 0, bgcolor: 'transparent', color: 'inherit', textAlign: 'left', flex: '1 1 0', minWidth: 0, px: 2.5, py: 1.4, cursor: 'pointer',
-  transition: 'background-color .2s ease', '&:hover': { bgcolor: 'secondary.light' }, '&:focus-visible': { outlineOffset: -4 },
-} as const;
+// One segment of the search panel: an icon, what it is, the current choice
+// and a hint, opening its own small panel when clicked.
+function Segment({ icon, label, value, hint, hintColor, onClick, expanded, ariaLabel, divider }: {
+  icon: ReactNode; label: string; value: ReactNode; hint?: ReactNode; hintColor?: string;
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void; expanded: boolean; ariaLabel: string; divider: boolean;
+}) {
+  return <Box component="button" type="button" aria-label={ariaLabel} aria-haspopup="dialog" aria-expanded={expanded} onClick={onClick} sx={{
+    display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, px: { xs: 2, sm: 2.5 }, py: 1.75, border: 0, bgcolor: expanded ? 'secondary.light' : 'transparent',
+    color: 'inherit', textAlign: 'left', cursor: 'pointer', transition: 'background-color .2s ease', '&:hover': { bgcolor: 'secondary.light' }, '&:focus-visible': { outlineOffset: -4 },
+    borderBottom: divider ? { xs: '1px solid #d6e1ce', md: 'none' } : 'none', borderRight: divider ? { md: '1px solid #d6e1ce' } : 'none',
+  }}>
+    <Box aria-hidden sx={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'success.light', color: 'success.dark', '& svg': { fontSize: 21 } }}>{icon}</Box>
+    <Box sx={{ minWidth: 0, flex: 1 }}>
+      <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', fontSize: 10.5, lineHeight: 1.4 }}>{label}</Typography>
+      <Typography sx={{ fontFamily: fonts.playful, fontSize: 15.5, lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</Typography>
+      {hint && <Typography sx={{ fontSize: 12, color: hintColor ?? 'text.secondary', lineHeight: 1.4 }}>{hint}</Typography>}
+    </Box>
+    <ExpandMoreRounded aria-hidden sx={{ color: 'text.secondary', flexShrink: 0, transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }} />
+  </Box>;
+}
 
+const panelPaper = { mt: 1, borderRadius: '24px', boxShadow: '0 18px 40px rgba(23,60,44,.16)' } as const;
+
+// The search panel above the rooms: stay dates, guests and an optional promo
+// code. Every change searches again straight away; a thin bar shows while the
+// new prices load.
 function SearchBar() {
   const search = useBookingSearch();
+  const { availability } = useBookingFlow();
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const barRef = useRef<HTMLDivElement>(null);
   const [dateOpen, setDateOpen] = useState(false);
   const [guestAnchor, setGuestAnchor] = useState<HTMLElement | null>(null);
-  const [promoOpen, setPromoOpen] = useState(Boolean(search.promoCode));
+  const [promoAnchor, setPromoAnchor] = useState<HTMLElement | null>(null);
   const [promoDraft, setPromoDraft] = useState(search.promoCode);
   const nights = Math.round((search.checkOut.getTime() - search.checkIn.getTime()) / 86_400_000);
+  const promo = availability.data?.promo;
+  const promoChecked = !!promo && promo.code.toUpperCase() === search.promoCode.toUpperCase() && availability.status === 'ready';
 
   const wasSelecting = useRef(search.selectingCheckout);
   useEffect(() => {
@@ -110,37 +137,54 @@ function SearchBar() {
     wasSelecting.current = search.selectingCheckout;
   }, [search.selectingCheckout]);
 
-  return <Box>
-    <Box ref={barRef} sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '20px', overflow: 'hidden' }}>
-      <Box component="button" type="button" aria-label="Change stay dates" aria-expanded={dateOpen} onClick={() => setDateOpen(true)} sx={{ ...fieldButton, borderBottom: { xs: '1px solid #d6e1ce', sm: 'none' }, borderRight: { sm: '1px solid #d6e1ce' } }}>
-        <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: 11 }}>Dates · {nightsLabel(nights)}</Typography>
-        <Typography sx={{ fontFamily: fonts.playful, fontSize: 15 }}>{stayLabel(toISODate(search.checkIn), toISODate(search.checkOut))}</Typography>
-      </Box>
-      <Box component="button" type="button" aria-label="Change guests" aria-expanded={!!guestAnchor} onClick={(e) => setGuestAnchor(e.currentTarget)} sx={fieldButton}>
-        <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: 11 }}>Guests</Typography>
-        <Typography sx={{ fontFamily: fonts.playful, fontSize: 15 }}>{guestsLabel(search.adults, search.children)}</Typography>
-      </Box>
-    </Box>
-    {!promoOpen && <Button size="small" onClick={() => setPromoOpen(true)} sx={{ mt: 1, minHeight: 0, fontSize: 13 }}>Have a promo code?</Button>}
-    <Collapse in={promoOpen}>
-      <Stack component="form" direction="row" spacing={1} sx={{ mt: 1.5, maxWidth: 420 }} onSubmit={(e) => { e.preventDefault(); search.setPromoCode(promoDraft.trim()); }}>
-        <TextField size="small" label="Promo code" value={promoDraft} onChange={(e) => setPromoDraft(e.target.value.replace(/[^\w-]/g, '').slice(0, 40))} sx={{ flex: 1 }} slotProps={{ htmlInput: { autoCapitalize: 'characters', spellCheck: false } }} />
-        <Button type="submit" variant="outlined" size="small">Apply</Button>
-        {search.promoCode && <Button size="small" onClick={() => { setPromoDraft(''); search.setPromoCode(''); }}>Remove</Button>}
-      </Stack>
-    </Collapse>
+  // Closing the calendar after picking only a check-in keeps the one-night
+  // stay it shows (and searches it), rather than waiting for a check-out.
+  const closeDates = () => { if (search.selectingCheckout) search.setRange(search.checkIn, search.checkOut); setDateOpen(false); };
+  const applyPromo = (code: string) => { search.setPromoCode(code.trim()); setPromoAnchor(null); };
+  const promoHint = !search.promoCode ? 'Optional' : !promoChecked ? 'Checking…' : promo.applied ? '✓ Applied to the prices' : 'Not valid for these dates';
 
-    {/* Closing the calendar after picking only a check-in keeps the one-night
-        stay it shows (and searches it), rather than waiting for a check-out. */}
-    <Popover open={dateOpen} anchorEl={barRef.current} onClose={() => { if (search.selectingCheckout) search.setRange(search.checkIn, search.checkOut); setDateOpen(false); }} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', width: { xs: 380, sm: 520 } } } }}>
+  return <Box>
+    <Box ref={barRef} sx={{
+      position: 'relative', display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr)' },
+      border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '22px', overflow: 'hidden', boxShadow: '0 10px 26px rgba(23,60,44,.07)',
+    }}>
+      <Segment icon={<CalendarMonthRounded />} label="Your stay" ariaLabel="Change stay dates" expanded={dateOpen} onClick={() => setDateOpen(true)} divider
+        value={`${dayMonthLabel(toISODate(search.checkIn))} → ${dayMonthLabel(toISODate(search.checkOut))}`}
+        hint={search.selectingCheckout ? 'Now pick your check-out date' : `${nightsLabel(nights)} · ${weekdayLabel(toISODate(search.checkIn))} → ${weekdayLabel(toISODate(search.checkOut))}`} />
+      <Segment icon={<PeopleOutlineRounded />} label="Guests" ariaLabel="Change guests" expanded={!!guestAnchor} onClick={(e) => setGuestAnchor(e.currentTarget)} divider
+        value={guestsLabel(search.adults, search.children)} hint="Who’s coming" />
+      <Segment icon={<LocalOfferOutlined />} label="Promo code" ariaLabel={search.promoCode ? `Promo code ${search.promoCode}` : 'Add a promo code'} expanded={!!promoAnchor}
+        onClick={(e) => { setPromoDraft(search.promoCode); setPromoAnchor(e.currentTarget); }} divider={false}
+        value={search.promoCode || 'Add a code'} hint={promoHint}
+        hintColor={search.promoCode && promoChecked ? (promo.applied ? 'success.dark' : 'warning.dark') : undefined} />
+      {availability.status === 'loading' && <LinearProgress aria-hidden sx={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 3, bgcolor: 'transparent' }} />}
+    </Box>
+    <Typography aria-live="polite" sx={{ fontSize: 12, color: 'text.secondary', mt: 1, ml: 1, minHeight: 18 }}>
+      {availability.status === 'loading' ? 'Updating prices…' : ''}
+    </Typography>
+
+    <Popover open={dateOpen} anchorEl={barRef.current} onClose={closeDates} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} slotProps={{ paper: { sx: { ...panelPaper, width: { xs: 380, sm: 520 } } } }}>
+      <Typography sx={{ px: 3, pt: 2.5, fontSize: 13, color: 'text.secondary' }}>{search.selectingCheckout ? 'Now choose your check-out date' : 'Choose your check-in date'}</Typography>
       <RangeCalendar checkIn={search.checkIn} checkOut={search.checkOut} minDate={today} onSelectDay={search.selectDay} />
     </Popover>
-    <Popover open={!!guestAnchor} anchorEl={guestAnchor} onClose={() => setGuestAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', minWidth: 260 } } }}>
+    <Popover open={!!guestAnchor} anchorEl={guestAnchor} onClose={() => setGuestAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} slotProps={{ paper: { sx: { ...panelPaper, minWidth: 280 } } }}>
       <Stack spacing={2} sx={{ p: 3 }}>
         <GuestStepper label="Adults" value={search.adults} min={1} max={12} onChange={search.setAdults} />
         <GuestStepper label="Children" value={search.children} min={0} max={8} onChange={search.setChildren} />
         <Button variant="contained" size="small" onClick={() => setGuestAnchor(null)}>Done</Button>
       </Stack>
+    </Popover>
+    <Popover open={!!promoAnchor} anchorEl={promoAnchor} onClose={() => setPromoAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }} slotProps={{ paper: { sx: { ...panelPaper, width: 320, maxWidth: 'calc(100vw - 32px)' } } }}>
+      <Box component="form" sx={{ p: 3 }} onSubmit={(e) => { e.preventDefault(); applyPromo(promoDraft); }}>
+        <Typography sx={{ fontWeight: 700 }}>Promo code</Typography>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .5, mb: 2 }}>Got a code from us or one of our offers? Enter it to see your special price.</Typography>
+        <TextField autoFocus fullWidth size="small" label="Code" value={promoDraft} onChange={(e) => setPromoDraft(e.target.value.replace(/[^\w-]/g, '').slice(0, 40).toUpperCase())}
+          slotProps={{ htmlInput: { autoCapitalize: 'characters', spellCheck: false, autoComplete: 'off' } }} />
+        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+          <Button type="submit" variant="contained" size="small" disabled={!promoDraft.trim()}>Apply</Button>
+          {search.promoCode && <Button size="small" onClick={() => { setPromoDraft(''); applyPromo(''); }}>Remove code</Button>}
+        </Stack>
+      </Box>
     </Popover>
   </Box>;
 }
