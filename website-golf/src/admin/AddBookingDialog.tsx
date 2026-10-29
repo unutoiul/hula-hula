@@ -1,8 +1,9 @@
 import { Alert, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
-import { buildSheet, fits } from '../booking/availability';
-import { ACTIVITIES, activityById, type ActivityId } from '../booking/config';
+import { buildSheet, fits, rulesFrom } from '../booking/availability';
+import { findActivity } from '../booking/config';
+import { useSite } from '../context/SiteDataContext';
 import { shortDayLabel, timeLabel } from '../booking/dates';
 import { money, plural, priceLines, totalOf } from '../booking/pricing';
 import { GuestStepper } from '../components/booking/GuestStepper';
@@ -15,8 +16,9 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
   open: boolean; date: string; bookings: StaffBooking[]; blocks: StaffBlock[]; onClose: () => void; onSaved: () => void;
 }) {
   const theme = useTheme();
+  const site = useSite();
   const phone = useMediaQuery(theme.breakpoints.down('sm'));
-  const [activityId, setActivityId] = useState<ActivityId>('golf');
+  const [activityId, setActivityId] = useState<string>(site.activities[0]?.id ?? '');
   const [optionId, setOptionId] = useState('9');
   const [players, setPlayers] = useState(2);
   const [time, setTime] = useState('');
@@ -29,7 +31,7 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const activity = activityById(activityId)!;
+  const activity = findActivity(site, activityId) ?? site.activities[0];
   const option = activity.options.find((o) => o.id === optionId) ?? activity.options[0];
 
   // Start fresh each time it opens.
@@ -41,13 +43,14 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
   const sheet = useMemo(() => buildSheet(activity, option, date,
     bookings.filter((b) => b.activity === activity.id).map((b) => ({ time: hhmm(b.start_time), minutes: b.minutes, players: b.players })),
     blocks.filter((b) => !b.activity || b.activity === activity.id).map((b) => ({ start: hhmm(b.start_time), end: hhmm(b.end_time) })),
-    { includePast: true }), [activity, option, date, bookings, blocks]);
+    { rules: rulesFrom(site.club), includePast: true }), [activity, option, date, bookings, blocks, site.club]);
   const slot = sheet.find((s) => s.time === time);
   const overbook = !!slot && !fits(slot, players);
   const lines = priceLines(activity, option, players);
+  const people = activity.peopleNoun === 'person' ? 'People' : 'Players';
 
-  const pickActivity = (id: ActivityId) => {
-    const next = activityById(id)!;
+  const pickActivity = (id: string) => {
+    const next = findActivity(site, id)!;
     setActivityId(id); setOptionId(next.options[0].id); setTime('');
     setPlayers((p) => Math.min(next.maxPlayers, Math.max(next.minPlayers, p)));
   };
@@ -64,7 +67,7 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
         first_name: first, last_name: rest.join(' '), phone: phoneNumber.trim(), email: email.trim().toLowerCase(), notes: notes.trim(),
         lines, total: totalOf(lines), source,
       },
-      p_capacity: activity.capacity, p_units: activity.units, p_private: !!activity.privateGroup, p_force: force,
+      p_capacity: activity.capacity, p_units: activity.units, p_private: activity.privateGroup, p_force: force,
     });
     setBusy(false);
     if (saveError) setError(saveError.message.includes('taken') ? 'Someone just took that time. Pick another, or squeeze them in.' : saveError.message);
@@ -76,13 +79,13 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
     <DialogContent dividers>
       <Stack spacing={2.25}>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
-          {ACTIVITIES.map((a) => <Button key={a.id} onClick={() => pickActivity(a.id)} variant={a.id === activity.id ? 'contained' : 'outlined'} color={a.id === activity.id ? 'primary' : 'inherit'}
-            startIcon={<ActivityIcon activity={a.id} />} sx={{ borderColor: 'divider', px: 1, fontSize: 13, minHeight: 44 }}>{a.name}</Button>)}
+          {site.activities.map((a) => <Button key={a.id} onClick={() => pickActivity(a.id)} variant={a.id === activity.id ? 'contained' : 'outlined'} color={a.id === activity.id ? 'primary' : 'inherit'}
+            startIcon={<ActivityIcon icon={a.icon} />} sx={{ borderColor: 'divider', px: 1, fontSize: 13, minHeight: 44 }}>{a.name}</Button>)}
         </Box>
         {activity.options.length > 1 && <ToggleButtonGroup exclusive value={option.id} onChange={(_, v) => { if (v) { setOptionId(v); setTime(''); } }} fullWidth size="small">
           {activity.options.map((o) => <ToggleButton key={o.id} value={o.id} sx={{ textTransform: 'none', fontWeight: 700 }}>{o.label}</ToggleButton>)}
         </ToggleButtonGroup>}
-        <GuestStepper label={activity.id === 'lesson' ? 'People' : 'Players'} value={players} min={1} max={force ? 40 : activity.maxPlayers} onChange={setPlayers} />
+        <GuestStepper label={people} value={players} min={1} max={force ? 40 : activity.maxPlayers} onChange={setPlayers} />
         <TextField select label="Time" value={time} onChange={(e) => setTime(e.target.value)} fullWidth>
           {sheet.map((s) => {
             const free = fits(s, players);

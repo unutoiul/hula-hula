@@ -6,29 +6,31 @@ import West from '@mui/icons-material/West';
 import { Alert, Box, Button, FormControlLabel, Link, MenuItem, Radio, RadioGroup, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useState, type ReactNode } from 'react';
 import { GuestStepper } from '../../components/booking/GuestStepper';
-import { CONTACT } from '../../data/content';
+import { useContact, useSite } from '../../context/SiteDataContext';
 import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
 import { BookingSummary } from '../components/BookingSummary';
-import { EXPERIENCE_LEVELS, pickupFor, RENTALS, TRANSFER_LEAD_MINUTES, TRANSFER_PICKUPS } from '../config';
+import { EXPERIENCE_LEVELS, pickupFor } from '../config';
 import { fromMinutes, timeLabel, toMinutes } from '../dates';
-import { caddieTipNote, money } from '../pricing';
+import { money } from '../pricing';
 
 // Step 2: rental clubs, the free shuttle and — for lessons — how much golf
 // they've played. Everything here is optional except a pick-up address when
 // the shuttle is wanted.
 export function ExtrasStep() {
+  const CONTACT = useContact();
+  const { club, rentals } = useSite();
   const { activity, search, time, extras, updateExtras } = useBookingFlow();
   const [tried, setTried] = useState(false);
-  useEffect(() => { if (activity.id === 'lesson' && !extras.experience) updateExtras({ experience: EXPERIENCE_LEVELS[0] }); }, [activity.id]);
-  const pickup = time ? pickupFor(time) : null;
+  useEffect(() => { if (activity.askExperience && !extras.experience) updateExtras({ experience: EXPERIENCE_LEVELS[0] }); }, [activity.id]);
+  const pickup = time ? pickupFor(time, club) : null;
   const needsAddress = !!extras.transfer && !extras.pickupFrom.trim();
 
   const goOn = () => {
     setTried(true);
     if (!needsAddress) navigate('/book/details');
   };
-  const earliestWithShuttle = TRANSFER_PICKUPS.map((p) => timeLabel(fromMinutes(toMinutes(p) + TRANSFER_LEAD_MINUTES)));
+  const earliestWithShuttle = club.transfer.pickups.map((p) => timeLabel(fromMinutes(toMinutes(p) + club.transfer.leadMinutes)));
 
   return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' }, gap: { xs: 3, md: 4 }, alignItems: 'start' }}>
     <Box sx={{ minWidth: 0 }}>
@@ -37,15 +39,15 @@ export function ExtrasStep() {
       <Typography sx={{ color: 'text.secondary', mt: 1, mb: 3 }}>All optional — skip anything you don’t need.</Typography>
 
       <Stack spacing={2.5}>
-        {activity.rentals && <Card icon={<SportsGolfRounded />} title="Rental clubs" hint="Bringing your own? Skip this. Sets are paid at the club with your booking.">
+        {activity.rentals && rentals.length > 0 && <Card icon={<SportsGolfRounded />} title="Rental clubs" hint="Bringing your own? Skip this. Sets are paid at the club with your booking.">
           <Stack spacing={1.5} sx={{ maxWidth: 420 }}>
-            {RENTALS.map((r) => <GuestStepper key={r.id} label={`${r.label} · ${money(r.price)}`} value={extras.rentals[r.id] ?? 0} min={0}
-              max={search.players - RENTALS.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
+            {rentals.map((r) => <GuestStepper key={r.id} label={`${r.label} · ${money(r.price)}`} value={extras.rentals[r.id] ?? 0} min={0}
+              max={search.players - rentals.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
               onChange={(count) => updateExtras({ rentals: { ...extras.rentals, [r.id]: count } })} />)}
           </Stack>
         </Card>}
 
-        <Card icon={<AirportShuttleRounded />} title="Free shuttle" hint={`Our free transfer runs twice a day, with pick-ups at ${TRANSFER_PICKUPS.map(timeLabel).join(' and ')}.`}>
+        {club.transfer.pickups.length > 0 && <Card icon={<AirportShuttleRounded />} title="Free shuttle" hint={`Our free transfer has pick-ups at ${club.transfer.pickups.map(timeLabel).join(' and ')}.`}>
           {pickup
             ? <>
               <RadioGroup value={extras.transfer ?? 'none'} onChange={(e) => updateExtras({ transfer: e.target.value === 'none' ? null : e.target.value })}>
@@ -59,16 +61,16 @@ export function ExtrasStep() {
             : <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
               The shuttle doesn’t line up with a {time ? timeLabel(time) : ''} start — it suits starts from about {earliestWithShuttle.join(' or ')}. You can <Link component="button" onClick={() => navigate('/book')}>pick another time</Link>, or make your own way: <Link href={CONTACT.maps} target="_blank" rel="noopener noreferrer">find us on the map</Link>.
             </Typography>}
-        </Card>
+        </Card>}
 
-        {activity.id === 'lesson' && <Card icon={<SportsGolfRounded />} title="How much golf have you played?" hint="So your coach can plan the session around you.">
+        {activity.askExperience && <Card icon={<SportsGolfRounded />} title="How much golf have you played?" hint="So your coach can plan the session around you.">
           <TextField select fullWidth label="Experience" value={extras.experience || EXPERIENCE_LEVELS[0]} onChange={(e) => updateExtras({ experience: e.target.value })} sx={{ maxWidth: 420 }}>
             {EXPERIENCE_LEVELS.map((option) => <MenuItem key={option} value={option}>{option}</MenuItem>)}
           </TextField>
         </Card>}
 
         {activity.caddie && <Alert icon={<VolunteerActivismRounded />} severity="info" sx={{ borderRadius: '18px' }}>
-          Every round here goes out with a caddie and a golf cart, already in the price. {caddieTipNote}
+          A caddie comes with your booking, already in the price. Caddie tip not included — {money(club.booking.caddieTip)} per caddie is customary, in cash.
         </Alert>}
       </Stack>
 

@@ -1,6 +1,6 @@
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { ACTIVITIES, type ActivityId } from '../booking/config';
+import { useSite } from '../context/SiteDataContext';
 import { fromMinutes, shortDayLabel, timeLabel } from '../booking/dates';
 import { supabase } from './supabase';
 
@@ -11,8 +11,9 @@ const TIMES = Array.from({ length: 29 }, (_, i) => fromMinutes(6 * 60 + i * 30))
 // no online booking can start inside the block. Bookings already there stay.
 export function BlockDialog({ open, date, onClose, onSaved }: { open: boolean; date: string; onClose: () => void; onSaved: () => void }) {
   const theme = useTheme();
+  const { activities } = useSite();
   const phone = useMediaQuery(theme.breakpoints.down('sm'));
-  const [activity, setActivity] = useState<ActivityId | 'all'>('all');
+  const [activity, setActivity] = useState<string>('all');
   const [start, setStart] = useState('06:00');
   const [end, setEnd] = useState('20:00');
   const [reason, setReason] = useState('');
@@ -34,9 +35,9 @@ export function BlockDialog({ open, date, onClose, onSaved }: { open: boolean; d
     <DialogContent dividers>
       <Stack spacing={2.25}>
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Nobody can book a start inside this time online. Bookings already made stay on the sheet.</Typography>
-        <TextField select label="What" value={activity} onChange={(e) => setActivity(e.target.value as ActivityId | 'all')}>
+        <TextField select label="What" value={activity} onChange={(e) => setActivity(e.target.value)}>
           <MenuItem value="all">Everything (the whole club)</MenuItem>
-          {ACTIVITIES.map((a) => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
+          {activities.map((a) => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
         </TextField>
         <Stack direction="row" spacing={2}>
           <TextField select label="From" value={start} onChange={(e) => setStart(e.target.value)} fullWidth>

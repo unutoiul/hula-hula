@@ -1,7 +1,8 @@
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, InputAdornment, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { activityById } from '../booking/config';
+import { activityName } from '../booking/config';
+import { useSite } from '../context/SiteDataContext';
 import { shortDayLabel, timeLabel } from '../booking/dates';
 import { plural } from '../booking/pricing';
 import { hhmm, supabase, type StaffBooking } from './supabase';
@@ -10,6 +11,7 @@ import { hhmm, supabase, type StaffBooking } from './supabase';
 // reference, name, phone or email; picking one opens that day's sheet.
 export function SearchDialog({ open, onClose, onPick }: { open: boolean; onClose: () => void; onPick: (date: string) => void }) {
   const theme = useTheme();
+  const site = useSite();
   const phone = useMediaQuery(theme.breakpoints.down('sm'));
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<StaffBooking[] | null>(null);
@@ -45,7 +47,7 @@ export function SearchDialog({ open, onClose, onPick }: { open: boolean; onClose
             <Typography sx={{ fontWeight: 700 }}>{b.first_name} {b.last_name}</Typography>
             {b.status !== 'booked' && <Chip size="small" label={b.status.replace('_', ' ')} />}
           </Stack>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{shortDayLabel(b.play_date)} · {timeLabel(hhmm(b.start_time))} · {activityById(b.activity)?.name} · {plural(b.players, 'person', 'people')} · {b.ref}</Typography>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{shortDayLabel(b.play_date)} · {timeLabel(hhmm(b.start_time))} · {activityName(site, b.activity)} · {plural(b.players, 'person', 'people')} · {b.ref}</Typography>
         </Box>)}
       </Stack>
     </DialogContent>

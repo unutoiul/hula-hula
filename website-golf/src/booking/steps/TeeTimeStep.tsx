@@ -5,7 +5,7 @@ import PersonOutlineRounded from '@mui/icons-material/PersonOutlineRounded';
 import { Alert, Box, Button, Link, Skeleton, Stack, Typography } from '@mui/material';
 import { useEffect, useState, type ReactNode } from 'react';
 import { GuestStepper } from '../../components/booking/GuestStepper';
-import { CONTACT } from '../../data/content';
+import { useContact, useSite } from '../../context/SiteDataContext';
 import { navigate } from '../../router';
 import { fonts } from '../../theme';
 import { ActivityIcon } from '../activityIcons';
@@ -14,9 +14,8 @@ import { DAY_PARTS, dayPartOf, fits, type DayPart, type Slot } from '../availabi
 import { bookHref, useBookingFlow } from '../BookingFlowContext';
 import { BookingSummary } from '../components/BookingSummary';
 import { DateStrip } from '../components/DateStrip';
-import { ACTIVITIES } from '../config';
 import { addDays, durationLabel, fromMinutes, shortDayLabel, timeLabel, toMinutes } from '../dates';
-import { fromPrice, money, plural, pricePerPerson } from '../pricing';
+import { fromPrice, money, peopleLabel, plural, pricePerPerson } from '../pricing';
 
 type Sheet = { status: 'loading' | 'ready'; slots: Slot[] } | { status: 'error'; slots: Slot[]; error: string };
 
@@ -24,6 +23,7 @@ type Sheet = { status: 'loading' | 'ready'; slots: Slot[] } | { status: 'error';
 // day — every start with how many places are left. Picking one holds it for
 // a few minutes while the rest of the booking is filled in.
 export function TeeTimeStep() {
+  const CONTACT = useContact();
   const { activity, option, search, setSearch, time, selectTime, holdExpired, total } = useBookingFlow();
   const [sheet, setSheet] = useState<Sheet>({ status: 'loading', slots: [] });
   const [dayPart, setDayPart] = useState<DayPart | 'all'>('all');
@@ -46,7 +46,10 @@ export function TeeTimeStep() {
   const each = pricePerPerson(activity, option, search.players);
   const goOn = () => { if (time) navigate('/book/extras'); };
   const continueButton = <Button fullWidth variant="contained" disabled={!time} onClick={goOn} endIcon={<East />}>Continue</Button>;
-  const people = activity.id === 'lesson' ? 'People' : 'Players';
+  const { activities } = useSite();
+  const people = activity.peopleNoun === 'person' ? 'People' : 'Players';
+  // A private-group activity (lessons) has a few fixed sessions — no need to filter by time of day.
+  const fewStarts = activity.privateGroup;
 
   return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' }, gap: { xs: 3, md: 4 }, alignItems: 'start' }}>
     <Box sx={{ minWidth: 0 }}>
@@ -57,36 +60,36 @@ export function TeeTimeStep() {
 
       <Panel step="1" title="What would you like to play?">
         <Box role="radiogroup" aria-label="Activity" sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(3, minmax(0, 1fr))', lg: 'repeat(5, minmax(0, 1fr))' }, gap: 1.25 }}>
-          {ACTIVITIES.map((a) => {
+          {activities.map((a) => {
             const selected = a.id === activity.id;
             return <Box key={a.id} component="button" type="button" role="radio" aria-checked={selected} onClick={() => setSearch({ activity: a.id })} sx={{
               display: 'grid', justifyItems: 'start', gap: .5, p: 1.5, textAlign: 'left', font: 'inherit', cursor: 'pointer', borderRadius: '16px',
               border: '2px solid', borderColor: selected ? 'primary.main' : 'divider', bgcolor: selected ? 'primary.light' : 'background.paper', color: 'text.primary',
               transition: 'border-color .2s ease, background-color .2s ease', '&:hover': { borderColor: 'primary.main' },
             }}>
-              <Box aria-hidden sx={{ width: 36, height: 36, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: selected ? 'primary.main' : 'success.light', color: selected ? 'primary.contrastText' : 'success.dark', '& svg': { fontSize: 20 } }}><ActivityIcon activity={a.id} /></Box>
+              <Box aria-hidden sx={{ width: 36, height: 36, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: selected ? 'primary.main' : 'success.light', color: selected ? 'primary.contrastText' : 'success.dark', '& svg': { fontSize: 20 } }}><ActivityIcon icon={a.icon} /></Box>
               <Box component="span" sx={{ fontFamily: fonts.playful, fontSize: 17, lineHeight: 1.2 }}>{a.name}</Box>
-              <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>from {money(fromPrice(a))}{a.id === 'range' ? ' / hr' : ''}</Box>
+              <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>from {money(fromPrice(a))}</Box>
             </Box>;
           })}
         </Box>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2, sm: 4 }} sx={{ mt: 2.5 }} alignItems={{ sm: 'center' }}>
           {activity.options.length > 1 && <Box>
-            <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', fontSize: 10.5 }}>{activity.id === 'range' ? 'How long' : 'Holes'}</Typography>
-            <Stack direction="row" spacing={1} role="radiogroup" aria-label={activity.id === 'range' ? 'How long' : 'Holes'} sx={{ mt: .5 }}>
+            <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', fontSize: 10.5 }}>{activity.optionsLabel}</Typography>
+            <Stack direction="row" spacing={1} role="radiogroup" aria-label={activity.optionsLabel} sx={{ mt: .5 }}>
               {activity.options.map((o) => <Button key={o.id} role="radio" aria-checked={o.id === option.id} size="small" variant={o.id === option.id ? 'contained' : 'outlined'} color={o.id === option.id ? 'primary' : 'inherit'} onClick={() => setSearch({ option: o.id })} sx={{ borderColor: 'divider' }}>
                 {o.label}
               </Button>)}
             </Stack>
           </Box>}
           <Box sx={{ minWidth: { sm: 240 } }}>
-            <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', fontSize: 10.5 }}>{activity.slotNoun === 'bay' ? 'People in the bay' : people}</Typography>
-            <GuestStepper label={plural(search.players, activity.id === 'lesson' ? 'person' : 'player', activity.id === 'lesson' ? 'people' : 'players')} value={search.players} min={activity.minPlayers} max={activity.maxPlayers} onChange={(players) => setSearch({ players })} />
+            <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', fontSize: 10.5 }}>{activity.units > 1 ? `People in the ${activity.slotNoun}` : people}</Typography>
+            <GuestStepper label={peopleLabel(activity, search.players)} value={search.players} min={activity.minPlayers} max={activity.maxPlayers} onChange={(players) => setSearch({ players })} />
           </Box>
         </Stack>
         <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.5 }}>
-          {activity.tagline} · {durationLabel(option.minutes)} · {money(each)} per {activity.id === 'range' ? 'person' : activity.id === 'lesson' ? 'person' : 'player'}
-          {activity.soloPrice ? ` (${money(activity.soloPrice)} on your own)` : ''} · up to {activity.maxPlayers} {activity.slotNoun === 'bay' ? 'per bay' : 'per group'}.
+          {activity.tagline} · {durationLabel(option.minutes)} · {money(each)} per {activity.peopleNoun}
+          {activity.soloPrice ? ` (${money(activity.soloPrice)} on your own)` : ''} · up to {activity.maxPlayers} {activity.units > 1 ? `per ${activity.slotNoun}` : 'per group'}.
           {' '}Bigger group? <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp us</Link> and we’ll line up times together.
         </Typography>
       </Panel>
@@ -95,8 +98,8 @@ export function TeeTimeStep() {
         <DateStrip value={search.date} onChange={(date) => setSearch({ date })} />
       </Panel>
 
-      <Panel step="3" title={`${activity.slotNoun === 'bay' ? 'Bays' : activity.slotNoun === 'session' ? 'Sessions' : 'Tee times'} on ${shortDayLabel(search.date)}`}>
-        {activity.id !== 'lesson' && <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ mb: 2 }} role="radiogroup" aria-label="Time of day">
+      <Panel step="3" title={`${activity.slotNoun.replace(/^./, (c) => c.toUpperCase())}s on ${shortDayLabel(search.date)}`}>
+        {!fewStarts && <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ mb: 2 }} role="radiogroup" aria-label="Time of day">
           {([{ id: 'all', label: 'All day', hint: '' }, ...DAY_PARTS] as const).map((part) => <Button key={part.id} role="radio" aria-checked={dayPart === part.id} size="small"
             variant={dayPart === part.id ? 'contained' : 'outlined'} color={dayPart === part.id ? 'primary' : 'inherit'} onClick={() => setDayPart(part.id)} sx={{ borderColor: 'divider' }}>
             {part.label}{sheet.status === 'ready' ? ` · ${openCount(part.id)}` : ''}
@@ -117,12 +120,12 @@ export function TeeTimeStep() {
                 </Stack>
               </Box>
               : <SlotGrid dim={sheet.status === 'loading'}>
-                {visible.map((slot) => <SlotButton key={slot.time} slot={slot} selected={slot.time === time} players={search.players} lesson={activity.id === 'lesson'} minutes={option.minutes} price={money(each)} onSelect={() => selectTime(slot.time)} />)}
+                {visible.map((slot) => <SlotButton key={slot.time} slot={slot} selected={slot.time === time} players={search.players} lesson={activity.privateGroup} slotNoun={activity.slotNoun} minutes={option.minutes} price={money(each)} onSelect={() => selectTime(slot.time)} />)}
               </SlotGrid>}
           </>}
         </Box>
         <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 2 }}>
-          Prices per {activity.id === 'range' || activity.id === 'lesson' ? 'person' : 'player'} in Thai baht, paid at the club. Includes {activity.includes.join(', ').toLowerCase()}. Times are Krabi time.
+          Prices per {activity.peopleNoun} in Thai baht, paid at the club. Includes {activity.includes.join(', ').toLowerCase()}. Times are Krabi time.
         </Typography>
       </Panel>
     </Box>
@@ -158,11 +161,11 @@ function SlotGrid({ children, dim = false }: { children: ReactNode; dim?: boolea
   return <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(138px, 1fr))', gap: 1.25, opacity: dim ? .55 : 1, transition: 'opacity .2s ease' }}>{children}</Box>;
 }
 
-function SlotButton({ slot, selected, players, lesson, minutes, price, onSelect }: { slot: Slot; selected: boolean; players: number; lesson: boolean; minutes: number; price: string; onSelect: () => void }) {
+function SlotButton({ slot, selected, players, lesson, slotNoun, minutes, price, onSelect }: { slot: Slot; selected: boolean; players: number; lesson: boolean; slotNoun: string; minutes: number; price: string; onSelect: () => void }) {
   const open = fits(slot, players);
   const bays = slot.baysLeft !== undefined;
   const status = slot.blocked ? 'Not available'
-    : bays ? (slot.baysLeft ? plural(slot.baysLeft, 'bay') + ' free' : 'Fully booked')
+    : bays ? (slot.baysLeft ? plural(slot.baysLeft, slotNoun) + ' free' : 'Fully booked')
     : lesson ? (slot.spotsLeft ? `Until ${timeLabel(fromMinutes(toMinutes(slot.time) + minutes))}` : 'Booked')
     : slot.spotsLeft === 0 ? 'Fully booked'
     : !open ? `Only ${slot.spotsLeft} left`

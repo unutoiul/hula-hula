@@ -1,17 +1,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useSite } from '../context/SiteDataContext';
 import { createReservation, ApiError, type Guest, type Reservation } from './api';
 import { isBookableDay } from './availability';
-import { ACTIVITIES, activityById, HOLD_MINUTES, pickupFor, RENTALS, type Activity, type ActivityId, type ActivityOption, type RentalId } from './config';
+import { findActivity, pickupFor, type Activity, type ActivityOption, type SiteData } from './config';
 import { isISODate, krabiNow } from './dates';
 import { priceLines, totalOf, type PriceLine } from './pricing';
 
 // The booking in progress, shared by every step: what's being booked and when,
 // the picked time and how long it's held, extras, the guest's details, and —
 // at the end — the reservation. Kept in this tab's sessionStorage, so a reload
-// carries on where it was and closing the tab forgets it.
+// carries on where it was and closing the tab forgets it. Activities, prices
+// and rules are the live ones staff set in /admin (useSite).
 
-export interface Search { activity: ActivityId; option: string; date: string; players: number }
-export interface Extras { rentals: Partial<Record<RentalId, number>>; transfer: string | null; pickupFrom: string; experience: string }
+export interface Search { activity: string; option: string; date: string; players: number }
+export interface Extras { rentals: Record<string, number>; transfer: string | null; pickupFrom: string; experience: string }
 export type GuestForm = Guest & { acceptedPolicies: boolean };
 
 interface FlowState {
@@ -26,29 +28,25 @@ interface FlowState {
 const STORE = 'hhg-booking';
 const emptyExtras: Extras = { rentals: {}, transfer: null, pickupFrom: '', experience: '' };
 const emptyGuest: GuestForm = { firstName: '', lastName: '', email: '', phone: '', country: '', handicap: '', notes: '', acceptedPolicies: false };
-export const defaultSearch = (): Search => ({ activity: 'golf', option: '9', date: krabiNow().date, players: 2 });
 
-/** A search from a link (/book?activity=footgolf&option=18&date=…&players=3), with anything invalid dropped. */
+/** A search from a link (/book?activity=footgolf&option=18&date=…&players=3), with anything unknown dropped. */
 export function searchFromQuery(query: URLSearchParams): Partial<Search> {
   const found: Partial<Search> = {};
-  const activity = activityById(query.get('activity') ?? '');
-  if (activity) {
-    found.activity = activity.id;
-    found.option = activity.options.some((o) => o.id === query.get('option')) ? query.get('option')! : activity.options[0].id;
-  }
+  if (query.get('activity')) found.activity = query.get('activity')!;
+  if (query.get('option')) found.option = query.get('option')!;
   const date = query.get('date');
-  if (isISODate(date) && isBookableDay(date)) found.date = date;
+  if (isISODate(date)) found.date = date;
   const players = Number(query.get('players'));
   if (Number.isInteger(players) && players > 0) found.players = players;
   return found;
 }
 
-/** Keeps a search valid for its activity: a known option, players within the group size, a bookable day. */
-export function normalise(search: Search): Search {
-  const activity = activityById(search.activity) ?? ACTIVITIES[0];
-  const option = activity.options.some((o) => o.id === search.option) ? search.option : activity.options[0].id;
-  const players = Math.min(activity.maxPlayers, Math.max(activity.minPlayers, search.players));
-  const date = isBookableDay(search.date) ? search.date : krabiNow().date;
+/** Keeps a search valid: a live activity and one of its options, players within the group size, a bookable day. */
+export function normalise(search: Partial<Search>, site: SiteData): Search {
+  const activity = findActivity(site, search.activity ?? '') ?? site.activities[0];
+  const option = activity.options.some((o) => o.id === search.option) ? search.option! : activity.options[0].id;
+  const players = Math.min(activity.maxPlayers, Math.max(activity.minPlayers, search.players ?? 2));
+  const date = search.date && isBookableDay(search.date, site.club.booking.windowDays) ? search.date : krabiNow().date;
   return { activity: activity.id, option, date, players };
 }
 
@@ -57,12 +55,15 @@ export const bookHref = (search: Partial<Search>) => {
   return `/book${params.size ? `?${params}` : ''}`;
 };
 
-function load(): FlowState {
+function load(site: SiteData): FlowState {
   try {
     const saved = JSON.parse(sessionStorage.getItem(STORE) ?? 'null') as FlowState | null;
-    if (saved?.search) return { ...saved, search: normalise(saved.search), heldUntil: saved.heldUntil && saved.heldUntil > Date.now() ? saved.heldUntil : null, time: saved.heldUntil && saved.heldUntil > Date.now() ? saved.time : null };
+    if (saved?.search) {
+      const held = !!saved.heldUntil && saved.heldUntil > Date.now();
+      return { ...saved, search: normalise(saved.search, site), heldUntil: held ? saved.heldUntil : null, time: held ? saved.time : null };
+    }
   } catch { /* start fresh */ }
-  return { search: defaultSearch(), time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest, reservation: null };
+  return { search: normalise({}, site), time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest, reservation: null };
 }
 
 interface BookingFlow extends FlowState {
@@ -83,12 +84,14 @@ interface BookingFlow extends FlowState {
 
 const BookingFlowContext = createContext<BookingFlow | null>(null);
 
+/** Render only once the live site data is in (BookingApp waits for it). */
 export function BookingFlowProvider({ initial, children }: { initial: Partial<Search>; children: ReactNode }) {
+  const site = useSite();
   const [state, setState] = useState<FlowState>(() => {
-    const loaded = load();
+    const loaded = load(site);
     // A link's search wins over the one saved in this tab.
     if (!Object.keys(initial).length) return loaded;
-    const search = normalise({ ...loaded.search, ...initial });
+    const search = normalise({ ...loaded.search, ...initial }, site);
     const same = (Object.keys(search) as (keyof Search)[]).every((k) => search[k] === loaded.search[k]);
     return same ? loaded : { ...loaded, search, time: null, heldUntil: null };
   });
@@ -108,20 +111,20 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
     return () => window.clearTimeout(id);
   }, [state.heldUntil]);
 
-  const activity = activityById(state.search.activity) ?? ACTIVITIES[0];
+  const activity = findActivity(site, state.search.activity) ?? site.activities[0];
   const option = activity.options.find((o) => o.id === state.search.option) ?? activity.options[0];
 
   const setSearch = useCallback((change: Partial<Search>) => setState((s) => {
-    const search = normalise({ ...s.search, ...change });
+    const search = normalise({ ...s.search, ...change }, site);
     const changedActivity = search.activity !== s.search.activity;
     // A different activity, option, day or group size means picking a time again.
     return { ...s, search, time: null, heldUntil: null, extras: changedActivity ? emptyExtras : { ...s.extras, transfer: null } };
-  }), []);
+  }), [site]);
 
   const selectTime = useCallback((time: string) => {
     setHoldExpired(false);
-    setState((s) => ({ ...s, time, heldUntil: Date.now() + HOLD_MINUTES * 60_000, extras: { ...s.extras, transfer: s.extras.transfer && pickupFor(time) === s.extras.transfer ? s.extras.transfer : null } }));
-  }, []);
+    setState((s) => ({ ...s, time, heldUntil: Date.now() + site.club.booking.holdMinutes * 60_000, extras: { ...s.extras, transfer: s.extras.transfer && pickupFor(time, site.club) === s.extras.transfer ? s.extras.transfer : null } }));
+  }, [site]);
   const releaseTime = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null })), []);
   const updateExtras = useCallback((change: Partial<Extras>) => setState((s) => ({ ...s, extras: { ...s.extras, ...change } })), []);
   const updateGuest = useCallback((change: Partial<GuestForm>) => setState((s) => ({ ...s, guest: { ...s.guest, ...change } })), []);
@@ -129,9 +132,9 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
 
   // Rentals only for activities that have them, and never more sets than players.
   const rentals = useMemo(() => activity.rentals
-    ? Object.fromEntries(RENTALS.map((r) => [r.id, Math.min(state.extras.rentals[r.id] ?? 0, state.search.players)]))
-    : {}, [activity, state.extras.rentals, state.search.players]);
-  const lines = useMemo(() => priceLines(activity, option, state.search.players, rentals), [activity, option, state.search.players, rentals]);
+    ? Object.fromEntries(site.rentals.map((r) => [r.id, Math.min(state.extras.rentals[r.id] ?? 0, state.search.players)]).filter(([, n]) => (n as number) > 0))
+    : {}, [activity, site.rentals, state.extras.rentals, state.search.players]);
+  const lines = useMemo(() => priceLines(activity, option, state.search.players, rentals, site.rentals), [activity, option, state.search.players, rentals, site.rentals]);
 
   const confirm = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }) => {
     if (!state.time) return { error: 'Please pick a time first.' };

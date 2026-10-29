@@ -1,5 +1,4 @@
 import type { Slot } from './availability';
-import type { ActivityId } from './config';
 import type { ErrorResponse, Reservation, ReservationRequest, TeeSheetResponse } from './contract';
 
 export type { Guest, Reservation, ReservationRequest } from './contract';
@@ -23,7 +22,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   return body;
 }
 
-export async function fetchTeeSheet(activity: ActivityId, option: string, date: string): Promise<Slot[]> {
+export async function fetchTeeSheet(activity: string, option: string, date: string): Promise<Slot[]> {
   const params = new URLSearchParams({ activity, option, date });
   return (await call<TeeSheetResponse>(`/api/tee-sheet?${params}`)).slots;
 }

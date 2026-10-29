@@ -5,7 +5,7 @@ import MenuRounded from '@mui/icons-material/MenuRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Container, Drawer, IconButton, Link, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { CONTACT } from '../../data/content';
+import { useContact, useSite } from '../../context/SiteDataContext';
 import { linkClick } from '../../router';
 import type { NavItem } from '../../types';
 import { ClubMark } from '../common/ClubMark';
@@ -16,6 +16,8 @@ import { MotionToggleButton, MotionToggleMenuButton } from './MotionToggle';
 import { NavLink } from './NavLink';
 
 export function Header({ navItems }: { navItems: NavItem[] }) {
+  const CONTACT = useContact();
+  const { club } = useSite();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState('');
@@ -40,7 +42,7 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
     <Box sx={{ position: 'relative', overflow: 'hidden', height: scrolled ? 0 : { xs: 34, md: 36 }, transition: 'height .35s ease', bgcolor: 'primary.main', color: 'white' }}>
       <Container maxWidth="xl" sx={{ height: '100%' }}>
         <Stack direction="row" alignItems="center" justifyContent={{ xs: 'center', md: 'space-between' }} sx={{ height: '100%' }}>
-          <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: 13, fontWeight: 600, opacity: .9 }}>Free transfers twice daily · 8:00 am &amp; 1:30 pm</Typography>
+          <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: 13, fontWeight: 600, opacity: .9 }}>{club.announcement}</Typography>
           <Stack direction="row" alignItems="center" divider={<Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,.35)' }} />} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ fontSize: { xs: 12, md: 13 }, fontWeight: 600, '& a': { color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', minHeight: 32 }, '& a:hover': { textDecoration: 'underline' }, '& svg': { fontSize: 16 } }}>
             <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${CONTACT.phone}`}><WhatsApp />{CONTACT.phone}</Link>
             <Link href={CONTACT.line} target="_blank" rel="noopener noreferrer" aria-label={`Line ${CONTACT.lineId}`} sx={{ display: { xs: 'none !important', sm: 'inline-flex !important' } }}><LineIcon />{CONTACT.lineId}</Link>

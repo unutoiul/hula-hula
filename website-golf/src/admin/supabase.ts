@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import type { ActivityId, RentalId } from '../booking/config';
 import type { PriceLine } from '../booking/pricing';
 
 // The browser's Supabase client, for the staff app at /admin only: signs
@@ -17,13 +16,13 @@ export type BookingSource = 'online' | 'phone' | 'walk_in';
 export interface StaffBooking {
   id: string;
   ref: string;
-  activity: ActivityId;
+  activity: string;
   option: string;
   play_date: string;
   start_time: string;
   minutes: number;
   players: number;
-  rentals: Partial<Record<RentalId, number>>;
+  rentals: Record<string, number>;
   transfer: string | null;
   pickup_from: string;
   experience: string;
@@ -45,10 +44,73 @@ export interface StaffBooking {
 export interface StaffBlock {
   id: string;
   play_date: string;
-  activity: ActivityId | null;
+  activity: string | null;
   start_time: string;
   end_time: string;
   reason: string;
 }
 
 export const hhmm = (time: string) => time.slice(0, 5);
+
+/** A row of golf_events. */
+export interface StaffEvent {
+  id: string;
+  slug: string;
+  title: string;
+  tagline: string;
+  starts_on: string;
+  ends_on: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  description: string;
+  highlights: string[];
+  schedule: { time: string; text: string }[];
+  cover_image: string | null;
+  published: boolean;
+  sales_open: boolean;
+}
+
+/** A row of golf_event_packages. */
+export interface StaffPackage {
+  id: string;
+  event_id: string;
+  name: string;
+  description: string;
+  includes: string[];
+  price: number;
+  capacity: number;
+  max_per_order: number;
+  sort_order: number;
+  active: boolean;
+}
+
+export type OrderStatus = 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled' | 'refunded';
+
+/** A row of golf_event_orders, as staff see it. */
+export interface StaffOrder {
+  id: string;
+  ref: string;
+  event_id: string;
+  package_id: string;
+  package_name: string;
+  quantity: number;
+  total: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  notes: string;
+  source: 'online' | 'desk';
+  status: OrderStatus;
+  test_payment: boolean;
+  flags: string[];
+  expires_at: string | null;
+  tran_ref: string | null;
+  paid_at: string | null;
+  created_at: string;
+}
+
+/** Places a package has used: paid, plus online orders still inside their payment window. */
+export const takenPlaces = (orders: StaffOrder[], packageId: string) => orders
+  .filter((o) => o.package_id === packageId && (o.status === 'paid' || (o.status === 'pending' && !!o.expires_at && Date.parse(o.expires_at) > Date.now())))
+  .reduce((sum, o) => sum + o.quantity, 0);

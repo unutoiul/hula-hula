@@ -5,7 +5,7 @@ import { fonts } from '../../theme';
 import { ActivityIcon } from '../activityIcons';
 import { useBookingFlow, useHoldSecondsLeft } from '../BookingFlowContext';
 import { durationLabel, shortDayLabel, timeLabel } from '../dates';
-import { money, plural } from '../pricing';
+import { money, peopleLabel } from '../pricing';
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
@@ -14,12 +14,12 @@ const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds
 export function BookingSummary({ action }: { action?: ReactNode }) {
   const { activity, option, search, time, lines, total, extras } = useBookingFlow();
   const secondsLeft = useHoldSecondsLeft();
-  const people = activity.id === 'lesson' ? plural(search.players, 'person', 'people') : plural(search.players, 'player');
+  const people = peopleLabel(activity, search.players);
 
   return <Box sx={{ border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', bgcolor: 'background.paper', borderRadius: '24px', p: { xs: 2.5, md: 3 }, boxShadow: '0 16px 36px rgba(23,60,44,.07)' }}>
     <Typography variant="overline" sx={{ color: 'text.secondary' }}>Your booking</Typography>
     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mt: 1 }}>
-      <Box aria-hidden sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'success.light', color: 'success.dark' }}><ActivityIcon activity={activity.id} /></Box>
+      <Box aria-hidden sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'success.light', color: 'success.dark' }}><ActivityIcon icon={activity.icon} /></Box>
       <Box sx={{ minWidth: 0 }}>
         <Typography sx={{ fontFamily: fonts.playful, fontSize: 19, lineHeight: 1.2 }}>{activity.name}</Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{option.label} · {durationLabel(option.minutes)}</Typography>

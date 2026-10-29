@@ -4,23 +4,25 @@ import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import EventRounded from '@mui/icons-material/EventRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Divider, Stack, Typography } from '@mui/material';
-import { CONTACT } from '../../data/content';
+import { useContact, useSite } from '../../context/SiteDataContext';
 import { linkClick, navigate } from '../../router';
 import { fonts } from '../../theme';
 import { ActivityIcon } from '../activityIcons';
 import { useBookingFlow } from '../BookingFlowContext';
 import { downloadIcs, googleCalendarUrl } from '../calendar';
-import { activityById, clubRules } from '../config';
+import { clubRules, findActivity } from '../config';
 import { dayLabel, durationLabel, timeLabel } from '../dates';
-import { money, plural } from '../pricing';
+import { money, peopleLabel } from '../pricing';
 
 // The end of the booking: the reference, when and where, what to pay at the
 // club, a calendar entry, and the few things worth knowing before the day.
 export function ConfirmationStep() {
+  const CONTACT = useContact();
+  const site = useSite();
   const { reservation, startOver } = useBookingFlow();
   if (!reservation) return null;
-  const activity = activityById(reservation.activity)!;
-  const option = activity.options.find((o) => o.id === reservation.option)!;
+  const activity = findActivity(site, reservation.activity);
+  const calendarItem = { uid: reservation.ref, title: `${reservation.activityName} · ${reservation.optionLabel}`, date: reservation.date, time: reservation.time, minutes: reservation.minutes, note: `Booking ${reservation.ref}. Please arrive 20–30 minutes early.` };
   const whatsappText = encodeURIComponent(`Hi Hula Hula Golf Club! About my booking ${reservation.ref} on ${dayLabel(reservation.date)} at ${timeLabel(reservation.time)}: `);
 
   return <Box sx={{ maxWidth: 720, mx: 'auto' }}>
@@ -32,10 +34,10 @@ export function ConfirmationStep() {
       </Typography>
 
       <Box sx={{ mt: 3, p: { xs: 2.5, md: 3 }, bgcolor: 'primary.light', borderRadius: '20px', display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'auto 1fr' }, gap: 2.5, alignItems: 'center' }}>
-        <Box aria-hidden sx={{ width: 64, height: 64, borderRadius: '50%', display: { xs: 'none', sm: 'grid' }, placeItems: 'center', bgcolor: 'primary.main', color: 'primary.contrastText', '& svg': { fontSize: 32 } }}><ActivityIcon activity={activity.id} /></Box>
+        <Box aria-hidden sx={{ width: 64, height: 64, borderRadius: '50%', display: { xs: 'none', sm: 'grid' }, placeItems: 'center', bgcolor: 'primary.main', color: 'primary.contrastText', '& svg': { fontSize: 32 } }}><ActivityIcon icon={activity?.icon} /></Box>
         <Box>
           <Typography sx={{ fontFamily: fonts.playful, fontSize: { xs: 24, md: 28 }, lineHeight: 1.15, color: 'primary.dark' }}>{timeLabel(reservation.time)} · {dayLabel(reservation.date)}</Typography>
-          <Typography sx={{ mt: .5 }}>{activity.name} · {option.label} · {plural(reservation.players, activity.id === 'lesson' ? 'person' : 'player', activity.id === 'lesson' ? 'people' : 'players')} · about {durationLabel(reservation.minutes)}</Typography>
+          <Typography sx={{ mt: .5 }}>{reservation.activityName} · {reservation.optionLabel} · {peopleLabel(activity ?? { peopleNoun: 'player' }, reservation.players)} · about {durationLabel(reservation.minutes)}</Typography>
           {reservation.transfer && <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1, color: 'primary.dark' }}><AirportShuttleRounded sx={{ fontSize: 18 }} /><Typography sx={{ fontSize: 14 }}>Free pick-up at {timeLabel(reservation.transfer)} from {reservation.pickupFrom} — we’ll confirm the spot on WhatsApp.</Typography></Stack>}
         </Box>
       </Box>
@@ -50,15 +52,15 @@ export function ConfirmationStep() {
       <Stack direction="row" justifyContent="space-between" alignItems="baseline"><Typography sx={{ fontWeight: 700 }}>To pay at the club</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 26 }}>{money(reservation.total)}</Typography></Stack>
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3.5 }}>
-        <Button variant="contained" startIcon={<CalendarMonthRounded />} href={googleCalendarUrl(reservation)} target="_blank" rel="noopener noreferrer">Add to Google Calendar</Button>
-        <Button variant="outlined" startIcon={<EventRounded />} onClick={() => downloadIcs(reservation)}>Apple / Outlook (.ics)</Button>
+        <Button variant="contained" startIcon={<CalendarMonthRounded />} href={googleCalendarUrl(calendarItem, CONTACT)} target="_blank" rel="noopener noreferrer">Add to Google Calendar</Button>
+        <Button variant="outlined" startIcon={<EventRounded />} onClick={() => downloadIcs(calendarItem, CONTACT)}>Apple / Outlook (.ics)</Button>
       </Stack>
     </Box>
 
     <Box sx={{ mt: 3, p: { xs: 3, md: 4 }, borderRadius: '28px', bgcolor: 'success.light' }}>
       <Typography variant="h3" sx={{ fontSize: { xs: 24, md: 28 } }}>Before you come</Typography>
       <Stack spacing={1.25} sx={{ mt: 2 }}>
-        {clubRules(activity.wear).map((rule) => <Stack key={rule.title} direction="row" spacing={1.25} alignItems="flex-start">
+        {clubRules(activity?.wear ?? '', site.club).map((rule) => <Stack key={rule.title} direction="row" spacing={1.25} alignItems="flex-start">
           <CheckCircleRounded sx={{ fontSize: 18, color: 'success.main', mt: '2px' }} />
           <Typography sx={{ fontSize: 14 }}><strong>{rule.title}.</strong> {rule.text}</Typography>
         </Stack>)}

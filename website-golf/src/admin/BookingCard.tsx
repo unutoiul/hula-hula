@@ -6,7 +6,8 @@ import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Alert, Box, Button, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
-import { activityById, RENTALS } from '../booking/config';
+import { activityName, findActivity } from '../booking/config';
+import { useSite } from '../context/SiteDataContext';
 import { countryName } from '../booking/countries';
 import { durationLabel, timeLabel } from '../booking/dates';
 import { money, plural } from '../booking/pricing';
@@ -28,10 +29,12 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
-  const activity = activityById(b.activity)!;
-  const option = activity.options.find((o) => o.id === b.option);
+  const site = useSite();
+  const activity = findActivity(site, b.activity);
+  const option = activity?.options.find((o) => o.id === b.option);
+  const name = activityName(site, b.activity);
   const phoneDigits = b.phone.replace(/\D/g, '');
-  const rentals = RENTALS.filter((r) => (b.rentals[r.id] ?? 0) > 0).map((r) => `${b.rentals[r.id]} × ${r.label}`).join(', ');
+  const rentals = Object.entries(b.rentals).filter(([, n]) => n > 0).map(([id, n]) => `${n} × ${site.rentals.find((r) => r.id === id)?.label ?? id}`).join(', ');
   const done = b.status === 'cancelled' || b.status === 'no_show';
 
   const setStatus = async (status: BookingStatus) => {
@@ -44,11 +47,11 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
   return <Box sx={{ borderRadius: '18px', border: '1px solid', borderColor: b.status === 'checked_in' ? 'success.main' : 'divider', bgcolor: b.status === 'checked_in' ? 'success.light' : 'background.paper', opacity: done ? .65 : 1, overflow: 'hidden' }}>
     <Box component="button" type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, border: 0, bgcolor: 'transparent', color: 'inherit', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
       <Box aria-hidden sx={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: b.status === 'checked_in' ? 'success.main' : 'primary.light', color: b.status === 'checked_in' ? 'white' : 'primary.main', '& svg': { fontSize: 21 } }}>
-        {b.status === 'checked_in' ? <CheckCircleRounded /> : <ActivityIcon activity={b.activity} />}
+        {b.status === 'checked_in' ? <CheckCircleRounded /> : <ActivityIcon icon={activity?.icon} />}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography noWrap sx={{ fontWeight: 700, textDecoration: b.status === 'cancelled' ? 'line-through' : 'none' }}>{b.first_name} {b.last_name}</Typography>
-        <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{activity.name}{option ? ` · ${option.label}` : ''} · {plural(b.players, 'person', 'people')} · {money(b.total)}</Typography>
+        <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{name}{option ? ` · ${option.label}` : ''} · {plural(b.players, 'person', 'people')} · {money(b.total)}</Typography>
       </Box>
       <Stack alignItems="flex-end" spacing={.5} sx={{ flexShrink: 0 }}>
         {b.status !== 'booked' && <Chip size="small" color={STATUS[b.status].color} label={STATUS[b.status].label} />}
@@ -96,7 +99,7 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
 
     <Dialog open={confirmCancel} onClose={() => setConfirmCancel(false)}>
       <DialogTitle>Cancel {b.first_name}’s booking?</DialogTitle>
-      <DialogContent><Typography>{activity.name} at {timeLabel(hhmm(b.start_time))} for {plural(b.players, 'person', 'people')}. The time opens up again on the website straight away. Let them know — this doesn’t email them.</Typography></DialogContent>
+      <DialogContent><Typography>{name} at {timeLabel(hhmm(b.start_time))} for {plural(b.players, 'person', 'people')}. The time opens up again on the website straight away. Let them know — this doesn’t email them.</Typography></DialogContent>
       <DialogActions>
         <Button onClick={() => setConfirmCancel(false)}>Keep it</Button>
         <Button color="error" variant="contained" disabled={busy} onClick={() => void setStatus('cancelled')}>Cancel booking</Button>

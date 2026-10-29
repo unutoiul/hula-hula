@@ -1,10 +1,10 @@
-import { BOOKING_WINDOW_DAYS, MIN_LEAD_MINUTES, type Activity, type ActivityOption } from './config.ts';
+import { weekdayIndex, type Activity, type ActivityOption, type ClubSettings } from './config.ts';
 import { addDays, daysBetween, fromMinutes, krabiNow, toMinutes } from './dates.ts';
 
 // The tee sheet for one activity on one day, built from the bookings and
-// blocked times already in the database. The same code runs in the browser
-// (staff's "add booking"), on the server (the public sheet, and the check
-// before a booking is saved) and in the tests.
+// blocked times already in the database and the club's booking rules. The
+// same code runs in the browser (staff's "add booking"), on the server (the
+// public sheet, and the check before a booking is saved) and in the tests.
 
 /** One start on the sheet. `spotsLeft` is people for the course, bays × capacity on the range. */
 export interface Slot {
@@ -22,23 +22,32 @@ export interface SheetBooking { time: string; minutes: number; players: number }
 /** Staff-blocked starts, from `start` up to (not including) `end`. */
 export interface SheetBlock { start: string; end: string }
 
+/** The booking rules from the club settings that shape the sheet. */
+export interface SheetRules { windowDays: number; minLeadMinutes: number; closedWeekdays: number[] }
+export const rulesFrom = (club: ClubSettings): SheetRules => ({
+  windowDays: club.booking.windowDays,
+  minLeadMinutes: club.booking.minLeadMinutes,
+  closedWeekdays: club.hours.flatMap((day, i) => (day.closed ? [i] : [])),
+});
+
 /** The days a booking can be made for: today (Krabi time) up to the booking window. */
-export function bookableDays(now = krabiNow()): string[] {
-  return Array.from({ length: BOOKING_WINDOW_DAYS + 1 }, (_, i) => addDays(now.date, i));
+export function bookableDays(windowDays: number, now = krabiNow()): string[] {
+  return Array.from({ length: windowDays + 1 }, (_, i) => addDays(now.date, i));
 }
 
-export function isBookableDay(date: string, now = krabiNow()): boolean {
+export function isBookableDay(date: string, windowDays: number, now = krabiNow()): boolean {
   const ahead = daysBetween(now.date, date);
-  return ahead >= 0 && ahead <= BOOKING_WINDOW_DAYS;
+  return ahead >= 0 && ahead <= windowDays;
 }
 
 /**
  * Every start for an activity, option and day. Online, starts that are past
- * or too soon are left out; staff (`includePast`) see the whole day.
+ * or too soon, and days the club is closed, are left out; staff
+ * (`includePast`) see the whole day whatever it is.
  */
-export function buildSheet(activity: Activity, option: ActivityOption, date: string, bookings: SheetBooking[], blocks: SheetBlock[] = [], { now = krabiNow(), includePast = false } = {}): Slot[] {
-  const earliest = includePast ? 0 : date === now.date ? now.minutes + MIN_LEAD_MINUTES : 0;
-  if (!includePast && !isBookableDay(date, now)) return [];
+export function buildSheet(activity: Activity, option: ActivityOption, date: string, bookings: SheetBooking[], blocks: SheetBlock[], { rules, now = krabiNow(), includePast = false }: { rules: SheetRules; now?: { date: string; minutes: number }; includePast?: boolean }): Slot[] {
+  if (!includePast && (!isBookableDay(date, rules.windowDays, now) || rules.closedWeekdays.includes(weekdayIndex(date)))) return [];
+  const earliest = !includePast && date === now.date ? now.minutes + rules.minLeadMinutes : 0;
   const slots: Slot[] = [];
   for (let start = toMinutes(activity.firstStart); start <= toMinutes(option.lastStart); start += activity.interval) {
     if (start < earliest) continue;
@@ -57,7 +66,7 @@ export function buildSheet(activity: Activity, option: ActivityOption, date: str
     const here = bookings.filter((b) => b.time === time);
     const booked = here.reduce((sum, b) => sum + b.players, 0);
     const full = blocked || (activity.privateGroup ? here.length > 0 : booked >= activity.capacity);
-    slots.push({ time, capacity: activity.capacity, spotsLeft: full ? 0 : activity.capacity - booked, ...(blocked && { blocked }) });
+    slots.push({ time, capacity: activity.capacity, spotsLeft: full ? 0 : Math.max(0, activity.capacity - booked), ...(blocked && { blocked }) });
   }
   return slots;
 }

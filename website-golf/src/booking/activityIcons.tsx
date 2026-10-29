@@ -1,16 +1,21 @@
+import EmojiEventsRounded from '@mui/icons-material/EmojiEventsRounded';
 import FlagRounded from '@mui/icons-material/FlagRounded';
 import GolfCourseRounded from '@mui/icons-material/GolfCourseRounded';
+import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
 import SportsGolfRounded from '@mui/icons-material/SportsGolfRounded';
 import SportsSoccerRounded from '@mui/icons-material/SportsSoccerRounded';
+import StarRounded from '@mui/icons-material/StarRounded';
 import type { SvgIconProps } from '@mui/material';
-import type { ActivityId } from './config';
+import type { ActivityIconKey } from './config';
 
-const ICONS: Record<ActivityId, typeof GolfCourseRounded> = {
-  golf: GolfCourseRounded, footgolf: SportsSoccerRounded, puttgolf: FlagRounded, range: SportsGolfRounded, lesson: SchoolRounded,
+// The icons staff can pick for an activity in /admin.
+export const ICON_COMPONENTS: Record<ActivityIconKey, typeof GolfCourseRounded> = {
+  golf: GolfCourseRounded, football: SportsSoccerRounded, flag: FlagRounded, range: SportsGolfRounded,
+  lesson: SchoolRounded, trophy: EmojiEventsRounded, group: GroupsRounded, star: StarRounded,
 };
 
-export function ActivityIcon({ activity, ...props }: { activity: ActivityId } & SvgIconProps) {
-  const Icon = ICONS[activity];
+export function ActivityIcon({ icon, ...props }: { icon: ActivityIconKey | undefined } & SvgIconProps) {
+  const Icon = ICON_COMPONENTS[icon ?? 'golf'] ?? GolfCourseRounded;
   return <Icon {...props} />;
 }

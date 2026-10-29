@@ -1,5 +1,5 @@
 import { Box, CircularProgress } from '@mui/material';
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef } from 'react';
 import { navItems } from './data/content';
 import { CookieConsent } from './components/layout/CookieConsent';
 import { Footer } from './components/layout/Footer';
@@ -7,22 +7,30 @@ import { Header } from './components/layout/Header';
 import { Hero } from './components/hero/Hero';
 import { ClubhouseSection } from './components/sections/ClubhouseSection';
 import { ContactSection } from './components/sections/ContactSection';
+import { EventsSection } from './components/sections/EventsSection';
 import { CourseSection } from './components/sections/CourseSection';
 import { GallerySection } from './components/sections/GallerySection';
 import { PlaySection } from './components/sections/PlaySection';
 import { PricesSection } from './components/sections/PricesSection';
 import { VisitSection } from './components/sections/VisitSection';
 import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
+import { SiteDataProvider } from './context/SiteDataContext';
+import { useUpcomingEvents } from './events/api';
+import type { NavItem } from './types';
 import { useLocation } from './router';
 import { FootBall, GolfBalls, Gulls, PinFlag, RisingSun, SEAM, SectionSeam } from './components/common/SectionSeam';
 
 function ClubPage() {
+  // "Events" joins the menu, first, while something's coming up.
+  const events = useUpcomingEvents();
+  const nav = useMemo<NavItem[]>(() => (events.length ? [['Events', '#events'], ...navItems] : navItems), [events.length]);
   // Nothing tilted or bobbing near an edge may widen the page: clip sideways
   // overflow here (clip, unlike hidden, doesn't create a scroll container).
   return <Box component="main" id="top" sx={{ overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' } }}>
     <CookieConsent />
-    <Header navItems={navItems} />
+    <Header navItems={nav} />
     <Hero />
+    <EventsSection events={events} />
     <CourseSection />
     {/* Every change of section colour gets the same wave; a few of them carry
         one bobbing sticker each, every sticker used once down the page. */}
@@ -42,8 +50,9 @@ function ClubPage() {
   </Box>;
 }
 
-// The booking pages and the staff app are separate bundles, fetched only when someone goes there.
+// The booking pages, event pages and the staff app are separate bundles, fetched only when someone goes there.
 const BookingApp = lazy(() => import('./booking/BookingApp'));
+const EventsApp = lazy(() => import('./events/EventsApp'));
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 
 const loading = <Box sx={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}><CircularProgress aria-label="Loading" /></Box>;
@@ -61,9 +70,10 @@ function Routes() {
   }, [pathname]);
 
   if (pathname.startsWith('/admin')) return <Suspense fallback={loading}><AdminApp /></Suspense>;
+  if (pathname.startsWith('/events')) return <Suspense fallback={loading}><EventsApp /></Suspense>;
   return pathname.startsWith('/book') ? <Suspense fallback={loading}><BookingApp /></Suspense> : <ClubPage />;
 }
 
-function App() { return <MotionPreferenceProvider><Routes /></MotionPreferenceProvider>; }
+function App() { return <MotionPreferenceProvider><SiteDataProvider><Routes /></SiteDataProvider></MotionPreferenceProvider>; }
 
 export default App;

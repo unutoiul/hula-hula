@@ -1,10 +1,8 @@
-import West from '@mui/icons-material/West';
-import WhatsApp from '@mui/icons-material/WhatsApp';
-import { Box, Button, Container, Link, Stack, Step, StepLabel, Stepper, Typography } from '@mui/material';
+import { Box, CircularProgress, Container, Step, StepLabel, Stepper } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { ClubMark } from '../components/common/ClubMark';
-import { CONTACT } from '../data/content';
-import { linkClick, navigate, useLocation } from '../router';
+import { PageHeader } from '../components/layout/PageHeader';
+import { useSiteData } from '../context/SiteDataContext';
+import { navigate, useLocation } from '../router';
 import { BookingFlowProvider, searchFromQuery, useBookingFlow } from './BookingFlowContext';
 import { ConfirmationStep } from './steps/ConfirmationStep';
 import { DetailsStep } from './steps/DetailsStep';
@@ -36,6 +34,9 @@ export default function BookingApp() {
     return () => { document.title = previous; };
   }, []);
 
+  // Prices and times must be the live ones before anything can be held or priced.
+  const { ready } = useSiteData();
+  if (!ready) return <Box sx={{ minHeight: '70vh', display: 'grid', placeItems: 'center' }}><CircularProgress aria-label="Loading" /></Box>;
   return <BookingFlowProvider initial={initial}><BookingShell /></BookingFlowProvider>;
 }
 
@@ -52,7 +53,7 @@ function BookingShell() {
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
 
   return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: { xs: 14, md: 10 } }}>
-    <BookingHeader />
+    <PageHeader />
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
       <Stepper activeStep={pathname === '/book/confirmation' ? STEPS.length : step} alternativeLabel sx={{ my: { xs: 3, md: 4 }, '& .MuiStepLabel-label': { fontSize: { xs: 11, sm: 13 }, mt: '6px !important' } }}>
         {STEPS.map((s) => <Step key={s.path}><StepLabel>{s.label}</StepLabel></Step>)}
@@ -62,23 +63,6 @@ function BookingShell() {
         : pathname === '/book/details' ? <DetailsStep />
         : pathname === '/book/confirmation' ? <ConfirmationStep />
         : <TeeTimeStep />}
-    </Container>
-  </Box>;
-}
-
-function BookingHeader() {
-  return <Box component="header" sx={{ bgcolor: 'rgba(255,253,243,.96)', borderBottom: '1px solid', borderColor: 'divider' }}>
-    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2} sx={{ minHeight: { xs: 76, md: 92 }, py: 1 }}>
-        <ClubMark size="small" href="/" />
-        <Stack direction="row" alignItems="center" spacing={{ xs: 1, sm: 2 }}>
-          <Stack sx={{ display: { xs: 'none', sm: 'flex' }, textAlign: 'right' }}>
-            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Questions about your booking?</Typography>
-            <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" sx={{ fontSize: 14, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: .5, justifyContent: 'flex-end' }}><WhatsApp sx={{ fontSize: 16 }} />{CONTACT.phone}</Link>
-          </Stack>
-          <Button href="/" onClick={linkClick('/')} size="small" variant="outlined" startIcon={<West sx={{ fontSize: 16 }} />}>The club</Button>
-        </Stack>
-      </Stack>
     </Container>
   </Box>;
 }

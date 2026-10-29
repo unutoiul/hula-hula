@@ -8,7 +8,8 @@ import RefreshRounded from '@mui/icons-material/RefreshRounded';
 import { Alert, Box, Button, Chip, IconButton, LinearProgress, Popover, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
-import { ACTIVITIES, activityById, type ActivityId } from '../booking/config';
+import { activityName, findActivity } from '../booking/config';
+import { useSite } from '../context/SiteDataContext';
 import { addDays, krabiNow, shortDayLabel, timeLabel } from '../booking/dates';
 import { money, plural } from '../booking/pricing';
 import { DayCalendar } from '../components/booking/DayCalendar';
@@ -18,12 +19,13 @@ import { BlockDialog } from './BlockDialog';
 import { BookingCard } from './BookingCard';
 import { hhmm, supabase, type StaffBlock, type StaffBooking } from './supabase';
 
-type Filter = ActivityId | 'all';
+type Filter = string; // an activity id, or 'all'
 
 // One day at the club: what's coming up, who's here, who needs picking up,
 // and the buttons for the things that happen at the desk — a phone booking,
 // a walk-in, closing a time. Reloads every minute and when the tab comes back.
 export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
+  const site = useSite();
   const today = krabiNow().date;
   const [date, setDate] = useState(today);
   const [bookings, setBookings] = useState<StaffBooking[] | null>(null);
@@ -115,10 +117,11 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
 
     {/* What to show */}
     <Stack direction="row" spacing={1} sx={{ mt: 2, overflowX: 'auto', pb: .5, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
-      {(['all', ...ACTIVITIES.map((a) => a.id)] as Filter[]).map((id) => {
+      {/* Every live activity, plus any removed one that still has bookings on this day. */}
+      {['all', ...new Set([...site.activities.map((a) => a.id), ...active.map((b) => b.activity)])].map((id) => {
         const count = id === 'all' ? active.length : active.filter((b) => b.activity === id).length;
         return <Chip key={id} clickable onClick={() => setFilter(id)} color={filter === id ? 'primary' : 'default'} variant={filter === id ? 'filled' : 'outlined'}
-          icon={id === 'all' ? undefined : <ActivityIcon activity={id} />} label={`${id === 'all' ? 'All' : activityById(id)!.name} · ${count}`} sx={{ flexShrink: 0, fontWeight: 700 }} />;
+          icon={id === 'all' ? undefined : <ActivityIcon icon={findActivity(site, id)?.icon} />} label={`${id === 'all' ? 'All' : activityName(site, id)} · ${count}`} sx={{ flexShrink: 0, fontWeight: 700 }} />;
       })}
     </Stack>
 
@@ -126,7 +129,7 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
     <Stack spacing={1.25} sx={{ mt: 2 }}>
       {bookings === null && !error && <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 6 }}>Loading the tee sheet…</Typography>}
       {bookings !== null && timeline.length === 0 && <Box sx={{ textAlign: 'center', py: 6, px: 2, border: '1px dashed', borderColor: 'divider', borderRadius: '20px' }}>
-        <Typography variant="h3" sx={{ fontSize: 22 }}>Nothing booked{filter === 'all' ? '' : ` for ${activityById(filter)!.name}`} yet</Typography>
+        <Typography variant="h3" sx={{ fontSize: 22 }}>Nothing booked{filter === 'all' ? '' : ` for ${activityName(site, filter)}`} yet</Typography>
         <Typography sx={{ color: 'text.secondary', mt: .75 }}>Online bookings appear here by themselves. Add phone and walk-in bookings with the button below.</Typography>
       </Box>}
       {timeline.map((row, i) => <Box key={i}>
@@ -157,6 +160,7 @@ function Stat({ label, value, small = false }: { label: string; value: string; s
 }
 
 function BlockRow({ block, onRemoved }: { block: StaffBlock; onRemoved: () => void }) {
+  const site = useSite();
   const [busy, setBusy] = useState(false);
   const remove = async () => {
     setBusy(true);
@@ -167,7 +171,7 @@ function BlockRow({ block, onRemoved }: { block: StaffBlock; onRemoved: () => vo
   return <Stack direction="row" alignItems="center" spacing={1.5} sx={{ p: 1.5, borderRadius: '16px', border: '1px dashed', borderColor: 'text.secondary', bgcolor: 'rgba(23,60,44,.04)' }}>
     <BlockRounded sx={{ color: 'text.secondary' }} />
     <Box sx={{ flex: 1, minWidth: 0 }}>
-      <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Closed {timeLabel(hhmm(block.start_time))} – {timeLabel(hhmm(block.end_time))} · {block.activity ? activityById(block.activity)!.name : 'Everything'}</Typography>
+      <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Closed {timeLabel(hhmm(block.start_time))} – {timeLabel(hhmm(block.end_time))} · {block.activity ? activityName(site, block.activity) : 'Everything'}</Typography>
       {block.reason && <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{block.reason}</Typography>}
     </Box>
     <IconButton aria-label="Remove this block" disabled={busy} onClick={() => void remove()}><CloseRounded /></IconButton>

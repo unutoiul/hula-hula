@@ -1,9 +1,12 @@
 import { Box, Container, Link, Stack, Typography } from '@mui/material';
-import { CONTACT } from '../../data/content';
+import { openingHoursLines } from '../../booking/config';
+import { useContact, useSite } from '../../context/SiteDataContext';
 import { ClubMark } from '../common/ClubMark';
 import { TropicalBackdrop, tropicalSectionSx } from '../common/TropicalBackdrop';
 
 export function Footer() {
+  const CONTACT = useContact();
+  const { club } = useSite();
   return <Box component="footer" sx={{
     ...tropicalSectionSx,
     py: { xs: 6, sm: 7 },
@@ -17,6 +20,7 @@ export function Footer() {
         <Typography variant="h2" sx={{ fontSize: { xs: 31, md: 48 }, lineHeight: 1.1, maxWidth: { xs: 280, sm: 'none' } }}>See you on the first tee.</Typography>
         <ClubMark size="large" />
         <Typography variant="overline" sx={{ maxWidth: 380, lineHeight: 1.6 }}>Hula Hula Golf Club<br />{CONTACT.area}</Typography>
+        <Typography variant="overline" sx={{ lineHeight: 1.8 }}>{openingHoursLines(club).map((line) => <Box component="span" key={line} sx={{ display: 'block' }}>{line}</Box>)}</Typography>
         <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
           <a href={CONTACT.tel}>{CONTACT.phone}</a> · Line {CONTACT.lineId}<br /><Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>{CONTACT.email}</Box>
         </Typography>

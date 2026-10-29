@@ -4,6 +4,7 @@ import ChevronRight from '@mui/icons-material/ChevronRight';
 import { Box, IconButton, Popover, Stack } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import { DayCalendar } from '../../components/booking/DayCalendar';
+import { useSite } from '../../context/SiteDataContext';
 import { fonts } from '../../theme';
 import { bookableDays } from '../availability';
 import { dayLabel, dayOfMonth, isWeekend, monthLabel, weekdayLabel } from '../dates';
@@ -11,7 +12,8 @@ import { dayLabel, dayOfMonth, isWeekend, monthLabel, weekdayLabel } from '../da
 // The row of days above the tee sheet, like most tee time engines: swipe or
 // arrow through the next two months, or jump with the calendar.
 export function DateStrip({ value, onChange }: { value: string; onChange: (date: string) => void }) {
-  const days = bookableDays();
+  const { club } = useSite();
+  const days = bookableDays(club.booking.windowDays);
   const row = useRef<HTMLDivElement>(null);
   const [calendarAnchor, setCalendarAnchor] = useState<HTMLElement | null>(null);
 

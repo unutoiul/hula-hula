@@ -1,26 +1,27 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { buildSheet, fits, isBookableDay } from '../src/booking/availability.ts';
-import { activityById, EXPERIENCE_LEVELS, pickupFor, RENTALS, type RentalId } from '../src/booking/config.ts';
+import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/availability.ts';
+import { contactLinks, EXPERIENCE_LEVELS, findActivity, pickupFor } from '../src/booking/config.ts';
 import type { ErrorResponse, Guest, Reservation } from '../src/booking/contract.ts';
 import { isISODate } from '../src/booking/dates.ts';
 import { priceLines, totalOf } from '../src/booking/pricing.ts';
-import { CONTACT } from '../src/data/contact.ts';
 import { DbError, rest } from './_lib/db.ts';
 import { clubEmail, guestEmail } from './_lib/emails.ts';
 import { allowMethods, readJsonBody, siteUrl } from './_lib/http.ts';
 import { emailConfigured, sendEmail, splitAddresses } from './_lib/resend.ts';
 import { loadDay } from './_lib/sheet.ts';
+import { loadSite } from './_lib/site.ts';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
 
 // POST /api/reservations — books a tee time. Everything the browser sends is
-// checked again here and priced here (never trusted from the page), then
-// saved through golf_book(), which takes the last place atomically. Then the
-// guest gets a confirmation and the club a "new booking" email through Resend
-// (RESEND_API_KEY). GOLF_EMAIL_FROM (an address on a domain verified in
-// Resend), GOLF_BOOKINGS_TO (default the club's reservations address),
-// GOLF_BOOKINGS_BCC and SITE_URL are optional overrides.
+// checked again here against the club's current settings and priced here
+// (never trusted from the page), then saved through golf_book(), which takes
+// the last place atomically. Then the guest gets a confirmation and the club
+// a "new booking" email through Resend (RESEND_API_KEY). GOLF_EMAIL_FROM (an
+// address on a domain verified in Resend), GOLF_BOOKINGS_TO (default the
+// club's email from its settings), GOLF_BOOKINGS_BCC and SITE_URL are
+// optional overrides.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ['POST'])) return;
   res.setHeader('Cache-Control', 'no-store');
@@ -31,13 +32,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Timed in the browser, so a guest's clock being off doesn't matter.
   if (typeof body.elapsedMs === 'number' && body.elapsedMs < 3000) return fail(429, 'Please wait a few seconds and try again.');
 
+  const site = await loadSite();
   const text = (value: unknown, max: number) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
-  const activity = activityById(text(body.activity, 20));
+  const activity = findActivity(site, text(body.activity, 40));
   const option = activity?.options.find((o) => o.id === text(body.option, 10));
   const date = text(body.date, 10);
   const time = text(body.time, 5);
   const players = Number(body.players);
-  if (!activity || !option || !isISODate(date) || !isBookableDay(date) || !/^\d\d:\d\d$/.test(time)
+  if (!activity || !option || !isISODate(date) || !isBookableDay(date, site.club.booking.windowDays) || !/^\d\d:\d\d$/.test(time)
     || !Number.isInteger(players) || players < activity.minPlayers || players > activity.maxPlayers) {
     return fail(400, 'Something about this booking doesn’t add up. Please pick your time again.', 'invalid');
   }
@@ -45,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const g = (body.guest ?? {}) as Record<string, unknown>;
   const guest: Guest = {
     firstName: text(g.firstName, 60), lastName: text(g.lastName, 60), email: text(g.email, 120).toLowerCase(), phone: text(g.phone, 30),
-    country: text(g.country, 2).toUpperCase(), handicap: text(g.handicap, 5), notes: text(g.notes, 1000),
+    country: text(g.country, 2).toUpperCase(), handicap: activity.askHandicap ? text(g.handicap, 5) : '', notes: text(g.notes, 1000),
   };
   if (!guest.firstName || !guest.lastName || !EMAIL.test(guest.email) || !PHONE.test(guest.phone) || !/^[A-Z]{2}$/.test(guest.country)) {
     return fail(400, 'Please check your name, email, phone and country.', 'invalid');
@@ -53,8 +55,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Rental sets only where the activity has them, never more than one each.
   const sentRentals = (body.rentals ?? {}) as Record<string, unknown>;
-  const rentals: Partial<Record<RentalId, number>> = {};
-  if (activity.rentals) for (const r of RENTALS) {
+  const rentals: Record<string, number> = {};
+  if (activity.rentals) for (const r of site.rentals) {
     const count = Number(sentRentals[r.id]);
     if (Number.isInteger(count) && count > 0) rentals[r.id] = count;
   }
@@ -62,16 +64,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const transfer = text(body.transfer, 5) || null;
   const pickupFrom = text(body.pickupFrom, 160);
-  if (transfer && (transfer !== pickupFor(time) || !pickupFrom)) return fail(400, 'Please check the shuttle pick-up.', 'invalid');
-  const experience = activity.id === 'lesson' && EXPERIENCE_LEVELS.includes(text(body.experience, 60)) ? text(body.experience, 60) : '';
+  if (transfer && (transfer !== pickupFor(time, site.club) || !pickupFrom)) return fail(400, 'Please check the shuttle pick-up.', 'invalid');
+  const experience = activity.askExperience && EXPERIENCE_LEVELS.includes(text(body.experience, 60)) ? text(body.experience, 60) : '';
 
   try {
-    // A real start on today's sheet, still with room (golf_book() checks again, atomically).
+    // A real start on the day's sheet, still with room (golf_book() checks again, atomically).
     const { bookings, blocks } = await loadDay(activity.id, date);
-    const slot = buildSheet(activity, option, date, bookings, blocks).find((s) => s.time === time);
+    const slot = buildSheet(activity, option, date, bookings, blocks, { rules: rulesFrom(site.club) }).find((s) => s.time === time);
     if (!slot || !fits(slot, players)) return fail(409, 'Sorry — that time was just taken. Please pick another.', 'taken');
 
-    const lines = priceLines(activity, option, players, rentals);
+    const lines = priceLines(activity, option, players, rentals, site.rentals);
     const total = totalOf(lines);
     const ref = await rest<string>('/rpc/golf_book', {
       method: 'POST',
@@ -81,15 +83,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           transfer, pickup_from: transfer ? pickupFrom : '', experience, first_name: guest.firstName, last_name: guest.lastName,
           email: guest.email, phone: guest.phone, country: guest.country, handicap: guest.handicap, notes: guest.notes, lines, total, source: 'online',
         },
-        p_capacity: activity.capacity, p_units: activity.units, p_private: !!activity.privateGroup, p_force: false,
+        p_capacity: activity.capacity, p_units: activity.units, p_private: activity.privateGroup, p_force: false,
       },
     });
 
     const reservation: Reservation = {
-      ref, activity: activity.id, option: option.id, date, time, minutes: option.minutes, players, rentals,
+      ref, activity: activity.id, activityName: activity.name, optionLabel: option.label, date, time, minutes: option.minutes, players, rentals,
       transfer, pickupFrom: transfer ? pickupFrom : '', lines, total, email: guest.email, emailed: false,
     };
-    reservation.emailed = await sendEmails(reservation, guest, experience, siteUrl(req));
+    reservation.emailed = await sendEmails(reservation, guest, experience, siteUrl(req), site);
     console.info('Golf booking saved', ref, activity.id, date, time, players);
     return res.status(200).json(reservation);
   } catch (error) {
@@ -100,15 +102,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 // Never fails the booking — it's saved, and staff see it in /admin either way.
-async function sendEmails(reservation: Reservation, guest: Guest, experience: string, site: string): Promise<boolean> {
+async function sendEmails(reservation: Reservation, guest: Guest, experience: string, site: string, data: Awaited<ReturnType<typeof loadSite>>): Promise<boolean> {
   if (!emailConfigured()) { console.warn('Booking emails skipped: RESEND_API_KEY not set'); return false; }
+  const contact = contactLinks(data.club.contact);
   const from = process.env.GOLF_EMAIL_FROM || 'Hula Hula Golf Club <golf@hulahularesort.com>';
-  const club = splitAddresses(process.env.GOLF_BOOKINGS_TO || CONTACT.email);
+  const club = splitAddresses(process.env.GOLF_BOOKINGS_TO || contact.email);
   const bcc = splitAddresses(process.env.GOLF_BOOKINGS_BCC ?? '');
-  const toGuest = guestEmail(reservation, guest, site);
-  const toClub = clubEmail(reservation, guest, experience, site);
+  const toGuest = guestEmail(reservation, guest, site, data);
+  const toClub = clubEmail(reservation, guest, experience, site, data);
   const [guestResult, clubResult] = await Promise.allSettled([
-    sendEmail({ from, to: [guest.email], replyTo: CONTACT.email, ...toGuest }),
+    sendEmail({ from, to: [guest.email], replyTo: contact.email, ...toGuest }),
     sendEmail({ from, to: club, bcc, replyTo: guest.email, ...toClub }),
   ]);
   if (clubResult.status === 'rejected' || !clubResult.value.ok) console.error('Club booking email failed', reservation.ref, clubResult.status === 'rejected' ? clubResult.reason : clubResult.value.body);

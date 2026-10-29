@@ -4,13 +4,13 @@ import FlightLandRounded from '@mui/icons-material/FlightLandRounded';
 import MapOutlined from '@mui/icons-material/MapOutlined';
 import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
 import SportsGolfRounded from '@mui/icons-material/SportsGolfRounded';
-import WbSunnyRounded from '@mui/icons-material/WbSunnyRounded';
+import StorefrontRounded from '@mui/icons-material/StorefrontRounded';
 import { Box, Button, Container, Link, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
-import { RENTALS, TRANSFER_PICKUPS } from '../../booking/config';
+import { openingHoursLines } from '../../booking/config';
 import { timeLabel } from '../../booking/dates';
 import { money } from '../../booking/pricing';
-import { CONTACT } from '../../data/content';
+import { useContact, useSite } from '../../context/SiteDataContext';
 import { SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { QuickBook } from '../booking/QuickBook';
 import { MetaLabel } from '../common/MetaLabel';
@@ -21,6 +21,9 @@ import { SunDoodle } from '../common/VacationDecor';
 // knowing before you come — and the tee time search again, right where the
 // decision gets made.
 export function VisitSection() {
+  const CONTACT = useContact();
+  const { club, rentals } = useSite();
+  const cheapestRental = rentals.length ? Math.min(...rentals.map((r) => r.price)) : null;
   return <Box id="visit" component="section" sx={{ py: SECTION_Y, bgcolor: 'primary.light', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl">
       <Stack direction={{ xs: 'column', lg: 'row' }} spacing={{ xs: 5, lg: 8 }} alignItems={{ lg: 'flex-start' }}>
@@ -38,7 +41,7 @@ export function VisitSection() {
               We’re a short drive from Krabi International Airport — handy on your first or last day. <Link href={CONTACT.maps} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 700 }}>Open the map</Link>
             </Tile>
             <Tile icon={<AirportShuttleRounded />} title="Free transfer" highlight>
-              Twice a day, with pick-ups at {TRANSFER_PICKUPS.map(timeLabel).join(' and ')}. Tick it when you book and tell us where you’re staying.
+              {club.transfer.pickups.length ? <>Pick-ups at {club.transfer.pickups.map(timeLabel).join(' and ')}. Tick it when you book and tell us where you’re staying.</> : <>Ask us when you book — we’ll help you get here.</>}
             </Tile>
             <Tile icon={<ScheduleRounded />} title="Arrive a little early">
               Check in at the clubhouse 20–30 minutes before your tee time — there’s coffee waiting.
@@ -47,10 +50,11 @@ export function VisitSection() {
               Golf: a collared shirt and golf shoes or clean trainers. FootGolf: trainers or turf shoes, no metal studs.
             </Tile>
             <Tile icon={<SportsGolfRounded />} title="No clubs? No worries">
-              Rental sets from {money(RENTALS[0].price)}. FootGolf, Putt-Golf and lessons include all the equipment.
+              {cheapestRental !== null ? <>Rental sets from {money(cheapestRental)}. </> : null}FootGolf, Putt-Golf and lessons include all the equipment.
             </Tile>
-            <Tile icon={<WbSunnyRounded />} title="Hello, sunshine">
-              Every round comes with a cart for a little shade. Bring a hat and sunscreen — we’ve got the cold drinks.
+            <Tile icon={<StorefrontRounded />} title="Opening hours">
+              {openingHoursLines(club).map((line) => <Box component="span" key={line} sx={{ display: 'block' }}>{line}</Box>)}
+              {club.hoursNote && <Box component="span" sx={{ display: 'block', mt: .5 }}>{club.hoursNote}</Box>}
             </Tile>
           </Box>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="center" justifyContent={{ xs: 'center', lg: 'flex-start' }} sx={{ mt: 3 }}>

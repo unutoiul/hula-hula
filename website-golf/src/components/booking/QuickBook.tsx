@@ -4,9 +4,10 @@ import { useRef, useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../../booking/activityIcons';
 import { bookableDays } from '../../booking/availability';
 import { bookHref } from '../../booking/BookingFlowContext';
-import { ACTIVITIES, type Activity } from '../../booking/config';
+import type { Activity } from '../../booking/config';
 import { krabiNow, shortDayLabel } from '../../booking/dates';
-import { fromPrice, money, plural } from '../../booking/pricing';
+import { fromPrice, money, peopleLabel } from '../../booking/pricing';
+import { useSite } from '../../context/SiteDataContext';
 import { linkClick } from '../../router';
 import { fonts } from '../../theme';
 import { DayCalendar } from './DayCalendar';
@@ -19,27 +20,31 @@ const paper = { mt: 1, borderRadius: '24px', boxShadow: '0 18px 40px rgba(23,60,
 // panel — then straight onto that day's tee sheet at /book. `stacked` puts
 // the activity on its own row, for narrow columns.
 export function QuickBook({ maxWidth = 640, stacked = false }: { maxWidth?: number | string; stacked?: boolean }) {
-  const days = bookableDays();
-  const [activity, setActivity] = useState<Activity>(ACTIVITIES[0]);
+  const { activities, club } = useSite();
+  const days = bookableDays(club.booking.windowDays);
+  const [chosen, setActivity] = useState<string>(activities[0]?.id ?? '');
+  // The live list may arrive after the first render, and staff may remove an activity.
+  const activity: Activity | undefined = activities.find((a) => a.id === chosen) ?? activities[0];
   const [date, setDate] = useState(krabiNow().date);
   const [players, setPlayers] = useState(2);
   const [open, setOpen] = useState<'activity' | 'date' | 'players' | null>(null);
   const fields = useRef<HTMLDivElement>(null);
 
   const pick = (next: Activity) => {
-    setActivity(next);
+    setActivity(next.id);
     setPlayers((p) => Math.min(next.maxPlayers, Math.max(next.minPlayers, p)));
     setOpen(null);
   };
+  if (!activity) return null;
   const href = bookHref({ activity: activity.id, option: activity.options[0].id, date, players });
-  const people = plural(players, activity.id === 'lesson' ? 'person' : 'player', activity.id === 'lesson' ? 'people' : 'players');
+  const people = peopleLabel(activity, players);
 
   return <Box sx={{ width: '100%', maxWidth, border: '1px solid', borderColor: 'divider', borderTop: '4px solid #50830d', bgcolor: 'background.paper', color: 'text.primary', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(23,60,44,.07)' }}>
     <Box ref={fields} sx={{ display: 'grid', gridTemplateColumns: stacked ? '1fr 1fr' : { xs: '1fr 1fr', sm: '1.3fr 1fr 1fr' }, borderBottom: '1px solid', borderColor: 'divider' }}>
-      <Field label="Play" value={<Stack direction="row" spacing={.75} alignItems="center"><ActivityIcon activity={activity.id} sx={{ fontSize: 17, color: 'success.main' }} /><span>{activity.name}</span></Stack>}
+      <Field label="Play" value={<Stack direction="row" spacing={.75} alignItems="center"><ActivityIcon icon={activity.icon} sx={{ fontSize: 17, color: 'success.main' }} /><span>{activity.name}</span></Stack>}
         expanded={open === 'activity'} onClick={() => setOpen('activity')} ariaLabel={`Activity: ${activity.name}`} sx={stacked ? { gridColumn: '1 / -1', borderBottom: '1px solid #d6e1ce' } : { gridColumn: { xs: '1 / -1', sm: 'auto' }, borderBottom: { xs: '1px solid #d6e1ce', sm: 'none' }, borderRight: { sm: '1px solid #d6e1ce' } }} />
       <Field label="Day" value={days[0] === date ? `Today · ${shortDayLabel(date)}` : shortDayLabel(date)} expanded={open === 'date'} onClick={() => setOpen('date')} ariaLabel={`Day: ${shortDayLabel(date)}`} sx={{ borderRight: '1px solid #d6e1ce' }} />
-      <Field label={activity.id === 'lesson' ? 'People' : 'Players'} value={people} expanded={open === 'players'} onClick={() => setOpen('players')} ariaLabel={`${people}`} />
+      <Field label={activity.peopleNoun === 'person' ? 'People' : 'Players'} value={people} expanded={open === 'players'} onClick={() => setOpen('players')} ariaLabel={`${people}`} />
     </Box>
     <Box sx={{ p: 1.5 }}>
       <Button fullWidth variant="contained" href={href} onClick={linkClick(href)} endIcon={<East />}>Find a tee time</Button>
@@ -48,9 +53,9 @@ export function QuickBook({ maxWidth = 640, stacked = false }: { maxWidth?: numb
     {/* Anchored to the whole fields row, so each panel lines up under the bar. */}
     <Popover open={open === 'activity'} anchorEl={fields.current} onClose={() => setOpen(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} slotProps={{ paper: { sx: { ...paper, width: 320, maxWidth: 'calc(100vw - 32px)' } } }}>
       <Stack component="ul" role="listbox" aria-label="Activity" sx={{ listStyle: 'none', m: 0, p: 1 }}>
-        {ACTIVITIES.map((a) => <Box component="li" key={a.id} role="option" aria-selected={a.id === activity.id}>
+        {activities.map((a) => <Box component="li" key={a.id} role="option" aria-selected={a.id === activity.id}>
           <Box component="button" type="button" onClick={() => pick(a)} sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25, border: 0, borderRadius: '14px', font: 'inherit', textAlign: 'left', cursor: 'pointer', color: 'inherit', bgcolor: a.id === activity.id ? 'primary.light' : 'transparent', '&:hover': { bgcolor: 'secondary.light' } }}>
-            <Box aria-hidden sx={{ width: 36, height: 36, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'success.light', color: 'success.dark', '& svg': { fontSize: 19 } }}><ActivityIcon activity={a.id} /></Box>
+            <Box aria-hidden sx={{ width: 36, height: 36, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'success.light', color: 'success.dark', '& svg': { fontSize: 19 } }}><ActivityIcon icon={a.icon} /></Box>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography sx={{ fontFamily: fonts.playful, fontSize: 16 }}>{a.name}</Typography>
               <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{a.tagline}</Typography>
@@ -64,8 +69,8 @@ export function QuickBook({ maxWidth = 640, stacked = false }: { maxWidth?: numb
       <DayCalendar value={date} min={days[0]} max={days[days.length - 1]} onChange={(day) => { setDate(day); setOpen(null); }} />
     </Popover>
     <Popover open={open === 'players'} anchorEl={fields.current} onClose={() => setOpen(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }} slotProps={{ paper: { sx: { ...paper, width: 300, p: 2.5 } } }}>
-      <GuestStepper label={activity.id === 'lesson' ? 'People' : 'Players'} value={players} min={activity.minPlayers} max={activity.maxPlayers} onChange={setPlayers} />
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1.5 }}>Up to {activity.maxPlayers} {activity.id === 'range' ? 'in a bay' : 'in a group'}. More of you? We’ll line up times together.</Typography>
+      <GuestStepper label={activity.peopleNoun === 'person' ? 'People' : 'Players'} value={players} min={activity.minPlayers} max={activity.maxPlayers} onChange={setPlayers} />
+      <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1.5 }}>Up to {activity.maxPlayers} {activity.units > 1 ? `in a ${activity.slotNoun}` : 'in a group'}. More of you? We’ll line up times together.</Typography>
     </Popover>
   </Box>;
 }

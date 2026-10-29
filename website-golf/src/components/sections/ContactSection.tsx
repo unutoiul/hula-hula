@@ -5,7 +5,7 @@ import Instagram from '@mui/icons-material/Instagram';
 import MailOutlineRounded from '@mui/icons-material/MailOutlineRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
-import { CONTACT } from '../../data/content';
+import { useContact } from '../../context/SiteDataContext';
 import { photoAssets as p } from '../../data/photos';
 import { SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { linkClick } from '../../router';
@@ -22,6 +22,7 @@ const quickActionSx = { justifyContent: 'flex-start', minHeight: 56, borderColor
 // A postcard from the club: the clubhouse on the front, every way to reach a
 // person on the back. Booking is the main action; the rest are one tap away.
 export function ContactSection() {
+  const CONTACT = useContact();
   return <Box id="contact" component="section" aria-labelledby="contact-heading" sx={{ py: SECTION_Y, scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl"><Reveal sx={{ position: 'relative' }}>
       <Box sx={{ p: { xs: 1, md: 1.5 }, bgcolor: '#fffef8', border: '1px solid #d6e1ce', borderRadius: { xs: '24px', md: '32px' }, boxShadow: '0 18px 55px rgba(23,60,44,.07)' }}>

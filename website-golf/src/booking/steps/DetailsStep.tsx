@@ -6,6 +6,7 @@ import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
 import { BookingSummary } from '../components/BookingSummary';
 import { clubRules } from '../config';
+import { useSite } from '../../context/SiteDataContext';
 import { COUNTRIES, guessCountry } from '../countries';
 import { money } from '../pricing';
 
@@ -48,13 +49,14 @@ export function DetailsStep() {
     navigate('/book/confirmation');
   };
 
-  const rules = clubRules(activity.wear);
+  const { club } = useSite();
+  const rules = clubRules(activity.wear, club);
 
   return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' }, gap: { xs: 3, md: 4 }, alignItems: 'start' }}>
     <Box component="form" noValidate onSubmit={submit} sx={{ minWidth: 0 }}>
       <Button onClick={() => navigate('/book/extras')} startIcon={<West />} size="small" sx={{ mb: 1, minHeight: 0 }}>Back to extras</Button>
       <Typography variant="h1" sx={{ fontSize: { xs: 34, md: 46 }, lineHeight: 1.1 }}>Who’s booking?</Typography>
-      <Typography sx={{ color: 'text.secondary', mt: 1, mb: 3 }}>The lead {activity.id === 'lesson' ? 'guest' : 'player'} — we’ll send the confirmation here and WhatsApp you if anything changes.</Typography>
+      <Typography sx={{ color: 'text.secondary', mt: 1, mb: 3 }}>The lead {activity.peopleNoun === 'person' ? 'guest' : 'player'} — we’ll send the confirmation here and WhatsApp you if anything changes.</Typography>
 
       <Box sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', p: { xs: 2.5, md: 3.5 } }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
@@ -65,7 +67,7 @@ export function DetailsStep() {
           <Autocomplete options={COUNTRIES} value={COUNTRIES.find((c) => c.code === guest.country) ?? null} onChange={(_, value) => updateGuest({ country: value?.code ?? '' })}
             getOptionLabel={(option) => option.name} isOptionEqualToValue={(a, b) => a.code === b.code} autoHighlight
             renderInput={(params) => <TextField {...params} label="Country" required autoComplete="country-name" error={!!shown('country')} helperText={shown('country')} />} />
-          {activity.id === 'golf' && <TextField label="Handicap (optional)" slotProps={{ htmlInput: { inputMode: 'decimal' } }} value={guest.handicap} onChange={(e) => updateGuest({ handicap: e.target.value.replace(/[^\d.+-]/g, '').slice(0, 5) })} helperText="Helps us pair you with the right caddie" />}
+          {activity.askHandicap && <TextField label="Handicap (optional)" slotProps={{ htmlInput: { inputMode: 'decimal' } }} value={guest.handicap} onChange={(e) => updateGuest({ handicap: e.target.value.replace(/[^\d.+-]/g, '').slice(0, 5) })} helperText="Helps us pair you with the right caddie" />}
         </Box>
         <TextField label="Anything we should know? (optional)" multiline minRows={3} fullWidth value={guest.notes} onChange={(e) => updateGuest({ notes: e.target.value.slice(0, 1000) })}
           helperText="Left-handed clubs, a birthday round, kids in the group… We’ll do our best." sx={{ mt: 2 }} />

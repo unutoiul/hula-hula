@@ -4,21 +4,36 @@ import SearchRounded from '@mui/icons-material/SearchRounded';
 import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import West from '@mui/icons-material/West';
-import { Alert, Box, Button, CircularProgress, Container, IconButton, InputAdornment, Link, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, IconButton, InputAdornment, Link, Stack, Tab, Tabs, TextField, Tooltip, Typography } from '@mui/material';
 import type { Session } from '@supabase/supabase-js';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { linkClick } from '../router';
+import { linkClick, navigate, useLocation } from '../router';
+import { ActivitiesPage } from './ActivitiesPage';
+import { EventEditor } from './EventEditor';
+import { EventsPage } from './EventsPage';
+import { SettingsPage } from './SettingsPage';
 import { DaySheet } from './DaySheet';
 import { SearchDialog } from './SearchDialog';
 import { supabase } from './supabase';
 
-// /admin — the golf club's staff app, made for a phone at the front desk:
-// the day's tee sheet, check-ins, phone and walk-in bookings, and blocked
-// times. Staff sign in with the email and password set up for them in
+// /admin — the golf club's staff app, made for a phone at the front desk,
+// one page per job:
+//   /admin             the day's tee sheet: check-ins, phone and walk-in bookings, blocked times
+//   /admin/events      events and their packages, orders and desk sales
+//   /admin/activities  activities and their prices, rental clubs
+//   /admin/settings    opening hours, contact details, shuttle, booking rules Staff sign in with the email and password set up for them in
 // the golf club's Supabase project (Authentication → Users); only addresses
 // on golf_staff get in.
 
+const PAGES = [
+  { path: '/admin', label: 'Tee sheet' },
+  { path: '/admin/events', label: 'Events' },
+  { path: '/admin/activities', label: 'Activities & prices' },
+  { path: '/admin/settings', label: 'Club settings' },
+];
+
 export default function AdminApp() {
+  const { pathname } = useLocation();
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -53,22 +68,32 @@ export default function AdminApp() {
     <Button fullWidth variant="outlined" onClick={() => void supabase!.auth.signOut()} sx={{ mt: 2.5 }}>Sign out</Button>
   </CentredCard>;
 
+  const page = PAGES.slice().reverse().find((p) => pathname === p.path || pathname.startsWith(`${p.path}/`)) ?? PAGES[0];
+  const eventId = /^\/admin\/events\/([0-9a-f-]{36})$/.exec(pathname)?.[1];
+
   return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: { xs: 12, md: 6 } }}>
     <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'rgba(255,253,243,.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid', borderColor: 'divider' }}>
       <Container maxWidth="md" sx={{ px: { xs: 1.5, sm: 3 } }}>
-        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ minHeight: 60 }}>
-          <Box component="img" src="/logo/hula-hula-golf.svg" alt="" sx={{ height: 40, width: 'auto' }} />
+        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ minHeight: 56 }}>
+          <Box component="img" src="/logo/hula-hula-golf.svg" alt="" sx={{ height: 38, width: 'auto' }} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontFamily: 'inherit', fontWeight: 700, lineHeight: 1.2 }}>Tee sheet</Typography>
+            <Typography sx={{ fontWeight: 700, lineHeight: 1.2 }}>Golf club admin</Typography>
             <Typography noWrap sx={{ fontSize: 12, color: 'text.secondary' }}>{session.user.email}</Typography>
           </Box>
-          <Tooltip title="Find a booking"><IconButton aria-label="Find a booking" onClick={() => setSearchOpen(true)} sx={{ border: '1px solid', borderColor: 'divider' }}><SearchRounded /></IconButton></Tooltip>
+          {page.path === '/admin' && <Tooltip title="Find a booking"><IconButton aria-label="Find a booking" onClick={() => setSearchOpen(true)} sx={{ border: '1px solid', borderColor: 'divider' }}><SearchRounded /></IconButton></Tooltip>}
           <Tooltip title="Sign out"><IconButton aria-label="Sign out" onClick={() => void supabase!.auth.signOut()} sx={{ border: '1px solid', borderColor: 'divider' }}><LogoutRounded /></IconButton></Tooltip>
         </Stack>
+        <Tabs value={page.path} onChange={(_, path: string) => navigate(path)} variant="scrollable" scrollButtons={false} aria-label="Admin pages"
+          sx={{ minHeight: 44, mx: { xs: -1.5, sm: 0 }, '& .MuiTab-root': { minHeight: 44, textTransform: 'none', fontWeight: 700, fontSize: 14, px: { xs: 1.5, sm: 2 } } }}>
+          {PAGES.map((p) => <Tab key={p.path} value={p.path} label={p.label} />)}
+        </Tabs>
       </Container>
     </Box>
-    <Container maxWidth="md" sx={{ px: { xs: 1.5, sm: 3 }, pt: 2 }}>
-      <DaySheet jumpTo={jumpTo} />
+    <Container maxWidth="md" sx={{ px: { xs: 1.5, sm: 3 }, pt: 2.5 }}>
+      {page.path === '/admin/events' ? (eventId ? <EventEditor key={eventId} id={eventId} /> : <EventsPage />)
+        : page.path === '/admin/activities' ? <ActivitiesPage />
+        : page.path === '/admin/settings' ? <SettingsPage />
+        : <DaySheet jumpTo={jumpTo} />}
     </Container>
     <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} onPick={(date) => { setJumpTo(`${date}#${Date.now()}`); setSearchOpen(false); }} />
   </Box>;
