@@ -103,7 +103,7 @@ export const offersConfig: ContentConfig = {
     { key: 'max_days_before_arrival', label: 'Last minute', kind: 'number', min: 0, max: 365, unit: 'days', helper: 'Only when booked at most this many days before arrival' },
 
     { key: 's-rooms', label: 'Rooms & promo code', kind: 'section' },
-    { key: 'room_type_uuids', label: 'Rooms', kind: 'roomTypes', helper: 'Leave empty for every room' },
+    { key: 'room_type_uuids', label: 'Rooms', kind: 'roomTypes' },
     { key: 'promo_code', label: 'Promo code (optional)', kind: 'code', helper: 'Empty = applies automatically to everyone. With a code, only guests who enter it get the offer.' },
     { key: 'cta_label', label: 'Homepage button text', kind: 'text', max: 40, helper: 'Leave empty for “Book this offer”' },
   ],

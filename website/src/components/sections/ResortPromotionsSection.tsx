@@ -25,7 +25,7 @@ export function ResortPromotionsSection() {
   const offers = useOfferCards(useSiteContent().offers);
   return <Box component="section" id="hula-happenings" sx={{ py: { xs: 8, md: 11 }, bgcolor: '#e7f4cc', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl">
-      {offers.length > 0 && <Box sx={{ mb: { xs: 9, md: 12 } }}>
+      {offers.length > 0 && <Box id="offers" sx={{ mb: { xs: 9, md: 12 }, scrollMarginTop: SECTION_SCROLL_OFFSET }}>
         <DragCarousel sectionKicker="Offers & little extras" heading={<>Treat yourself.<br /><Box component="span" color="success.main">We’ve got deals.</Box></>} items={offers} itemLabel="offer" onDark={false}
           renderCard={(item, active, onClick) => <CarouselCard {...item} active={active} onClick={onClick} />} />
       </Box>}

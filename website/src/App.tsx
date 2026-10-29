@@ -1,6 +1,7 @@
 import { Box, CircularProgress } from '@mui/material';
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef } from 'react';
 import { eventFacts, meals, navItems } from './data/content';
+import type { NavItem } from './types';
 import { BookingSearchProvider } from './context/BookingSearchContext';
 import { ContactFormProvider } from './context/ContactFormContext';
 import { CookieConsent } from './components/layout/CookieConsent';
@@ -17,17 +18,28 @@ import { RestaurantSection } from './components/sections/RestaurantSection';
 import { FloatingBreakfastSection } from './components/sections/FloatingBreakfastSection';
 import { ResortPromotionsSection } from './components/sections/ResortPromotionsSection';
 import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
-import { SiteContentProvider } from './context/SiteContentContext';
+import { SiteContentProvider, useSiteContent } from './context/SiteContentContext';
 import { useLocation } from './router';
 import { BeachBall, Bubbles, Gulls, Longtail, PaperBoat, RisingSun, SEAM, SectionSeam, SwimRing } from './components/common/SectionSeam';
+
+// "Offers" joins the menu (before Celebrate) only while there's an offer live.
+function ResortHeader() {
+  const hasOffers = useSiteContent().offers.length > 0;
+  const items = useMemo<NavItem[]>(() => {
+    if (!hasOffers) return navItems;
+    const at = navItems.findIndex(([, href]) => href === '#events');
+    return [...navItems.slice(0, at), ['Offers', '#offers'], ...navItems.slice(at)];
+  }, [hasOffers]);
+  return <Header navItems={items} />;
+}
 
 function ResortPage() {
   // Nothing tilted or bobbing near an edge may widen the page: clip sideways
   // overflow here (clip, unlike hidden, doesn't create a scroll container).
   return <Box component="main" id="top" sx={{ overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' } }}>
     <CookieConsent />
-    <Header navItems={navItems} />
     <SiteContentProvider>
+      <ResortHeader />
       <Hero />
       <HotelSection />
       {/* Every change of section colour gets the same wave; a few of them carry

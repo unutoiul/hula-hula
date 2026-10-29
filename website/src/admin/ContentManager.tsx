@@ -196,7 +196,9 @@ function EditDialog({ config, initial, onClose, onSaved }: { config: ContentConf
 }
 
 // The rooms an offer covers, named as on the booking page (from SiteMinder).
-// Leaving it empty means every room.
+// "All rooms" is on by default and stored as an empty list, so a room type
+// added in SiteMinder later is covered too. Switching it off starts with every
+// room ticked, to take out the ones the offer shouldn't cover.
 let roomTypesRequest: Promise<{ uuid: string; name: string }[]> | null = null;
 function RoomTypesField({ label, helper, value, onChange }: { label: string; helper?: string; value: string[]; onChange: (next: string[]) => void }) {
   const [options, setOptions] = useState<{ uuid: string; name: string }[]>([]);
@@ -204,11 +206,19 @@ function RoomTypesField({ label, helper, value, onChange }: { label: string; hel
     roomTypesRequest ??= fetch('/api/booking/room-types').then((r) => (r.ok ? r.json() : [])).catch(() => []);
     void roomTypesRequest.then(setOptions);
   }, []);
+  const allRooms = value.length === 0;
   const selected = value.map((uuid) => options.find((o) => o.uuid === uuid) ?? { uuid, name: uuid });
-  return <Autocomplete multiple options={options} value={selected} getOptionLabel={(o) => o.name} isOptionEqualToValue={(a, b) => a.uuid === b.uuid}
-    onChange={(_, next) => onChange(next.map((o) => o.uuid))} loading={!options.length}
-    renderValue={(items, getItemProps) => items.map((o, index) => <Chip {...getItemProps({ index })} key={o.uuid} label={o.name} size="small" />)}
-    renderInput={(params) => <TextField {...params} label={label} helperText={helper} placeholder={value.length ? '' : 'All rooms'} />} />;
+  return <Box>
+    <FormControlLabel label={`All rooms${options.length ? ` (${options.length})` : ''}`} control={<Switch checked={allRooms} disabled={!options.length}
+      onChange={(e) => onChange(e.target.checked ? [] : options.map((o) => o.uuid))} />} />
+    {allRooms
+      ? <Typography sx={{ fontSize: 12, color: 'text.secondary', ml: 6.5, mt: -.5 }}>The offer covers every room — including any added later in SiteMinder. Switch off to choose rooms.</Typography>
+      : <Autocomplete multiple options={options} value={selected} getOptionLabel={(o) => o.name} isOptionEqualToValue={(a, b) => a.uuid === b.uuid} sx={{ mt: 1 }}
+        // Taking out the last room means "no limit" again, not "no rooms".
+        onChange={(_, next) => onChange(next.map((o) => o.uuid))}
+        renderValue={(items, getItemProps) => items.map((o, index) => <Chip {...getItemProps({ index })} key={o.uuid} label={o.name} size="small" />)}
+        renderInput={(params) => <TextField {...params} label={label} helperText={helper ?? 'Remove the rooms this offer shouldn’t cover'} />} />}
+  </Box>;
 }
 
 function PreviewCard({ card }: { card: CarouselCardData & { ctaLabel?: string } }) {
