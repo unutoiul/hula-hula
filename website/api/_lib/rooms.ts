@@ -73,7 +73,7 @@ export function cancellationTerms(ratePenalties: SmPenalty[] | undefined, proper
   return { refundable: true, summary: `Free cancellation until ${days === 0 ? 'the day of arrival' : `${days} day${days === 1 ? '' : 's'} before arrival`}; after that ${describePenalty(first, currency)}.` };
 }
 
-export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<string, number>, checkIn: string, promo: string | undefined, fallback: DefaultDeposit, deals: Deal[] = [], today = checkIn): PricedRate[] {
+export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<string, number>, checkIn: string, promo: string | undefined, fallback: DefaultDeposit, deals: Deal[] = []): PricedRate[] {
   const currency = catalog.property.currencyIsoCode || 'THB';
   const priced: PricedRate[] = [];
   for (const quote of quotes) {
@@ -93,7 +93,7 @@ export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<stri
     if (available <= 0) continue;
     // The best special offer for this room and stay, taken off the nights it covers.
     const originalTotal = toSatang(quote.price.gross);
-    const deal = bestDeal(deals, { today, checkIn, nightDates: nights.map((night) => night.date), roomTypeUuid: quote.roomTypeUuid, promo });
+    const deal = bestDeal(deals, { nightDates: nights.map((night) => night.date), roomTypeUuid: quote.roomTypeUuid, promo });
     let savings = 0;
     if (deal) {
       const off = nights.length

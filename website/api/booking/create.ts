@@ -9,7 +9,7 @@ import { allowMethods, readJsonBody, siteUrl, withPreviewBypass } from '../_lib/
 import { invoiceNoFor, newAccessKey, newRef, sha256Hex } from '../_lib/ids.js';
 import { fromSatang } from '../_lib/money.js';
 import { maxRoomsPerBooking, type PricedRate, priceQuotes } from '../_lib/rooms.js';
-import { MAX_ADULTS, MAX_CHILDREN, parseStay, todayInBangkok } from '../_lib/search.js';
+import { MAX_ADULTS, MAX_CHILDREN, parseStay } from '../_lib/search.js';
 import { getCatalog, getQuotes, SiteMinderError } from '../_lib/siteminder.js';
 import { createPaymentToken, isConfigured as paymentConfigured } from '../_lib/twoc2p.js';
 
@@ -63,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await Promise.all(occupancies.map(async (key) => {
       const [adults, children] = key.split('|').map(Number);
       const quotes = await getQuotes({ ...stay, adults, children });
-      for (const p of priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit(), deals, todayInBangkok())) priced.set(`${p.rate.uuid}|${key}`, p);
+      for (const p of priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit(), deals)) priced.set(`${p.rate.uuid}|${key}`, p);
     }));
   } catch (error) {
     console.error('Booking: re-pricing failed', error);

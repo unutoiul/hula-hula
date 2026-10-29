@@ -96,9 +96,9 @@ describe('special offers', async () => {
   const { bestDeal, isEligible, nightlyDiscounts } = await import('../api/_lib/dealRules.ts');
   const base = {
     id: 'a', title: 'Book direct', badge: 'Special offer', discountPercent: 10, perks: [], promoCode: null,
-    minNights: null, minDaysBefore: null, maxDaysBefore: null, roomTypeUuids: [], sortOrder: 0,
+    minNights: null, roomTypeUuids: [], sortOrder: 0,
   };
-  const ctx = { today: '2026-11-01', checkIn: '2026-12-10', nightDates: ['2026-12-10', '2026-12-11', '2026-12-12'], roomTypeUuid: 'deluxe' };
+  const ctx = { nightDates: ['2026-12-10', '2026-12-11', '2026-12-12'], roomTypeUuid: 'deluxe' };
 
   it('applies automatically, or only with its code', () => {
     assert.ok(isEligible(base, ctx));
@@ -107,11 +107,9 @@ describe('special offers', async () => {
     assert.ok(isEligible(coded, { ...ctx, promo: ' honey ' }));
   });
 
-  it('checks minimum nights, early bird, last minute and rooms', () => {
+  it('checks minimum nights and rooms', () => {
     assert.ok(!isEligible({ ...base, minNights: 4 }, ctx));
     assert.ok(isEligible({ ...base, minNights: 3 }, ctx));
-    assert.ok(!isEligible({ ...base, minDaysBefore: 60 }, ctx)); // 39 days ahead
-    assert.ok(!isEligible({ ...base, maxDaysBefore: 7 }, ctx));
     assert.ok(!isEligible({ ...base, roomTypeUuids: ['villa'] }, ctx));
     assert.ok(!isEligible({ ...base, discountPercent: 0 }, ctx)); // nothing to give
     assert.ok(isEligible({ ...base, discountPercent: 0, perks: ['Welcome drink'] }, ctx)); // a package

@@ -91,10 +91,8 @@ export const offersConfig: ContentConfig = {
     { key: 'discount_percent', label: 'Discount', kind: 'number', min: 0, max: 90, unit: '%', helper: 'Off the room price, for every night of the stay' },
     { key: 'perks', label: 'Perks included', kind: 'tags', suggestions: PERK_SUGGESTIONS, helper: 'Pick from the list or type your own and press Enter (up to 8)' },
 
-    { key: 's-when', label: 'When it applies', kind: 'section', helper: 'The offer is live while it’s switched on. Leave these empty for no limit.' },
+    { key: 's-when', label: 'When it applies', kind: 'section', helper: 'The offer is live while it’s switched on. Leave empty for no minimum.' },
     { key: 'min_nights', label: 'Minimum stay', kind: 'number', min: 1, max: 31, unit: 'nights' },
-    { key: 'min_days_before_arrival', label: 'Early bird', kind: 'number', min: 0, max: 365, unit: 'days', helper: 'Only when booked at least this many days before arrival' },
-    { key: 'max_days_before_arrival', label: 'Last minute', kind: 'number', min: 0, max: 365, unit: 'days', helper: 'Only when booked at most this many days before arrival' },
 
     { key: 's-rooms', label: 'Rooms & promo code', kind: 'section' },
     { key: 'room_type_uuids', label: 'Rooms', kind: 'roomTypes' },
@@ -103,7 +101,7 @@ export const offersConfig: ContentConfig = {
   ],
   blank: () => ({
     title: '', badge: 'Special offer', description: '', image_url: null, show_on_homepage: true, discount_percent: 0, perks: [],
-    min_nights: null, min_days_before_arrival: null, max_days_before_arrival: null,
+    min_nights: null,
     room_type_uuids: [], promo_code: '', cta_label: '', active: false,
   }),
   subtitle: (row) => [

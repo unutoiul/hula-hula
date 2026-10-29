@@ -5,7 +5,7 @@ import { dbConfigured } from '../_lib/db.js';
 import { defaultDeposit } from '../_lib/deposit.js';
 import { allowMethods } from '../_lib/http.js';
 import { buildAvailability, priceQuotes } from '../_lib/rooms.js';
-import { parseStay, todayInBangkok } from '../_lib/search.js';
+import { parseStay } from '../_lib/search.js';
 import { getCatalog, getQuotes, SiteMinderError } from '../_lib/siteminder.js';
 
 // GET /api/booking/availability?checkIn&checkOut&adults&children&promo
@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       dbConfigured() ? softHolds(stay.checkIn, stay.checkOut).catch((error) => { console.error('Could not read soft holds', error); return new Map<string, number>(); }) : new Map<string, number>(),
       loadDeals(),
     ]);
-    const priced = priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit(), deals, todayInBangkok());
+    const priced = priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit(), deals);
     return res.status(200).json(buildAvailability(priced, catalog, stay));
   } catch (error) {
     if (error instanceof SiteMinderError && error.status === 429) return res.status(429).json({ error: 'We’re a little busy — please try again in a minute.' });

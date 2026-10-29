@@ -11,32 +11,22 @@ export interface Deal {
   perks: string[];
   promoCode: string | null;
   minNights: number | null;
-  minDaysBefore: number | null;
-  maxDaysBefore: number | null;
   roomTypeUuids: string[];
   sortOrder: number;
 }
 
 export interface DealContext {
-  /** Today at the resort. */
-  today: string;
-  checkIn: string;
   /** Every night of the stay, in order. */
   nightDates: string[];
   roomTypeUuid: string;
   promo?: string;
 }
 
-const daysBetween = (from: string, to: string) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
-
 export function isEligible(deal: Deal, ctx: DealContext): boolean {
   if (deal.discountPercent <= 0 && deal.perks.length === 0) return false;
   // A code-only offer needs its code; an automatic one applies to everyone.
   if (deal.promoCode && deal.promoCode.toUpperCase() !== (ctx.promo ?? '').trim().toUpperCase()) return false;
   if (deal.minNights && ctx.nightDates.length < deal.minNights) return false;
-  const daysAhead = daysBetween(ctx.today, ctx.checkIn);
-  if (deal.minDaysBefore != null && daysAhead < deal.minDaysBefore) return false;
-  if (deal.maxDaysBefore != null && daysAhead > deal.maxDaysBefore) return false;
   return !deal.roomTypeUuids.length || deal.roomTypeUuids.includes(ctx.roomTypeUuid);
 }
 
