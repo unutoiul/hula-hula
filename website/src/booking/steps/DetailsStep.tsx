@@ -89,6 +89,7 @@ export function DetailsStep() {
         {shown('acceptedPolicies') && <FormHelperText error>{errors.acceptedPolicies}</FormHelperText>}
       </Box>
 
+      {availability.data?.testPayments && <Alert severity="info" sx={{ mt: 2 }}>Test mode: payments go through 2C2P’s test system, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4111 1111 1111 1111, expiry 12/28, CVV 123, and code 123456 at the bank check.</Alert>}
       {/* If our booking can't go ahead (e.g. the payment provider is down), the
           guest can still book the same dates on SiteMinder's own engine. */}
       {error && <Alert severity="error" sx={{ mt: 2 }}>

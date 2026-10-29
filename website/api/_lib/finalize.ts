@@ -4,7 +4,7 @@ import { bookingAdminBcc, bookingAdminTo, bookingFrom, deliverReservation } from
 import { formatMoney, toSatang } from './money.js';
 import { sendTemplate, sendText } from './resend.js';
 import { getCatalog } from './siteminder.js';
-import { PAID, paymentInquiry } from './twoc2p.js';
+import { isTestMode, PAID, paymentInquiry } from './twoc2p.js';
 
 // The single path from "this might be paid" to "the resort has it and the
 // guest's details are gone". Three things call it — 2C2P's notification, the
@@ -43,6 +43,7 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
   if (row.status === 'expired' || Date.now() > Date.parse(row.expires_at)) flags.add('paid_after_expiry');
   if (typeof inquiry.amount === 'number' && toSatang(inquiry.amount) !== toSatang(row.deposit_amount)) flags.add('amount_mismatch');
   if (row.pii_wiped_at) flags.add('details_deleted');
+  if (isTestMode()) flags.add('test_payment');
   const [paid] = await updateWhere(`id=eq.${row.id}&status=in.(pending,expired)`, {
     status: 'paid',
     paid_amount: typeof inquiry.amount === 'number' ? inquiry.amount : row.deposit_amount,

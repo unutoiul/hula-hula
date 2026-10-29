@@ -40,6 +40,10 @@ function config() {
 
 export const isConfigured = () => Boolean(process.env.TWOC2P_MERCHANT_ID && process.env.TWOC2P_SECRET_KEY);
 
+/** True while payments run on 2C2P's sandbox: no real money moves, so every
+ * booking is marked as a test payment and the guest pays at the hotel. */
+export const isTestMode = () => process.env.TWOC2P_ENV !== 'production';
+
 async function call<T extends { respCode?: string }>(endpoint: string, payload: Record<string, unknown>): Promise<T> {
   const { secret, base } = config();
   const response = await fetch(`${base}/${endpoint}`, {

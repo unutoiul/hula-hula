@@ -11,7 +11,7 @@ import { fromSatang } from '../_lib/money.js';
 import { maxRoomsPerBooking, type PricedRate, priceQuotes } from '../_lib/rooms.js';
 import { MAX_ADULTS, MAX_CHILDREN, parseStay } from '../_lib/search.js';
 import { getCatalog, getQuotes, SiteMinderError } from '../_lib/siteminder.js';
-import { createPaymentToken, isConfigured as paymentConfigured } from '../_lib/twoc2p.js';
+import { createPaymentToken, isConfigured as paymentConfigured, isTestMode } from '../_lib/twoc2p.js';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
@@ -143,7 +143,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({
       ok: true, ref: booking.ref, accessKey, webPaymentUrl, currency,
       total: fromSatang(totalSatang), deposit: fromSatang(depositSatang), balance: fromSatang(totalSatang - depositSatang),
-      expiresAt: expiresAt.toISOString(),
+      expiresAt: expiresAt.toISOString(), testPayment: isTestMode(),
     } satisfies CreateBookingResponse);
   } catch (error) {
     console.error('Booking: 2C2P payment token failed', booking.ref, error);

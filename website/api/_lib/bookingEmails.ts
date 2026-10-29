@@ -26,7 +26,12 @@ export const FLAG_TEXT: Record<string, string> = {
   amount_mismatch: '2C2P reports a different amount from what this booking expected. Check the payment in the 2C2P portal before confirming.',
   guest_email_failed: 'The guest’s confirmation email could not be sent. Please forward them their booking details.',
   details_deleted: 'The guest’s details had already been deleted when this payment arrived. Find the payer in the 2C2P portal using the references above.',
+  test_payment: 'TEST payment through 2C2P’s sandbox — no money was taken. Treat this as a reservation: confirm it with the guest and collect the full amount at the hotel.',
 };
+
+// What was really paid online: nothing for a 2C2P sandbox (test) payment.
+const isTest = (row: BookingRow) => row.flags.includes('test_payment');
+const paidOnline = (row: BookingRow) => (isTest(row) ? 0 : row.paid_amount ?? row.deposit_amount);
 
 export function siteUrlForEmail(): string {
   if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, '');
@@ -84,7 +89,7 @@ export function notificationVariables(row: BookingRow) {
   const name = [row.guest_first_name, row.guest_last_name].filter(Boolean).join(' ') || 'Guest details deleted';
   const whatsapp = row.guest_phone ? whatsappLink(row.guest_phone) : undefined;
   const flags = row.flags.filter((flag) => FLAG_TEXT[flag]);
-  const balance = row.total_amount - (row.paid_amount ?? row.deposit_amount);
+  const balance = row.total_amount - paidOnline(row);
   const keyLines: [string, string | null | undefined][] = [
     ['Guest', name], ['Email', row.guest_email], ['Phone', row.guest_phone], ['Country', countryName(row.guest_country)],
     ['Check-in', formatDay(row.check_in)], ['Check-out', formatDay(row.check_out)], ['Nights', String(nights)],
@@ -92,7 +97,7 @@ export function notificationVariables(row: BookingRow) {
       + (item.offer?.percent ? ` (offer “${item.offer.title}” −${item.offer.percent}%, list price ${formatMoney((item.unitOriginalTotal ?? item.unitTotal) * item.quantity, row.currency)})` : item.offer ? ` (package “${item.offer.title}”)` : '')]),
     ['Perks to arrange', [...new Set(row.items.flatMap((item) => item.offer?.perks ?? []))].join(', ') || null],
     ['Total', formatMoney(row.total_amount, row.currency)],
-    ['Paid online', `${formatMoney(row.paid_amount ?? row.deposit_amount, row.currency)} (2C2P ${row.tran_ref ?? row.invoice_no})`],
+    ['Paid online', isTest(row) ? `${formatMoney(0, row.currency)} — TEST payment, nothing charged (2C2P sandbox ${row.tran_ref ?? row.invoice_no})` : `${formatMoney(paidOnline(row), row.currency)} (2C2P ${row.tran_ref ?? row.invoice_no})`],
     ['Balance at hotel', formatMoney(balance, row.currency)],
     ['Arrival time', row.arrival_time], ['Promo code', row.promo_code], ['Requests', row.special_requests],
     ['Booking ref', row.ref],
@@ -112,7 +117,7 @@ export function notificationVariables(row: BookingRow) {
     GUESTS: guestCount(row.items),
     ROOMS_HTML: roomsHtml(row, { forTeam: true }),
     TOTAL: escape(formatMoney(row.total_amount, row.currency)),
-    PAID_AMOUNT: escape(formatMoney(row.paid_amount ?? row.deposit_amount, row.currency)),
+    PAID_AMOUNT: escape(isTest(row) ? `${formatMoney(0, row.currency)} (TEST payment — nothing charged)` : formatMoney(paidOnline(row), row.currency)),
     BALANCE: escape(formatMoney(balance, row.currency)),
     PAID_AT: row.paid_at ? stampFmt.format(new Date(row.paid_at)) : undefined,
     PAYMENT_CHANNEL: row.channel_code ? escape(row.channel_code) : undefined,
@@ -131,7 +136,7 @@ export function notificationVariables(row: BookingRow) {
 
 export function confirmationVariables(row: BookingRow, checkInTime: string | null, checkOutTime: string | null) {
   const nights = nightsBetween(row.check_in, row.check_out);
-  const paid = row.paid_amount ?? row.deposit_amount;
+  const paid = paidOnline(row);
   const balance = row.total_amount - paid;
   const cancellation = [...new Set(row.items.map((item) => item.cancellation))].join(' ');
   return {
@@ -146,7 +151,7 @@ export function confirmationVariables(row: BookingRow, checkInTime: string | nul
     GUESTS: guestCount(row.items),
     ROOMS_HTML: roomsHtml(row, { forTeam: false }),
     TOTAL: escape(formatMoney(row.total_amount, row.currency)),
-    PAID_NOW: escape(formatMoney(paid, row.currency)),
+    PAID_NOW: escape(isTest(row) ? `${formatMoney(0, row.currency)} (test payment — nothing was charged)` : formatMoney(paid, row.currency)),
     BALANCE: escape(formatMoney(balance, row.currency)),
     BALANCE_DISPLAY: balance > 0.005 ? 'table-row' : undefined,
     CANCELLATION: escape(cancellation),

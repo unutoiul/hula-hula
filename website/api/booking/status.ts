@@ -6,6 +6,7 @@ import { confirmPayment, deliver } from '../_lib/finalize.js';
 import { allowMethods, queryString } from '../_lib/http.js';
 import { ACCESS_KEY_PATTERN, REF_PATTERN, sha256Hex } from '../_lib/ids.js';
 import { nightsBetween } from '../_lib/search.js';
+import { isTestMode } from '../_lib/twoc2p.js';
 
 const INQUIRY_EVERY_MS = 5_000;
 
@@ -60,6 +61,7 @@ function declineReason(code: string, description: string | null): string {
 
 function toPublic(row: BookingRow): BookingStatusResponse {
   const declined = row.status === 'pending' && !!row.resp_code && row.resp_code !== '0000' && !NOT_FINAL.has(row.resp_code);
+  const test = row.flags.includes('test_payment') || (row.status === 'pending' && isTestMode());
   const status: PublicBookingStatus = row.status === 'paid' || row.status === 'delivered' ? 'confirmed'
     : row.status === 'failed' || declined ? 'failed'
     : row.status === 'expired' || Date.now() > Date.parse(row.expires_at) + 60_000 ? 'expired'
@@ -73,8 +75,9 @@ function toPublic(row: BookingRow): BookingStatusResponse {
     currency: row.currency,
     total: row.total_amount,
     deposit: row.deposit_amount,
-    balance: Math.round((row.total_amount - (row.paid_amount ?? row.deposit_amount)) * 100) / 100,
-    paidAmount: row.paid_amount,
+    balance: Math.round((row.total_amount - (test ? 0 : row.paid_amount ?? row.deposit_amount)) * 100) / 100,
+    paidAmount: test ? 0 : row.paid_amount,
+    testPayment: test,
     lines: row.items.map((item) => ({
       roomTypeName: item.roomTypeName, rateName: item.rateName, quantity: item.quantity, adults: item.adults, children: item.children,
       ...(item.offer && { offerTitle: item.offer.percent > 0 ? `${item.offer.title} (−${item.offer.percent}%)` : item.offer.title, perks: item.offer.perks }),

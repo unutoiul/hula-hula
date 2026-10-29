@@ -16,6 +16,7 @@ const FLAG_LABELS: Record<string, string> = {
   amount_mismatch: 'Amount differs — check 2C2P',
   guest_email_failed: 'Guest email failed — forward it',
   details_deleted: 'Guest details missing — see 2C2P',
+  test_payment: 'TEST payment — nothing charged, collect at the hotel',
 };
 
 // Paid website bookings from the last 60 days — no guest details, which are

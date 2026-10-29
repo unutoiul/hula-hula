@@ -112,6 +112,7 @@ export function ConfirmationStep() {
     <Stack direction="row" spacing={1.5} alignItems="center"><CheckCircleRounded sx={{ color: 'success.main', fontSize: 40 }} /><Typography variant="overline" sx={{ color: 'success.dark' }}>Booking confirmed · {status.ref}</Typography></Stack>
     <Typography variant="h1" sx={{ fontSize: { xs: 34, md: 46 }, mt: 1 }}>You’re booked. Hello, holiday!</Typography>
     <Typography sx={{ color: 'text.secondary', mt: 1 }}>{email ? `We’ve sent the confirmation to ${email}.` : 'Your confirmation is on its way by email.'} Quote <strong>{status.ref}</strong> if you get in touch.</Typography>
+    {status.testPayment && <Alert severity="info" sx={{ mt: 2 }}>This was a test payment — nothing was charged. You’ll pay the full amount at the hotel.</Alert>}
 
     <Box sx={{ mt: 3, p: 2.5, bgcolor: 'success.light', borderRadius: '18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
       <Box><Typography variant="overline" sx={{ color: 'success.dark' }}>Check-in</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 18 }}>{dayLabel(status.checkIn)}</Typography></Box>

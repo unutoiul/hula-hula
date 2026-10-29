@@ -1,5 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { animate, useMotionTemplate, useScroll, useSpring, useTransform, type AnimationPlaybackControls } from 'motion/react';
+import { animate, useMotionTemplate, useMotionValue, useScroll, useSpring, useTransform, type AnimationPlaybackControls } from 'motion/react';
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
 import { CarouselArrow } from './CarouselArrow';
@@ -12,6 +12,9 @@ interface DragCarouselProps<T> {
   slotWidth?: { xs: number; sm: number; md: number }; onDark?: boolean;
   renderCard: (item: T, active: boolean, onClick: () => void) => ReactNode;
 }
+
+// How the hint under the row names what's in it ("explore 4 offers").
+const ITEM_NOUNS: Record<string, string> = { room: 'places to stay', offer: 'offers', event: 'events' };
 
 interface MouseDrag { startX: number; startLeft: number; moved: boolean; lastX: number; lastT: number; velocity: number }
 
@@ -30,7 +33,9 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
   const lastDragEnd = useRef(0);
   const [active, setActive] = useState(0);
   const activeRef = useRef(0); // the card a glide is heading to
-  const [edges, setEdges] = useState({ start: true, end: false });
+  const [edges, setEdges] = useState({ start: true, end: true });
+  // 1 while the row is wider than its box — the edge fades only apply then.
+  const canScroll = useMotionValue(0);
 
   // Where the row's scroll position rests for each card: its left edge, or —
   // on phones, where cards snap to the centre — the point that centres it.
@@ -53,6 +58,7 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
     setActive(nearest);
     if (!glide.current) activeRef.current = nearest;
     setEdges({ start: node.scrollLeft <= 2, end: node.scrollLeft >= node.scrollWidth - node.clientWidth - 2 });
+    canScroll.set(node.scrollWidth - node.clientWidth > 2 ? 1 : 0);
   };
   useEffect(() => {
     update();
@@ -156,8 +162,10 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
 
   const { scrollXProgress } = useScroll({ container: viewport });
   const progress = useSpring(scrollXProgress, { stiffness: 220, damping: 32 });
-  const leftEdge = useTransform(scrollXProgress, [0, 0.05], [1, 0]);
-  const rightEdge = useTransform(scrollXProgress, [0.95, 1], [0, 1]);
+  // Edge opacity: 1 = fully visible. Only fades while there's more to scroll
+  // to on that side; a row that fits reports "at the end" and must not fade.
+  const leftEdge = useTransform([scrollXProgress, canScroll], ([p, can]: number[]) => (can ? Math.max(0, 1 - p / 0.05) : 1));
+  const rightEdge = useTransform([scrollXProgress, canScroll], ([p, can]: number[]) => (can ? Math.min(1, Math.max(0, (p - 0.95) / 0.05)) : 1));
   const mask = useMotionTemplate`linear-gradient(90deg, rgba(0,0,0,${leftEdge}) 0, #000 56px, #000 calc(100% - 56px), rgba(0,0,0,${rightEdge}) 100%)`;
   const scrolls = !(edges.start && edges.end);
 
@@ -165,8 +173,10 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
     <Reveal><Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'center', sm: 'flex-end' }} gap={3} sx={{ mb: 5, textAlign: { xs: 'center', sm: 'left' } }}>
       <Box>{onDark && <MetaLabel>{sectionKicker}</MetaLabel>}<Typography variant="h2" sx={{ fontSize: { xs: 40, md: 62 }, lineHeight: 1.04, mt: 1.5 }}>{heading}</Typography></Box>
       <Stack direction="row" spacing={1.2}>
-        <CarouselArrow direction="prev" onDark={onDark} disabled={edges.start} label={`Previous ${itemLabel}`} onClick={() => scrollToCard(active - 1)} />
-        <CarouselArrow direction="next" onDark={onDark} disabled={edges.end} label={`Next ${itemLabel}`} onClick={() => scrollToCard(active + 1)} />
+        {scrolls && <>
+          <CarouselArrow direction="prev" onDark={onDark} disabled={edges.start} label={`Previous ${itemLabel}`} onClick={() => scrollToCard(active - 1)} />
+          <CarouselArrow direction="next" onDark={onDark} disabled={edges.end} label={`Next ${itemLabel}`} onClick={() => scrollToCard(active + 1)} />
+        </>}
       </Stack>
     </Stack></Reveal>
     <MotionBox ref={viewport} role="region" aria-label={`${itemLabel} gallery`} tabIndex={0}
@@ -177,7 +187,7 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
       // photo arrows right after a mouse drag.
       onDragStart={(event) => event.preventDefault()}
       onClickCapture={(event) => { if (performance.now() - lastDragEnd.current < 250) { event.preventDefault(); event.stopPropagation(); } }}
-      style={scrolls ? { maskImage: mask, WebkitMaskImage: mask } : undefined}
+      style={{ maskImage: mask, WebkitMaskImage: mask }}
       sx={{
         // On phones the current card sits centred with a peek either side; the
         // side padding lets the first and last cards centre too.
@@ -194,11 +204,12 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
         <Reveal delay={Math.min(i, 3) * 0.1} sx={{ display: 'flex', width: '100%' }}>{renderCard(item, i === active, () => scrollToCard(i))}</Reveal>
       </Box>)}
     </MotionBox>
-    <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" gap={{ xs: 1.5, sm: 2 }} sx={{ mt: 3, textAlign: { xs: 'center', sm: 'left' } }}>
-      <Typography sx={{ fontSize: 12, opacity: .7 }}>Drag, swipe, or use the arrows to explore {items.length} {itemLabel === 'room' ? 'places to stay' : 'ways to enjoy your holiday'}.</Typography>
-      {scrolls && <Box aria-hidden sx={{ flex: '0 0 auto', width: { xs: 96, sm: 120 }, height: 4, ml: { xs: 0, sm: 'auto' }, borderRadius: 2, overflow: 'hidden', bgcolor: onDark ? 'rgba(255,255,255,.22)' : 'rgba(23,60,44,.12)' }}>
+    {/* Only when there's more to see than fits. */}
+    {scrolls && <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" gap={{ xs: 1.5, sm: 2 }} sx={{ mt: 3, textAlign: { xs: 'center', sm: 'left' } }}>
+      <Typography sx={{ fontSize: 12, opacity: .7 }}>Drag, swipe, or use the arrows to explore {items.length} {ITEM_NOUNS[itemLabel] ?? 'ways to enjoy your holiday'}.</Typography>
+      <Box aria-hidden sx={{ flex: '0 0 auto', width: { xs: 96, sm: 120 }, height: 4, ml: { xs: 0, sm: 'auto' }, borderRadius: 2, overflow: 'hidden', bgcolor: onDark ? 'rgba(255,255,255,.22)' : 'rgba(23,60,44,.12)' }}>
         <MotionBox style={{ scaleX: progress, originX: 0 }} sx={{ height: '100%', bgcolor: onDark ? 'secondary.main' : 'primary.main' }} />
-      </Box>}
-    </Stack>
+      </Box>
+    </Stack>}
   </>;
 }

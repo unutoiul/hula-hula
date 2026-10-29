@@ -25,7 +25,7 @@ export async function deliverReservation(row: BookingRow): Promise<DeliveryResul
     to: bookingAdminTo(),
     bcc: bookingAdminBcc(),
     replyTo: row.guest_email ?? undefined,
-    subject: `ACTION: enter in SiteMinder · ${row.ref} · ${row.check_in} → ${row.check_out} · ${rooms} room${rooms === 1 ? '' : 's'} · paid ${formatMoney(row.paid_amount ?? row.deposit_amount, row.currency)}${row.flags.length ? ' · CHECK' : ''}`,
+    subject: `${row.flags.includes('test_payment') ? 'TEST PAYMENT · ' : ''}ACTION: enter in SiteMinder · ${row.ref} · ${row.check_in} → ${row.check_out} · ${rooms} room${rooms === 1 ? '' : 's'} · ${row.flags.includes('test_payment') ? 'nothing charged' : `paid ${formatMoney(row.paid_amount ?? row.deposit_amount, row.currency)}`}${row.flags.some((f) => f !== 'test_payment') ? ' · CHECK' : ''}`,
     template: NOTIFICATION_TEMPLATE,
     variables: notificationVariables(row),
     idempotencyKey: `booking-${row.ref}-team`,

@@ -23,7 +23,7 @@ export interface GuestForm {
 export interface PaymentSession {
   ref: string; accessKey: string; webPaymentUrl: string; currency: string;
   total: number; deposit: number; balance: number; expiresAt: string;
-  email: string; signature: string;
+  email: string; signature: string; testPayment?: boolean;
 }
 
 export interface ResolvedLine { line: CartLine; roomType: RoomTypeOffer; rate: RateOffer }
@@ -224,7 +224,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     const session: PaymentSession = {
       ref: response.ref, accessKey: response.accessKey, webPaymentUrl: response.webPaymentUrl, currency: response.currency,
       total: response.total, deposit: response.deposit, balance: response.balance, expiresAt: response.expiresAt,
-      email: details.email, signature,
+      email: details.email, signature, testPayment: response.testPayment,
     };
     setPayment(session);
     // Saved right now, not after the next render: the guest is about to leave

@@ -29,6 +29,7 @@ export function PaymentStep() {
         <LockRounded sx={{ fontSize: 18 }} /> Paid through 2C2P — card details go straight to them, never to us.
       </Typography>
 
+      {payment.testPayment && <Alert severity="info" sx={{ mb: 2 }}>Test mode: payments go through 2C2P’s test system, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4111 1111 1111 1111, expiry 12/28, CVV 123, and code 123456 at the bank check.</Alert>}
       {priceMoved && <Alert severity="info" sx={{ mb: 2 }}>Prices were updated when we confirmed your rooms — the amounts on this page are the ones you’ll pay.</Alert>}
       {expired
         ? <Alert severity="warning" action={<Button color="inherit" size="small" onClick={() => navigate('/book')}>Start again</Button>}>Your rooms were held for 15 minutes and the hold has run out. Please check prices again.</Alert>
