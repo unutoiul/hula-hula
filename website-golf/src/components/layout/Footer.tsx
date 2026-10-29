@@ -2,6 +2,7 @@ import { Box, Container, Link, Stack, Typography } from '@mui/material';
 import { openingHoursLines } from '../../booking/config';
 import { useContact, useSite } from '../../context/SiteDataContext';
 import { ClubMark } from '../common/ClubMark';
+import { MotionToggleLink } from './MotionToggle';
 import { TropicalBackdrop, tropicalSectionSx } from '../common/TropicalBackdrop';
 
 export function Footer() {
@@ -25,7 +26,7 @@ export function Footer() {
           <a href={CONTACT.tel}>{CONTACT.phone}</a> · Line {CONTACT.lineId}<br /><Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>{CONTACT.email}</Box>
         </Typography>
         <Typography variant="overline" sx={{ '& a': { color: 'inherit' } }}>Staying over? <Link href={CONTACT.resort} target="_blank" rel="noopener">Hula Hula Resort, Ao Nang</Link></Typography>
-        <Typography variant="overline">© {new Date().getFullYear()} Hula Hula Golf Club</Typography>
+        <Typography variant="overline">© {new Date().getFullYear()} Hula Hula Golf Club<MotionToggleLink /></Typography>
       </Stack>
     </Container>
   </Box>;

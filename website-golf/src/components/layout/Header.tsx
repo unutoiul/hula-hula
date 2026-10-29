@@ -11,9 +11,8 @@ import type { NavItem } from '../../types';
 import { ClubMark } from '../common/ClubMark';
 import { LineIcon } from '../common/LineIcon';
 import { TropicalBackdrop } from '../common/TropicalBackdrop';
-import { SunDoodle } from '../common/VacationDecor';
-import { MotionToggleButton, MotionToggleMenuButton } from './MotionToggle';
 import { NavLink } from './NavLink';
+import { SiteList, SiteTabs, SwitcherLogo } from './SiteSwitcher';
 
 export function Header({ navItems }: { navItems: NavItem[] }) {
   const CONTACT = useContact();
@@ -42,7 +41,10 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
     <Box sx={{ position: 'relative', overflow: 'hidden', height: scrolled ? 0 : { xs: 34, md: 36 }, transition: 'height .35s ease', bgcolor: 'primary.main', color: 'white' }}>
       <Container maxWidth="xl" sx={{ height: '100%' }}>
         <Stack direction="row" alignItems="center" justifyContent={{ xs: 'center', md: 'space-between' }} sx={{ height: '100%' }}>
-          <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: 13, fontWeight: 600, opacity: .9 }}>{club.announcement}</Typography>
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ display: { xs: 'none', md: 'flex' }, minWidth: 0 }}>
+            <Box sx={{ display: { xs: 'none', lg: 'block' } }}><SiteTabs /></Box>
+            <Typography noWrap sx={{ fontSize: 13, fontWeight: 600, opacity: .9 }}>{club.announcement}</Typography>
+          </Stack>
           <Stack direction="row" alignItems="center" divider={<Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,.35)' }} />} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ fontSize: { xs: 12, md: 13 }, fontWeight: 600, '& a': { color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', minHeight: 32 }, '& a:hover': { textDecoration: 'underline' }, '& svg': { fontSize: 16 } }}>
             <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${CONTACT.phone}`}><WhatsApp />{CONTACT.phone}</Link>
             <Link href={CONTACT.line} target="_blank" rel="noopener noreferrer" aria-label={`Line ${CONTACT.lineId}`} sx={{ display: { xs: 'none !important', sm: 'inline-flex !important' } }}><LineIcon />{CONTACT.lineId}</Link>
@@ -54,11 +56,10 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
     <Container maxWidth="xl">
       <Box sx={{ minHeight: scrolled ? { xs: 76, md: 84 } : { xs: 104, md: 150 }, transition: 'min-height .35s ease', display: 'grid', gridTemplateColumns: { xs: 'auto 1fr', lg: '1fr auto 1fr' }, alignItems: 'center', gap: { xs: 1.5, md: 3 }, py: 1 }}>
         <Stack component="nav" aria-label="Main navigation" direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>{navItems.slice(0, 3).map(([label, href]) => <NavLink key={href} href={href} active={active === href}>{label}</NavLink>)}</Stack>
-        <Box sx={{ gridColumn: { xs: 1, lg: 2 } }}><ClubMark size={scrolled ? 'small' : 'header'} /></Box>
+        <Box sx={{ gridColumn: { xs: 1, lg: 2 } }}><SwitcherLogo size={scrolled ? 'small' : 'header'} /></Box>
         <Stack direction="row" alignItems="center" justifyContent="flex-end" gap={{ xs: 1.5, lg: 3 }} sx={{ gridColumn: { xs: 2, lg: 3 } }}>
           <Stack component="nav" aria-label="More navigation" direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>{navItems.slice(3, 5).map(([label, href]) => <NavLink key={href} href={href} active={active === href}>{label}</NavLink>)}</Stack>
           {bookButton()}
-          <MotionToggleButton />
           <IconButton aria-label="Open menu" onClick={() => setOpen(true)} sx={{ display: { xs: 'inline-flex', lg: 'none' }, width: 48, height: 48, color: 'text.primary', border: '1px solid', borderColor: 'divider' }}><MenuRounded /></IconButton>
         </Stack>
       </Box>
@@ -66,10 +67,9 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
     <Drawer anchor="right" open={open} onClose={() => setOpen(false)} slotProps={{ paper: { sx: { width: { xs: '100%', sm: 380 }, bgcolor: 'background.default', p: 3 } } }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between"><ClubMark size="compact" /><IconButton aria-label="Close menu" onClick={() => setOpen(false)} sx={{ width: 48, height: 48, border: '1px solid', borderColor: 'divider' }}><CloseRounded /></IconButton></Stack>
       <Stack component="nav" aria-label="Mobile navigation" spacing={1} sx={{ mt: 4 }}>{navItems.map(([label, href]) => <Link key={href} href={href} color="text.primary" underline="none" onClick={() => setOpen(false)} sx={{ py: 1.2, borderBottom: '1px solid', borderColor: 'divider' }}><Typography variant="h3" sx={{ fontSize: 32 }}>{label}</Typography></Link>)}</Stack>
-      <SunDoodle color="#50830d" sx={{ mt: 5 }} />
-      <Typography variant="h3" sx={{ mt: 2 }}>See you on the first tee.</Typography>
-      <MotionToggleMenuButton />
-      <Box sx={{ mt: 1.5, display: 'grid' }}>{bookButton(() => setOpen(false))}</Box>
+      <Typography variant="overline" sx={{ display: 'block', mt: 4, mb: 1, color: 'text.secondary' }}>The Hula Hula family</Typography>
+      <SiteList onHere={() => setOpen(false)} />
+      <Box sx={{ mt: 3, display: 'grid' }}>{bookButton(() => setOpen(false))}</Box>
     </Drawer>
   </Box>;
 }
