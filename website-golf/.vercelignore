@@ -1,0 +1,10 @@
+/scripts
+/tests
+node_modules
+/dist
+.git
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+/supabase
