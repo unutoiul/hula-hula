@@ -1,6 +1,8 @@
 import Add from '@mui/icons-material/Add';
 import BedOutlined from '@mui/icons-material/BedOutlined';
 import BlockRounded from '@mui/icons-material/BlockRounded';
+import CardGiftcardRounded from '@mui/icons-material/CardGiftcardRounded';
+import CheckRounded from '@mui/icons-material/CheckRounded';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import East from '@mui/icons-material/East';
@@ -174,6 +176,9 @@ function RatePlanRow({ roomType, rate, nights, currency }: { roomType: RoomTypeO
   const payAll = rate.deposit.balance <= 0;
   return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) auto' }, gap: 2, alignItems: 'center', px: { xs: 2.5, md: 3 }, py: 2.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: quantity ? 'rgba(231,244,204,.45)' : 'transparent' }}>
     <Box sx={{ minWidth: 0 }}>
+      {rate.offer && <Chip size="small" icon={<CardGiftcardRounded />} color="secondary"
+        label={`${rate.offer.badge || 'Special offer'} · ${rate.offer.title}${rate.offer.percent > 0 ? ` −${rate.offer.percent}%` : ''}`}
+        sx={{ mb: 1, fontWeight: 700, maxWidth: '100%', '& .MuiChip-label': { overflow: 'hidden', textOverflow: 'ellipsis' } }} />}
       <Typography sx={{ fontWeight: 700 }}>{rate.name}</Typography>
       <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ mt: 1 }}>
         {mealsLabel(rate.meals).toLowerCase() !== rate.name.toLowerCase() && <Chip size="small" icon={rate.meals.breakfast ? <FreeBreakfastOutlined /> : <BedOutlined />} label={mealsLabel(rate.meals)} sx={{ bgcolor: rate.meals.breakfast ? 'success.light' : 'background.default' }} />}
@@ -184,10 +189,17 @@ function RatePlanRow({ roomType, rate, nights, currency }: { roomType: RoomTypeO
         {rate.cancellation.summary}
       </Typography>
       {rate.description && <Typography sx={{ mt: .75, fontSize: 13, color: 'text.secondary' }}>{rate.description}</Typography>}
+      {rate.offer && rate.offer.perks.length > 0 && <Stack component="ul" spacing={.25} sx={{ listStyle: 'none', p: 0, m: 0, mt: 1 }}>
+        {rate.offer.perks.map((perk) => <Typography component="li" key={perk} sx={{ fontSize: 13, color: 'success.dark', display: 'flex', alignItems: 'flex-start', gap: .75 }}>
+          <CheckRounded sx={{ fontSize: 16, mt: '2px' }} />{perk}
+        </Typography>)}
+      </Stack>}
     </Box>
     <Stack direction={{ xs: 'row', sm: 'column' }} alignItems={{ xs: 'center', sm: 'flex-end' }} justifyContent="space-between" spacing={1.25} sx={{ textAlign: { sm: 'right' } }}>
       <Box>
+        {rate.offer && rate.originalTotal > rate.total && <Typography sx={{ fontSize: 14, color: 'text.secondary', textDecoration: 'line-through' }}>{money(rate.originalTotal, currency)}</Typography>}
         <Typography sx={{ fontFamily: fonts.playful, fontSize: 24, lineHeight: 1.1 }}>{money(rate.total, currency)}</Typography>
+        {rate.offer && rate.offer.savings > 0 && <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'secondary.dark' }}>You save {money(rate.offer.savings, currency)}</Typography>}
         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{nightsLabel(nights)} · {money(Math.round(rate.total / nights), currency)} avg/night</Typography>
         <Typography sx={{ fontSize: 12, color: 'success.dark', fontWeight: 700 }}>{payAll ? 'Pay in full today' : `Pay ${money(rate.deposit.dueNow, currency)} today`}</Typography>
       </Box>

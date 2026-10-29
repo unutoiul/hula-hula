@@ -46,9 +46,22 @@ function sameHash(a: string, b: string) {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
+// 2C2P answers that mean "nothing final yet" — still being paid, or no
+// attempt so far. Any other non-success answer is a decline or cancellation
+// of the last attempt. The booking itself stays pending (the guest may try
+// again until the hold runs out); only what the guest is shown changes.
+const NOT_FINAL = new Set(['0001', '0999', '2001', '2002', '2003']);
+
+function declineReason(code: string, description: string | null): string {
+  if (code === '0003') return 'The payment was cancelled.';
+  if (code === '4081') return 'Your bank couldn’t confirm the payment was you (the 3-D Secure check didn’t pass).';
+  return description ? `The payment was declined: ${description}.` : 'The payment was declined.';
+}
+
 function toPublic(row: BookingRow): BookingStatusResponse {
+  const declined = row.status === 'pending' && !!row.resp_code && row.resp_code !== '0000' && !NOT_FINAL.has(row.resp_code);
   const status: PublicBookingStatus = row.status === 'paid' || row.status === 'delivered' ? 'confirmed'
-    : row.status === 'failed' ? 'failed'
+    : row.status === 'failed' || declined ? 'failed'
     : row.status === 'expired' || Date.now() > Date.parse(row.expires_at) + 60_000 ? 'expired'
     : 'pending';
   return {
@@ -62,7 +75,11 @@ function toPublic(row: BookingRow): BookingStatusResponse {
     deposit: row.deposit_amount,
     balance: Math.round((row.total_amount - (row.paid_amount ?? row.deposit_amount)) * 100) / 100,
     paidAmount: row.paid_amount,
-    lines: row.items.map((item) => ({ roomTypeName: item.roomTypeName, rateName: item.rateName, quantity: item.quantity, adults: item.adults, children: item.children })),
+    lines: row.items.map((item) => ({
+      roomTypeName: item.roomTypeName, rateName: item.rateName, quantity: item.quantity, adults: item.adults, children: item.children,
+      ...(item.offer && { offerTitle: item.offer.percent > 0 ? `${item.offer.title} (−${item.offer.percent}%)` : item.offer.title, perks: item.offer.perks }),
+    })),
     expiresAt: row.expires_at,
+    ...(declined && { failureReason: declineReason(row.resp_code!, row.resp_desc) }),
   };
 }

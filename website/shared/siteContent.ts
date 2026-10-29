@@ -30,10 +30,18 @@ export interface Offer {
   title: string;
   description: string;
   imageUrl: string | null;
-  /** A SiteMinder promo code — the discount itself lives on SiteMinder's rates. */
+  /** Needed to get the offer when set; otherwise it applies automatically on /book. */
   promoCode: string | null;
+  /** When it can be booked. */
   validFrom: string | null;
   validTo: string | null;
+  /** Off the room price, on the nights between stayFrom and stayTo. 0 = perks only (a package). */
+  discountPercent: number;
+  badge: string | null;
+  perks: string[];
+  stayFrom: string | null;
+  stayTo: string | null;
+  minNights: number | null;
   ctaLabel: string | null;
 }
 

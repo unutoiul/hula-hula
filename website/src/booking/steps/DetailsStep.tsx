@@ -2,6 +2,7 @@ import LockRounded from '@mui/icons-material/LockRounded';
 import West from '@mui/icons-material/West';
 import { Alert, Autocomplete, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, FormHelperText, Link, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useBookingSearch } from '../../context/BookingSearchContext';
 import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
 import { CartSummary } from '../components/CartSummary';
@@ -17,6 +18,7 @@ const ARRIVALS = ['Not sure yet', 'Before 12:00 (early check-in on request)', '1
 // straight after.
 export function DetailsStep() {
   const { guest, updateGuest, startPayment, totals, availability, cart, plan } = useBookingFlow();
+  const { siteMinderUrl } = useBookingSearch();
   const [triedSubmit, setTriedSubmit] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,10 +44,12 @@ export function DetailsStep() {
     setError(null);
     if (Object.values(errors).some(Boolean) || !plan) return;
     setSending(true);
-    const problem = await startPayment({ hp, elapsedMs: Math.round(performance.now() - startedAt.current) });
-    setSending(false);
-    if (problem) { setError(problem); return; }
-    navigate('/book/payment');
+    const result = await startPayment({ hp, elapsedMs: Math.round(performance.now() - startedAt.current) });
+    if ('error' in result) { setSending(false); setError(result.error); return; }
+    // On to 2C2P's own payment page (the bank's 3-D Secure check only works
+    // there, not with 2C2P's form embedded in ours); it sends the guest back to
+    // /book/confirmation. The button stays busy until the page changes.
+    window.location.assign(result.webPaymentUrl);
   };
 
   const policies = availability.data?.policies;
@@ -85,12 +89,16 @@ export function DetailsStep() {
         {shown('acceptedPolicies') && <FormHelperText error>{errors.acceptedPolicies}</FormHelperText>}
       </Box>
 
-      {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+      {/* If our booking can't go ahead (e.g. the payment provider is down), the
+          guest can still book the same dates on SiteMinder's own engine. */}
+      {error && <Alert severity="error" sx={{ mt: 2 }}>
+        {error} <Link href={siteMinderUrl} target="_blank" rel="noopener" sx={{ fontWeight: 700 }}>Or book the same dates on our partner booking page</Link>.
+      </Alert>}
       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} spacing={2} sx={{ mt: 3 }}>
         <Button type="submit" variant="contained" size="large" disabled={sending || !plan} startIcon={<LockRounded />}>
-          {sending ? 'Holding your room…' : `Continue to secure payment · ${money(totals.dueNow, totals.currency)}`}
+          {sending ? 'Taking you to secure payment…' : `Continue to secure payment · ${money(totals.dueNow, totals.currency)}`}
         </Button>
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Paid securely through 2C2P. Your card details never touch our website.</Typography>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>You’ll pay on 2C2P’s secure page and come straight back here. Your card details never touch our website.</Typography>
       </Stack>
     </Box>
 

@@ -60,12 +60,12 @@ export default function BookingApp() {
 
 function BookingShell() {
   const { pathname } = useLocation();
-  const { cart, payment } = useBookingFlow();
+  const { hasRooms, payment } = useBookingFlow();
   const step = Math.max(0, STEPS.findIndex((s) => s.path === pathname));
 
   // Steps can't be skipped: no rooms → back to rooms; no payment yet → details.
-  const blockedTo = pathname === '/book/details' && cart.length === 0 ? '/book'
-    : pathname === '/book/payment' && !payment ? (cart.length ? '/book/details' : '/book')
+  const blockedTo = pathname === '/book/details' && !hasRooms ? '/book'
+    : pathname === '/book/payment' && !payment ? (hasRooms ? '/book/details' : '/book')
     : null;
   useEffect(() => { if (blockedTo) navigate(blockedTo, { replace: true }); }, [blockedTo]);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);

@@ -60,12 +60,21 @@ function nightlyText(item: BookingItem, currency: string): string {
   }).join('<br>');
 }
 
+// "Celebrate in Krabi −10% · saves THB 2,535" and, under it, what's included.
+function offerHtml(item: BookingItem, currency: string): string {
+  if (!item.offer) return '';
+  const { title, percent, perks, savings } = item.offer;
+  const saving = percent > 0 ? ` −${percent}%${savings > 0 ? ` · saves ${formatMoney(savings * item.quantity, currency)}` : ''}` : '';
+  return `<br><span style="color:#50830d;font-weight:700;">${escape(title)}${escape(saving)}</span>`
+    + (perks.length ? `<br><span style="color:#4b6457;">Includes: ${escape(perks.join(', '))}</span>` : '');
+}
+
 function roomsHtml(row: BookingRow, { forTeam }: { forTeam: boolean }): string {
   const cell = 'padding:12px 0;border-top:1px solid #d6e1ce;font:400 14px/1.6 \'Trebuchet MS\', \'Segoe UI\', Arial, sans-serif;color:#173c2c;vertical-align:top;';
   return clip(row.items.map((item) => {
     const guests = `${plural(item.adults, 'adult')}${item.children ? `, ${plural(item.children, 'child', 'children')}` : ''} per room`;
     const team = forTeam ? `<br><span style="color:#4b6457;font-size:12px;">${nightlyText(item, row.currency)}</span>` : '';
-    return `<tr><td style="${cell}"><strong>${item.quantity} × ${escape(item.roomTypeName)}</strong><br>${escape(item.rateName)}${mealText(item)}<br><span style="color:#4b6457;">${guests}</span>${team}</td>`
+    return `<tr><td style="${cell}"><strong>${item.quantity} × ${escape(item.roomTypeName)}</strong><br>${escape(item.rateName)}${mealText(item)}<br><span style="color:#4b6457;">${guests}</span>${offerHtml(item, row.currency)}${team}</td>`
       + `<td align="right" style="${cell}white-space:nowrap;padding-left:12px;">${escape(formatMoney(item.unitTotal * item.quantity, row.currency))}</td></tr>`;
   }).join(''));
 }
@@ -79,7 +88,9 @@ export function notificationVariables(row: BookingRow) {
   const keyLines: [string, string | null | undefined][] = [
     ['Guest', name], ['Email', row.guest_email], ['Phone', row.guest_phone], ['Country', countryName(row.guest_country)],
     ['Check-in', formatDay(row.check_in)], ['Check-out', formatDay(row.check_out)], ['Nights', String(nights)],
-    ...row.items.map((item, i): [string, string] => [`Room ${i + 1}`, `${item.quantity} × ${item.roomTypeName} — ${item.rateName} — ${item.adults}A${item.children ? `+${item.children}C` : ''} — ${formatMoney(item.unitTotal * item.quantity, row.currency)}`]),
+    ...row.items.map((item, i): [string, string] => [`Room ${i + 1}`, `${item.quantity} × ${item.roomTypeName} — ${item.rateName} — ${item.adults}A${item.children ? `+${item.children}C` : ''} — ${formatMoney(item.unitTotal * item.quantity, row.currency)}`
+      + (item.offer?.percent ? ` (offer “${item.offer.title}” −${item.offer.percent}%, list price ${formatMoney((item.unitOriginalTotal ?? item.unitTotal) * item.quantity, row.currency)})` : item.offer ? ` (package “${item.offer.title}”)` : '')]),
+    ['Perks to arrange', [...new Set(row.items.flatMap((item) => item.offer?.perks ?? []))].join(', ') || null],
     ['Total', formatMoney(row.total_amount, row.currency)],
     ['Paid online', `${formatMoney(row.paid_amount ?? row.deposit_amount, row.currency)} (2C2P ${row.tran_ref ?? row.invoice_no})`],
     ['Balance at hotel', formatMoney(balance, row.currency)],

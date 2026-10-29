@@ -3,7 +3,7 @@ import ArrowDownwardRounded from '@mui/icons-material/ArrowDownwardRounded';
 import ArrowUpwardRounded from '@mui/icons-material/ArrowUpwardRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
-import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Stack, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, Autocomplete, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, MenuItem, Stack, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { CarouselCard } from '../components/common/CarouselCard';
 import { photoByUrl } from '../data/photos';
@@ -20,7 +20,12 @@ export type Row = Record<string, unknown> & { id?: string; sort_order?: number }
 export type Field =
   | { key: string; label: string; kind: 'text' | 'multiline' | 'date' | 'code'; max?: number; required?: boolean; helper?: string; showIf?: (row: Row) => boolean }
   | { key: string; label: string; kind: 'select'; options: { value: string; label: string }[]; helper?: string; showIf?: (row: Row) => boolean }
-  | { key: string; label: string; kind: 'images' | 'image'; helper?: string; showIf?: (row: Row) => boolean };
+  | { key: string; label: string; kind: 'images' | 'image'; helper?: string; showIf?: (row: Row) => boolean }
+  | { key: string; label: string; kind: 'number'; min: number; max: number; unit?: string; helper?: string; showIf?: (row: Row) => boolean }
+  | { key: string; label: string; kind: 'tags'; suggestions: string[]; helper?: string; showIf?: (row: Row) => boolean }
+  | { key: string; label: string; kind: 'roomTypes' | 'switch'; helper?: string; showIf?: (row: Row) => boolean }
+  /** A heading between groups of fields; `key` is only for React. */
+  | { key: string; label: string; kind: 'section'; helper?: string; showIf?: (row: Row) => boolean };
 
 export interface ContentConfig {
   table: 'activities' | 'events' | 'offers';
@@ -133,6 +138,27 @@ function EditDialog({ config, initial, onClose, onSaved }: { config: ContentConf
           {config.fields.filter((field) => !field.showIf || field.showIf(row)).map((field) => {
             const value = row[field.key];
             switch (field.kind) {
+              case 'section':
+                return <Box key={field.key} sx={{ pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+                  <Typography variant="overline" sx={{ color: 'success.dark' }}>{field.label}</Typography>
+                  {field.helper && <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{field.helper}</Typography>}
+                </Box>;
+              case 'number':
+                return <TextField key={field.key} type="number" label={field.label} value={value ?? ''} helperText={field.helper}
+                  onChange={(e) => set(field.key, e.target.value === '' ? null : Math.min(field.max, Math.max(field.min, Number(e.target.value))))}
+                  slotProps={{ htmlInput: { min: field.min, max: field.max, step: 1 }, input: field.unit ? { endAdornment: <InputAdornment position="end">{field.unit}</InputAdornment> } : undefined }} sx={{ maxWidth: 260 }} />;
+              case 'tags':
+                return <Autocomplete key={field.key} multiple freeSolo options={field.suggestions} value={(value as string[] | undefined) ?? []}
+                  onChange={(_, next) => set(field.key, [...new Set(next.map((t) => t.trim()).filter(Boolean))].slice(0, 8))}
+                  renderValue={(tags, getItemProps) => tags.map((tag, index) => <Chip {...getItemProps({ index })} key={tag} label={tag} size="small" />)}
+                  renderInput={(params) => <TextField {...params} label={field.label} helperText={field.helper} placeholder="Pick or type, then Enter" />} />;
+              case 'roomTypes':
+                return <RoomTypesField key={field.key} label={field.label} helper={field.helper} value={(value as string[] | undefined) ?? []} onChange={(next) => set(field.key, next)} />;
+              case 'switch':
+                return <Box key={field.key}>
+                  <FormControlLabel control={<Switch checked={Boolean(value)} onChange={(e) => set(field.key, e.target.checked)} />} label={field.label} />
+                  {field.helper && <Typography sx={{ fontSize: 12, color: 'text.secondary', ml: 6.5, mt: -.5 }}>{field.helper}</Typography>}
+                </Box>;
               case 'images':
               case 'image':
                 return <ImageField key={field.key} label={field.label} multiple={field.kind === 'images'} folder={config.table}
@@ -167,6 +193,22 @@ function EditDialog({ config, initial, onClose, onSaved }: { config: ContentConf
       <Button variant="contained" disabled={saving || missing.length > 0} onClick={() => void save()}>{saving ? 'Saving…' : 'Save'}</Button>
     </DialogActions>
   </Dialog>;
+}
+
+// The rooms an offer covers, named as on the booking page (from SiteMinder).
+// Leaving it empty means every room.
+let roomTypesRequest: Promise<{ uuid: string; name: string }[]> | null = null;
+function RoomTypesField({ label, helper, value, onChange }: { label: string; helper?: string; value: string[]; onChange: (next: string[]) => void }) {
+  const [options, setOptions] = useState<{ uuid: string; name: string }[]>([]);
+  useEffect(() => {
+    roomTypesRequest ??= fetch('/api/booking/room-types').then((r) => (r.ok ? r.json() : [])).catch(() => []);
+    void roomTypesRequest.then(setOptions);
+  }, []);
+  const selected = value.map((uuid) => options.find((o) => o.uuid === uuid) ?? { uuid, name: uuid });
+  return <Autocomplete multiple options={options} value={selected} getOptionLabel={(o) => o.name} isOptionEqualToValue={(a, b) => a.uuid === b.uuid}
+    onChange={(_, next) => onChange(next.map((o) => o.uuid))} loading={!options.length}
+    renderValue={(items, getItemProps) => items.map((o, index) => <Chip {...getItemProps({ index })} key={o.uuid} label={o.name} size="small" />)}
+    renderInput={(params) => <TextField {...params} label={label} helperText={helper} placeholder={value.length ? '' : 'All rooms'} />} />;
 }
 
 function PreviewCard({ card }: { card: CarouselCardData & { ctaLabel?: string } }) {

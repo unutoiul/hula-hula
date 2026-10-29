@@ -65,27 +65,66 @@ export const eventsConfig: ContentConfig = {
   firstImage: (row) => text(row, 'image_url') || null,
 };
 
+// Perks guests often get with a direct-booking offer — staff can also type their own.
+const PERK_SUGGESTIONS = [
+  'Welcome drink on arrival', 'Romantic room decoration', 'Free photo at your floating breakfast', 'Floating breakfast for two',
+  'Fruit platter in your room', 'Late check-out until 2 pm (subject to availability)', 'Early check-in (subject to availability)',
+  'Room upgrade (subject to availability)', 'Free airport transfer', 'Free shuttle to Ao Nang Beach', '10% off spa treatments',
+  'Free round of footgolf', 'Bottle of wine on arrival', 'Birthday cake',
+];
+
+const percentOf = (row: Row) => Number(row.discount_percent) || 0;
+const perksOf = (row: Row) => (row.perks as string[] | undefined) ?? [];
+
 export const offersConfig: ContentConfig = {
   table: 'offers',
   noun: 'offer',
-  intro: 'Deals shown at the top of the “Hula happenings” section. For a discount on rooms, create the promo code in SiteMinder first and enter the same code here — the button then opens booking with the code applied. Offers hide themselves outside their dates.',
+  intro: 'Special offers for rooms booked on the website: a % off, perks like a welcome drink, or both (a package). The booking page applies the best matching offer to each room automatically — or only with a promo code if you set one — and the reservations email shows the discount and the perks to arrange.',
   liveKey: 'active',
   fields: [
-    { key: 'kicker', label: 'Small label above the title', kind: 'text', max: 40, helper: 'e.g. 15% off · Leave empty to show the end date' },
-    { key: 'title', label: 'Title', kind: 'text', max: 120, required: true },
+    { key: 's-show', label: 'What guests see', kind: 'section' },
+    { key: 'title', label: 'Offer name', kind: 'text', max: 120, required: true, helper: 'e.g. Early bird, Celebrate in Krabi, Stay 3 pay less' },
+    { key: 'badge', label: 'Badge', kind: 'text', max: 30, helper: 'Shown on the room prices, e.g. Special offer, Book direct, Package' },
     { key: 'description', label: 'Description', kind: 'multiline', max: 600 },
-    { key: 'image_url', label: 'Picture', kind: 'image' },
-    { key: 'promo_code', label: 'SiteMinder promo code (optional)', kind: 'code', helper: 'Must match a promo code set up in SiteMinder exactly' },
-    { key: 'valid_from', label: 'Show from', kind: 'date' },
-    { key: 'valid_to', label: 'Show until', kind: 'date' },
-    { key: 'cta_label', label: 'Button text', kind: 'text', max: 40, helper: 'Leave empty for “Book with code …” or “Ask about this”' },
+    { key: 'image_url', label: 'Picture (for the homepage card)', kind: 'image' },
+    { key: 'show_on_homepage', label: 'Show as a card on the homepage', kind: 'switch', helper: 'Switch off for a secret promo-code offer' },
+
+    { key: 's-deal', label: 'Discount & perks', kind: 'section', helper: 'Use a discount, perks, or both. A perks-only offer is a package.' },
+    { key: 'discount_percent', label: 'Discount', kind: 'number', min: 0, max: 90, unit: '%', helper: 'Off the room price, on the nights inside the stay dates' },
+    { key: 'perks', label: 'Perks included', kind: 'tags', suggestions: PERK_SUGGESTIONS, helper: 'Pick from the list or type your own and press Enter (up to 8)' },
+
+    { key: 's-when', label: 'When it applies', kind: 'section', helper: 'Leave any of these empty for no limit.' },
+    { key: 'valid_from', label: 'Bookable from', kind: 'date' },
+    { key: 'valid_to', label: 'Bookable until', kind: 'date', helper: 'The offer disappears after this day' },
+    { key: 'stay_from', label: 'Stay dates from', kind: 'date', helper: 'The discount counts for nights from this date…' },
+    { key: 'stay_to', label: 'Stay dates until', kind: 'date', helper: '…up to and including this night' },
+    { key: 'min_nights', label: 'Minimum stay', kind: 'number', min: 1, max: 31, unit: 'nights' },
+    { key: 'min_days_before_arrival', label: 'Early bird', kind: 'number', min: 0, max: 365, unit: 'days', helper: 'Only when booked at least this many days before arrival' },
+    { key: 'max_days_before_arrival', label: 'Last minute', kind: 'number', min: 0, max: 365, unit: 'days', helper: 'Only when booked at most this many days before arrival' },
+
+    { key: 's-rooms', label: 'Rooms & promo code', kind: 'section' },
+    { key: 'room_type_uuids', label: 'Rooms', kind: 'roomTypes', helper: 'Leave empty for every room' },
+    { key: 'promo_code', label: 'Promo code (optional)', kind: 'code', helper: 'Empty = applies automatically to everyone. With a code, only guests who enter it get the offer.' },
+    { key: 'cta_label', label: 'Homepage button text', kind: 'text', max: 40, helper: 'Leave empty for “Book this offer”' },
   ],
-  blank: () => ({ kicker: '', title: '', description: '', image_url: null, promo_code: '', valid_from: null, valid_to: null, cta_label: '', active: false }),
-  subtitle: (row) => [text(row, 'promo_code') && `Code ${text(row, 'promo_code')}`, text(row, 'valid_to') && `until ${dayOf(text(row, 'valid_to'))}`].filter(Boolean).join(' · ') || 'No end date',
+  blank: () => ({
+    title: '', badge: 'Special offer', description: '', image_url: null, show_on_homepage: true, discount_percent: 0, perks: [],
+    valid_from: null, valid_to: null, stay_from: null, stay_to: null, min_nights: null, min_days_before_arrival: null, max_days_before_arrival: null,
+    room_type_uuids: [], promo_code: '', cta_label: '', active: false,
+  }),
+  subtitle: (row) => [
+    percentOf(row) > 0 ? `−${percentOf(row)}%` : perksOf(row).length ? 'Package' : 'No discount or perks yet',
+    perksOf(row).length ? `${perksOf(row).length} perk${perksOf(row).length === 1 ? '' : 's'}` : '',
+    row.min_nights ? `${String(row.min_nights)}+ nights` : '',
+    text(row, 'promo_code') && `code ${text(row, 'promo_code')}`,
+    text(row, 'valid_to') && `until ${dayOf(text(row, 'valid_to'))}`,
+    row.show_on_homepage === false ? 'not on homepage' : '',
+  ].filter(Boolean).join(' · '),
   preview: (row) => ({
-    id: 'preview', title: text(row, 'title') || 'Title', detail: text(row, 'description'), images: text(row, 'image_url') ? [text(row, 'image_url')] : [],
-    kicker: text(row, 'kicker') || (text(row, 'valid_to') ? `Until ${dayOf(text(row, 'valid_to'))}` : 'Special offer'),
-    ctaLabel: text(row, 'cta_label') || (text(row, 'promo_code') ? `Book with code ${text(row, 'promo_code')}` : 'Ask about this'),
+    id: 'preview', title: text(row, 'title') || 'Offer name', images: text(row, 'image_url') ? [text(row, 'image_url')] : [],
+    kicker: [text(row, 'badge') || 'Special offer', percentOf(row) > 0 ? `−${percentOf(row)}%` : ''].filter(Boolean).join(' · '),
+    detail: [text(row, 'description'), perksOf(row).length ? `Includes ${perksOf(row).join(', ').toLowerCase()}.` : ''].filter(Boolean).join(' '),
+    ctaLabel: text(row, 'cta_label') || (text(row, 'promo_code') ? `Book with code ${text(row, 'promo_code')}` : 'Book this offer'),
   }),
   firstImage: (row) => text(row, 'image_url') || null,
 };

@@ -9,8 +9,8 @@ import { guessCountry } from './countries';
 // Everything the booking pages share: the live room list for the current
 // search, the rooms picked (the cart), the guest's details and the payment
 // session started on 2C2P. Kept in sessionStorage so a reload — or the round
-// trip through a bank's 3-D Secure page — doesn't lose anything, and cleared
-// once the booking is confirmed.
+// trip through 2C2P's payment page and the bank's 3-D Secure check — doesn't
+// lose anything, and cleared once the booking is confirmed.
 
 export interface CartLine { roomTypeUuid: string; roomRateUuid: string; quantity: number }
 
@@ -34,6 +34,8 @@ interface BookingFlow {
   availability: AvailabilityState;
   reload: () => void;
   cart: ResolvedLine[];
+  /** Rooms are picked — known straight away, before live prices have loaded. */
+  hasRooms: boolean;
   quantityOf: (roomRateUuid: string) => number;
   /** How many more of this room type could still go in the cart. */
   roomsLeft: (roomType: RoomTypeOffer) => number;
@@ -44,7 +46,10 @@ interface BookingFlow {
   guest: GuestForm;
   updateGuest: (patch: Partial<GuestForm>) => void;
   payment: PaymentSession | null;
-  startPayment: (extras: { hp: string; elapsedMs: number }) => Promise<string | null>;
+  /** Holds the rooms and starts a 2C2P payment: gives back 2C2P's payment page, or why it couldn't. */
+  startPayment: (extras: { hp: string; elapsedMs: number }) => Promise<{ webPaymentUrl: string } | { error: string }>;
+  /** After a declined payment: drop the old payment so the next try starts a fresh one. */
+  resetPayment: () => void;
   forgetBooking: () => void;
 }
 
@@ -157,7 +162,10 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
   }, [cart, data]);
 
   const expanded = useMemo(() => cart.flatMap(({ line, roomType, rate }) => Array.from({ length: line.quantity }, () => ({ roomType, rate }))), [cart]);
-  const plan = useMemo(() => distributeGuests(expanded.map(({ roomType }) => roomType.capacity), adults, kids), [expanded, adults, kids]);
+  // Every room is booked for at least one adult, so picking more rooms than
+  // adults simply counts one adult per room (two rooms for one person searching
+  // = two adults), like SiteMinder's own engine — rather than refusing.
+  const plan = useMemo(() => distributeGuests(expanded.map(({ roomType }) => roomType.capacity), Math.max(adults, expanded.length), kids), [expanded, adults, kids]);
 
   const quantityOf = useCallback((roomRateUuid: string) => lines.find((line) => line.roomRateUuid === roomRateUuid)?.quantity ?? 0, [lines]);
 
@@ -183,8 +191,8 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
 
   const updateGuest = useCallback((patch: Partial<GuestForm>) => setGuest((current) => ({ ...current, ...patch })), []);
 
-  const startPayment = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }): Promise<string | null> => {
-    if (!plan || expanded.length === 0) return 'Please choose rooms that fit everyone first.';
+  const startPayment = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }): Promise<{ webPaymentUrl: string } | { error: string }> => {
+    if (!plan || expanded.length === 0) return { error: 'Please choose rooms that fit everyone first.' };
     const rooms = expanded.map(({ rate }, index) => ({ roomRateUuid: rate.roomRateUuid, adults: plan[index].adults, children: plan[index].children }));
     const details = {
       firstName: guest.firstName.trim(), lastName: guest.lastName.trim(), email: guest.email.trim(), phone: guest.phone.trim(), country: guest.country,
@@ -193,7 +201,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     // Going back and forth without changing anything keeps the same payment
     // (and the same hold on the rooms) instead of starting a second one.
     const signature = JSON.stringify({ searchKey, rooms, details });
-    if (payment?.signature === signature && Date.parse(payment.expiresAt) - Date.now() > 3 * 60_000) return null;
+    if (payment?.signature === signature && Date.parse(payment.expiresAt) - Date.now() > 3 * 60_000) return { webPaymentUrl: payment.webPaymentUrl };
 
     const response = await createBooking({
       checkIn: searchParams.get('checkIn')!, checkOut: searchParams.get('checkOut')!, promo: promoCode || undefined,
@@ -201,16 +209,22 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     });
     if (!response.ok) {
       if (response.code === 'SOLD_OUT') setReloads((n) => n + 1);
-      return response.message;
+      return { error: response.message };
     }
     accessKeyStore.set(response.ref, response.accessKey);
-    setPayment({
+    const session: PaymentSession = {
       ref: response.ref, accessKey: response.accessKey, webPaymentUrl: response.webPaymentUrl, currency: response.currency,
       total: response.total, deposit: response.deposit, balance: response.balance, expiresAt: response.expiresAt,
       email: details.email, signature,
-    });
-    return null;
-  }, [plan, expanded, guest, searchKey, searchParams, promoCode, payment]);
+    };
+    setPayment(session);
+    // Saved right now, not after the next render: the guest is about to leave
+    // for 2C2P's page and must find the booking here when they come back.
+    writeStored({ searchKey: cartKey, cart: lines, guest, payment: session });
+    return { webPaymentUrl: response.webPaymentUrl };
+  }, [plan, expanded, guest, searchKey, searchParams, promoCode, payment, cartKey, lines]);
+
+  const resetPayment = useCallback(() => setPayment(null), []);
 
   const forgetBooking = useCallback(() => {
     setLines([]);
@@ -220,9 +234,9 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<BookingFlow>(() => ({
     searchKey, availability, reload: () => setReloads((n) => n + 1),
-    cart, quantityOf, roomsLeft, setQuantity, totals, plan: expanded.length ? plan : null,
-    guest, updateGuest, payment, startPayment, forgetBooking,
-  }), [searchKey, availability, cart, quantityOf, roomsLeft, setQuantity, totals, plan, expanded, guest, updateGuest, payment, startPayment, forgetBooking]);
+    cart, hasRooms: lines.length > 0, quantityOf, roomsLeft, setQuantity, totals, plan: expanded.length ? plan : null,
+    guest, updateGuest, payment, startPayment, resetPayment, forgetBooking,
+  }), [searchKey, availability, cart, lines, quantityOf, roomsLeft, setQuantity, totals, plan, expanded, guest, updateGuest, payment, startPayment, resetPayment, forgetBooking]);
 
   return <BookingFlowContext.Provider value={value}>{children}</BookingFlowContext.Provider>;
 }

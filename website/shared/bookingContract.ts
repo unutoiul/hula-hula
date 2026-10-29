@@ -9,14 +9,28 @@ export type DepositType = 'full-amount' | 'first-night' | 'fixed-amount' | 'perc
  * for children separately, so a child simply takes an adult's place. */
 export interface RoomCapacity { guests: number; adults: number; children: number }
 
+/** A special offer from /admin applied to a rate: a discount, perks, or both. */
+export interface RateDeal {
+  title: string;
+  /** "Special offer", "Early bird", "Package"… */
+  badge: string | null;
+  percent: number;
+  perks: string[];
+  /** Per room, whole stay. */
+  savings: number;
+}
+
 export interface RateOffer {
   roomRateUuid: string;
   name: string;
   description: string | null;
   meals: { breakfast: boolean; lunch: boolean; dinner: boolean };
   cancellation: { refundable: boolean | null; summary: string };
-  /** One room, whole stay, taxes and fees included. */
+  /** One room, whole stay, taxes and fees included — after any special offer. */
   total: number;
+  /** The same before the special offer (equal to total when there's none). */
+  originalTotal: number;
+  offer: RateDeal | null;
   nightly: { date: string; amount: number }[];
   promoDiscount: number;
   /** What one room of this rate costs today versus at the hotel. */
@@ -84,7 +98,7 @@ export type CreateBookingResponse =
  * resort; there is deliberately no personal data in here. */
 export type PublicBookingStatus = 'pending' | 'confirmed' | 'expired' | 'failed';
 
-export interface BookingLine { roomTypeName: string; rateName: string; quantity: number; adults: number; children: number }
+export interface BookingLine { roomTypeName: string; rateName: string; quantity: number; adults: number; children: number; offerTitle?: string; perks?: string[] }
 
 export interface BookingStatusResponse {
   ref: string;
@@ -99,4 +113,6 @@ export interface BookingStatusResponse {
   paidAmount: number | null;
   lines: BookingLine[];
   expiresAt: string;
+  /** When status is "failed": why, in words a guest understands. */
+  failureReason?: string;
 }

@@ -3,7 +3,7 @@ import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRound
 import East from '@mui/icons-material/East';
 import type { ReactNode } from 'react';
 import type { Offer, SiteEvent } from '../../../shared/siteContent';
-import { ONSITE_BOOKING, toBookHref, toSiteMinderUrl, useBookingSearch } from '../../context/BookingSearchContext';
+import { ONSITE_BOOKING, toBookHref, toISODate, useBookingSearch } from '../../context/BookingSearchContext';
 import { useContactForm } from '../../context/ContactFormContext';
 import { photoAssets as p } from '../../data/photos';
 import { navigate } from '../../router';
@@ -52,26 +52,43 @@ export function useEventCards(events: SiteEvent[]): CmsCard[] {
   });
 }
 
+// Dates that qualify for an offer: the guest's dates if they already fit,
+// otherwise the first stay inside the offer's stay window that's long enough.
+function offerDates(offer: Offer, checkIn: Date, checkOut: Date): [Date, Date] {
+  const nights = Math.max(1, Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000));
+  const minNights = offer.minNights ?? 1;
+  const fits = nights >= minNights && (!offer.stayTo || toISODate(checkIn) <= offer.stayTo) && (!offer.stayFrom || toISODate(checkOut) > offer.stayFrom);
+  if (fits) return [checkIn, checkOut];
+  const tomorrow = new Date(); tomorrow.setHours(0, 0, 0, 0); tomorrow.setDate(tomorrow.getDate() + 1);
+  const start = offer.stayFrom && asDay(offer.stayFrom) > tomorrow ? asDay(offer.stayFrom) : tomorrow;
+  const end = new Date(start); end.setDate(end.getDate() + Math.max(nights, minNights));
+  return [start, end];
+}
+
 export function useOfferCards(offers: Offer[]): CmsCard[] {
   const openContact = useContactForm();
   const search = useBookingSearch();
   return offers.map((offer) => {
+    const perks = offer.perks.length ? `Includes ${offer.perks.join(', ').toLowerCase()}.` : '';
     const base = {
-      id: offer.id, title: offer.title, detail: offer.description, images: [offer.imageUrl ?? p.poolOverview.src],
-      kicker: offer.kicker || (offer.validTo ? `Until ${dayMonth.format(asDay(offer.validTo))}` : 'Special offer'),
+      id: offer.id, title: offer.title, images: [offer.imageUrl ?? p.poolOverview.src],
+      kicker: offer.kicker || [offer.badge || 'Special offer', offer.discountPercent > 0 ? `−${offer.discountPercent}%` : ''].filter(Boolean).join(' · '),
+      detail: [offer.description, perks, offer.minNights && offer.minNights > 1 ? `Minimum ${offer.minNights} nights.` : ''].filter(Boolean).join(' '),
     };
-    if (offer.promoCode) {
-      const code = offer.promoCode;
+    // Offers are priced by our own booking page; while that's switched off
+    // (SiteMinder's engine doesn't know them), guests ask the team instead.
+    if (ONSITE_BOOKING) {
+      const code = offer.promoCode ?? '';
       const book = () => {
+        const [from, to] = offerDates(offer, search.checkIn, search.checkOut);
         search.setPromoCode(code);
-        if (ONSITE_BOOKING) navigate(toBookHref(search.checkIn, search.checkOut, search.adults, search.children, code));
-        else window.open(toSiteMinderUrl(search.checkIn, search.checkOut, search.adults, search.children, code), '_blank', 'noopener');
+        navigate(toBookHref(from, to, search.adults, search.children, code));
       };
-      return { ...base, ctaLabel: offer.ctaLabel || `Book with code ${code}`, onCta: book, ctaIcon: <East sx={{ fontSize: 17 }} /> };
+      return { ...base, ctaLabel: offer.ctaLabel || (code ? `Book with code ${code}` : 'Book this offer'), onCta: book, ctaIcon: <East sx={{ fontSize: 17 }} /> };
     }
     return {
       ...base, ctaLabel: offer.ctaLabel || 'Ask about this', ctaIcon: <ChatBubbleOutlineRounded sx={{ fontSize: 17 }} />,
-      onCta: () => openContact({ topic: offer.title, message: `Hi Hula Hula! I’d like to know more about the “${offer.title}” offer.`, page: 'Offers' }),
+      onCta: () => openContact({ topic: offer.title, message: `Hi Hula Hula! I’d like to book the “${offer.title}” offer.`, page: 'Offers' }),
     };
   });
 }

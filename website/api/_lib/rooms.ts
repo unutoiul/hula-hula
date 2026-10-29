@@ -1,13 +1,14 @@
 import type { AvailabilityResponse, DepositType, RateOffer, RoomCapacity, RoomTypeOffer } from '../../shared/bookingContract.js';
+import { bestDeal, type Deal, nightlyDiscounts } from './dealRules.js';
 import { depositFor, type DefaultDeposit } from './deposit.js';
 import { fromSatang, toSatang } from './money.js';
 import type { Catalog, SmPenalty, SmQuote, SmRoomRate, SmRoomType } from './siteminder.js';
 
 // Turns SiteMinder's three separate answers — the room types, their rates
 // (meal plan, deposit, cancellation terms) and the live quote for one stay —
-// into the room list the booking page shows, the same way for the
-// availability lookup and for booking creation, so the price a guest saw is
-// the price we charge.
+// plus the special offers from /admin into the room list the booking page
+// shows, the same way for the availability lookup and for booking creation,
+// so the price a guest saw is the price we charge.
 
 export const maxRoomsPerBooking = () => Math.max(1, Math.min(10, Number(process.env.BOOKING_MAX_ROOMS) || 5));
 
@@ -16,8 +17,10 @@ export interface PricedRate {
   rate: SmRoomRate;
   capacity: RoomCapacity;
   available: number;
-  /** All in satang, for one room. */
+  /** All in satang, for one room. `total` is after the special offer, `originalTotal` before. */
   total: number;
+  originalTotal: number;
+  offer: { title: string; badge: string | null; percent: number; perks: string[]; savings: number; byCode: boolean } | null;
   dueNow: number;
   depositType: DepositType;
   nightly: { date: string; amount: number }[];
@@ -70,7 +73,7 @@ export function cancellationTerms(ratePenalties: SmPenalty[] | undefined, proper
   return { refundable: true, summary: `Free cancellation until ${days === 0 ? 'the day of arrival' : `${days} day${days === 1 ? '' : 's'} before arrival`}; after that ${describePenalty(first, currency)}.` };
 }
 
-export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<string, number>, checkIn: string, promo: string | undefined, fallback: DefaultDeposit): PricedRate[] {
+export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<string, number>, checkIn: string, promo: string | undefined, fallback: DefaultDeposit, deals: Deal[] = [], today = checkIn): PricedRate[] {
   const currency = catalog.property.currencyIsoCode || 'THB';
   const priced: PricedRate[] = [];
   for (const quote of quotes) {
@@ -88,10 +91,22 @@ export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<stri
     if (rate.promotionOnly && !(promo && promoDiscount > 0)) continue;
     const available = quote.availability - (holds.get(quote.roomTypeUuid) ?? 0);
     if (available <= 0) continue;
-    const total = toSatang(quote.price.gross);
+    // The best special offer for this room and stay, taken off the nights it covers.
+    const originalTotal = toSatang(quote.price.gross);
+    const deal = bestDeal(deals, { today, checkIn, nightDates: nights.map((night) => night.date), roomTypeUuid: quote.roomTypeUuid, promo });
+    let savings = 0;
+    if (deal) {
+      const off = nights.length
+        ? nightlyDiscounts(deal, nights.map((night) => ({ date: night.date, amount: night.gross - night.discount - night.promoDiscount })))
+        : [];
+      off.forEach((amount, i) => { nights[i].discount += amount; });
+      savings = nights.length ? off.reduce((sum, n) => sum + n, 0) : Math.round(originalTotal * deal.discountPercent / 100);
+    }
+    const total = originalTotal - savings;
     const deposit = depositFor({ total, nights }, { depositType: rate.depositType ?? quote.depositType, depositAmount: rate.depositAmount ?? quote.depositAmount }, fallback);
     priced.push({
-      roomType, rate, available, total, dueNow: deposit.dueNow, depositType: deposit.type, promoDiscount,
+      roomType, rate, available, total, originalTotal, dueNow: deposit.dueNow, depositType: deposit.type, promoDiscount,
+      offer: deal ? { title: deal.title, badge: deal.badge, percent: deal.discountPercent, perks: deal.perks, savings, byCode: !!deal.promoCode } : null,
       capacity: capacityOf(roomType, rate),
       nightly: nights.map((night) => ({ date: night.date, amount: night.gross - night.discount - night.promoDiscount })),
       cancellation: cancellationTerms(rate.cancellationPenalties, catalog.property.cancellationPenalties, checkIn, currency),
@@ -113,6 +128,8 @@ export function buildAvailability(priced: PricedRate[], catalog: Catalog, search
       meals: { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded },
       cancellation: p.cancellation,
       total: fromSatang(p.total),
+      originalTotal: fromSatang(p.originalTotal),
+      offer: p.offer ? { title: p.offer.title, badge: p.offer.badge, percent: p.offer.percent, perks: p.offer.perks, savings: fromSatang(p.offer.savings) } : null,
       nightly: p.nightly.map((n) => ({ date: n.date, amount: fromSatang(n.amount) })),
       promoDiscount: fromSatang(p.promoDiscount),
       deposit: { type: p.depositType, dueNow: fromSatang(p.dueNow), balance: fromSatang(p.total - p.dueNow) },
@@ -141,7 +158,7 @@ export function buildAvailability(priced: PricedRate[], catalog: Catalog, search
     nights: search.nights,
     currency: catalog.property.currencyIsoCode || 'THB',
     occupancy: { adults: search.adults, children: search.children },
-    promo: search.promo ? { code: search.promo, applied: priced.some((p) => p.promoDiscount > 0) } : null,
+    promo: search.promo ? { code: search.promo, applied: priced.some((p) => p.promoDiscount > 0 || p.offer?.byCode) } : null,
     roomTypes,
     policies: { terms: stripTags(catalog.property.termsAndConditions), checkInTime: times?.checkInStartTime ?? null, checkOutTime: times?.checkOutEndTime ?? null },
     maxRooms,

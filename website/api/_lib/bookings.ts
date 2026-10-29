@@ -22,8 +22,11 @@ export interface BookingItem {
   adults: number;
   children: number;
   quantity: number;
-  /** Per room, whole stay. */
+  /** Per room, whole stay — after the special offer; unitOriginalTotal is before it. */
   unitTotal: number;
+  unitOriginalTotal?: number;
+  /** The special offer from /admin this room got (savings per room), if any. */
+  offer?: { title: string; percent: number; perks: string[]; savings: number } | null;
   unitDeposit: number;
   nightly: { date: string; amount: number }[];
   promoDiscount: number;

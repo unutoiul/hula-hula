@@ -3,12 +3,13 @@ import type { BookingRoomRequest, CreateBookingErrorCode, CreateBookingResponse,
 import { fits } from '../../shared/occupancy.js';
 import { type BookingItem, insertPending, PII_WIPE, softHolds, updateWhere } from '../_lib/bookings.js';
 import { DbError, dbConfigured } from '../_lib/db.js';
+import { loadDeals } from '../_lib/deals.js';
 import { defaultDeposit } from '../_lib/deposit.js';
 import { allowMethods, readJsonBody, siteUrl, withPreviewBypass } from '../_lib/http.js';
 import { invoiceNoFor, newAccessKey, newRef, sha256Hex } from '../_lib/ids.js';
 import { fromSatang } from '../_lib/money.js';
 import { maxRoomsPerBooking, type PricedRate, priceQuotes } from '../_lib/rooms.js';
-import { MAX_ADULTS, MAX_CHILDREN, parseStay } from '../_lib/search.js';
+import { MAX_ADULTS, MAX_CHILDREN, parseStay, todayInBangkok } from '../_lib/search.js';
 import { getCatalog, getQuotes, SiteMinderError } from '../_lib/siteminder.js';
 import { createPaymentToken, isConfigured as paymentConfigured } from '../_lib/twoc2p.js';
 
@@ -56,13 +57,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const catalog = await getCatalog();
     currency = catalog.property.currencyIsoCode || 'THB';
-    const holds = await softHolds(stay.checkIn, stay.checkOut);
+    const [holds, deals] = await Promise.all([softHolds(stay.checkIn, stay.checkOut), loadDeals()]);
     const occupancies = [...new Set(rooms.map((room) => `${room.adults}|${room.children}`))];
     priced = new Map();
     await Promise.all(occupancies.map(async (key) => {
       const [adults, children] = key.split('|').map(Number);
       const quotes = await getQuotes({ ...stay, adults, children });
-      for (const p of priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit())) priced.set(`${p.rate.uuid}|${key}`, p);
+      for (const p of priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit(), deals, todayInBangkok())) priced.set(`${p.rate.uuid}|${key}`, p);
     }));
   } catch (error) {
     console.error('Booking: re-pricing failed', error);
@@ -90,7 +91,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     meals: { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded },
     cancellation: p.cancellation.summary, depositType: p.depositType,
     adults: room.adults, children: room.children, quantity,
-    unitTotal: fromSatang(p.total), unitDeposit: fromSatang(p.dueNow),
+    unitTotal: fromSatang(p.total), unitOriginalTotal: fromSatang(p.originalTotal), unitDeposit: fromSatang(p.dueNow),
+    offer: p.offer ? { title: p.offer.title, percent: p.offer.percent, perks: p.offer.perks, savings: fromSatang(p.offer.savings) } : null,
     nightly: p.nightly.map((n) => ({ date: n.date, amount: fromSatang(n.amount) })),
     promoDiscount: fromSatang(p.promoDiscount),
   }));

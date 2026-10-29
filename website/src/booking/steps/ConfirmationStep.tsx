@@ -16,7 +16,7 @@ const POLL_FOR_MS = 2 * 60_000;
 // this browser kept about it.
 export function ConfirmationStep() {
   const { query } = useLocation();
-  const { payment, forgetBooking } = useBookingFlow();
+  const { payment, forgetBooking, resetPayment, hasRooms } = useBookingFlow();
   const ref = query.get('ref') ?? payment?.ref ?? '';
   const [email] = useState(payment?.ref === ref ? payment.email : null);
   const [status, setStatus] = useState<BookingStatusResponse | null>(null);
@@ -87,8 +87,20 @@ export function ConfirmationStep() {
       </>}
   </Box>;
 
-  if (status.status === 'expired' || status.status === 'failed') return <Box sx={card}>
-    <Alert severity="warning">This booking wasn’t completed{status.status === 'expired' ? ' — the payment window ran out' : ''}, and nothing was charged.</Alert>
+  // Declined (or cancelled) at 2C2P: say why, and let the guest try again with
+  // the same rooms and details — a fresh payment, since the last one failed.
+  if (status.status === 'failed') return <Box sx={card}>
+    <Typography variant="h1" sx={{ fontSize: { xs: 28, md: 36 } }}>Your payment didn’t go through</Typography>
+    <Alert severity="warning" sx={{ mt: 2 }}>{status.failureReason ?? 'The payment wasn’t completed.'} Nothing was charged.</Alert>
+    <Typography sx={{ color: 'text.secondary', mt: 2 }}>You can try again with the same card or another one — your rooms and details are still here.</Typography>
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
+      {hasRooms && <Button variant="contained" onClick={() => { resetPayment(); navigate('/book/details'); }}>Try paying again</Button>}
+      <Button variant={hasRooms ? 'outlined' : 'contained'} onClick={() => navigate('/book')}>Choose different rooms</Button>
+    </Stack>
+  </Box>;
+
+  if (status.status === 'expired') return <Box sx={card}>
+    <Alert severity="warning">This booking wasn’t completed — the payment window ran out — and nothing was charged.</Alert>
     <Button onClick={() => navigate('/book')} variant="contained" sx={{ mt: 3 }}>Choose rooms again</Button>
   </Box>;
 
@@ -108,7 +120,10 @@ export function ConfirmationStep() {
     </Box>
 
     <Stack spacing={1} sx={{ mt: 3 }}>
-      {status.lines.map((line) => <Typography key={`${line.roomTypeName}-${line.rateName}-${line.adults}-${line.children}`} sx={{ fontSize: 15 }}>{line.quantity} × <strong>{line.roomTypeName}</strong> · {line.rateName}</Typography>)}
+      {status.lines.map((line) => <Box key={`${line.roomTypeName}-${line.rateName}-${line.adults}-${line.children}`}>
+        <Typography sx={{ fontSize: 15 }}>{line.quantity} × <strong>{line.roomTypeName}</strong> · {line.rateName}</Typography>
+        {line.offerTitle && <Typography sx={{ fontSize: 13, color: 'secondary.dark', fontWeight: 700 }}>{line.offerTitle}{line.perks?.length ? ` · includes ${line.perks.join(', ').toLowerCase()}` : ''}</Typography>}
+      </Box>)}
     </Stack>
     <Divider sx={{ my: 2.5 }} />
     <Stack spacing={.75}>

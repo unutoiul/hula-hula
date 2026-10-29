@@ -1,43 +1,22 @@
 import LockRounded from '@mui/icons-material/LockRounded';
+import TimerOutlined from '@mui/icons-material/TimerOutlined';
 import West from '@mui/icons-material/West';
-import { Alert, Box, Button, CircularProgress, Divider, Stack, Typography } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+import { Alert, Box, Button, Chip, Divider, Stack, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { navigate } from '../../router';
 import { fonts } from '../../theme';
 import { useBookingFlow } from '../BookingFlowContext';
 import { money } from '../format';
-import { loadPgwSdk, PGW_CANCELLED, PGW_COMPLETED } from '../payment/pgwSdk';
 
-type UiState = 'loading' | 'ready' | 'cancelled' | 'failed' | 'unavailable';
-
-// Step 3: pay. 2C2P's own payment form opens right here (Drop-in UI), for
-// exactly the amount the server worked out when the booking was created. If
-// the form can't load, the guest can still pay on 2C2P's page and come back.
+// Step 3: pay. The guest pays on 2C2P's own secure page — the bank's 3-D
+// Secure check fails when 2C2P's form is embedded in another site, since the
+// browser blocks 2C2P's cookies there — and 2C2P sends them back to
+// /book/confirmation. "Continue to secure payment" on the details step goes
+// straight there; this page is where a guest lands if they come back before
+// paying, with the same amount (worked out by the server) and the hold timer.
 export function PaymentStep() {
   const { payment, totals } = useBookingFlow();
-  const [state, setState] = useState<UiState>('loading');
-  const [message, setMessage] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
   const remaining = useCountdown(payment?.expiresAt);
-
-  const open = useCallback(async () => {
-    if (!payment) return;
-    setState('loading');
-    try {
-      const sdk = await loadPgwSdk(payment.webPaymentUrl);
-      setState('ready');
-      sdk.paymentUI({ url: payment.webPaymentUrl, mode: 'DropIn', cancelConfirmation: false }, (result) => {
-        if (result.responseCode === PGW_COMPLETED) navigate(`/book/confirmation?ref=${payment.ref}`);
-        else if (result.responseCode === PGW_CANCELLED) setState('cancelled');
-        else { setMessage(result.responseDescription ?? null); setState('failed'); }
-      });
-    } catch {
-      setState('unavailable');
-    }
-  }, [payment]);
-
-  useEffect(() => { void open(); }, [open, attempt]);
-
   if (!payment) return null;
   const expired = remaining !== null && remaining <= 0;
   const priceMoved = Math.abs(payment.total - totals.total) > 1 && totals.total > 0;
@@ -53,26 +32,25 @@ export function PaymentStep() {
       {priceMoved && <Alert severity="info" sx={{ mb: 2 }}>Prices were updated when we confirmed your rooms — the amounts on this page are the ones you’ll pay.</Alert>}
       {expired
         ? <Alert severity="warning" action={<Button color="inherit" size="small" onClick={() => navigate('/book')}>Start again</Button>}>Your rooms were held for 15 minutes and the hold has run out. Please check prices again.</Alert>
-        : remaining !== null && <Typography sx={{ fontSize: 13, color: remaining < 120 ? 'warning.dark' : 'text.secondary', mb: 2 }} aria-live="polite">
-          Rooms held for you for another {Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, '0')}
-        </Typography>}
-
-      {!expired && <Box sx={{ position: 'relative', minHeight: 420, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden' }}>
-        {state === 'loading' && <Stack alignItems="center" justifyContent="center" spacing={2} sx={{ position: 'absolute', inset: 0 }}><CircularProgress /><Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Opening the secure payment form…</Typography></Stack>}
-        {(state === 'cancelled' || state === 'failed' || state === 'unavailable') && <Stack spacing={2} sx={{ p: 3 }}>
-          <Alert severity={state === 'cancelled' ? 'info' : 'warning'}>
-            {state === 'cancelled' ? 'Payment cancelled — nothing was charged.'
-              : state === 'failed' ? `The payment didn’t go through${message ? ` (${message})` : ''}. Nothing was charged — you can try again or use another card.`
-              : 'The payment form couldn’t load here. You can pay on 2C2P’s secure page instead — you’ll come straight back.'}
-          </Alert>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-            {state !== 'unavailable' && <Button variant="contained" onClick={() => setAttempt((n) => n + 1)}>Try again</Button>}
-            <Button variant={state === 'unavailable' ? 'contained' : 'outlined'} href={payment.webPaymentUrl}>Pay on 2C2P’s secure page</Button>
+        : <Box sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 16px 36px rgba(23,60,44,.07)' }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1.25} sx={{ px: { xs: 2.5, sm: 3 }, py: 2, bgcolor: 'success.light', borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Box>
+              <Typography sx={{ fontFamily: fonts.playful, fontSize: 20, lineHeight: 1.2 }}>Pay {money(payment.deposit, payment.currency)} now</Typography>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .25 }}>Card, PromptPay QR or mobile banking</Typography>
+            </Box>
+            {remaining !== null && <Chip role="timer" icon={<TimerOutlined />} size="small"
+              label={`Rooms held ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`}
+              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, fontWeight: 700, fontVariantNumeric: 'tabular-nums', bgcolor: remaining < 120 ? 'secondary.main' : 'background.paper', border: '1px solid', borderColor: 'divider' }} />}
           </Stack>
-        </Stack>}
-        {/* 2C2P renders its form into this exact id. */}
-        <Box id="pgw-ui-container" key={attempt} sx={{ display: state === 'ready' ? 'block' : 'none', minHeight: 420 }} />
-      </Box>}
+          <Box sx={{ p: { xs: 2.5, sm: 3 } }}>
+            <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+              You’ll finish paying on 2C2P’s secure payment page, where your bank may ask you to confirm with a code. Afterwards you come straight back here to your confirmation.
+            </Typography>
+            <Button variant="contained" size="large" startIcon={<LockRounded />} onClick={() => window.location.assign(payment.webPaymentUrl)} sx={{ mt: 2.5 }}>
+              Pay {money(payment.deposit, payment.currency)} securely
+            </Button>
+          </Box>
+        </Box>}
     </Box>
 
     <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>

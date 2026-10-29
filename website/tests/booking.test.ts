@@ -91,3 +91,44 @@ describe('who sleeps where', () => {
     assert.equal(distributeGuests([double, double], 1, 0), null);
   });
 });
+
+describe('special offers', async () => {
+  const { bestDeal, isEligible, nightlyDiscounts } = await import('../api/_lib/dealRules.ts');
+  const base = {
+    id: 'a', title: 'Book direct', badge: 'Special offer', discountPercent: 10, perks: [], promoCode: null,
+    validFrom: null, validTo: null, stayFrom: null, stayTo: null, minNights: null, minDaysBefore: null, maxDaysBefore: null, roomTypeUuids: [], sortOrder: 0,
+  };
+  const ctx = { today: '2026-11-01', checkIn: '2026-12-10', nightDates: ['2026-12-10', '2026-12-11', '2026-12-12'], roomTypeUuid: 'deluxe' };
+
+  it('applies automatically, or only with its code', () => {
+    assert.ok(isEligible(base, ctx));
+    const coded = { ...base, promoCode: 'HONEY' };
+    assert.ok(!isEligible(coded, ctx));
+    assert.ok(isEligible(coded, { ...ctx, promo: ' honey ' }));
+  });
+
+  it('checks booking window, stay dates, minimum nights, early bird, last minute and rooms', () => {
+    assert.ok(!isEligible({ ...base, validTo: '2026-10-31' }, ctx));
+    assert.ok(!isEligible({ ...base, stayFrom: '2027-01-01' }, ctx));
+    assert.ok(isEligible({ ...base, stayFrom: '2026-12-12' }, ctx)); // covers the last night
+    assert.ok(!isEligible({ ...base, minNights: 4 }, ctx));
+    assert.ok(isEligible({ ...base, minNights: 3 }, ctx));
+    assert.ok(!isEligible({ ...base, minDaysBefore: 60 }, ctx)); // 39 days ahead
+    assert.ok(!isEligible({ ...base, maxDaysBefore: 7 }, ctx));
+    assert.ok(!isEligible({ ...base, roomTypeUuids: ['villa'] }, ctx));
+    assert.ok(!isEligible({ ...base, discountPercent: 0 }, ctx)); // nothing to give
+    assert.ok(isEligible({ ...base, discountPercent: 0, perks: ['Welcome drink'] }, ctx)); // a package
+  });
+
+  it('picks the single best offer — biggest discount, then most perks', () => {
+    const offers = [{ ...base, id: 'small', discountPercent: 5 }, { ...base, id: 'big', discountPercent: 15 }, { ...base, id: 'perks', discountPercent: 15, perks: ['Welcome drink'] }];
+    assert.equal(bestDeal(offers, ctx)?.id, 'perks');
+    assert.equal(bestDeal([], ctx), null);
+  });
+
+  it('discounts only the nights inside the stay dates', () => {
+    const nights = ctx.nightDates.map((date) => ({ date, amount: 845000 }));
+    assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10 }, nights), [84500, 84500, 84500]);
+    assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10, stayTo: '2026-12-11' }, nights), [84500, 84500, 0]);
+  });
+});
