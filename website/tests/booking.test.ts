@@ -96,7 +96,7 @@ describe('special offers', async () => {
   const { bestDeal, isEligible, nightlyDiscounts } = await import('../api/_lib/dealRules.ts');
   const base = {
     id: 'a', title: 'Book direct', badge: 'Special offer', discountPercent: 10, perks: [], promoCode: null,
-    validFrom: null, validTo: null, stayFrom: null, stayTo: null, minNights: null, minDaysBefore: null, maxDaysBefore: null, roomTypeUuids: [], sortOrder: 0,
+    minNights: null, minDaysBefore: null, maxDaysBefore: null, roomTypeUuids: [], sortOrder: 0,
   };
   const ctx = { today: '2026-11-01', checkIn: '2026-12-10', nightDates: ['2026-12-10', '2026-12-11', '2026-12-12'], roomTypeUuid: 'deluxe' };
 
@@ -107,10 +107,7 @@ describe('special offers', async () => {
     assert.ok(isEligible(coded, { ...ctx, promo: ' honey ' }));
   });
 
-  it('checks booking window, stay dates, minimum nights, early bird, last minute and rooms', () => {
-    assert.ok(!isEligible({ ...base, validTo: '2026-10-31' }, ctx));
-    assert.ok(!isEligible({ ...base, stayFrom: '2027-01-01' }, ctx));
-    assert.ok(isEligible({ ...base, stayFrom: '2026-12-12' }, ctx)); // covers the last night
+  it('checks minimum nights, early bird, last minute and rooms', () => {
     assert.ok(!isEligible({ ...base, minNights: 4 }, ctx));
     assert.ok(isEligible({ ...base, minNights: 3 }, ctx));
     assert.ok(!isEligible({ ...base, minDaysBefore: 60 }, ctx)); // 39 days ahead
@@ -126,10 +123,9 @@ describe('special offers', async () => {
     assert.equal(bestDeal([], ctx), null);
   });
 
-  it('discounts only the nights inside the stay dates', () => {
+  it('discounts every night, in whole baht', () => {
     const nights = ctx.nightDates.map((date) => ({ date, amount: 845000 }));
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10 }, nights), [84500, 84500, 84500]);
-    assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10, stayTo: '2026-12-11' }, nights), [84500, 84500, 0]);
     // 75% of ฿8,450 is ฿6,337.50 — rounded to ฿6,338 so prices stay in whole baht.
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 75 }, [{ date: '2026-12-10', amount: 845000 }]), [633800]);
   });

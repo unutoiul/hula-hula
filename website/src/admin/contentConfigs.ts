@@ -6,8 +6,6 @@ import type { ContentConfig, Row } from './ContentManager';
 // names match supabase/migrations/0001_booking_and_cms.sql.
 
 const text = (row: Row, key: string) => (typeof row[key] === 'string' ? row[key] as string : '');
-const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-const dayOf = (iso: string) => day.format(new Date(`${iso}T00:00:00`));
 
 export const activitiesConfig: ContentConfig = {
   table: 'activities',
@@ -79,7 +77,7 @@ const perksOf = (row: Row) => (row.perks as string[] | undefined) ?? [];
 export const offersConfig: ContentConfig = {
   table: 'offers',
   noun: 'offer',
-  intro: 'Special offers for rooms booked on the website: a % off, perks like a welcome drink, or both (a package). The booking page applies the best matching offer to each room automatically — or only with a promo code if you set one — and the reservations email shows the discount and the perks to arrange.',
+  intro: 'Special offers for rooms booked on the website: a % off, perks like a welcome drink, or both (a package). An offer is live the moment you switch it on, and stays until you switch it off. The booking page applies the best matching offer to each room automatically — or only with a promo code if you set one — and the reservations email shows the discount and the perks to arrange.',
   liveKey: 'active',
   fields: [
     { key: 's-show', label: 'What guests see', kind: 'section' },
@@ -90,14 +88,10 @@ export const offersConfig: ContentConfig = {
     { key: 'show_on_homepage', label: 'Show as a card on the homepage', kind: 'switch', helper: 'Switch off for a secret promo-code offer' },
 
     { key: 's-deal', label: 'Discount & perks', kind: 'section', helper: 'Use a discount, perks, or both. A perks-only offer is a package.' },
-    { key: 'discount_percent', label: 'Discount', kind: 'number', min: 0, max: 90, unit: '%', helper: 'Off the room price, on the nights inside the stay dates' },
+    { key: 'discount_percent', label: 'Discount', kind: 'number', min: 0, max: 90, unit: '%', helper: 'Off the room price, for every night of the stay' },
     { key: 'perks', label: 'Perks included', kind: 'tags', suggestions: PERK_SUGGESTIONS, helper: 'Pick from the list or type your own and press Enter (up to 8)' },
 
-    { key: 's-when', label: 'When it applies', kind: 'section', helper: 'Leave any of these empty for no limit.' },
-    { key: 'valid_from', label: 'Bookable from', kind: 'date' },
-    { key: 'valid_to', label: 'Bookable until', kind: 'date', helper: 'The offer disappears after this day' },
-    { key: 'stay_from', label: 'Stay dates from', kind: 'date', helper: 'The discount counts for nights from this date…' },
-    { key: 'stay_to', label: 'Stay dates until', kind: 'date', helper: '…up to and including this night' },
+    { key: 's-when', label: 'When it applies', kind: 'section', helper: 'The offer is live while it’s switched on. Leave these empty for no limit.' },
     { key: 'min_nights', label: 'Minimum stay', kind: 'number', min: 1, max: 31, unit: 'nights' },
     { key: 'min_days_before_arrival', label: 'Early bird', kind: 'number', min: 0, max: 365, unit: 'days', helper: 'Only when booked at least this many days before arrival' },
     { key: 'max_days_before_arrival', label: 'Last minute', kind: 'number', min: 0, max: 365, unit: 'days', helper: 'Only when booked at most this many days before arrival' },
@@ -109,7 +103,7 @@ export const offersConfig: ContentConfig = {
   ],
   blank: () => ({
     title: '', badge: 'Special offer', description: '', image_url: null, show_on_homepage: true, discount_percent: 0, perks: [],
-    valid_from: null, valid_to: null, stay_from: null, stay_to: null, min_nights: null, min_days_before_arrival: null, max_days_before_arrival: null,
+    min_nights: null, min_days_before_arrival: null, max_days_before_arrival: null,
     room_type_uuids: [], promo_code: '', cta_label: '', active: false,
   }),
   subtitle: (row) => [
@@ -117,7 +111,6 @@ export const offersConfig: ContentConfig = {
     perksOf(row).length ? `${perksOf(row).length} perk${perksOf(row).length === 1 ? '' : 's'}` : '',
     row.min_nights ? `${String(row.min_nights)}+ nights` : '',
     text(row, 'promo_code') && `code ${text(row, 'promo_code')}`,
-    text(row, 'valid_to') && `until ${dayOf(text(row, 'valid_to'))}`,
     row.show_on_homepage === false ? 'not on homepage' : '',
   ].filter(Boolean).join(' · '),
   preview: (row) => ({

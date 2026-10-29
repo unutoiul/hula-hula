@@ -1,4 +1,5 @@
 -- Special offers: the "Offers" managed at /admin become real room deals.
+-- (The booking/stay date columns added here were dropped again in 0003.)
 -- An offer can take a percentage off the room price, add perks (welcome
 -- drink, late check-out…), or both, and only applies when its rules match:
 --   valid_from / valid_to       → when it can be BOOKED (also when it shows)

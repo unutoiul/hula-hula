@@ -10,10 +10,6 @@ export interface Deal {
   discountPercent: number;
   perks: string[];
   promoCode: string | null;
-  validFrom: string | null;
-  validTo: string | null;
-  stayFrom: string | null;
-  stayTo: string | null;
   minNights: number | null;
   minDaysBefore: number | null;
   maxDaysBefore: number | null;
@@ -33,21 +29,15 @@ export interface DealContext {
 
 const daysBetween = (from: string, to: string) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 
-/** Whether a night falls inside the offer's stay dates. */
-export const coversNight = (deal: Deal, date: string) => (!deal.stayFrom || date >= deal.stayFrom) && (!deal.stayTo || date <= deal.stayTo);
-
 export function isEligible(deal: Deal, ctx: DealContext): boolean {
   if (deal.discountPercent <= 0 && deal.perks.length === 0) return false;
-  if (deal.validFrom && ctx.today < deal.validFrom) return false;
-  if (deal.validTo && ctx.today > deal.validTo) return false;
   // A code-only offer needs its code; an automatic one applies to everyone.
   if (deal.promoCode && deal.promoCode.toUpperCase() !== (ctx.promo ?? '').trim().toUpperCase()) return false;
   if (deal.minNights && ctx.nightDates.length < deal.minNights) return false;
   const daysAhead = daysBetween(ctx.today, ctx.checkIn);
   if (deal.minDaysBefore != null && daysAhead < deal.minDaysBefore) return false;
   if (deal.maxDaysBefore != null && daysAhead > deal.maxDaysBefore) return false;
-  if (deal.roomTypeUuids.length && !deal.roomTypeUuids.includes(ctx.roomTypeUuid)) return false;
-  return ctx.nightDates.some((date) => coversNight(deal, date));
+  return !deal.roomTypeUuids.length || deal.roomTypeUuids.includes(ctx.roomTypeUuid);
 }
 
 /** The one offer a room gets: the biggest discount, then the most perks, then the admin's order. Offers never stack. */
@@ -57,7 +47,7 @@ export function bestDeal(deals: Deal[], ctx: DealContext): Deal | null {
   return matches[0] ?? null;
 }
 
-/** The discount on each night (satang), rounded to whole baht like hotel prices — only the nights inside the offer's stay dates. */
+/** The discount on each night (satang), rounded to whole baht like hotel prices. */
 export function nightlyDiscounts(deal: Deal, nights: { date: string; amount: number }[]): number[] {
-  return nights.map((night) => (deal.discountPercent > 0 && coversNight(deal, night.date) ? Math.round(night.amount * deal.discountPercent / 10_000) * 100 : 0));
+  return nights.map((night) => (deal.discountPercent > 0 ? Math.round(night.amount * deal.discountPercent / 10_000) * 100 : 0));
 }

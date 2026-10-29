@@ -6,14 +6,14 @@ import { allowMethods } from './_lib/http.js';
 interface ActivityRow { id: string; kicker: string; title: string; detail: string; images: string[]; cta_label: string | null }
 interface EventRow { id: string; title: string; summary: string; image_url: string | null; starts_on: string | null; ends_on: string | null; time_label: string | null; cta_type: EventCta; cta_label: string | null; cta_url: string | null }
 interface OfferRow {
-  id: string; kicker: string | null; title: string; description: string; image_url: string | null; promo_code: string | null; valid_from: string | null; valid_to: string | null;
-  discount_percent: number | string; badge: string | null; perks: string[]; stay_from: string | null; stay_to: string | null; min_nights: number | null; cta_label: string | null;
+  id: string; kicker: string | null; title: string; description: string; image_url: string | null; promo_code: string | null;
+  discount_percent: number | string; badge: string | null; perks: string[]; min_nights: number | null; cta_label: string | null;
 }
 
 // GET /api/content — the activities, events and offers staff edit at /admin.
 // Read with the public (anon) key, so Supabase's row level security decides
-// what's visible: published items, and only events and offers that are in
-// date. Cached at the edge for a minute; the homepage falls back to its
+// what's visible: published items, events that are still to come, and offers
+// that are switched on. Cached at the edge for a minute; the homepage falls back to its
 // built-in activities if this fails.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ['GET'])) return;
@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [activities, events, offers] = await Promise.all([
       rest<ActivityRow[]>('/activities?select=id,kicker,title,detail,images,cta_label&order=sort_order.asc,created_at.asc', { role: 'anon' }),
       rest<EventRow[]>('/events?select=id,title,summary,image_url,starts_on,ends_on,time_label,cta_type,cta_label,cta_url&order=sort_order.asc,starts_on.asc.nullslast', { role: 'anon' }),
-      rest<OfferRow[]>('/offers?select=id,kicker,title,description,image_url,promo_code,valid_from,valid_to,discount_percent,badge,perks,stay_from,stay_to,min_nights,cta_label&order=sort_order.asc,created_at.asc', { role: 'anon' }),
+      rest<OfferRow[]>('/offers?select=id,kicker,title,description,image_url,promo_code,discount_percent,badge,perks,min_nights,cta_label&order=sort_order.asc,created_at.asc', { role: 'anon' }),
     ]);
     const content: SiteContent = {
       activities: activities.map((a): Activity => ({ id: a.id, kicker: a.kicker, title: a.title, detail: a.detail, images: a.images, ctaLabel: a.cta_label })),
@@ -35,8 +35,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })),
       offers: offers.map((o): Offer => ({
         id: o.id, kicker: o.kicker, title: o.title, description: o.description, imageUrl: o.image_url,
-        promoCode: o.promo_code, validFrom: o.valid_from, validTo: o.valid_to, ctaLabel: o.cta_label,
-        discountPercent: Number(o.discount_percent) || 0, badge: o.badge, perks: o.perks ?? [], stayFrom: o.stay_from, stayTo: o.stay_to, minNights: o.min_nights,
+        promoCode: o.promo_code, ctaLabel: o.cta_label,
+        discountPercent: Number(o.discount_percent) || 0, badge: o.badge, perks: o.perks ?? [], minNights: o.min_nights,
       })),
     };
     res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=86400');
