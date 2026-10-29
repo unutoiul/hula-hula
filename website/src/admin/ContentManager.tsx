@@ -1,6 +1,4 @@
 import AddRounded from '@mui/icons-material/AddRounded';
-import ArrowDownwardRounded from '@mui/icons-material/ArrowDownwardRounded';
-import ArrowUpwardRounded from '@mui/icons-material/ArrowUpwardRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
 import { Alert, Autocomplete, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, MenuItem, Stack, Switch, TextField, Tooltip, Typography } from '@mui/material';
@@ -13,8 +11,8 @@ import type { CarouselCardData } from '../types';
 import { ImageField } from './ImageField';
 import { supabase } from './supabase';
 
-// One editor for every CMS table: a list (show/hide, move up/down, edit,
-// delete) and a form with a live preview using the site's real card. What
+// One editor for every CMS table: a list (show/hide, edit, delete; new items
+// go last) and a form with a live preview using the site's real card. What
 // each table has is described by a ContentConfig (see contentConfigs.ts).
 
 export type Row = Record<string, unknown> & { id?: string; sort_order?: number };
@@ -62,17 +60,6 @@ export function ContentManager({ config }: { config: ContentConfig }) {
     await load();
   };
 
-  const move = (index: number, by: -1 | 1) => {
-    if (!rows) return;
-    const a = rows[index], b = rows[index + by];
-    if (!a || !b) return;
-    // Renumber in steps of 10 so a swap never needs more than two writes.
-    const ordered = [...rows];
-    [ordered[index], ordered[index + by]] = [b, a];
-    void run(Promise.all(ordered.map((row, i) => (row.sort_order === (i + 1) * 10 ? null : supabase!.from(config.table).update({ sort_order: (i + 1) * 10 }).eq('id', row.id!))).filter(Boolean))
-      .then((results) => ({ error: results.find((r) => r?.error)?.error ?? null })));
-  };
-
   const remove = (row: Row) => {
     if (!window.confirm(`Delete “${String(row.title)}”? This can’t be undone.`)) return;
     void run(supabase!.from(config.table).delete().eq('id', row.id!));
@@ -87,7 +74,7 @@ export function ContentManager({ config }: { config: ContentConfig }) {
     {!rows ? <CircularProgress /> : rows.length === 0
       ? <Typography sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>Nothing here yet — add the first {config.noun}.</Typography>
       : <Stack spacing={1.5}>
-        {rows.map((row, index) => {
+        {rows.map((row) => {
           const image = config.firstImage(row);
           const live = Boolean(row[config.liveKey]);
           return <Stack key={row.id} direction="row" alignItems="center" spacing={2} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: '18px', bgcolor: 'background.paper', opacity: live ? 1 : .7 }}>
@@ -101,10 +88,6 @@ export function ContentManager({ config }: { config: ContentConfig }) {
             <Tooltip title={live ? 'On the website — switch off to hide' : 'Hidden — switch on to show on the website'}>
               <Switch checked={live} onChange={(e) => void run(supabase!.from(config.table).update({ [config.liveKey]: e.target.checked }).eq('id', row.id!))} slotProps={{ input: { 'aria-label': `Show “${String(row.title)}” on the website` } }} />
             </Tooltip>
-            <Stack direction="row" sx={{ display: { xs: 'none', sm: 'flex' } }}>
-              <IconButton aria-label="Move up" disabled={index === 0} onClick={() => move(index, -1)}><ArrowUpwardRounded fontSize="small" /></IconButton>
-              <IconButton aria-label="Move down" disabled={index === rows.length - 1} onClick={() => move(index, 1)}><ArrowDownwardRounded fontSize="small" /></IconButton>
-            </Stack>
             <IconButton aria-label={`Edit “${String(row.title)}”`} onClick={() => setEditing(row)}><EditRounded fontSize="small" /></IconButton>
             <IconButton aria-label={`Delete “${String(row.title)}”`} onClick={() => remove(row)}><DeleteOutlineRounded fontSize="small" /></IconButton>
           </Stack>;
