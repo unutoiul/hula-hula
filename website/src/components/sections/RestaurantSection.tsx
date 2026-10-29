@@ -30,7 +30,7 @@ export function RestaurantSection({ meals }: { meals: Meal[] }) {
             frame's corner so it's never cut off at the screen edge. */}
         <Reveal sx={{ position: 'relative', pb: { xs: 2, md: 3 } }}>
           <ScrollTilt amount={3}><Box sx={{ aspectRatio: { xs: '4 / 3', md: '5 / 4' }, borderRadius: { xs: '24px 64px 24px 24px', md: '28px 100px 28px 28px' }, overflow: 'hidden', bgcolor: 'white', border: '7px solid white', transform: 'rotate(-2deg)', boxShadow: '0 18px 44px rgba(23,60,44,.12)' }}>
-            <ResortPhoto image={meals[active].image} alt={meals[active].name} sizes="(max-width: 900px) 92vw, 50vw" sx={{ objectPosition: active === 1 ? 'center bottom' : 'center' }} />
+            <ResortPhoto image={meals[active].image} alt={meals[active].name} sizes="(max-width: 900px) 92vw, 50vw" sx={{ objectPosition: meals[active].objectPosition ?? 'center' }} />
           </Box></ScrollTilt>
           <Sticker rotate={9} sx={{ position: 'absolute', right: { xs: 6, md: -8 }, bottom: { xs: -10, md: -6 }, width: { xs: 92, md: 106 }, height: { xs: 92, md: 106 }, fontSize: { xs: 18, md: 21 } }}>Made for<br />happy bellies.</Sticker>
         </Reveal>

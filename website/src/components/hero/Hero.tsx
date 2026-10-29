@@ -2,19 +2,18 @@ import ArrowOutward from '@mui/icons-material/ArrowOutward';
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { photoAssets } from '../../data/photos';
 import { fonts } from '../../theme';
-import { useSiteContent } from '../../context/SiteContentContext';
 import { BookingSearchBar } from '../booking/BookingSearchBar';
 import { Polaroid, Sticker } from '../common/VacationDecor';
-import { useOfferCards } from '../sections/cmsCards';
+import { useHighlights } from '../sections/cmsCards';
 import { HeroHeadline } from './HeroHeadline';
-import { HeroOffer } from './HeroOffer';
+import { HeroHighlights } from './HeroHighlights';
 import { HeroMetaCompact } from './HeroMetaCompact';
 import { HeroVideo } from './HeroVideo';
 import { ScrollTilt } from '../common/ScrollMotion';
 
 export function Hero() {
-  // While an offer is running, the hero's instant photo becomes that offer.
-  const [offer] = useOfferCards(useSiteContent().offers);
+  // While offers or events are running, the hero's instant photo shows them.
+  const highlights = useHighlights();
   return <Box component="section" aria-label="Welcome to Hula Hula Resort" sx={{ position: 'relative', pt: { xs: 19, md: 25 }, pb: { xs: 6, md: 9 }, overflow: 'hidden' }}>
     <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1.12fr' }, alignItems: 'center', gap: { xs: 5, md: 6 }, minHeight: { md: 700 } }}>
@@ -46,9 +45,9 @@ export function Hero() {
             </Box>
           </ScrollTilt>
           <Sticker color="#e7f4cc" rotate={9} sx={{ position: 'absolute', top: { xs: 5, md: 22 }, right: { xs: -6, md: -18 }, width: { xs: 95, md: 122 }, height: { xs: 95, md: 122 }, fontSize: { xs: 20, md: 23 } }}>Less worry.<br />More Hula.</Sticker>
-          {offer
-            ? <Box sx={{ position: 'absolute', zIndex: 2, width: { xs: 196, md: 272 }, left: { xs: -14, md: -54 }, bottom: { xs: -40, md: -48 } }}>
-              <ScrollTilt amount={-4}><HeroOffer card={offer} /></ScrollTilt>
+          {highlights.length > 0
+            ? <Box sx={{ position: 'absolute', zIndex: 2, width: { xs: 196, md: 272 }, left: { xs: -14, md: -54 }, bottom: { xs: -48, md: -56 } }}>
+              <ScrollTilt amount={-4}><HeroHighlights items={highlights} /></ScrollTilt>
             </Box>
             : <Box sx={{ position: 'absolute', width: { xs: 150, md: 202 }, height: { xs: 180, md: 232 }, left: { xs: -18, md: -46 }, bottom: { xs: -26, md: -33 } }}>
               <ScrollTilt amount={-4} sx={{ height: '100%' }}>

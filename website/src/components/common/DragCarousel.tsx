@@ -10,11 +10,17 @@ import { Reveal } from './ScrollMotion';
 interface DragCarouselProps<T> {
   sectionKicker: string; heading: ReactNode; items: T[]; itemLabel: string;
   slotWidth?: { xs: number; sm: number; md: number }; onDark?: boolean;
+  /** Smaller heading and narrower cards: four to a row on wide screens. */
+  compact?: boolean;
   renderCard: (item: T, active: boolean, onClick: () => void) => ReactNode;
 }
 
 // How the hint under the row names what's in it ("explore 4 offers").
-const ITEM_NOUNS: Record<string, string> = { room: 'places to stay', offer: 'offers', event: 'events' };
+const ITEM_NOUNS: Record<string, string> = { room: 'places to stay', 'offer or event': 'offers and events' };
+
+// Card widths: one (with a peek) on phones, then two, three — or four when compact.
+const SLOT = { xs: '0 0 84%', sm: '0 0 calc(50% - 12px)', lg: '0 0 calc(33.333% - 16px)' };
+const COMPACT_SLOT = { xs: '0 0 78%', sm: '0 0 calc(50% - 12px)', md: '0 0 calc(33.333% - 16px)', lg: '0 0 calc(25% - 18px)' };
 
 interface MouseDrag { startX: number; startLeft: number; moved: boolean; lastX: number; lastT: number; velocity: number }
 
@@ -26,7 +32,7 @@ interface MouseDrag { startX: number; startLeft: number; moved: boolean; lastX: 
 // position — soft edge fades that only appear where more cards are hiding,
 // and a progress bar that fills as you go. The row itself never moves when
 // the page scrolls.
-export function DragCarousel<T extends { id: string }>({ sectionKicker, heading, items, itemLabel, onDark = true, renderCard }: DragCarouselProps<T>) {
+export function DragCarousel<T extends { id: string }>({ sectionKicker, heading, items, itemLabel, onDark = true, compact = false, renderCard }: DragCarouselProps<T>) {
   const { reduced } = useMotionPreference();
   const viewport = useRef<HTMLDivElement>(null);
   const drag = useRef<MouseDrag | null>(null);
@@ -170,8 +176,8 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
   const scrolls = !(edges.start && edges.end);
 
   return <>
-    <Reveal><Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'center', sm: 'flex-end' }} gap={3} sx={{ mb: 5, textAlign: { xs: 'center', sm: 'left' } }}>
-      <Box>{onDark && <MetaLabel>{sectionKicker}</MetaLabel>}<Typography variant="h2" sx={{ fontSize: { xs: 40, md: 62 }, lineHeight: 1.04, mt: 1.5 }}>{heading}</Typography></Box>
+    <Reveal><Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'center', sm: 'flex-end' }} gap={3} sx={{ mb: compact ? 3.5 : 5, textAlign: { xs: 'center', sm: 'left' } }}>
+      <Box>{(onDark || compact) && <MetaLabel>{sectionKicker}</MetaLabel>}<Typography variant="h2" sx={{ fontSize: compact ? { xs: 34, md: 46 } : { xs: 40, md: 62 }, lineHeight: 1.04, mt: compact ? 1 : 1.5 }}>{heading}</Typography></Box>
       <Stack direction="row" spacing={1.2}>
         {scrolls && <>
           <CarouselArrow direction="prev" onDark={onDark} disabled={edges.start} label={`Previous ${itemLabel}`} onClick={() => scrollToCard(active - 1)} />
@@ -200,7 +206,7 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
         '@media (pointer: fine)': { cursor: 'grab', userSelect: 'none' },
         '&:focus-visible': { outlineOffset: 6 },
       }}>
-      {items.map((item, i) => <Box key={item.id} sx={{ flex: { xs: '0 0 84%', sm: '0 0 calc(50% - 12px)', lg: '0 0 calc(33.333% - 16px)' }, scrollSnapAlign: { xs: 'center', sm: 'start' }, minWidth: 0, display: 'flex' }}>
+      {items.map((item, i) => <Box key={item.id} sx={{ flex: compact ? COMPACT_SLOT : SLOT, scrollSnapAlign: { xs: 'center', sm: 'start' }, minWidth: 0, display: 'flex' }}>
         <Reveal delay={Math.min(i, 3) * 0.1} sx={{ display: 'flex', width: '100%' }}>{renderCard(item, i === active, () => scrollToCard(i))}</Reveal>
       </Box>)}
     </MotionBox>

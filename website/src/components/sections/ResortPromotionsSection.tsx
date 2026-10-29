@@ -8,12 +8,9 @@ import { photoAssets as p } from '../../data/photos';
 import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
 import { ResortPhoto } from '../common/ResortPhoto';
 import { Reveal, ScrollTilt } from '../common/ScrollMotion';
-import { CarouselCard } from '../common/CarouselCard';
-import { DragCarousel } from '../common/DragCarousel';
 import { Sticker } from '../common/VacationDecor';
 import { useContactForm } from '../../context/ContactFormContext';
-import { useSiteContent } from '../../context/SiteContentContext';
-import { useOfferCards } from './cmsCards';
+import { HighlightsSection } from './HighlightsSection';
 
 const destinations = ['Ao Nang Beach', 'Krabi Town', 'Golf & footgolf'];
 
@@ -21,14 +18,10 @@ export function ResortPromotionsSection() {
   const { reduced } = useMotionPreference();
   const [destination, setDestination] = useState(destinations[0]);
   const openContact = useContactForm();
-  // Offers and discounts from /admin — shown first, and only while one is live.
-  const offers = useOfferCards(useSiteContent().offers);
   return <Box component="section" id="hula-happenings" sx={{ py: { xs: 8, md: 11 }, bgcolor: '#e7f4cc', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl">
-      {offers.length > 0 && <Box id="offers" sx={{ mb: { xs: 9, md: 12 }, scrollMarginTop: SECTION_SCROLL_OFFSET }}>
-        <DragCarousel sectionKicker="Offers & little extras" heading={<>Treat yourself.<br /><Box component="span" color="success.main">We’ve got deals.</Box></>} items={offers} itemLabel="offer" onDark={false}
-          renderCard={(item, active, onClick) => <CarouselCard {...item} active={active} onClick={onClick} />} />
-      </Box>}
+      {/* Offers and events from /admin — first, and only while some are running. */}
+      <HighlightsSection />
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1.15fr .85fr' }, gap: { xs: 4, md: 8 }, alignItems: 'center', mb: { xs: 9, md: 12 } }}>
         <Reveal sx={{ position: 'relative' }}>
           <ScrollTilt amount={-3}><Box className="photo-postcard" sx={{ border: '8px solid white', borderRadius: '24px 80px 24px 24px', overflow: 'hidden', transform: 'rotate(-2deg)', boxShadow: '0 18px 40px rgba(18,78,57,.1)' }}><ResortPhoto image={p.fruitCart.src} alt="Smiling Hula Hula host beside the resort’s bright green and yellow fruit cart" sizes="(max-width: 899px) 90vw, 48vw" sx={{ height: 'auto' }} /></Box></ScrollTilt>
@@ -37,7 +30,7 @@ export function ResortPromotionsSection() {
         <Reveal delay={0.12} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
           <Typography variant="h2" sx={{ fontSize: { xs: 42, md: 58 }, lineHeight: 1.08 }}>A little local charm.<br /><Box component="span" color="success.main">A whole lot of smiles.</Box></Typography>
           <Typography sx={{ mt: 3, fontSize: 16, lineHeight: 1.8, color: 'text.secondary', maxWidth: 420, mx: { xs: 'auto', md: 0 } }}>Our colourful fruit cart brings a little Hula Hula personality to your holiday. Green, yellow, and a warm welcome. Just like our happy little resort.</Typography>
-          <Button href="#gallery" color="inherit" endIcon={<ArrowOutward />} sx={{ mt: 2 }}>Meet your happy place</Button>
+          <Button href="#gallery" color="inherit" endIcon={<ArrowOutward />} sx={{ mt: 2 }}>See more smiles</Button>
         </Reveal>
       </Box>
 

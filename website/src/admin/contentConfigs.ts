@@ -1,5 +1,5 @@
 import type { SiteEvent } from '../../shared/siteContent';
-import { eventWhen } from '../components/sections/cmsCards';
+import { eventHighlight, eventWhen, offerHighlight } from '../components/sections/cmsCards';
 import type { ContentConfig, Row } from './ContentManager';
 
 // What staff can edit for each kind of content, and how it previews. Column
@@ -31,12 +31,10 @@ const asEvent = (row: Row): SiteEvent => ({
   cta: { type: (text(row, 'cta_type') || 'contact') as SiteEvent['cta']['type'], label: text(row, 'cta_label') || null, url: text(row, 'cta_url') || null },
 });
 
-const EVENT_CTA_DEFAULT: Record<string, string> = { contact: 'Ask about this', book: 'Book your stay', link: 'Find out more' };
-
 export const eventsConfig: ContentConfig = {
   table: 'events',
   noun: 'event',
-  intro: 'The “What’s on” carousel under Celebrate. Events disappear from the website by themselves once their last day has passed.',
+  intro: 'Shown with the offers in “Offers & what’s on”, and in the photo card at the top of the homepage. Events disappear from the website by themselves once their last day has passed.',
   liveKey: 'published',
   fields: [
     { key: 'title', label: 'Title', kind: 'text', max: 120, required: true },
@@ -56,10 +54,7 @@ export const eventsConfig: ContentConfig = {
   ],
   blank: () => ({ title: '', summary: '', image_url: null, starts_on: null, ends_on: null, time_label: '', cta_type: 'contact', cta_label: '', cta_url: '', published: false }),
   subtitle: (row) => eventWhen(asEvent(row)),
-  preview: (row) => {
-    const event = asEvent(row);
-    return { id: 'preview', kicker: eventWhen(event), title: event.title || 'Title', detail: event.summary, images: event.imageUrl ? [event.imageUrl] : [], ctaLabel: event.cta.type === 'none' ? undefined : event.cta.label || EVENT_CTA_DEFAULT[event.cta.type] };
-  },
+  preview: (row) => eventHighlight({ ...asEvent(row), title: text(row, 'title') || 'Title' }),
   firstImage: (row) => text(row, 'image_url') || null,
 };
 
@@ -111,11 +106,10 @@ export const offersConfig: ContentConfig = {
     text(row, 'promo_code') && `code ${text(row, 'promo_code')}`,
     row.show_on_homepage === false ? 'not on homepage' : '',
   ].filter(Boolean).join(' · '),
-  preview: (row) => ({
-    id: 'preview', title: text(row, 'title') || 'Offer name', images: text(row, 'image_url') ? [text(row, 'image_url')] : [],
-    kicker: [text(row, 'badge') || 'Special offer', percentOf(row) > 0 ? `−${percentOf(row)}%` : ''].filter(Boolean).join(' · '),
-    detail: [text(row, 'description'), perksOf(row).length ? `Includes ${perksOf(row).join(', ').toLowerCase()}.` : ''].filter(Boolean).join(' '),
-    ctaLabel: text(row, 'cta_label') || (text(row, 'promo_code') ? `Book with code ${text(row, 'promo_code')}` : 'Book this offer'),
+  preview: (row) => offerHighlight({
+    id: 'preview', kicker: null, title: text(row, 'title') || 'Offer name', description: text(row, 'description'), imageUrl: text(row, 'image_url') || null,
+    promoCode: text(row, 'promo_code') || null, discountPercent: percentOf(row), badge: text(row, 'badge') || null, perks: perksOf(row),
+    minNights: Number(row.min_nights) || null, ctaLabel: text(row, 'cta_label') || null,
   }),
   firstImage: (row) => text(row, 'image_url') || null,
 };

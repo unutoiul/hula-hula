@@ -6,6 +6,8 @@ import EditRounded from '@mui/icons-material/EditRounded';
 import { Alert, Autocomplete, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, MenuItem, Stack, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { CarouselCard } from '../components/common/CarouselCard';
+import type { Highlight } from '../components/sections/cmsCards';
+import { HighlightCard } from '../components/sections/HighlightsSection';
 import { photoByUrl } from '../data/photos';
 import type { CarouselCardData } from '../types';
 import { ImageField } from './ImageField';
@@ -36,7 +38,8 @@ export interface ContentConfig {
   fields: Field[];
   blank: () => Row;
   subtitle: (row: Row) => string;
-  preview: (row: Row) => CarouselCardData & { ctaLabel?: string };
+  /** The live preview: an activity's card, or the offer/event card the homepage shows. */
+  preview: (row: Row) => (CarouselCardData & { ctaLabel?: string }) | Highlight;
   firstImage: (row: Row) => string | null;
 }
 
@@ -221,6 +224,7 @@ function RoomTypesField({ label, helper, value, onChange }: { label: string; hel
   </Box>;
 }
 
-function PreviewCard({ card }: { card: CarouselCardData & { ctaLabel?: string } }) {
+function PreviewCard({ card }: { card: (CarouselCardData & { ctaLabel?: string }) | Highlight }) {
+  if ('kind' in card) return <HighlightCard item={{ ...card, onCta: () => {}, ctaHref: undefined }} />;
   return <CarouselCard {...card} images={card.images.length ? card.images : ['/images/hula-hula/poolOverview-1600.webp']} active onClick={() => {}} onCta={() => {}} />;
 }

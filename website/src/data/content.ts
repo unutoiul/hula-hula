@@ -18,8 +18,7 @@ export const rooms: RoomContent[] = [
 ];
 
 export const meals: Meal[] = [
-  { name: 'Make breakfast float', hours: 'Poolside mornings', detail: 'Tropical fruit, eggs, toast, and a splash of something special. Ask our team about floating breakfast.', image: p.breakfast.src },
-  { name: 'A taste of Thailand', hours: 'Chang Restaurant', detail: 'Pineapple fried rice, colourful Thai dishes, and relaxed garden-side dining.', image: p.pineappleRice.src },
+  { name: 'A taste of Thailand', hours: 'Chang Restaurant', detail: 'Pineapple fried rice, colourful Thai dishes, and relaxed garden-side dining.', image: p.pineappleRice.src, objectPosition: 'center bottom' },
   { name: 'Treat yourself', hours: 'Pom Pom Cafe', detail: 'Burgers, shakes, fresh coconuts, and whatever your holiday appetite is calling for.', image: p.burger.src },
   { name: 'Cheers to good times', hours: 'Cocktails & cool drinks', detail: 'A tropical cocktail or a fruity shake. Pick your favourite and settle into the afternoon.', image: p.cocktail.src },
 ];

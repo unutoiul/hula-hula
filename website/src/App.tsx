@@ -22,14 +22,16 @@ import { SiteContentProvider, useSiteContent } from './context/SiteContentContex
 import { useLocation } from './router';
 import { BeachBall, Bubbles, Gulls, Longtail, PaperBoat, RisingSun, SEAM, SectionSeam, SwimRing } from './components/common/SectionSeam';
 
-// "Offers" joins the menu (before Celebrate) only while there's an offer live.
+// "Offers" (or "What's on" when there are only events) joins the menu, before
+// Celebrate, while the "Offers & what's on" section has something to show.
 function ResortHeader() {
-  const hasOffers = useSiteContent().offers.length > 0;
+  const { offers, events } = useSiteContent();
+  const label = offers.length ? 'Offers' : events.length ? 'What’s on' : null;
   const items = useMemo<NavItem[]>(() => {
-    if (!hasOffers) return navItems;
+    if (!label) return navItems;
     const at = navItems.findIndex(([, href]) => href === '#events');
-    return [...navItems.slice(0, at), ['Offers', '#offers'], ...navItems.slice(at)];
-  }, [hasOffers]);
+    return [...navItems.slice(0, at), [label, '#offers'], ...navItems.slice(at)];
+  }, [label]);
   return <Header navItems={items} />;
 }
 
