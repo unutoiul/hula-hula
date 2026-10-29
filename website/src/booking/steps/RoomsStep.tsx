@@ -130,7 +130,9 @@ function SearchBar() {
       </Stack>
     </Collapse>
 
-    <Popover open={dateOpen} anchorEl={barRef.current} onClose={() => setDateOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', width: { xs: 380, sm: 520 } } } }}>
+    {/* Closing the calendar after picking only a check-in keeps the one-night
+        stay it shows (and searches it), rather than waiting for a check-out. */}
+    <Popover open={dateOpen} anchorEl={barRef.current} onClose={() => { if (search.selectingCheckout) search.setRange(search.checkIn, search.checkOut); setDateOpen(false); }} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', width: { xs: 380, sm: 520 } } } }}>
       <RangeCalendar checkIn={search.checkIn} checkOut={search.checkOut} minDate={today} onSelectDay={search.selectDay} />
     </Popover>
     <Popover open={!!guestAnchor} anchorEl={guestAnchor} onClose={() => setGuestAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', minWidth: 260 } } }}>

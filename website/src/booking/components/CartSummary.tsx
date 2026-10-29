@@ -9,8 +9,9 @@ import { guestsLabel, mealsLabel, money, nightsLabel, stayLabel } from '../forma
 // and what's paid now versus at the hotel. `action` is the step's button.
 export function CartSummary({ action, showFit = true }: { action?: ReactNode; showFit?: boolean }) {
   const { checkIn, checkOut, adults, children } = useBookingSearch();
-  const { cart, totals, plan, availability } = useBookingFlow();
-  const nights = availability.data?.nights ?? Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000);
+  const { cart, totals, plan } = useBookingFlow();
+  // From the dates on screen, so the summary never lags behind a search still loading.
+  const nights = Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000);
   // At least one adult per room — the same rule the booking itself follows.
   const bookedAdults = Math.max(adults, totals.rooms);
   const savings = cart.reduce((sum, { line, rate }) => sum + (rate.offer?.savings ?? 0) * line.quantity, 0);

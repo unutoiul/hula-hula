@@ -57,7 +57,7 @@ export function bestDeal(deals: Deal[], ctx: DealContext): Deal | null {
   return matches[0] ?? null;
 }
 
-/** The discount on each night (satang) — only the nights inside the offer's stay dates. */
+/** The discount on each night (satang), rounded to whole baht like hotel prices — only the nights inside the offer's stay dates. */
 export function nightlyDiscounts(deal: Deal, nights: { date: string; amount: number }[]): number[] {
-  return nights.map((night) => (deal.discountPercent > 0 && coversNight(deal, night.date) ? Math.round(night.amount * deal.discountPercent / 100) : 0));
+  return nights.map((night) => (deal.discountPercent > 0 && coversNight(deal, night.date) ? Math.round(night.amount * deal.discountPercent / 10_000) * 100 : 0));
 }

@@ -130,5 +130,7 @@ describe('special offers', async () => {
     const nights = ctx.nightDates.map((date) => ({ date, amount: 845000 }));
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10 }, nights), [84500, 84500, 84500]);
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10, stayTo: '2026-12-11' }, nights), [84500, 84500, 0]);
+    // 75% of ฿8,450 is ฿6,337.50 — rounded to ฿6,338 so prices stay in whole baht.
+    assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 75 }, [{ date: '2026-12-10', amount: 845000 }]), [633800]);
   });
 });
