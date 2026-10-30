@@ -1,8 +1,9 @@
 import BeachAccessRounded from '@mui/icons-material/BeachAccessRounded';
+import CheckRounded from '@mui/icons-material/CheckRounded';
 import East from '@mui/icons-material/East';
 import GolfCourseRounded from '@mui/icons-material/GolfCourseRounded';
 import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
-import { Box, Chip, Popover, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Popover, Stack, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { fonts } from '../../theme';
 import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
@@ -49,12 +50,14 @@ export function SiteList({ onHere }: { onHere?: () => void }) {
       }}>
         <Box component="img" src={image} alt="" width={56} height={56} sx={{ width: 56, height: 56, flexShrink: 0, borderRadius: '14px', objectFit: 'cover' }} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
+          {here && <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'primary.main', lineHeight: 1.4 }}>You’re here</Typography>}
           <Typography sx={{ fontFamily: fonts.playful, fontSize: 17, lineHeight: 1.2 }}>{name}</Typography>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary', lineHeight: 1.4, mt: .25 }}>{line}</Typography>
         </Box>
-        {here
-          ? <Chip size="small" label="You’re here" sx={{ bgcolor: 'common.white', color: 'primary.main', fontWeight: 700, flexShrink: 0 }} />
-          : <Box aria-hidden sx={{ width: 34, height: 34, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'primary.main', color: 'primary.contrastText', '& svg': { fontSize: 18 } }}><East /></Box>}
+        <Box aria-hidden sx={{
+          width: 34, height: 34, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', '& svg': { fontSize: 18 },
+          bgcolor: here ? 'common.white' : 'primary.main', color: here ? 'primary.main' : 'primary.contrastText', border: here ? '1px solid' : 0, borderColor: 'primary.main',
+        }}>{here ? <CheckRounded /> : <East />}</Box>
       </Box>;
     })}
   </Stack>;
@@ -83,7 +86,7 @@ export function SwitcherLogo({ size }: { size: MarkSize }) {
       </Box>
     </Tooltip>
     <Popover open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-      slotProps={{ paper: { sx: { mt: 1.5, borderRadius: '24px', boxShadow: '0 22px 50px rgba(23,60,44,.18)', width: 360, maxWidth: 'calc(100vw - 24px)' } } }}>
+      slotProps={{ paper: { sx: { mt: 1.5, borderRadius: '24px', boxShadow: '0 22px 50px rgba(23,60,44,.18)', width: 380, maxWidth: 'calc(100vw - 24px)' } } }}>
       <Box sx={{ p: 1.5 }}>
         <Typography variant="overline" sx={{ display: 'block', px: .5, mb: 1, color: 'text.secondary' }}>The Hula Hula family</Typography>
         <SiteList onHere={() => setAnchor(null)} />
