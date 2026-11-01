@@ -106,7 +106,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
     kicker: activity.id === 'golf' ? 'The course · 9 or 18 holes' : activity.card.kicker || activity.name, name: activity.id === 'golf' ? 'A round worth coming for.' : activity.name, lead: activity.id === 'golf' ? 'Tropical fairways, mountain views and a warm welcome. Play nine holes, or make a day of it with our 18-hole Golf package. Green fee, caddie and cart included.' : activity.card.detail || activity.tagline,
     about: activity.about || activity.card.detail, images: activity.card.images, icon: activity.icon, actions, aside, goodToKnow,
   }} />
-    {activity.rentals && rentals.length > 0 && <Container maxWidth="lg" sx={{ mt: 6 }}>
+    {activity.rentals && rentals.length > 0 && <Container maxWidth="xl" sx={{ mt: 6 }}>
       <Typography variant="h2" sx={{ fontSize: { xs: 32, md: 42 }, mb: 1 }}>Your clubs, sorted.</Typography>
       <Typography sx={{ color: 'text.secondary', mb: 3 }}>Travel light. Choose a rental set and add it to your booking.</Typography>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0,1fr))' }, gap: 2 }}>{rentals.map((r) => <RentalCard key={r.id} rental={r} />)}</Box>
@@ -143,7 +143,7 @@ function Page({ model }: { model: PageModel }) {
       {model.actions[1] && <ActionButton action={model.actions[1]} variant="outlined" />}
     </PageIntro>
 
-    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, mt: { xs: 4, md: 7 } }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 4, md: 7 } }}>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.5fr) minmax(0, 1fr)' }, gap: { xs: 4, md: 6 }, alignItems: 'start' }}>
         <Box>
           <Typography variant="h2" sx={{ fontSize: { xs: 32, md: 42 } }}>What it’s like</Typography>
@@ -196,7 +196,7 @@ function MoreToDo({ exclude }: { exclude: string }) {
   const site = useSite();
   const things = useMemo(() => thingsToDo(site).filter((t) => t.id !== exclude), [site, exclude]);
   return <Box component="section" aria-labelledby="more-heading" sx={{ mt: { xs: 8, md: 11 }, py: { xs: 6, md: 8 }, bgcolor: 'primary.main', color: 'white' }}>
-    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
+    <Container maxWidth="xl">
       <Typography id="more-heading" variant="h2" sx={{ fontSize: { xs: 34, md: 46 }, mb: { xs: 3, md: 4 } }}>More to do at Hula Hula</Typography>
       <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' }, gap: { xs: 2, md: 2.5 } }}>
         {things.slice(0, 4).map((thing) => <Box component="li" key={thing.id}><ThingCard thing={thing} sizes="(max-width: 600px) 92vw, (max-width: 900px) 46vw, 260px" /></Box>)}

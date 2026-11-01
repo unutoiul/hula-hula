@@ -5,7 +5,7 @@ import { ClubPhoto } from '../common/ClubPhoto';
 
 export function PageIntro({ title, description, image, eyebrow, parent, breadcrumbLabel = eyebrow, children }: { title: string; description: string; image: string; eyebrow: string; parent?: { label: string; href: string }; breadcrumbLabel?: string; children?: ReactNode }) {
   return <Box sx={{ bgcolor: 'background.default', backgroundImage: 'linear-gradient(135deg, #f1f4e8, #fffdf3 75%)', borderBottom: '1px solid', borderColor: 'divider' }}>
-    <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 3 }, pb: { xs: 4, md: 6 } }}>
+    <Container maxWidth="xl" sx={{ pt: { xs: 2, md: 3 }, pb: { xs: 4, md: 6 } }}>
       <Breadcrumbs aria-label="Breadcrumb" sx={{ mb: { xs: 3, md: 4 }, fontSize: 12, color: 'text.secondary', '& a': { display: 'inline-flex', alignItems: 'center', minHeight: 44 } }}>
         <Link href="/" onClick={linkClick('/')} color="inherit" underline="hover">Home</Link>
         {parent && <Link href={parent.href} onClick={linkClick(parent.href)} color="inherit" underline="hover">{parent.label}</Link>}

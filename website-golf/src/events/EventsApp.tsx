@@ -97,7 +97,7 @@ function EventPage({ slug }: { slug: string }) {
       </Stack>
     </PageIntro>
 
-    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, mt: { xs: 4, md: 7 } }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 4, md: 7 } }}>
       {loadError && <Alert severity="warning" sx={{ mb: 3 }}>{loadError}</Alert>}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.5fr) minmax(0, 1fr)' }, gap: { xs: 4, md: 6 }, alignItems: 'start' }}>
         <Box>

@@ -16,7 +16,7 @@ export function CourseGuide({ id }: { id: string }) {
   const hole = football ? null : golfHole(selected);
   const source = courseMapImage(id, selected);
   const label = hole ? `Golf · Hole ${selected} · Par ${hole.par}` : `FootGolf · Hole ${selected}`;
-  return <Box component="section" id="course-layout" aria-labelledby="course-layout-heading" sx={{ py: { xs: 6, md: 8 }, mt: 7, bgcolor: '#f1f4e8' }}><Container maxWidth="lg">
+  return <Box component="section" id="course-layout" aria-labelledby="course-layout-heading" sx={{ py: { xs: 6, md: 8 }, mt: 7, bgcolor: '#f1f4e8' }}><Container maxWidth="xl">
     <SectionHeading eyebrow="Know the course" title={football ? '18 holes. Every kick counts.' : 'Explore your 18-hole round.'} description={football ? 'Browse all 18 FootGolf layouts, from your first kick to the last cup.' : 'The club’s nine physical holes are played twice for an 18-hole round. Select a hole to explore its layout and tee distances for that round.'} />
     <Stack direction="row" spacing={1} sx={{ mb: 3 }}><Button variant={football ? 'outlined' : 'contained'} href="/course#course-layout" onClick={linkClick('/course#course-layout')} size="small">Golf</Button><Button variant={football ? 'contained' : 'outlined'} href="/activities/footgolf#course-layout" onClick={linkClick('/activities/footgolf#course-layout')} size="small">FootGolf</Button></Stack>
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: '280px minmax(0,1fr)' }, border: '1px solid', borderColor: 'divider', borderRadius: '24px', overflow: 'hidden', bgcolor: 'background.paper' }}>

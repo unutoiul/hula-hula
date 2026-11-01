@@ -31,7 +31,7 @@ export function EventsSection({ events, loaded, home = false }: { events: Public
     // plain forest-green waves above and below it without a visible line.
     backgroundImage: `linear-gradient(180deg, ${SEAM.forest} 0, rgba(18,78,57,0) 160px), linear-gradient(0deg, ${SEAM.forest} 0, rgba(18,78,57,0) 160px), radial-gradient(ellipse at 85% 20%, rgba(249,247,12,.14), transparent 55%), radial-gradient(ellipse at 0% 85%, rgba(0,109,138,.35), transparent 55%)`,
   }}>
-    <Container maxWidth="lg" sx={{ position: 'relative' }}>
+    <Container maxWidth="xl" sx={{ position: 'relative' }}>
       <SunDoodle size={80} color="#f9f70c" sx={{ position: 'absolute', right: 420, top: -40, display: { xs: 'none', lg: 'block' }, transform: 'rotate(14deg)', opacity: .9 }} />
       <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'center', md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: { xs: 4, md: 5 }, textAlign: { xs: 'center', md: 'left' } }}>
         <Box>
