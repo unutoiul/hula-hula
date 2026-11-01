@@ -34,23 +34,24 @@ function spans(count: number): number[] {
 // The rate card: every activity and its prices, straight from what staff set
 // in /admin — the same values the booking pages price from, so the two can
 // never disagree.
-export function PricesSection() {
+export function PricesSection({ showIntro = true, preview = false }: { showIntro?: boolean; preview?: boolean }) {
   const { activities, rentals, club } = useSite();
   const contact = useContact();
-  const span = spans(activities.length);
+  const visible = preview ? activities.filter(a => a.id === 'golf' || a.id === 'footgolf') : activities;
+  const span = spans(visible.length);
   const rentalPrices = rentals.map((r) => r.price).sort((a, b) => a - b);
   return <Box id="prices" component="section" sx={{ py: SECTION_Y, bgcolor: '#e7f4cc', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl">
-      <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'center', md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: { xs: 5, md: 6 }, textAlign: { xs: 'center', md: 'left' } }}>
+      {showIntro && <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'center', md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: { xs: 5, md: 6 }, textAlign: { xs: 'center', md: 'left' } }}>
         <Box>
           <Typography variant="overline" color="success.dark">Prices &amp; packages</Typography>
           <Typography variant="h2" sx={{ fontSize: { xs: 43, md: 64 }, lineHeight: 1.03, mt: 1.5 }}>Simple prices.<br /><Box component="span" color="primary.main">Good times included.</Box></Typography>
         </Box>
         <Typography sx={{ maxWidth: 380, color: 'text.secondary', lineHeight: 1.8 }}>Per person, in Thai baht, paid at the club on the day. Caddie, cart and equipment are in the price wherever you need them.</Typography>
-      </Stack></Reveal>
+      </Stack></Reveal>}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(6, 1fr)' }, gap: { xs: 2, md: 2.5 } }}>
-        {activities.map((activity, i) => {
+        {visible.map((activity, i) => {
           const photo = span[i] >= 3 ? activity.card.images[0] : undefined;
           return <Reveal key={activity.id} delay={Math.min(i, 3) * 0.08} sx={{ display: 'flex', gridColumn: { lg: `span ${span[i]}` } }}>
             <Box component="article" aria-labelledby={`price-${activity.id}`} sx={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRadius: '24px', border: '1px solid rgba(23,60,44,.10)', borderTop: '5px solid #50830d', p: { xs: 2.5, md: 3 }, boxShadow: '0 10px 26px rgba(23,60,44,.07)' }}>
@@ -93,6 +94,7 @@ export function PricesSection() {
         })}
       </Box>
 
+      {preview && <Box sx={{ textAlign: 'center', mt: 3 }}><Button href="/prices" onClick={linkClick('/prices')} variant="outlined" endIcon={<East />}>All prices, packages & rentals</Button></Box>}
       <Reveal><Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 3, md: 4 }} alignItems="center" sx={{ mt: { xs: 5, md: 6 }, p: { xs: 2.5, md: 3 }, borderRadius: '24px', border: '1px dashed', borderColor: 'success.main', position: 'relative' }}>
         <Sticker rotate={-8} sx={{ flexShrink: 0, width: 100, height: 100, fontSize: 17 }}>Tip your<br />caddie!</Sticker>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 4 }, flex: 1, textAlign: { xs: 'center', md: 'left' } }}>

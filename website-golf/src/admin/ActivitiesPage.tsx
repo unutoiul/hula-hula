@@ -6,8 +6,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
 import { DEFAULT_ACTIVITIES, normaliseActivity, normaliseRentals, slugify, type Activity, type Rental } from '../booking/config';
 import { money } from '../booking/pricing';
-import { useSiteData } from '../context/SiteDataContext';
+import { notifyContentChanged } from '../data/contentSync';
 import { ActivityEditor } from './ActivityEditor';
+import { ImagePicker } from './ImagePicker';
+import { RentalVisual } from '../components/activities/RentalCard';
 import { supabase } from './supabase';
 import { PageTitle, Section, toInt } from './ui';
 
@@ -25,7 +27,6 @@ const blank = (): Activity => ({
 // Saving here changes the homepage, the prices and the booking pages within
 // about half a minute.
 export function ActivitiesPage() {
-  const { reload } = useSiteData();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [editing, setEditing] = useState<{ activity: Activity; isNew: boolean } | null>(null);
@@ -47,7 +48,8 @@ export function ActivitiesPage() {
   const after = async (result: { error: { message: string } | null }) => {
     if (result.error) { setError(result.error.message); return result.error.message; }
     setError(null);
-    await Promise.all([load(), reload()]);
+    notifyContentChanged('site');
+    await load();
     return null;
   };
 
@@ -105,11 +107,16 @@ export function ActivitiesPage() {
     <Box sx={{ mt: 3 }}>
       <Section title="Rental clubs" hint="Offered on golf and range bookings that allow rentals. Prices per set.">
         <Stack spacing={1.25}>
-          {rentals.map((r, i) => <Stack key={i} direction="row" spacing={1.25} alignItems="center">
+          {rentals.map((r, i) => <Box key={i} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '20px' }}>
+            <RentalVisual rental={r} />
+            <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mt: 2 }}>
             <TextField label="Set" value={r.label} onChange={(e) => setRentals(rentals.map((x, j) => (j === i ? { ...x, label: e.target.value.slice(0, 60) } : x)))} sx={{ flex: 2 }} />
             <TextField label="Price ฿" type="number" value={r.price} onChange={(e) => setRentals(rentals.map((x, j) => (j === i ? { ...x, price: Math.max(0, toInt(e.target.value)) } : x)))} slotProps={{ htmlInput: { min: 0, inputMode: 'numeric' } }} sx={{ flex: 1 }} />
             <IconButton aria-label={`Remove ${r.label || 'set'}`} onClick={() => setRentals(rentals.filter((_, j) => j !== i))}><DeleteOutlineRounded /></IconButton>
-          </Stack>)}
+            </Stack>
+            <TextField fullWidth label="Short description" value={r.description ?? ''} onChange={(e) => setRentals(rentals.map((x, j) => j === i ? { ...x, description: e.target.value.slice(0, 240) } : x))} sx={{ my: 2 }} />
+            <ImagePicker label="Product photo (optional — otherwise the club icon is shown)" value={r.image ? [r.image] : []} onChange={(images) => setRentals(rentals.map((x, j) => j === i ? { ...x, image: images[0] ?? '' } : x))} />
+          </Box>)}
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Button startIcon={<AddRounded />} onClick={() => setRentals([...rentals, { id: '', label: '', price: 0 }])}>Add a set</Button>
             <Box sx={{ flex: 1 }} />

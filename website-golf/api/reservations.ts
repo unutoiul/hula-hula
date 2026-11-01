@@ -5,9 +5,9 @@ import type { ErrorResponse, Guest, Reservation } from '../src/booking/contract.
 import { isISODate } from '../src/booking/dates.ts';
 import { priceLines, totalOf } from '../src/booking/pricing.ts';
 import { DbError, rest } from './_lib/db.ts';
-import { clubEmail, guestEmail } from './_lib/emails.ts';
+import { bookingConfirmation, bookingNotification } from './_lib/emails.ts';
 import { allowMethods, readJsonBody, siteUrl } from './_lib/http.ts';
-import { emailConfigured, sendEmail, splitAddresses } from './_lib/resend.ts';
+import { emailConfigured, sendTemplate, splitAddresses } from './_lib/resend.ts';
 import { loadDay } from './_lib/sheet.ts';
 import { loadSite } from './_lib/site.ts';
 
@@ -18,7 +18,8 @@ const PHONE = /^[+()\d\s.-]{6,30}$/;
 // checked again here against the club's current settings and priced here
 // (never trusted from the page), then saved through golf_book(), which takes
 // the last place atomically. Then the guest gets a confirmation and the club
-// a "new booking" email through Resend (RESEND_API_KEY). GOLF_EMAIL_FROM (an
+// a "new booking" email, from the Resend templates in emails/
+// (RESEND_API_KEY; `npm run email:publish`). GOLF_EMAIL_FROM (an
 // address on a domain verified in Resend), GOLF_BOOKINGS_TO (default the
 // club's email from its settings), GOLF_BOOKINGS_BCC and SITE_URL are
 // optional overrides.
@@ -110,11 +111,9 @@ async function sendEmails(reservation: Reservation, guest: Guest, experience: st
   const from = process.env.GOLF_EMAIL_FROM || 'Hula Hula Golf Club <golf@hulahularesort.com>';
   const club = splitAddresses(process.env.GOLF_BOOKINGS_TO || contact.email);
   const bcc = splitAddresses(process.env.GOLF_BOOKINGS_BCC ?? '');
-  const toGuest = guestEmail(reservation, guest, site, data);
-  const toClub = clubEmail(reservation, guest, experience, site, data);
   const [guestResult, clubResult] = await Promise.allSettled([
-    sendEmail({ from, to: [guest.email], replyTo: contact.email, ...toGuest }),
-    sendEmail({ from, to: club, bcc, replyTo: guest.email, ...toClub }),
+    sendTemplate({ from, to: [guest.email], replyTo: contact.email, ...bookingConfirmation(reservation, guest, site, data), idempotencyKey: `golf-booking-${reservation.ref}-guest` }),
+    sendTemplate({ from, to: club, bcc, replyTo: guest.email, ...bookingNotification(reservation, guest, experience, site, data), idempotencyKey: `golf-booking-${reservation.ref}-club` }),
   ]);
   if (clubResult.status === 'rejected' || !clubResult.value.ok) console.error('Club booking email failed', reservation.ref, clubResult.status === 'rejected' ? clubResult.reason : clubResult.value.body);
   const guestOk = guestResult.status === 'fulfilled' && guestResult.value.ok;

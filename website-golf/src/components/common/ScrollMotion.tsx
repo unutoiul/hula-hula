@@ -13,7 +13,9 @@ interface ScrollMotionProps { children: ReactNode; sx?: SxProps<Theme> }
 export function Reveal({ children, delay = 0, y = 36, sx }: ScrollMotionProps & { delay?: number; y?: number }) {
   const { reduced } = useMotionPreference();
   if (reduced) return <Box sx={sx}>{children}</Box>;
-  return <MotionBox initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }}
+  // Keep content visible even when a tall grid never reaches the intersection
+  // threshold; movement is decorative, not a prerequisite for reading a page.
+  return <MotionBox initial={{ opacity: 1, y: Math.min(y, 12) }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.01 }}
     transition={{ duration: 0.8, delay, ease: EASE }} sx={sx}>{children}</MotionBox>;
 }
 

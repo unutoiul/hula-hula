@@ -69,7 +69,7 @@ export function EventsPage() {
   };
 
   return <Box>
-    <PageTitle title="Events" hint="Special days with packages guests pay for online." action={<Button variant="contained" startIcon={<AddRounded />} disabled={creating} onClick={() => void create()}>New event</Button>} />
+    <PageTitle title="Events" hint="Published upcoming events appear automatically on Home and Events & offers. Past events leave the highlights; their published pages remain available." action={<Button variant="contained" startIcon={<AddRounded />} disabled={creating} onClick={() => void create()}>New event</Button>} />
     {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
     <Stack spacing={1.25}>
       {upcoming.map(card)}

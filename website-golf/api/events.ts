@@ -8,7 +8,7 @@ import { isTestMode } from './_lib/twoc2p.ts';
 // package's places left; /api/events?slug=pro-day — just that one.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ['GET'])) return;
-  res.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=60');
+  res.setHeader('Cache-Control', 'no-store');
   const slug = queryString(req, 'slug');
   if (slug && !/^[a-z0-9-]{1,60}$/.test(slug)) return res.status(404).json({ error: 'We couldn’t find that event.' });
   try {

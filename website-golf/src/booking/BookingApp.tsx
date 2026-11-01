@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Container, Step, StepLabel, Stepper } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { PageHeader } from '../components/layout/PageHeader';
+import { PublicPageLayout } from '../components/layout/PublicPageLayout';
 import { useSiteData } from '../context/SiteDataContext';
 import { navigate, useLocation } from '../router';
 import { BookingFlowProvider, searchFromQuery, useBookingFlow } from './BookingFlowContext';
@@ -36,7 +36,7 @@ export default function BookingApp() {
 
   // Prices and times must be the live ones before anything can be held or priced.
   const { ready } = useSiteData();
-  if (!ready) return <Box sx={{ minHeight: '70vh', display: 'grid', placeItems: 'center' }}><CircularProgress aria-label="Loading" /></Box>;
+  if (!ready) return <PublicPageLayout><Box sx={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}><CircularProgress aria-label="Loading" /></Box></PublicPageLayout>;
   return <BookingFlowProvider initial={initial}><BookingShell /></BookingFlowProvider>;
 }
 
@@ -52,9 +52,8 @@ function BookingShell() {
   useEffect(() => { if (blockedTo) navigate(blockedTo, { replace: true }); }, [blockedTo]);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
 
-  return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: { xs: 14, md: 10 } }}>
-    <PageHeader />
-    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
+  return <PublicPageLayout mobileActionSpace={step === 0 && !!time}>
+    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 6, md: 8 } }}>
       <Stepper activeStep={pathname === '/book/confirmation' ? STEPS.length : step} alternativeLabel sx={{ my: { xs: 3, md: 4 }, '& .MuiStepLabel-label': { fontSize: { xs: 11, sm: 13 }, mt: '6px !important' } }}>
         {STEPS.map((s) => <Step key={s.path}><StepLabel>{s.label}</StepLabel></Step>)}
       </Stepper>
@@ -64,5 +63,5 @@ function BookingShell() {
         : pathname === '/book/confirmation' ? <ConfirmationStep />
         : <TeeTimeStep />}
     </Container>
-  </Box>;
+  </PublicPageLayout>;
 }

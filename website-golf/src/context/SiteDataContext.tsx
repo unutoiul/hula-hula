@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { contactLinks, DEFAULT_SITE, normaliseActivity, normaliseClub, normaliseRentals, type SiteData } from '../booking/config';
+import { watchContent } from '../data/contentSync';
 
 // The activities, prices, rental clubs and club settings staff edit in
 // /admin, for every page. Pages draw straight away from what this browser saw
@@ -7,7 +8,7 @@ import { contactLinks, DEFAULT_SITE, normaliseActivity, normaliseClub, normalise
 // /api/site; `ready` says the live values are in, for pages that must not act
 // on stale ones (the booking pages wait for it).
 
-const CACHE = 'hhg-site';
+const CACHE = 'hhg-site-v2';
 
 interface SiteDataValue { site: SiteData; ready: boolean; reload: () => Promise<void> }
 
@@ -43,7 +44,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
 
-  useEffect(() => { void reload(); }, [reload]);
+  useEffect(() => watchContent('site', reload), [reload]);
 
   const value = useMemo(() => ({ site, ready, reload }), [site, ready, reload]);
   return <SiteDataContext.Provider value={value}>{children}</SiteDataContext.Provider>;

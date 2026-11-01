@@ -1,15 +1,14 @@
-import { Link } from '@mui/material';
+import { Link, type LinkProps } from '@mui/material';
 import type { ReactNode } from 'react';
 
-interface NavLinkProps {
+interface NavLinkProps extends Omit<LinkProps, 'href' | 'children'> {
   href: string;
   active: boolean;
   children: ReactNode;
-  onClick?: () => void;
 }
 
-export function NavLink({ href, active, children, onClick }: NavLinkProps) {
-  return <Link href={href} onClick={onClick} underline="none" variant="button" sx={{
+export function NavLink({ href, active, children, ...rest }: NavLinkProps) {
+  return <Link href={href} underline="none" variant="button" {...rest} sx={{
     position: 'relative', whiteSpace: 'nowrap', pb: .6,
     color: active ? 'primary.main' : 'text.primary', fontSize: 15,
     transition: 'color .25s ease',

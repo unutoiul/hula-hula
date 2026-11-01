@@ -69,13 +69,19 @@ export interface Activity {
   card: { kicker: string; title: string; detail: string; images: string[] };
 }
 
-export interface Rental { id: string; label: string; price: number }
+export interface Rental { id: string; label: string; price: number; image?: string; description?: string }
 
 export interface OpeningDay { open: string; close: string; closed: boolean }
+
+export interface ClubOffer {
+  id: string; title: string; description: string; priceLabel: string;
+  image: string; active: boolean; startsOn: string; endsOn: string; message: string;
+}
 
 export interface ClubSettings {
   /** The message in the blue strip at the very top of the website. */
   announcement: string;
+  offers: ClubOffer[];
   contact: { phone: string; email: string; lineId: string; facebook: string; instagram: string; area: string; mapsUrl: string };
   /** Monday first. A closed day takes no bookings. */
   hours: OpeningDay[];
@@ -95,7 +101,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     id: 'golf', name: 'Golf', icon: 'golf', tagline: '9-hole, par 36 course', bookOnline: true,
     about: 'Nine holes, par 36 and 3,011 yards: a course for every level that still asks for strategy. Narrow fairways, water hazards and greens running 8.5 to 9 feet keep you thinking, and Phanom Bencha mountain watches over the lot.\n\nEvery round comes with a caddie and a golf cart, so all you need to bring is your swing. No clubs? Rent a set at the clubhouse.',
     includes: ['Green fee', 'Caddie', 'Golf cart'],
-    options: [{ id: '9', label: '9 holes', price: 1400, minutes: 135, lastStart: '15:30' }],
+    options: [{ id: '9', label: '9 holes', price: 1600, minutes: 135, lastStart: '15:30' }, { id: '18', label: '18 holes', price: 2400, minutes: 270, lastStart: '13:00' }],
     firstStart: '07:00', interval: 10, capacity: 4, units: 1, privateGroup: false, minPlayers: 1, maxPlayers: 4,
     rentals: true, caddie: true, noSkillNeeded: false, askExperience: false, askHandicap: true,
     wear: 'A collared shirt, and golf shoes or clean trainers.',
@@ -114,15 +120,15 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'Fling Golf · 9 holes', title: 'One stick. Every shot.', detail: 'Scoop, swing and fling a golf ball down our fairways with a lacrosse-style Flingstick. Easy to learn, huge fun in a group.', images: [p('sunnyFairway'), p('pondFairway')] },
   },
   {
-    id: 'footgolf', name: 'FootGolf', icon: 'football', tagline: '9-hole FootGolf course', bookOnline: true,
-    about: 'Golf rules, football feet. Kick a football from the tee to the hole across nine holes on our fairways: fewest kicks wins.\n\nIt’s an active, laugh-out-loud game for all ages, and no golf skill is needed. The course fee, a caddie, a golf cart and the football are all included.',
+    id: 'footgolf', name: 'FootGolf', icon: 'football', tagline: '18 holes of football-meets-golf', bookOnline: true,
+    about: 'Golf rules, football feet. Kick a football into a series of oversized holes on our real golf course: the fewest kicks wins. Our 18-hole FootGolf course welcomes all ages and abilities, with no golf experience needed.\n\nOur friendly caddies guide you around the course and help keep the balls safe from water hazards. Bring friends, enjoy the fairways and make a game of it.',
     includes: ['Course fee', 'Caddie', 'Golf cart', 'Football'],
-    options: [{ id: '9', label: '9 holes', price: 850, minutes: 75, lastStart: '16:30' }],
+    options: [{ id: '18', label: '18 holes', price: 1600, minutes: 150, lastStart: '15:30' }],
     firstStart: '08:00', interval: 15, capacity: 6, units: 1, privateGroup: false, minPlayers: 1, maxPlayers: 6,
     rentals: false, caddie: true, noSkillNeeded: true, askExperience: false, askHandicap: false,
     wear: 'Trainers or turf shoes — no metal studs, please.',
     slotNoun: 'tee time', optionsLabel: 'Holes', peopleNoun: 'player', durationBadge: '1–3 hr',
-    card: { kicker: 'FootGolf · 9 holes', title: 'Golf rules. Football feet.', detail: 'A 9-hole FootGolf course right on the fairways. Kick, chase, laugh, repeat — fun for all ages.', images: [p('footgolfGroup'), p('footgolfKick'), p('footgolfFairway')] },
+    card: { kicker: 'FootGolf · 18 holes', title: 'Golf rules. Football feet.', detail: '18 holes on real fairways, oversized cups and a caddie to show the way. All ages, all abilities, plenty of laughs.', images: [p('footgolfGroup'), p('footgolfKick'), p('footgolfFairway')] },
   },
   {
     id: 'puttgolf', name: 'Putt-Golf', icon: 'flag', tagline: 'Mini-golf on real greens', bookOnline: true,
@@ -176,13 +182,14 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
 ];
 
 export const DEFAULT_RENTALS: Rental[] = [
-  { id: 'standard', label: 'Standard club set', price: 500 },
-  { id: 'premium', label: 'Premium club set', price: 1000 },
+  { id: 'standard', label: 'Set B · Standard club set', price: 500 },
+  { id: 'premium', label: 'Set A · Newer clubs & more variety', price: 1000 },
 ];
 
 const everyDay = (open: string, close: string): OpeningDay[] => Array.from({ length: 7 }, () => ({ open, close, closed: false }));
 
 export const DEFAULT_CLUB: ClubSettings = {
+  offers: [{ id: 'footgolf-two-for-one', title: 'Play 2. Pay 1.', description: 'Bring a friend for 18 holes of FootGolf. Two players for ฿1,600 total — just ฿800 each. Contact the club to confirm offer availability and book.', priceLabel: '฿1,600 for two', image: '/images/golf/footgolfKick-1600.webp', active: true, startsOn: '', endsOn: '', message: 'Hi Hula Hula! I would like to book the FootGolf Play 2, Pay 1 offer for two players at ฿1,600. Please confirm availability.' }],
   announcement: 'Free transfers twice daily · 8:00 am & 1:30 pm',
   contact: {
     phone: '+66 91 998 8891', email: 'reservation@hulahulagolfclub.com', lineId: '@hulahulagolfclub',
@@ -270,7 +277,7 @@ export function normaliseActivity(raw: Record<string, unknown>, id: string): Act
 
 export function normaliseRentals(raw: unknown): Rental[] {
   if (!Array.isArray(raw)) return DEFAULT_RENTALS;
-  return raw.map((r: Record<string, unknown>, i) => ({ id: str(r?.id, `r${i + 1}`, 20) || `r${i + 1}`, label: str(r?.label, 'Club set', 60) || 'Club set', price: num(r?.price, 0, 0, 100_000) }));
+  return raw.map((r: Record<string, unknown>, i) => ({ id: str(r?.id, `r${i + 1}`, 20) || `r${i + 1}`, label: str(r?.label, 'Club set', 60) || 'Club set', price: num(r?.price, 0, 0, 100_000), image: str(r?.image, '', 1000), description: str(r?.description, '', 240) }));
 }
 
 export function normaliseClub(raw: unknown): ClubSettings {
@@ -281,6 +288,10 @@ export function normaliseClub(raw: unknown): ClubSettings {
   const booking = (r.booking ?? {}) as Record<string, unknown>;
   const hours = Array.isArray(r.hours) && r.hours.length === 7 ? (r.hours as Record<string, unknown>[]) : null;
   return {
+    offers: Array.isArray(r.offers) ? r.offers.slice(0, 12).filter((o): o is Record<string, unknown> => !!o && typeof o === 'object').map((o, i) => ({
+      id: str(o.id, `offer-${i + 1}`, 60), title: str(o.title, '', 100), description: str(o.description, '', 600), priceLabel: str(o.priceLabel, '', 80),
+      image: str(o.image, '', 1000), active: bool(o.active, false), startsOn: str(o.startsOn, '', 10), endsOn: str(o.endsOn, '', 10), message: str(o.message, '', 600),
+    })).filter(o => o.title) : d.offers,
     announcement: str(r.announcement, d.announcement, 140),
     contact: {
       phone: str(contact.phone, d.contact.phone, 30) || d.contact.phone,

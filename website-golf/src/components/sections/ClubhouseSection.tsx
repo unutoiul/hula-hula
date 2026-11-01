@@ -15,20 +15,20 @@ import { Polaroid, Sticker, SunDoodle } from '../common/VacationDecor';
 
 // The clubhouse café: a big framed photo that follows whichever moment of the
 // day is picked on the right, then the interior below.
-export function ClubhouseSection() {
+export function ClubhouseSection({ showIntro = true }: { showIntro?: boolean }) {
   const { club } = useSite();
   const [active, setActive] = useState(0);
   const moment = cafeMoments[active];
   return <Box id="clubhouse" component="section" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl" sx={{ py: { xs: 7, md: 9 } }}>
-      <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'center', md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: 6, position: 'relative', textAlign: { xs: 'center', md: 'left' } }}>
+      {showIntro && <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'center', md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: 6, position: 'relative', textAlign: { xs: 'center', md: 'left' } }}>
         <Pineapple sx={{ left: { xs: 'auto', md: 600 }, right: { xs: 6, md: 'auto' }, top: { xs: 2, md: 40 } }} />
         <Box>
           <Typography variant="overline" color="success.main">The clubhouse · H Café &amp; Restaurant</Typography>
           <Typography variant="h2" sx={{ fontSize: { xs: 43, md: 64 }, lineHeight: 1.03, mt: 1.5 }}>The tenth hole.<br /><Box component="span" color="primary.main">Coffee with a view.</Box></Typography>
         </Box>
         <Typography sx={{ maxWidth: 360, color: 'text.secondary', lineHeight: 1.8 }}>Nine holes out there, and our favourite one in here. The clubhouse café looks straight down the fairways to Phanom Bencha mountain.</Typography>
-      </Stack></Reveal>
+      </Stack></Reveal>}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1.05fr 1fr' }, alignItems: 'center', gap: { xs: 5, md: 8 } }}>
         <Reveal sx={{ position: 'relative', pb: { xs: 2, md: 3 } }}>

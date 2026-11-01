@@ -22,6 +22,7 @@ export function navigate(to: string, { replace = false }: { replace?: boolean } 
   if (to === `${window.location.pathname}${window.location.search}${window.location.hash}`) return;
   window.history[replace ? 'replaceState' : 'pushState'](null, '', to);
   window.dispatchEvent(new Event(NAVIGATE_EVENT));
+  if (window.location.hash) requestAnimationFrame(() => document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView());
 }
 
 /** The current path and query, re-rendering on every navigation. */

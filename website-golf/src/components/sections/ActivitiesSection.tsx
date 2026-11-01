@@ -1,4 +1,5 @@
-import { Box, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
+import { linkClick } from '../../router';
 import { useMemo } from 'react';
 import { thingsToDo } from '../../activities/things';
 import { useSite } from '../../context/SiteDataContext';
@@ -24,10 +25,11 @@ export function ActivitiesSection() {
         <Typography sx={{ maxWidth: 380, color: 'rgba(255,255,255,.86)', lineHeight: 1.8 }}>Golf, games for every level, a café with a view and a pool villa to stay in. Pick one to see what it’s like, what it costs and how to book.</Typography>
       </Stack></Reveal>
       <Reveal>
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' }, gap: { xs: 1.5, md: 3 } }}>
-          {things.map((thing) => <Box component="li" key={thing.id}><ThingCard thing={thing} /></Box>)}
+        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))' }, gap: { xs: 1.5, md: 3 } }}>
+          {things.slice(0, 6).map((thing) => <Box component="li" key={thing.id}><ThingCard thing={thing} /></Box>)}
         </Box>
       </Reveal>
+      <Stack direction="row" justifyContent="center" flexWrap="wrap" useFlexGap gap={2} sx={{ mt: 4 }}><Button variant="contained" color="secondary" href="/activities" onClick={linkClick('/activities')}>All activities →</Button><Button variant="outlined" href="/prices" onClick={linkClick('/prices')} sx={{ color: 'white', borderColor: 'rgba(255,255,255,.5)' }}>Prices & packages</Button></Stack>
     </Container>
   </Box>;
 }

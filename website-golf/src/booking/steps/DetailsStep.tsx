@@ -9,6 +9,7 @@ import { clubRules } from '../config';
 import { useSite } from '../../context/SiteDataContext';
 import { COUNTRIES, guessCountry } from '../countries';
 import { money } from '../pricing';
+import { STICKY_TOP } from '../../layoutConstants';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
@@ -102,7 +103,7 @@ export function DetailsStep() {
       </Stack>
     </Box>
 
-    <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+    <Box sx={{ position: { md: 'sticky' }, top: { md: STICKY_TOP } }}>
       <BookingSummary />
     </Box>
 

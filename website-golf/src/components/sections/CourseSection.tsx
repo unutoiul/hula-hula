@@ -22,16 +22,16 @@ export function CourseSection() {
         </Reveal>
         <Reveal delay={0.12} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
           <Typography variant="overline" color="success.main">The course</Typography>
-          <Typography variant="h2" sx={{ fontSize: { xs: 42, md: 59 }, lineHeight: 1.06, mt: 1.5 }}>Nine holes.<br /><Box component="span" color="primary.main">Not one dull moment.</Box></Typography>
+          <Typography variant="h2" sx={{ fontSize: { xs: 36, md: 48 }, lineHeight: 1.08, mt: 1.5 }}>Nine holes. Or eighteen.<br /><Box component="span" color="primary.main">Make it your round.</Box></Typography>
           <Typography sx={{ mt: 3, color: 'text.secondary', fontSize: 16, lineHeight: 1.8, maxWidth: 470, mx: { xs: 'auto', md: 0 } }}>
-            A par 36 course for every level that still asks for strategy: narrow fairways, water hazards and greens running 8.5 to 9 feet. From the clubhouse, it’s fairways all the way to Phanom Bencha mountain.
+            A 9-hole, par 36 course with narrow fairways, water hazards and mountain views. Play nine, or enjoy two rounds with the 18-hole package. Explore the hole-by-hole guide before your first tee shot.
           </Typography>
           <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} justifyContent={{ xs: 'center', md: 'flex-start' }} sx={{ mt: 3 }}>
             {['Green fee', 'Caddie', 'Golf cart'].map((item) => <Chip key={item} label={`${item} included`} sx={{ bgcolor: 'success.light', color: 'success.dark', fontWeight: 700 }} />)}
           </Stack>
           <Stack direction="row" spacing={3} alignItems="center" justifyContent={{ xs: 'center', md: 'flex-start' }} sx={{ mt: 3 }}>
             <Button href="/book?activity=golf" onClick={linkClick('/book?activity=golf')} color="inherit" endIcon={<ArrowOutward />}>Book a round</Button>
-            <Button href="/activities/golf" onClick={linkClick('/activities/golf')} color="inherit">Prices &amp; details</Button>
+            <Button href="/course" onClick={linkClick('/course')} color="inherit">Explore the course &amp; layout</Button>
             <SunDoodle size={54} color="#50830d" sx={{ display: { xs: 'none', sm: 'block' } }} />
           </Stack>
         </Reveal>

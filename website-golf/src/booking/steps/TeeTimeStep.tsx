@@ -17,6 +17,7 @@ import { BookingSummary } from '../components/BookingSummary';
 import { DateStrip } from '../components/DateStrip';
 import { addDays, durationLabel, fromMinutes, shortDayLabel, timeLabel, toMinutes } from '../dates';
 import { fromPrice, money, peopleLabel, plural, pricePerPerson } from '../pricing';
+import { STICKY_TOP } from '../../layoutConstants';
 
 type Sheet = { status: 'loading' | 'ready'; slots: Slot[] } | { status: 'error'; slots: Slot[]; error: string };
 
@@ -136,7 +137,7 @@ export function TeeTimeStep() {
       </Panel>
     </Box>
 
-    <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+    <Box sx={{ position: { md: 'sticky' }, top: { md: STICKY_TOP } }}>
       <BookingSummary action={continueButton} />
     </Box>
 

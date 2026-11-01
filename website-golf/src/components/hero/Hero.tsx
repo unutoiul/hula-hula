@@ -14,9 +14,9 @@ import { Polaroid, Sticker } from '../common/VacationDecor';
 import { HeroHeadline } from './HeroHeadline';
 
 export function Hero({ nextEvent }: { nextEvent?: PublicEvent }) {
-  return <Box component="section" aria-label="Welcome to Hula Hula Golf Club" sx={{ position: 'relative', pt: { xs: 20, md: 27 }, pb: { xs: 4, md: 5 }, overflow: 'hidden' }}>
+  return <Box component="section" aria-label="Welcome to Hula Hula Golf Club" sx={{ position: 'relative', pt: { xs: 4, md: 6 }, pb: { xs: 3, md: 4 }, overflow: 'hidden' }}>
     <Container maxWidth="xl">
-      <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1.12fr' }, alignItems: 'center', gap: { xs: 5, md: 6 }, minHeight: { md: 700 } }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { md: 'minmax(0,1fr) minmax(0,1fr)' }, alignItems: 'center', gap: { xs: 4, md: 5 }, minHeight: { md: 580 } }}>
         <Box sx={{ position: 'relative', zIndex: 2, display: { xs: 'contents', md: 'block' } }}>
           <Box sx={{ order: 1, textAlign: { xs: 'center', md: 'left' } }}>
             {nextEvent && <EventPill event={nextEvent} />}
@@ -29,8 +29,8 @@ export function Hero({ nextEvent }: { nextEvent?: PublicEvent }) {
               Nine tropical holes, FootGolf, Fling Golf, pickleball and private range bays. Bring your swing — or just your sense of fun.
             </Typography>
             <Stack direction="row" justifyContent={{ xs: 'center', md: 'flex-start' }} spacing={1.8} flexWrap="wrap" useFlexGap sx={{ mt: 3.5 }}>
-              <Button href="#play" variant="contained" endIcon={<ArrowOutward />}>See everything to do</Button>
-              <Button href="#prices" color="inherit">Check the prices</Button>
+              <Button href="/activities" variant="contained" endIcon={<ArrowOutward />}>See everything to do</Button>
+              <Button href="/prices" color="inherit">Check the prices</Button>
             </Stack>
           </Box>
           <Box sx={{ mt: { xs: 0, md: 4 }, maxWidth: 560, mx: { xs: 'auto', md: 0 }, width: '100%', order: 3 }}>
@@ -40,7 +40,7 @@ export function Hero({ nextEvent }: { nextEvent?: PublicEvent }) {
         </Box>
         <Box sx={{ position: 'relative', ml: { xs: 1, md: 2 }, mb: { xs: 4, md: 3 }, order: 2 }}>
           <ScrollTilt amount={1.5}>
-            <Box sx={{ border: '8px solid white', borderRadius: '140px 140px 30px 30px', height: { xs: 460, sm: 580, md: 680 }, overflow: 'hidden', transform: 'rotate(2deg)', boxShadow: '0 18px 55px rgba(23,60,44,.10)', bgcolor: 'primary.dark' }}>
+            <Box sx={{ border: '6px solid white', borderRadius: '100px 100px 24px 24px', height: { xs: 340, sm: 440, md: 550 }, overflow: 'hidden', transform: 'rotate(1deg)', boxShadow: '0 18px 55px rgba(23,60,44,.10)', bgcolor: 'primary.dark' }}>
               <ClubPhoto image={p.fairwaySign.src} alt="Freshly striped fairway with the Hula Hula sign, palms and blue sky" eager sizes="(max-width: 900px) 95vw, 55vw" sx={{ objectPosition: '40% center' }} />
             </Box>
           </ScrollTilt>

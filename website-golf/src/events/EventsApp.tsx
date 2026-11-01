@@ -12,14 +12,16 @@ import { COUNTRIES, guessCountry } from '../booking/countries';
 import { toMinutes } from '../booking/dates';
 import { money, plural } from '../booking/pricing';
 import { GuestStepper } from '../components/booking/GuestStepper';
-import { ClubPhoto } from '../components/common/ClubPhoto';
 import { CARD_PEEK, PineappleGolfer } from '../components/common/PineappleGolfer';
-import { PageHeader } from '../components/layout/PageHeader';
+import { PageIntro } from '../components/layout/PageIntro';
+import { PublicPageLayout } from '../components/layout/PublicPageLayout';
 import { useContact } from '../context/SiteDataContext';
 import { photoAssets as p } from '../data/photos';
+import { watchContent } from '../data/contentSync';
 import { linkClick, navigate, useLocation } from '../router';
 import { fonts } from '../theme';
 import { EventApiError, eventWhen, fetchEvent, fetchOrder, startOrder } from './api';
+import { SECTION_SCROLL_OFFSET, STICKY_TOP } from '../layoutConstants';
 
 // /events/<slug> — an event's own page: the poster, the story, the schedule
 // and its packages, each bought through 2C2P's secure payment page.
@@ -29,11 +31,12 @@ import { EventApiError, eventWhen, fetchEvent, fetchOrder, startOrder } from './
 export default function EventsApp() {
   const { pathname } = useLocation();
   const slug = pathname.replace(/^\/events\/?/, '').split('/')[0];
-  useEffect(() => { if (!slug) navigate('/#events', { replace: true }); }, [slug]);
-  return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: 10 }}>
-    <PageHeader question="Questions about this event?" />
-    {slug === 'order' ? <OrderPage /> : slug ? <EventPage slug={slug} /> : null}
-  </Box>;
+  useEffect(() => { if (!slug) navigate('/events', { replace: true }); }, [slug]);
+  return <PublicPageLayout>
+    <Box sx={{ pb: { xs: 6, md: 8 } }}>
+      {slug === 'order' ? <OrderPage /> : slug ? <EventPage slug={slug} /> : null}
+    </Box>
+  </PublicPageLayout>;
 }
 
 // ── The event ──────────────────────────────────────────────────────────────
@@ -43,41 +46,59 @@ function EventPage({ slug }: { slug: string }) {
   const [event, setEvent] = useState<PublicEvent | null | undefined>(undefined);
   const [testPayments, setTestPayments] = useState(false);
   const [buying, setBuying] = useState<{ pack: PublicPackage; quantity: number } | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    fetchEvent(slug).then(({ event: e, testPayments: test }) => { if (!cancelled) { setEvent(e ?? null); setTestPayments(test); } }).catch(() => { if (!cancelled) setEvent(null); });
-    return () => { cancelled = true; };
+    let alive = true;
+    setEvent(undefined);
+    setBuying(null);
+    setLoadError(null);
+    const stop = watchContent('events', async () => {
+      try {
+        const { event: fresh, testPayments: test } = await fetchEvent(slug);
+        if (!alive) return;
+        setEvent(fresh ?? null);
+        setTestPayments(test);
+        setLoadError(null);
+        setBuying(current => {
+          if (!current) return null;
+          const pack = fresh?.packages.find(item => item.id === current.pack.id);
+          // Do not leave an old price or a withdrawn package in an open checkout.
+          return fresh?.salesOpen && pack && pack.price === current.pack.price && pack.left >= current.quantity && pack.maxPerOrder >= current.quantity ? { ...current, pack } : null;
+        });
+      } catch (error) {
+        if (!alive) return;
+        if (error instanceof EventApiError && error.status === 404) { setEvent(null); setBuying(null); }
+        else setLoadError('We couldn’t refresh this event. Please check your connection and try again.');
+      }
+    });
+    return () => { alive = false; stop(); };
   }, [slug]);
   useEffect(() => { if (event) document.title = `${event.title} — Hula Hula Golf Club`; }, [event]);
 
-  if (event === undefined) return <Box sx={{ display: 'grid', placeItems: 'center', minHeight: '60vh' }}><CircularProgress aria-label="Loading" /></Box>;
+  if (event === undefined) return <Box sx={{ display: 'grid', placeItems: 'center', minHeight: '60vh', p: 3 }}>{loadError ? <Alert severity="warning" action={<Button onClick={() => window.location.reload()}>Retry</Button>}>{loadError}</Alert> : <CircularProgress aria-label="Loading" />}</Box>;
   if (event === null) return <Container maxWidth="sm" sx={{ py: 10, textAlign: 'center' }}>
     <Typography variant="h1" sx={{ fontSize: 36 }}>We couldn’t find that event</Typography>
     <Typography sx={{ color: 'text.secondary', mt: 1.5 }}>It may have finished, or the link has changed.</Typography>
-    <Button href="/#events" onClick={linkClick('/#events')} variant="contained" sx={{ mt: 3 }}>See what’s on</Button>
+    <Button href="/events" onClick={linkClick('/events')} variant="contained" sx={{ mt: 3 }}>See what’s on</Button>
   </Container>;
 
   const paragraphs = event.description.split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean);
   const soldOut = event.packages.every((pk) => pk.left === 0);
 
   return <>
-    {/* The poster */}
-    <Box sx={{ position: 'relative', minHeight: { xs: 420, md: 560 }, display: 'flex', alignItems: 'flex-end', color: 'white', overflow: 'hidden', bgcolor: 'primary.dark' }}>
-      <Box sx={{ position: 'absolute', inset: 0 }}><ClubPhoto image={event.coverImage || p.fairwayBalcony.src} alt="" eager sizes="100vw" /></Box>
-      <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(18,78,57,.92) 0%, rgba(18,78,57,.55) 45%, rgba(18,78,57,.05) 100%)' }} />
-      <Container maxWidth="lg" sx={{ position: 'relative', px: { xs: 2, sm: 3 }, pb: { xs: 4, md: 7 }, pt: 10 }}>
-        <Stack direction="row" flexWrap="wrap" useFlexGap gap={1}>
+    <PageIntro title={event.title} description={event.tagline} image={event.coverImage || p.fairwayBalcony.src} eyebrow="Club events" parent={{ label: 'Events & offers', href: '/events' }} breadcrumbLabel={event.title}>
+      <Stack gap={2.5} alignItems={{ xs: 'stretch', sm: 'flex-start' }} sx={{ minWidth: 0 }}>
+        <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ '& .MuiChip-root': { maxWidth: '100%', height: 'auto', minHeight: 32 }, '& .MuiChip-label': { whiteSpace: 'normal', py: .75 } }}>
           <Chip icon={<EventRounded sx={{ color: 'inherit !important' }} />} label={eventWhen(event)} sx={{ bgcolor: 'secondary.main', color: 'text.primary', fontWeight: 700 }} />
-          <Chip icon={<PlaceRounded sx={{ color: 'inherit !important' }} />} label="Hula Hula Golf Club" sx={{ bgcolor: 'rgba(255,255,255,.16)', color: 'white', fontWeight: 700 }} />
+          <Chip icon={<PlaceRounded sx={{ color: 'inherit !important' }} />} label="Hula Hula Golf Club" sx={{ bgcolor: 'success.light', color: 'primary.dark', fontWeight: 700 }} />
         </Stack>
-        <Typography variant="h1" sx={{ fontSize: { xs: 42, sm: 56, md: 76 }, lineHeight: 1, mt: 2, maxWidth: 820 }}>{event.title}</Typography>
-        {event.tagline && <Typography sx={{ mt: 2, fontSize: { xs: 17, md: 20 }, lineHeight: 1.6, maxWidth: 640, color: 'rgba(255,255,255,.9)' }}>{event.tagline}</Typography>}
-        {event.packages.length > 0 && <Button href="#packages" variant="contained" color="secondary" sx={{ mt: 3 }}>{soldOut ? 'Sold out — see packages' : event.salesOpen ? 'Choose your package' : 'See the packages'}</Button>}
-      </Container>
-    </Box>
+        {event.packages.length > 0 && <Button href="#packages" variant="contained">{soldOut ? 'Sold out — see packages' : event.salesOpen ? 'Choose your package' : 'See the packages'}</Button>}
+      </Stack>
+    </PageIntro>
 
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, mt: { xs: 4, md: 7 } }}>
+      {loadError && <Alert severity="warning" sx={{ mb: 3 }}>{loadError}</Alert>}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.5fr) minmax(0, 1fr)' }, gap: { xs: 4, md: 6 }, alignItems: 'start' }}>
         <Box>
           {paragraphs.length > 0 && <>
@@ -91,7 +112,7 @@ function EventPage({ slug }: { slug: string }) {
             </Stack>
           </Box>}
         </Box>
-        {event.schedule.length > 0 && <Box sx={{ position: { md: 'sticky' }, top: { md: 24 }, p: { xs: 2.5, md: 3 }, borderRadius: '24px', border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', bgcolor: 'background.paper' }}>
+        {event.schedule.length > 0 && <Box sx={{ position: { md: 'sticky' }, top: { md: STICKY_TOP }, p: { xs: 2.5, md: 3 }, borderRadius: '24px', border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', bgcolor: 'background.paper' }}>
           <Typography variant="h3" sx={{ fontSize: 24, mb: 2 }}>The schedule</Typography>
           <Stack spacing={0}>
             {event.schedule.map((item, i) => <Stack key={i} direction="row" spacing={2} sx={{ pb: 1.75, position: 'relative' }}>
@@ -102,7 +123,7 @@ function EventPage({ slug }: { slug: string }) {
         </Box>}
       </Box>
 
-      <Box id="packages" sx={{ scrollMarginTop: 16, mt: { xs: 6, md: 9 } }}>
+      <Box id="packages" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET, mt: { xs: 6, md: 9 } }}>
         <Typography variant="h2" sx={{ fontSize: { xs: 34, md: 48 }, textAlign: { xs: 'center', md: 'left' } }}>Choose your package</Typography>
         {!event.salesOpen && <Alert severity="info" sx={{ mt: 2 }}>Online sales for this event are closed. WhatsApp us on {contact.phone} and we’ll see what we can do.</Alert>}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: `repeat(${Math.min(3, Math.max(1, event.packages.length))}, 1fr)` }, gap: 2.5, mt: 3 }}>
@@ -119,6 +140,7 @@ function EventPage({ slug }: { slug: string }) {
 function PackageCard({ pack, open, onBuy }: { pack: PublicPackage; open: boolean; onBuy: (quantity: number) => void }) {
   const max = Math.min(pack.maxPerOrder, pack.left);
   const [quantity, setQuantity] = useState(1);
+  useEffect(() => { setQuantity(value => Math.max(1, Math.min(value, max))); }, [max]);
   const soldOut = pack.left === 0;
   return <Box component="article" sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2.5, md: 3 }, borderRadius: '24px', bgcolor: 'background.paper', border: '1px solid rgba(23,60,44,.10)', borderTop: '5px solid', borderTopColor: soldOut ? 'divider' : 'secondary.main', boxShadow: '0 10px 26px rgba(23,60,44,.07)', opacity: soldOut ? .7 : 1 }}>
     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>

@@ -1,0 +1,77 @@
+<!doctype html>
+<!--
+  Resend template "golf-booking-confirmation": the guest's confirmation of a
+  tee time booked on the website (api/reservations.ts). Nothing is paid
+  online; they pay at the club on the day. Replies go to the club's email.
+  Edit here, then `npm run email:publish`.
+  The same look as the resort's emails (website/emails/): one centred 600px
+  table, inline styles, web-safe fonts, PNG images, double-quoted attributes.
+  Every variable is escaped by api/_lib/emails.ts, because Resend inserts
+  them as they are. PICKUP_DISPLAY shows the shuttle line ("none;mso-hide:all"
+  hides it).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>You’re on the tee sheet — Hula Hula Golf Club</title>
+</head>
+<body style="margin:0;padding:0;background:#fbfdf4;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">{{{PREVIEW}}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbfdf4;">
+    <tr><td align="center" style="padding:28px 14px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border:1px solid #d6e1ce;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:8px;background:#f9f70c;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td align="center" style="padding:26px 28px 8px;">
+          <a href="{{{SITE_URL}}}"><img src="{{{SITE_URL}}}/email/hula-hula-golf-logo.png" width="120" height="107" alt="Hula Hula Golf Club" style="display:block;border:0;width:120px;height:auto;"></a>
+        </td></tr>
+        <tr><td align="center" style="padding:6px 28px 0;">
+          <span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#e7f4cc;color:#50830d;font:700 11px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;">Tee time booked · {{{BOOKING_REF}}}</span>
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px 6px;font:700 26px/1.25 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">You’re on the tee sheet, {{{GUEST_FIRST_NAME}}}!</td></tr>
+        <tr><td align="center" style="padding:0 34px 22px;font:400 16px/1.7 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">
+          Thanks for booking with us. Here’s everything in one place — keep this email, and quote <strong style="color:#173c2c;">{{{BOOKING_REF}}}</strong> if you need to change anything.
+        </td></tr>
+
+        <tr><td style="padding:0 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e7f4cc;border-radius:18px;">
+            <tr>
+              <td width="50%" style="padding:16px 20px 6px;font:400 15px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;vertical-align:top;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#50830d;">Tee time</span><br><strong style="font-size:20px;">{{{TEE_TIME}}}</strong></td>
+              <td width="50%" style="padding:16px 20px 6px;font:400 15px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;vertical-align:top;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#50830d;">Day</span><br><strong>{{{TEE_DAY}}}</strong></td>
+            </tr>
+            <tr><td colspan="2" style="padding:4px 20px 16px;font:400 14px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">{{{ACTIVITY}}} · {{{GROUP}}}<span style="display:{{{PICKUP_DISPLAY}}};padding-top:6px;color:#173c2c;">{{{PICKUP_LINE}}}</span></td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{{{LINES_HTML}}}</table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;border-top:2px solid #173c2c;">
+            <tr><td style="padding:10px 0 3px;">To pay at the club</td><td align="right" style="padding:10px 0 3px;"><strong>{{{TOTAL}}}</strong></td></tr>
+          </table>
+          <div style="padding:8px 0 0;font:400 12px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">In Thai baht, paid at the club on the day — nothing was charged online.</div>
+        </td></tr>
+
+        <tr><td style="padding:20px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #d6e1ce;border-radius:16px;">
+            <tr><td style="padding:14px 18px;font:400 14px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><strong>Before you come</strong><br><span style="color:#4b6457;">{{{RULES_HTML}}}</span></td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td align="center" style="padding:26px 28px 4px;font:700 17px/1.4 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">Need to change something, or a hand getting here?</td></tr>
+        <tr><td align="center" style="padding:8px 28px 6px;">
+          <a href="{{{WHATSAPP_URL}}}" style="display:inline-block;margin:0 4px 10px;padding:13px 24px;border-radius:999px;background:#50830d;color:#ffffff;font:700 14px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;text-decoration:none;">Chat on WhatsApp</a><a href="{{{CLUB_TEL}}}" style="display:inline-block;margin:0 4px 10px;padding:12px 23px;border-radius:999px;border:1px solid #006d8a;color:#006d8a;font:700 14px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;text-decoration:none;">Call {{{CLUB_PHONE}}}</a>
+        </td></tr>
+        <tr><td align="center" style="padding:14px 28px 4px;font:400 16px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">See you on the first tee,<br><strong>The Hula Hula Golf Club team</strong></td></tr>
+        <tr><td align="center" style="padding:12px 28px 20px;">
+          <img src="{{{SITE_URL}}}/email/hula-hula-pineapple.png" width="132" height="88" alt="" role="presentation" style="display:block;border:0;width:132px;max-width:100%;height:auto;">
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px;background:#fbfdf4;border-top:1px solid #d6e1ce;font:400 12px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">
+          Hula Hula Golf Club · {{{CLUB_AREA}}} · {{{CLUB_EMAIL}}} · <a href="{{{SITE_URL}}}" style="color:#006d8a;">Visit the website</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

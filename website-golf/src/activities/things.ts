@@ -20,7 +20,7 @@ export interface ThingToDo {
   note: string;
 }
 
-export const thingHref = (id: string) => `/activities/${id}`;
+export const thingHref = (id: string) => id === 'golf' ? '/course' : `/activities/${id}`;
 
 export function priceNote(activity: Activity) {
   if (!hasPrices(activity)) return 'Ask us';

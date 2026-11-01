@@ -12,6 +12,7 @@ import { slugify } from '../booking/config';
 import { shortDayLabel } from '../booking/dates';
 import { money, plural } from '../booking/pricing';
 import { GuestStepper } from '../components/booking/GuestStepper';
+import { notifyContentChanged } from '../data/contentSync';
 import { linkClick, navigate } from '../router';
 import { ImagePicker } from './ImagePicker';
 import { supabase, takenPlaces, type OrderStatus, type StaffEvent, type StaffOrder, type StaffPackage } from './supabase';
@@ -88,17 +89,19 @@ function Details({ event, hasOrders, onSaved }: { event: StaffEvent; hasOrders: 
       start_time: form.start_time || null, end_time: form.end_time || null, description: form.description.trim(),
       highlights: linesToList(form.highlights), schedule: textToSchedule(form.schedule), cover_image: form.cover_image || null,
       published: form.published, sales_open: form.sales_open,
-    }).eq('id', event.id);
+    }).eq('id', event.id).select('id').single();
     setBusy(false);
     if (error) return setStatus({ ok: false, text: error.message.includes('slug') ? 'Another event already uses that web address.' : error.message });
     setForm((f) => ({ ...f, slug }));
-    setStatus({ ok: true, text: form.published ? 'Saved — it’s on the website.' : 'Saved as a draft (not on the website yet).' });
+    setStatus({ ok: true, text: form.published ? 'Saved and published. Upcoming events appear on Home and Events & offers; open website pages refresh within 30 seconds.' : 'Saved as a draft — hidden from the website.' });
+    notifyContentChanged('events');
     await onSaved();
   };
 
   const remove = async () => {
-    const { error } = await supabase!.from('golf_events').delete().eq('id', event.id);
+    const { error } = await supabase!.from('golf_events').delete().eq('id', event.id).select('id').single();
     if (error) { setStatus({ ok: false, text: error.message }); setConfirmDelete(false); return; }
+    notifyContentChanged('events');
     navigate('/admin/events');
   };
 
@@ -173,13 +176,13 @@ function PackageDialog({ pack, sold, hasOrders, onClose, onSaved }: { pack: Staf
     if (!form.name.trim()) return setError('Give the package a name.');
     setBusy(true);
     const row = { event_id: form.event_id, name: form.name.trim(), description: form.description.trim(), includes: linesToList(form.includes), price: form.price, capacity: form.capacity, max_per_order: form.max_per_order, sort_order: form.sort_order, active: form.active };
-    const { error: saveError } = pack.id ? await supabase!.from('golf_event_packages').update(row).eq('id', pack.id) : await supabase!.from('golf_event_packages').insert(row);
+    const { error: saveError } = pack.id ? await supabase!.from('golf_event_packages').update(row).eq('id', pack.id).select('id').single() : await supabase!.from('golf_event_packages').insert(row).select('id').single();
     setBusy(false);
-    if (saveError) setError(saveError.message); else await onSaved();
+    if (saveError) setError(saveError.message); else { notifyContentChanged('events'); await onSaved(); }
   };
   const remove = async () => {
-    const { error: deleteError } = await supabase!.from('golf_event_packages').delete().eq('id', pack.id);
-    if (deleteError) setError(deleteError.message); else await onSaved();
+    const { error: deleteError } = await supabase!.from('golf_event_packages').delete().eq('id', pack.id).select('id').single();
+    if (deleteError) setError(deleteError.message); else { notifyContentChanged('events'); await onSaved(); }
   };
 
   return <Dialog open onClose={onClose} fullScreen={phone} fullWidth maxWidth="sm" scroll="paper">
@@ -233,11 +236,15 @@ function Orders({ packages, orders, onChanged }: { packages: StaffPackage[]; ord
 function OrderRow({ order: o, onChanged }: { order: StaffOrder; onChanged: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const digits = o.phone.replace(/\D/g, '');
   const setStatus = async (status: OrderStatus) => {
     setBusy(true);
-    await supabase!.from('golf_event_orders').update({ status }).eq('id', o.id);
+    const { error: saveError } = await supabase!.from('golf_event_orders').update({ status }).eq('id', o.id).select('id').single();
     setBusy(false);
+    if (saveError) { setError(saveError.message); return; }
+    setError(null);
+    notifyContentChanged('events');
     await onChanged();
   };
   return <Box sx={{ borderRadius: '16px', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', overflow: 'hidden' }}>
@@ -259,6 +266,7 @@ function OrderRow({ order: o, onChanged }: { order: StaffOrder; onChanged: () =>
         <Typography sx={{ fontSize: 14 }}>{o.phone}{o.email ? ` · ${o.email}` : ''}</Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Ordered {shortDayLabel(o.created_at.slice(0, 10))}{o.tran_ref ? ` · 2C2P ${o.tran_ref}` : ''}</Typography>
         {o.notes && <Typography sx={{ fontSize: 14, mt: .75, whiteSpace: 'pre-line' }}>{o.notes}</Typography>}
+        {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
         {o.flags.includes('paid_after_expiry') && <Alert severity="warning" sx={{ mt: 1 }}>Paid after the hold ran out — check the package isn’t over-sold.</Alert>}
         <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ mt: 1.25 }}>
           {digits.length >= 8 && <Button size="small" variant="outlined" startIcon={<CallRounded />} href={`tel:+${digits}`}>Call</Button>}
@@ -299,7 +307,7 @@ function DeskSaleDialog({ packages, orders, onClose, onSaved }: { packages: Staf
       ref: newRef(), package_id: pack.id, quantity, first_name: first, last_name: rest.join(' '), phone: phone.trim(), email: email.trim().toLowerCase(), notes: notes.trim(), source: 'desk',
     } });
     setBusy(false);
-    if (saveError) setError(saveError.message.includes('sold out') ? `Only ${left} left in this package.` : saveError.message); else await onSaved();
+    if (saveError) setError(saveError.message.includes('sold out') ? `Only ${left} left in this package.` : saveError.message); else { notifyContentChanged('events'); await onSaved(); }
   };
 
   return <Dialog open onClose={onClose} fullScreen={phoneScreen} fullWidth maxWidth="xs">

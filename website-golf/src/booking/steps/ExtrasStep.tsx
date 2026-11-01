@@ -13,6 +13,8 @@ import { BookingSummary } from '../components/BookingSummary';
 import { EXPERIENCE_LEVELS, pickupFor } from '../config';
 import { fromMinutes, timeLabel, toMinutes } from '../dates';
 import { money } from '../pricing';
+import { RentalCard } from '../../components/activities/RentalCard';
+import { STICKY_TOP } from '../../layoutConstants';
 
 // Step 2: rental clubs, the free shuttle and — for lessons — how much golf
 // they've played. Everything here is optional except a pick-up address when
@@ -40,10 +42,10 @@ export function ExtrasStep() {
 
       <Stack spacing={2.5}>
         {activity.rentals && rentals.length > 0 && <Card icon={<SportsGolfRounded />} title="Rental clubs" hint="Bringing your own? Skip this. Sets are paid at the club with your booking.">
-          <Stack spacing={1.5} sx={{ maxWidth: 420 }}>
-            {rentals.map((r) => <GuestStepper key={r.id} label={`${r.label} · ${money(r.price)}`} value={extras.rentals[r.id] ?? 0} min={0}
+          <Stack spacing={1.5}>
+            {rentals.map((r) => <RentalCard key={r.id} rental={r}><GuestStepper label="Sets" value={extras.rentals[r.id] ?? 0} min={0}
               max={search.players - rentals.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
-              onChange={(count) => updateExtras({ rentals: { ...extras.rentals, [r.id]: count } })} />)}
+              onChange={(count) => updateExtras({ rentals: { ...extras.rentals, [r.id]: count } })} /></RentalCard>)}
           </Stack>
         </Card>}
 
@@ -77,7 +79,7 @@ export function ExtrasStep() {
       <Button variant="contained" size="large" onClick={goOn} endIcon={<East />} sx={{ mt: 3, display: { xs: 'none', md: 'inline-flex' } }}>Continue to your details</Button>
     </Box>
 
-    <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+    <Box sx={{ position: { md: 'sticky' }, top: { md: STICKY_TOP } }}>
       <BookingSummary action={<Button fullWidth variant="contained" onClick={goOn} endIcon={<East />}>Continue</Button>} />
     </Box>
   </Box>;

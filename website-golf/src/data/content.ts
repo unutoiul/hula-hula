@@ -2,11 +2,11 @@ import type { NavItem } from '../types';
 import { photoAssets as p } from './photos';
 
 export const navItems: NavItem[] = [
-  ['The course', '#course'], ['Activities', '#play'], ['Prices', '#prices'], ['Clubhouse', '#clubhouse'], ['Visit', '#visit'], ['Say hello', '#contact'],
+  ['The course', '/course'], ['Activities', '/activities'], ['Prices', '/prices'], ['Clubhouse', '/clubhouse'], ['Visit', '/visit'], ['Say hello', '/contact'],
 ];
 
 export const COURSE_FACTS = [
-  { value: '9', label: 'holes' },
+  { value: '9 / 18', label: 'hole packages' },
   { value: '36', label: 'par' },
   { value: '3,011', label: 'yards' },
   { value: '8.5–9', label: 'ft green speed' },
@@ -46,7 +46,7 @@ export const places: Place[] = [
     about: 'The H Café & Restaurant sits in the clubhouse, looking straight down the fairways to Phanom Bencha mountain. Come early for lattes, matcha and fresh pastries, or stay after your round for plates to share and cold shakes on the balcony.\n\nIt’s open to everyone, no tee time needed. And if you’re in a driving range bay, food and drinks come right to your sofa.',
     images: [p.cafeView.src, p.cafeCoffee.src, p.cafeInterior.src, p.cafeLounge.src],
     facts: ['Open to everyone, no tee time needed', 'Balcony seats over the fairways', 'Food & drinks brought to the range bays'],
-    actions: [{ label: 'Reserve a table', href: 'whatsapp', message: 'Hi Hula Hula Golf Club! I’d like to reserve a table at H Café for ' }, { label: 'See the clubhouse', href: '/#clubhouse' }],
+    actions: [{ label: 'Reserve a table', href: 'whatsapp', message: 'Hi Hula Hula Golf Club! I’d like to reserve a table at H Café for ' }, { label: 'See the clubhouse', href: '/clubhouse' }],
     showHours: true,
   },
   {

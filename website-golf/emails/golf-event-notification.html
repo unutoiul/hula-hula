@@ -1,0 +1,98 @@
+<!doctype html>
+<!--
+  Resend template "golf-event-notification": goes to the club's inbox when a
+  guest has paid for event places through 2C2P (api/_lib/events.ts). The
+  order is in /admin → Events; the guest is the reply-to. Edit here, then
+  `npm run email:publish`. Same rules as golf-booking-confirmation.html.
+  FLAGS_DISPLAY switches on the "please check" box (a test payment, paid
+  after the hold ran out, an amount that doesn't match) and WHATSAPP_DISPLAY
+  the WhatsApp button ("none;mso-hide:all" hides them).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>New event order {{{ORDER_REF}}}</title>
+</head>
+<body style="margin:0;padding:0;background:#fbfdf4;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">{{{PREVIEW}}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbfdf4;">
+    <tr><td align="center" style="padding:28px 14px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border:1px solid #d6e1ce;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:8px;background:#f9f70c;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td align="center" style="padding:26px 28px 8px;">
+          <a href="{{{SITE_URL}}}/admin/events"><img src="{{{SITE_URL}}}/email/hula-hula-golf-logo.png" width="120" height="107" alt="Hula Hula Golf Club" style="display:block;border:0;width:120px;height:auto;"></a>
+        </td></tr>
+        <tr><td align="center" style="padding:6px 28px 0;">
+          <span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#e7f4cc;color:#50830d;font:700 11px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;">New event order · {{{ORDER_REF}}}</span>
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px 4px;font:700 26px/1.2 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{GUEST_NAME}}} is coming to {{{EVENT_TITLE}}}</td></tr>
+        <tr><td align="center" style="padding:0 34px 22px;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">Paid online on the Hula Hula Golf Club website. The order is in the staff app under Events.</td></tr>
+
+        <tr><td style="padding:0 28px 18px;display:{{{FLAGS_DISPLAY}}};">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fbc5;border:1px solid #e4e208;border-radius:18px;">
+            <tr><td style="padding:16px 22px;font:400 14px/1.7 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#686b0b;">Please check</span><br>{{{FLAGS_HTML}}}</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:0 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e7f4cc;border-radius:18px;">
+            <tr><td style="padding:18px 22px 4px;font:400 15px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#50830d;">Event</span><br><strong style="font-size:20px;">{{{EVENT_TITLE}}}</strong></td></tr>
+            <tr><td style="padding:4px 22px 18px;font:400 14px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">{{{EVENT_WHEN}}}</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:12px 0;border-top:1px solid #d6e1ce;font:400 14px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;vertical-align:top;"><strong>{{{PACKAGE_NAME}}}</strong><br><span style="color:#4b6457;">{{{PACKAGE_DETAIL}}}</span></td>
+              <td align="right" style="padding:12px 0 12px 12px;border-top:1px solid #d6e1ce;font:400 14px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;vertical-align:top;white-space:nowrap;">{{{TOTAL}}}</td>
+            </tr>
+          </table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;border-top:2px solid #173c2c;">
+            <tr><td style="padding:10px 0 3px;color:#50830d;">{{{PAID_LABEL}}}</td><td align="right" style="padding:10px 0 3px;color:#50830d;"><strong>{{{TOTAL}}}</strong></td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Guest</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><strong>{{{GUEST_NAME}}}</strong></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Email</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><a href="mailto:{{{GUEST_EMAIL}}}" style="color:#006d8a;text-decoration:underline;">{{{GUEST_EMAIL}}}</a></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Phone</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{GUEST_PHONE}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Country</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{GUEST_COUNTRY}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Notes</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;word-break:break-word;">{{{NOTES}}}</td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 8px;">
+          <a href="{{{SITE_URL}}}/admin/events" style="display:inline-block;margin:0 8px 10px 0;padding:13px 24px;border-radius:999px;background:#006d8a;color:#ffffff;font:700 14px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;text-decoration:none;">Open events in the staff app</a><a href="{{{WHATSAPP_URL}}}" style="display:{{{WHATSAPP_DISPLAY}}};margin:0 8px 10px 0;padding:13px 24px;border-radius:999px;background:#50830d;color:#ffffff;font:700 14px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;text-decoration:none;">Reply on WhatsApp</a>
+        </td></tr>
+        <tr><td style="padding:6px 28px 26px;font:400 13px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">Tip: just hit reply — your answer goes straight to {{{GUEST_NAME}}}. Refunds are made in the 2C2P merchant portal.</td></tr>
+        <tr><td align="center" style="padding:0 28px 20px;">
+          <img src="{{{SITE_URL}}}/email/hula-hula-pineapple.png" width="108" height="72" alt="" role="presentation" style="display:block;border:0;width:108px;max-width:100%;height:auto;">
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px;background:#fbfdf4;border-top:1px solid #d6e1ce;font:400 12px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">
+          Hula Hula Golf Club · {{{CLUB_AREA}}} · {{{CLUB_EMAIL}}} · <a href="{{{SITE_URL}}}/admin" style="color:#006d8a;">Open the staff app</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

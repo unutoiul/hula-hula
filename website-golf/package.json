@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.api.json",
     "test:unit": "node --test tests/*.test.ts",
+    "email:publish": "node --env-file-if-exists=.env.local scripts/publish-emails.mjs",
     "preview": "vite preview",
     "photos": "python scripts/prepare-golf-photos.py"
   },

@@ -1,21 +1,25 @@
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import East from '@mui/icons-material/East';
 import WhatsApp from '@mui/icons-material/WhatsApp';
-import { Box, Button, Chip, CircularProgress, Container, Stack, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Stack, Typography } from '@mui/material';
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { bookHref } from '../booking/BookingFlowContext';
 import { clubRules, findActivity, hasPrices, openingHoursLines, type Activity } from '../booking/config';
 import { durationLabel, timeLabel } from '../booking/dates';
 import { money } from '../booking/pricing';
-import { ThingCard, ThingIcon } from '../components/activities/ThingCard';
+import { ThingCard } from '../components/activities/ThingCard';
 import { ClubPhoto } from '../components/common/ClubPhoto';
-import { SunDoodle } from '../components/common/VacationDecor';
-import { PageHeader } from '../components/layout/PageHeader';
+import { PageIntro } from '../components/layout/PageIntro';
+import { PublicPageLayout } from '../components/layout/PublicPageLayout';
 import { useContact, useSite, useSiteData } from '../context/SiteDataContext';
 import { places, type Place } from '../data/content';
 import { linkClick, navigate, useLocation } from '../router';
 import { fonts } from '../theme';
 import { thingsToDo, type ThingIconKey } from './things';
+import { RentalCard } from '../components/activities/RentalCard';
+import { CourseGuide } from './CourseGuide';
+import { STICKY_TOP } from '../layoutConstants';
+import { SEAM } from '../components/common/SectionSeam';
 
 // /activities/<id> — one thing to do, on its own page: a big photo, the story,
 // prices (or opening hours), the good-to-know, a way to book it, and the rest
@@ -41,21 +45,21 @@ export default function ActivityApp() {
   const { pathname } = useLocation();
   const { ready } = useSiteData();
   const site = useSite();
-  const id = pathname.replace(/^\/activities\/?/, '').split('/')[0];
-  useEffect(() => { if (!id) navigate('/#play', { replace: true }); }, [id]);
+  const id = pathname === '/course' ? 'golf' : pathname.replace(/^\/activities\/?/, '').split('/')[0];
+  useEffect(() => { if (!id) navigate('/activities', { replace: true }); }, [id]);
   const activity = findActivity(site, id);
   const place = places.find((pl) => pl.id === id);
   const name = activity?.name ?? place?.name;
   useEffect(() => { if (name) document.title = `${name} — Hula Hula Golf Club`; }, [name]);
 
-  return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-    <PageHeader question="Questions? Ask us anything." />
+  // The "More to do" band under an activity or place is sea blue; the footer's wave flows out of it.
+  return <PublicPageLayout footerFrom={activity || place ? SEAM.sea : undefined}>
     {activity ? <ActivityPage key={id} activity={activity} />
       : place ? <PlacePage key={id} place={place} />
         : !ready ? <Box sx={{ display: 'grid', placeItems: 'center', minHeight: '60vh' }}><CircularProgress aria-label="Loading" /></Box>
           : id ? <NotFound /> : null}
     {(activity || place) && <MoreToDo exclude={id} />}
-  </Box>;
+  </PublicPageLayout>;
 }
 
 const chat = (whatsapp: string, text: string) => `${whatsapp}?text=${encodeURIComponent(text)}`;
@@ -98,10 +102,17 @@ function ActivityPage({ activity }: { activity: Activity }) {
     {priced && <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.25, textAlign: 'center' }}>In Thai baht{activity.bookOnline ? ', paid at the club on the day' : ''}.</Typography>}
   </>;
 
-  return <Page model={{
-    kicker: activity.card.kicker || activity.name, name: activity.name, lead: activity.card.detail || activity.tagline,
+  return <><Page model={{
+    kicker: activity.id === 'golf' ? 'The course · 9 or 18 holes' : activity.card.kicker || activity.name, name: activity.id === 'golf' ? 'A round worth coming for.' : activity.name, lead: activity.id === 'golf' ? 'Tropical fairways, mountain views and a warm welcome. Play nine holes, or make a day of it with our 18-hole Golf package. Green fee, caddie and cart included.' : activity.card.detail || activity.tagline,
     about: activity.about || activity.card.detail, images: activity.card.images, icon: activity.icon, actions, aside, goodToKnow,
-  }} />;
+  }} />
+    {activity.rentals && rentals.length > 0 && <Container maxWidth="lg" sx={{ mt: 6 }}>
+      <Typography variant="h2" sx={{ fontSize: { xs: 32, md: 42 }, mb: 1 }}>Your clubs, sorted.</Typography>
+      <Typography sx={{ color: 'text.secondary', mb: 3 }}>Travel light. Choose a rental set and add it to your booking.</Typography>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0,1fr))' }, gap: 2 }}>{rentals.map((r) => <RentalCard key={r.id} rental={r} />)}</Box>
+    </Container>}
+    <CourseGuide id={activity.id} />
+  </>;
 }
 
 function PlacePage({ place }: { place: Place }) {
@@ -127,25 +138,10 @@ function Page({ model }: { model: PageModel }) {
   const [cover, ...more] = model.images;
   const paragraphs = model.about.split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean);
   return <>
-    {/* The cover: its first photo, or its icon on the club's green until it has one. */}
-    <Box sx={{ position: 'relative', minHeight: { xs: 400, md: 540 }, display: 'flex', alignItems: 'flex-end', color: 'white', overflow: 'hidden', bgcolor: 'primary.dark' }}>
-      {cover
-        ? <Box sx={{ position: 'absolute', inset: 0 }}><ClubPhoto image={cover} alt="" eager sizes="100vw" /></Box>
-        : <Box aria-hidden sx={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 80% 20%, rgba(249,247,12,.18), transparent 55%), radial-gradient(ellipse at 10% 90%, rgba(0,109,138,.45), transparent 60%)' }}>
-          <SunDoodle size={160} color="#f9f70c" sx={{ position: 'absolute', right: { xs: -30, md: '12%' }, top: { xs: 24, md: 60 }, opacity: .9 }} />
-          <ThingIcon icon={model.icon} sx={{ position: 'absolute', right: { xs: 24, md: '16%' }, bottom: { xs: 150, md: 120 }, fontSize: { xs: 96, md: 180 }, color: 'rgba(255,255,255,.16)' }} />
-        </Box>}
-      {cover && <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(18,78,57,.92) 0%, rgba(18,78,57,.5) 45%, rgba(18,78,57,.04) 100%)' }} />}
-      <Container maxWidth="lg" sx={{ position: 'relative', px: { xs: 2, sm: 3 }, pb: { xs: 4, md: 7 }, pt: 10 }}>
-        <Chip icon={<ThingIcon icon={model.icon} sx={{ color: 'inherit !important', fontSize: '18px !important' }} />} label={model.kicker} sx={{ bgcolor: 'secondary.main', color: 'text.primary', fontWeight: 700 }} />
-        <Typography variant="h1" sx={{ fontSize: { xs: 44, sm: 58, md: 78 }, lineHeight: 1, mt: 2, maxWidth: 820 }}>{model.name}</Typography>
-        {model.lead && <Typography sx={{ mt: 2, fontSize: { xs: 17, md: 20 }, lineHeight: 1.6, maxWidth: 640, color: 'rgba(255,255,255,.92)' }}>{model.lead}</Typography>}
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }} alignItems={{ sm: 'center' }}>
-          <ActionButton action={model.actions[0]} color="secondary" />
-          {model.actions[1] && <ActionButton action={model.actions[1]} variant="outlined" sx={{ color: 'white', borderColor: 'rgba(255,255,255,.6)', '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,.08)' } }} />}
-        </Stack>
-      </Container>
-    </Box>
+    <PageIntro title={model.name} description={model.lead} image={cover || '/images/golf/sunnyFairway-1600.webp'} eyebrow={model.kicker} parent={{ label: 'Activities', href: '/activities' }}>
+      <ActionButton action={model.actions[0]} />
+      {model.actions[1] && <ActionButton action={model.actions[1]} variant="outlined" />}
+    </PageIntro>
 
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, mt: { xs: 4, md: 7 } }}>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.5fr) minmax(0, 1fr)' }, gap: { xs: 4, md: 6 }, alignItems: 'start' }}>
@@ -171,7 +167,7 @@ function Page({ model }: { model: PageModel }) {
             </Box>
           </Box>}
         </Box>
-        <Box component="aside" sx={{ position: { md: 'sticky' }, top: { md: 24 }, p: { xs: 2.5, md: 3 }, borderRadius: '24px', border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', bgcolor: 'background.paper', boxShadow: '0 12px 30px rgba(23,60,44,.06)' }}>
+        <Box component="aside" sx={{ position: { md: 'sticky' }, top: { md: STICKY_TOP }, p: { xs: 2.5, md: 3 }, borderRadius: '24px', border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', bgcolor: 'background.paper', boxShadow: '0 12px 30px rgba(23,60,44,.06)' }}>
           {model.aside}
         </Box>
       </Box>
@@ -202,8 +198,8 @@ function MoreToDo({ exclude }: { exclude: string }) {
   return <Box component="section" aria-labelledby="more-heading" sx={{ mt: { xs: 8, md: 11 }, py: { xs: 6, md: 8 }, bgcolor: 'primary.main', color: 'white' }}>
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
       <Typography id="more-heading" variant="h2" sx={{ fontSize: { xs: 34, md: 46 }, mb: { xs: 3, md: 4 } }}>More to do at Hula Hula</Typography>
-      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' }, gap: { xs: 1.5, md: 2.5 } }}>
-        {things.map((thing) => <Box component="li" key={thing.id}><ThingCard thing={thing} sizes="(max-width: 900px) 46vw, 260px" /></Box>)}
+      <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' }, gap: { xs: 2, md: 2.5 } }}>
+        {things.slice(0, 4).map((thing) => <Box component="li" key={thing.id}><ThingCard thing={thing} sizes="(max-width: 600px) 92vw, (max-width: 900px) 46vw, 260px" /></Box>)}
       </Box>
     </Container>
   </Box>;
@@ -213,6 +209,6 @@ function NotFound() {
   return <Container maxWidth="sm" sx={{ py: 12, textAlign: 'center' }}>
     <Typography variant="h1" sx={{ fontSize: 36 }}>We couldn’t find that</Typography>
     <Typography sx={{ color: 'text.secondary', mt: 1.5 }}>It may not be running at the moment, or the link has changed.</Typography>
-    <Button href="/#play" onClick={linkClick('/#play')} variant="contained" sx={{ mt: 3 }}>See everything to do</Button>
+    <Button href="/activities" onClick={linkClick('/activities')} variant="contained" sx={{ mt: 3 }}>See everything to do</Button>
   </Container>;
 }

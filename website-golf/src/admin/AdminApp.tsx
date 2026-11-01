@@ -11,6 +11,7 @@ import { linkClick, navigate, useLocation } from '../router';
 import { ActivitiesPage } from './ActivitiesPage';
 import { EventEditor } from './EventEditor';
 import { EventsPage } from './EventsPage';
+import { OffersPage } from './OffersPage';
 import { SettingsPage } from './SettingsPage';
 import { DaySheet } from './DaySheet';
 import { SearchDialog } from './SearchDialog';
@@ -20,14 +21,17 @@ import { supabase } from './supabase';
 // one page per job:
 //   /admin             the day's tee sheet: check-ins, phone and walk-in bookings, blocked times
 //   /admin/events      events and their packages, orders and desk sales
+//   /admin/offers      the promotions on Home, Events & offers and All offers
 //   /admin/activities  activities and their prices, rental clubs
-//   /admin/settings    opening hours, contact details, shuttle, booking rules Staff sign in with the email and password set up for them in
-// the golf club's Supabase project (Authentication → Users); only addresses
-// on golf_staff get in.
+//   /admin/settings    opening hours, contact details, shuttle, booking rules
+// Staff sign in with the email and password set up for them in the golf
+// club's Supabase project (Authentication → Users); only addresses on
+// golf_staff get in.
 
 const PAGES = [
   { path: '/admin', label: 'Tee sheet' },
   { path: '/admin/events', label: 'Events' },
+  { path: '/admin/offers', label: 'Offers' },
   { path: '/admin/activities', label: 'Activities & prices' },
   { path: '/admin/settings', label: 'Club settings' },
 ];
@@ -75,7 +79,7 @@ export default function AdminApp() {
     <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'rgba(255,253,243,.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid', borderColor: 'divider' }}>
       <Container maxWidth="md" sx={{ px: { xs: 1.5, sm: 3 } }}>
         <Stack direction="row" alignItems="center" spacing={1.5} sx={{ minHeight: 56 }}>
-          <Box component="img" src="/logo/hula-hula-golf.svg" alt="" sx={{ height: 38, width: 'auto' }} />
+          <Box component="img" src="/logo/hula-hula-golf.png" alt="" sx={{ height: 38, width: 'auto' }} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography sx={{ fontWeight: 700, lineHeight: 1.2 }}>Golf club admin</Typography>
             <Typography noWrap sx={{ fontSize: 12, color: 'text.secondary' }}>{session.user.email}</Typography>
@@ -91,6 +95,7 @@ export default function AdminApp() {
     </Box>
     <Container maxWidth="md" sx={{ px: { xs: 1.5, sm: 3 }, pt: 2.5 }}>
       {page.path === '/admin/events' ? (eventId ? <EventEditor key={eventId} id={eventId} /> : <EventsPage />)
+        : page.path === '/admin/offers' ? <OffersPage />
         : page.path === '/admin/activities' ? <ActivitiesPage />
         : page.path === '/admin/settings' ? <SettingsPage />
         : <DaySheet jumpTo={jumpTo} />}
@@ -104,7 +109,7 @@ function CentredCard({ children }: { children: ReactNode }) {
     <Box sx={{ width: '100%', maxWidth: 420 }}>
       <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', borderRadius: '24px', p: { xs: 3, sm: 4 }, boxShadow: '0 16px 36px rgba(23,60,44,.07)' }}>
         <Stack alignItems="center" spacing={1} sx={{ mb: 3 }}>
-          <Box component="img" src="/logo/hula-hula-golf.svg" alt="Hula Hula Golf Club" sx={{ height: 72, width: 'auto' }} />
+          <Box component="img" src="/logo/hula-hula-golf.png" alt="Hula Hula Golf Club" sx={{ height: 72, width: 'auto' }} />
           <Typography variant="h3" sx={{ fontSize: 26 }}>Staff tee sheet</Typography>
         </Stack>
         {children}

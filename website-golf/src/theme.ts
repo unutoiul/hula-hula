@@ -29,7 +29,7 @@ const theme = createTheme({
   },
   shape: { borderRadius: 18 },
   components: {
-    MuiContainer: { styleOverrides: { root: { '@media (min-width: 1200px)': { paddingLeft: 48, paddingRight: 48 } } } },
+    MuiContainer: { styleOverrides: { root: { '@media (min-width: 1200px)': { paddingLeft: 32, paddingRight: 32 }, '&.MuiContainer-maxWidthXl': { maxWidth: 1264 } } } },
     // One button system for the whole site: every pill is 48px tall (small: 40px,
     // used for filter chips and in-card actions), outlined pills lose a pixel of
     // padding to their border so they match contained ones exactly, and the text

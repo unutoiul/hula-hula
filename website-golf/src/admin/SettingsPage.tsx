@@ -3,16 +3,16 @@ import { Alert, Box, Button, Chip, CircularProgress, FormControlLabel, Stack, Sw
 import { useEffect, useState } from 'react';
 import { normaliseClub, openingHoursLines, WEEKDAYS, type ClubSettings } from '../booking/config';
 import { timeLabel } from '../booking/dates';
-import { useSiteData } from '../context/SiteDataContext';
+import { notifyContentChanged } from '../data/contentSync';
 import { supabase } from './supabase';
 import { linesToList, listToLines, PageTitle, Section, toInt } from './ui';
 
 // /admin/settings — the club-wide things the website shows and the booking
 // rules it follows: the top-bar message, opening hours (a closed day takes no
-// bookings), contact details, the shuttle and the booking rules. One save;
+// bookings), contact details, the shuttle and the booking rules. Offers share
+// the same settings row but have their own page, /admin/offers. One save;
 // the website follows within about half a minute.
 export function SettingsPage() {
-  const { reload } = useSiteData();
   const [club, setClub] = useState<ClubSettings | null>(null);
   const [newPickup, setNewPickup] = useState('');
   const [facilities, setFacilities] = useState('');
@@ -21,14 +21,14 @@ export function SettingsPage() {
 
   useEffect(() => {
     void supabase!.from('golf_settings').select('value').eq('key', 'club').maybeSingle().then(({ data, error }) => {
-      if (error) setStatus({ ok: false, text: error.message });
+      if (error) { setStatus({ ok: false, text: error.message }); return; }
       const loaded = normaliseClub(data?.value);
       setClub(loaded);
       setFacilities(listToLines(loaded.facilities));
     });
   }, []);
 
-  if (!club) return <Box sx={{ textAlign: 'center', py: 6 }}><CircularProgress /></Box>;
+  if (!club) return status ? <Alert severity="error">Could not load club settings: {status.text}. Refresh to try again; nothing has been changed.</Alert> : <Box sx={{ textAlign: 'center', py: 6 }}><CircularProgress /></Box>;
   const set = (change: Partial<ClubSettings>) => { setStatus(null); setClub({ ...club, ...change }); };
   const setContact = (change: Partial<ClubSettings['contact']>) => set({ contact: { ...club.contact, ...change } });
   const setBooking = (change: Partial<ClubSettings['booking']>) => set({ booking: { ...club.booking, ...change } });
@@ -36,14 +36,18 @@ export function SettingsPage() {
 
   const save = async () => {
     setBusy(true);
-    const cleaned = normaliseClub({ ...club, facilities: linesToList(facilities) });
-    const { error } = await supabase!.from('golf_settings').upsert({ key: 'club', value: cleaned });
+    // Offers are edited on /admin/offers; keep whatever was last saved there.
+    const latest = await supabase!.from('golf_settings').select('value').eq('key', 'club').maybeSingle();
+    if (latest.error) { setBusy(false); setStatus({ ok: false, text: latest.error.message }); return; }
+    const cleaned = normaliseClub({ ...club, offers: normaliseClub(latest.data?.value).offers, facilities: linesToList(facilities) });
+    const { data, error } = await supabase!.from('golf_settings').upsert({ key: 'club', value: cleaned }).select('value').single();
     setBusy(false);
     if (error) { setStatus({ ok: false, text: error.message }); return; }
-    setClub(cleaned);
-    setFacilities(listToLines(cleaned.facilities));
-    setStatus({ ok: true, text: 'Saved — the website shows it within about half a minute.' });
-    void reload();
+    const saved = normaliseClub(data.value);
+    setClub(saved);
+    setFacilities(listToLines(saved.facilities));
+    setStatus({ ok: true, text: 'Saved. Website tabs in this browser refresh now; other visitors see updates within 30 seconds.' });
+    notifyContentChanged('site');
   };
 
   const saveButton = <Button variant="contained" onClick={() => void save()} disabled={busy}>{busy ? 'Saving…' : 'Save'}</Button>;

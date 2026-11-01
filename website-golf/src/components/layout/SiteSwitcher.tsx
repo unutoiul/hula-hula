@@ -4,7 +4,8 @@ import East from '@mui/icons-material/East';
 import GolfCourseRounded from '@mui/icons-material/GolfCourseRounded';
 import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
 import { Box, Popover, Stack, Tooltip, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
+import { linkClick } from '../../router';
 import { fonts } from '../../theme';
 import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 
@@ -14,6 +15,8 @@ import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 // opens the list), and the mobile menu. The resort's copy of this file is
 // website/src/components/layout/SiteSwitcher.tsx — keep the two in step.
 // The golf club lives on its Vercel address until it has its own domain.
+// Unlike the one-page resort, the golf club has several pages, so "You're
+// here" goes to its homepage (or back to the top when already there).
 
 export const SITES = [
   { id: 'resort', name: 'Hula Hula Resort', short: 'Resort', line: 'Tropical stays & pool villas in Ao Nang', url: 'https://hulahularesort.com', image: '/images/switcher/resort.webp', Icon: BeachAccessRounded },
@@ -23,12 +26,18 @@ export const SITES = [
 const HERE = 'golf';
 const other = SITES.find((s) => s.id !== HERE)!;
 
+const goHome = (event: MouseEvent<HTMLElement>) => {
+  if (window.location.pathname !== '/') { linkClick('/')(event); return; }
+  event.preventDefault();
+  window.scrollTo({ top: 0 });
+};
+
 /** The two-way tab in the blue strip at the very top (large screens). */
 export function SiteTabs() {
   return <Stack component="nav" aria-label="Hula Hula websites" direction="row" sx={{ p: '3px', gap: '2px', borderRadius: 999, bgcolor: 'rgba(255,255,255,.14)' }}>
     {SITES.map(({ id, short, url, Icon }) => {
       const here = id === HERE;
-      return <Box key={id} component="a" href={here ? '#top' : url} aria-current={here ? 'page' : undefined} sx={{
+      return <Box key={id} component="a" href={here ? '/' : url} onClick={here ? goHome : undefined} aria-current={here ? 'page' : undefined} sx={{
         display: 'inline-flex', alignItems: 'center', gap: .6, height: 26, px: 1.4, borderRadius: 999, fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap',
         textDecoration: 'none', color: here ? 'primary.main' : 'common.white', bgcolor: here ? 'common.white' : 'transparent',
         transition: 'background-color .2s ease', '&:hover': here ? undefined : { bgcolor: 'rgba(255,255,255,.22)' }, '& svg': { fontSize: 15 },
@@ -42,7 +51,7 @@ export function SiteList({ onHere }: { onHere?: () => void }) {
   return <Stack spacing={1}>
     {SITES.map(({ id, name, line, url, image }) => {
       const here = id === HERE;
-      return <Box key={id} component="a" href={here ? '#top' : url} onClick={here ? onHere : undefined} aria-current={here ? 'page' : undefined} sx={{
+      return <Box key={id} component="a" href={here ? '/' : url} onClick={here ? (e: MouseEvent<HTMLElement>) => { onHere?.(); goHome(e); } : undefined} aria-current={here ? 'page' : undefined} sx={{
         display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25, borderRadius: '18px', textDecoration: 'none', color: 'text.primary',
         border: '1px solid', borderColor: here ? 'primary.main' : 'divider', bgcolor: here ? 'primary.light' : 'background.paper',
         transition: 'border-color .2s ease, transform .2s ease, box-shadow .2s ease',
@@ -66,7 +75,7 @@ export function SiteList({ onHere }: { onHere?: () => void }) {
 /**
  * The header logo: a small swap badge on its corner says it does more than go
  * home — a tap opens both places, with "You're here" on this one (which
- * scrolls back to the top) and a one-tap jump to the other.
+ * goes to the golf club's homepage) and a one-tap jump to the other.
  */
 export function SwitcherLogo({ size }: { size: MarkSize }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);

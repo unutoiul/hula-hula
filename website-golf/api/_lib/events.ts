@@ -1,8 +1,8 @@
 import type { EventOrderStatus, EventOrderView, PublicEvent, ScheduleItem } from '../../src/booking/contract.ts';
 import { krabiNow } from '../../src/booking/dates.ts';
 import { rest } from './db.ts';
-import { eventClubEmail, eventGuestEmail, type PaidOrder } from './emails.ts';
-import { emailConfigured, sendEmail, splitAddresses } from './resend.ts';
+import { eventConfirmation, eventNotification, type PaidOrder } from './emails.ts';
+import { emailConfigured, sendTemplate, splitAddresses } from './resend.ts';
 import { contactLinks } from '../../src/booking/config.ts';
 import { loadSite } from './site.ts';
 import { isTestMode, PAID, paymentInquiry } from './twoc2p.ts';
@@ -113,12 +113,13 @@ export async function sendOrderEmails(order: OrderRow, siteUrl = process.env.SIT
   const site = await loadSite();
   const contact = contactLinks(site.club.contact);
   const view = await viewOf(claimed);
-  const paidOrder: PaidOrder = { ...view, firstName: claimed.first_name, lastName: claimed.last_name, phone: claimed.phone, country: claimed.country, notes: claimed.notes, unitPrice: claimed.unit_price };
+  const paidOrder: PaidOrder = { ...view, firstName: claimed.first_name, lastName: claimed.last_name, phone: claimed.phone, country: claimed.country, notes: claimed.notes, unitPrice: claimed.unit_price, flags: claimed.flags };
   const from = process.env.GOLF_EMAIL_FROM || 'Hula Hula Golf Club <golf@hulahularesort.com>';
   const url = siteUrl.replace(/\/$/, '');
   const results = await Promise.allSettled([
-    claimed.email ? sendEmail({ from, to: [claimed.email], replyTo: contact.email, ...eventGuestEmail(paidOrder, url, site) }) : Promise.resolve({ ok: true, status: 200, body: '' }),
-    sendEmail({ from, to: splitAddresses(process.env.GOLF_BOOKINGS_TO || contact.email), bcc: splitAddresses(process.env.GOLF_BOOKINGS_BCC ?? ''), replyTo: claimed.email || undefined, ...eventClubEmail(paidOrder, url, site) }),
+    // A retry after one of the two failed resends both; the keys stop the one that went through going twice.
+    claimed.email ? sendTemplate({ from, to: [claimed.email], replyTo: contact.email, ...eventConfirmation(paidOrder, url, site), idempotencyKey: `golf-event-${claimed.ref}-guest` }) : Promise.resolve({ ok: true, status: 200, body: '' }),
+    sendTemplate({ from, to: splitAddresses(process.env.GOLF_BOOKINGS_TO || contact.email), bcc: splitAddresses(process.env.GOLF_BOOKINGS_BCC ?? ''), replyTo: claimed.email || undefined, ...eventNotification(paidOrder, url, site), idempotencyKey: `golf-event-${claimed.ref}-club` }),
   ]);
   const ok = results.every((r) => r.status === 'fulfilled' && r.value.ok);
   if (!ok) {

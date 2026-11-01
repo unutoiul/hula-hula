@@ -9,6 +9,7 @@ import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
 import { ClubPhoto } from '../common/ClubPhoto';
 import { Reveal } from '../common/ScrollMotion';
 import { fonts } from '../../theme';
+import { linkClick } from '../../router';
 
 const categories = ['All of it', ...new Set(galleryPhotos.map(photo => photo.category))];
 
@@ -16,7 +17,7 @@ const categories = ['All of it', ...new Set(galleryPhotos.map(photo => photo.cat
 // look as the photo arrows on the activity cards.
 const viewerButtonSx = { width: 48, height: 48, bgcolor: '#fbfdf4', color: 'text.primary', '&:hover': { bgcolor: 'secondary.main' } } as const;
 
-export function GallerySection() {
+export function GallerySection({ showIntro = true, preview = false }: { showIntro?: boolean; preview?: boolean }) {
   const [category, setCategory] = useState(categories[0]);
   const [selected, setSelected] = useState<number | null>(null);
   const visible = category === categories[0] ? galleryPhotos : galleryPhotos.filter(photo => photo.category === category);
@@ -27,12 +28,12 @@ export function GallerySection() {
   const touchStartX = useRef<number | null>(null);
   return <Box component="section" id="gallery" aria-label="Golf club photo gallery" sx={{ py: { xs: 8, md: 11 }, scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl">
-      <Reveal sx={{ textAlign: 'center', position: 'relative' }}><Typography variant="h2" sx={{ fontSize: { xs: 42, md: 63 }, mt: 1.5, lineHeight: 1.04 }}>Green, green grass.<br /><Box component="span" color="primary.main">Big, blue skies.</Box></Typography><Typography sx={{ mt: 2, color: 'text.secondary' }}>A little peek at a day out, Hula Hula style.</Typography></Reveal>
+      {showIntro && <Reveal sx={{ textAlign: 'center', position: 'relative' }}><Typography variant="h2" sx={{ fontSize: { xs: 42, md: 63 }, mt: 1.5, lineHeight: 1.04 }}>Green, green grass.<br /><Box component="span" color="primary.main">Big, blue skies.</Box></Typography><Typography sx={{ mt: 2, color: 'text.secondary' }}>A little peek at a day out, Hula Hula style.</Typography></Reveal>}
       <Stack direction="row" justifyContent="center" flexWrap="wrap" useFlexGap gap={1} sx={{ mt: 4, mb: 4 }}>
         {categories.map(value => <Button key={value} onClick={() => setCategory(value)} aria-pressed={category === value} size="small" variant={category === value ? 'contained' : 'outlined'} color={category === value ? 'primary' : 'inherit'} sx={{ borderColor: 'divider' }}>{value}</Button>)}
       </Stack>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4,1fr)' }, gap: { xs: 1.5, md: 2.5 } }}>
-        {visible.map((item, index) => <Box key={item.image} component="button" type="button" onClick={() => setSelected(index)} aria-label={`View ${item.title.toLowerCase()}`} sx={{ display: 'flex', flexDirection: 'column', width: '100%', p: { xs: .7, md: 1 }, border: '1px solid #d6e1ce', bgcolor: 'background.paper', color: 'text.primary', borderRadius: '12px', position: 'relative', cursor: 'pointer', boxShadow: '0 6px 18px rgba(23,60,44,.06)', '& img': { transition: 'transform .4s ease' }, '@media (hover: hover)': { '&:hover img': { transform: 'scale(1.05)' }, '&:hover .photo-expand': { bgcolor: 'secondary.main', color: 'text.primary' } } }}>
+        {visible.slice(0, preview ? 8 : undefined).map((item, index) => <Box key={item.image} component="button" type="button" onClick={() => setSelected(index)} aria-label={`View ${item.title.toLowerCase()}`} sx={{ display: 'flex', flexDirection: 'column', width: '100%', p: { xs: .7, md: 1 }, border: '1px solid #d6e1ce', bgcolor: 'background.paper', color: 'text.primary', borderRadius: '12px', position: 'relative', cursor: 'pointer', boxShadow: '0 6px 18px rgba(23,60,44,.06)', '& img': { transition: 'transform .4s ease' }, '@media (hover: hover)': { '&:hover img': { transform: 'scale(1.05)' }, '&:hover .photo-expand': { bgcolor: 'secondary.main', color: 'text.primary' } } }}>
           <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', borderRadius: '6px', overflow: 'hidden' }}>
           <ClubPhoto image={item.image} alt={item.title} sizes="(max-width: 900px) 45vw, 23vw" />
           <Box className="photo-expand" sx={{ position: 'absolute', top: 12, right: 12, width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(18,78,57,.6)', color: 'white' }}><OpenInFull sx={{ fontSize: 15 }} /></Box>
@@ -40,6 +41,7 @@ export function GallerySection() {
           <Box sx={{ px: { xs: .4, md: 1 }, py: { xs: 1.1, md: 1.6 }, textAlign: 'center', fontFamily: fonts.playful, fontSize: { xs: 13, md: 17 }, lineHeight: 1.3, flex: 1, display: 'grid', alignItems: 'center' }}>{item.title}</Box>
         </Box>)}
       </Box>
+      {preview && <Box sx={{ mt: 4, textAlign: 'center' }}><Button href="/gallery" onClick={linkClick('/gallery')} variant="outlined">Explore the full gallery →</Button></Box>}
       {/* A full-screen photo viewer: the photo at its natural shape on a deep-green
           backdrop (no letterbox bands), category and count up top, title below.
           Arrows flank the photo on desktop and sit beside the title on phones,

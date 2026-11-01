@@ -9,7 +9,7 @@ import { money } from '../../booking/pricing';
 import { useContact } from '../../context/SiteDataContext';
 import { photoAssets as p } from '../../data/photos';
 import { eventWhen, fromPriceOf, placesLeft } from '../../events/api';
-import { SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
+import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
 import { linkClick } from '../../router';
 import { fonts } from '../../theme';
 import { ClubPhoto } from '../common/ClubPhoto';
@@ -23,15 +23,15 @@ import { Sticker, SunDoodle } from '../common/VacationDecor';
 // its own page with the details and the packages to buy. With nothing
 // scheduled it stays, inviting guests to plan a day of their own. Events are
 // made and published in /admin.
-export function EventsSection({ events, loaded }: { events: PublicEvent[]; loaded: boolean }) {
+export function EventsSection({ events, loaded, home = false }: { events: PublicEvent[]; loaded: boolean; home?: boolean }) {
   const [featured, ...more] = events;
   return <Box id="events" component="section" aria-labelledby="events-heading" sx={{
-    scrollMarginTop: SECTION_SCROLL_OFFSET, py: SECTION_Y, bgcolor: 'primary.dark', color: 'white', position: 'relative', overflow: 'hidden',
+    scrollMarginTop: SECTION_SCROLL_OFFSET, py: { xs: 6, md: 8 }, bgcolor: 'primary.dark', color: 'white', position: 'relative', overflow: 'hidden',
     // The glows fade out before the top and bottom edges, so the band meets the
     // plain forest-green waves above and below it without a visible line.
     backgroundImage: `linear-gradient(180deg, ${SEAM.forest} 0, rgba(18,78,57,0) 160px), linear-gradient(0deg, ${SEAM.forest} 0, rgba(18,78,57,0) 160px), radial-gradient(ellipse at 85% 20%, rgba(249,247,12,.14), transparent 55%), radial-gradient(ellipse at 0% 85%, rgba(0,109,138,.35), transparent 55%)`,
   }}>
-    <Container maxWidth="xl" sx={{ position: 'relative' }}>
+    <Container maxWidth="lg" sx={{ position: 'relative' }}>
       <SunDoodle size={80} color="#f9f70c" sx={{ position: 'absolute', right: 420, top: -40, display: { xs: 'none', lg: 'block' }, transform: 'rotate(14deg)', opacity: .9 }} />
       <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'center', md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: { xs: 4, md: 5 }, textAlign: { xs: 'center', md: 'left' } }}>
         <Box>
@@ -39,7 +39,7 @@ export function EventsSection({ events, loaded }: { events: PublicEvent[]; loade
             <Box sx={{ width: 28, height: 3, bgcolor: 'secondary.main', borderRadius: 2 }} />
             <Typography variant="overline" sx={{ color: 'secondary.main' }}>Events at the club</Typography>
           </Stack>
-          <Typography id="events-heading" variant="h2" sx={{ fontSize: { xs: 42, md: 62 }, lineHeight: 1.04, mt: 1.5, color: 'white' }}>Big days on the fairway.<br /><Box component="span" sx={{ color: 'secondary.main' }}>{featured ? 'Book your place.' : 'Yours could be next.'}</Box></Typography>
+          <Typography id="events-heading" variant="h2" sx={{ fontSize: { xs: 34, md: 46 }, lineHeight: 1.08, mt: 1.5, color: 'white' }}>{featured ? 'Coming up at the club.' : 'Bring your people.'}<br /><Box component="span" sx={{ color: 'secondary.main' }}>{featured ? 'Make a date of it.' : 'We’ll make a day of it.'}</Box></Typography>
         </Box>
         <Typography sx={{ maxWidth: 380, color: 'rgba(255,255,255,.82)', lineHeight: 1.8 }}>
           {featured ? 'Pro days, tournaments and parties at Hula Hula. Pick a package and pay securely right here — places are limited.' : 'Pro days, tournaments and parties — and golf days for your own crew, team or celebration.'}
@@ -52,6 +52,7 @@ export function EventsSection({ events, loaded }: { events: PublicEvent[]; loade
           {more.map((event) => <SmallEvent key={event.slug} event={event} />)}
         </Box>}
       </> : loaded && <NothingScheduled />}
+      {home && <Box sx={{ mt: 3, textAlign: 'right' }}><Button href="/events" onClick={linkClick('/events')} sx={{ color: 'white' }} endIcon={<East />}>All events & group days</Button></Box>}
     </Container>
   </Box>;
 }

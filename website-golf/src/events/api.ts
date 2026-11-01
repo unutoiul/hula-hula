@@ -1,24 +1,25 @@
 import { useEffect, useState } from 'react';
 import type { ErrorResponse, EventOrderRequest, EventOrderStarted, EventOrderView, EventsResponse, PublicEvent } from '../booking/contract';
 import { dayLabel, shortDayLabel, timeLabel } from '../booking/dates';
+import { watchContent } from '../data/contentSync';
 
 // The website's side of events: published events with their packages and
 // places left (/api/events), starting an order that goes on to 2C2P, and
 // following an order once the guest is back (/api/event-order).
 
 export class EventApiError extends Error {
-  constructor(message: string, readonly code?: ErrorResponse['code']) { super(message); }
+  constructor(message: string, readonly code?: ErrorResponse['code'], readonly status?: number) { super(message); }
 }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(path, { ...init, headers: { 'Content-Type': 'application/json', ...init?.headers } });
+    response = await fetch(path, { cache: 'no-store', ...init, headers: { 'Content-Type': 'application/json', ...init?.headers } });
   } catch {
     throw new EventApiError('We couldn’t reach the website. Check your connection and try again.');
   }
   const body = await response.json().catch(() => null) as (T & Partial<ErrorResponse>) | null;
-  if (!response.ok || !body) throw new EventApiError(body?.error ?? 'Something went wrong on our side. Please try again, or WhatsApp us.', body?.code);
+  if (!response.ok || !body) throw new EventApiError(body?.error ?? 'Something went wrong on our side. Please try again, or WhatsApp us.', body?.code, response.status);
   return body;
 }
 
@@ -28,9 +29,21 @@ export const startOrder = (request: EventOrderRequest) => call<EventOrderStarted
 export const fetchOrder = (ref: string, key: string) => call<EventOrderView>(`/api/event-order?${new URLSearchParams({ ref, key })}`);
 
 /** Upcoming published events for the homepage; `loaded` once the answer is in (an empty list if it fails). */
-export function useUpcomingEvents(): { events: PublicEvent[]; loaded: boolean } {
+export function useUpcomingEvents(enabled = true): { events: PublicEvent[]; loaded: boolean } {
   const [state, setState] = useState<{ events: PublicEvent[]; loaded: boolean }>({ events: [], loaded: false });
-  useEffect(() => { fetchEvents().then((events) => setState({ events, loaded: true })).catch(() => setState({ events: [], loaded: true })); }, []);
+  useEffect(() => {
+    if (!enabled) return;
+    let alive = true;
+    const stop = watchContent('events', async () => {
+      try {
+        const events = await fetchEvents();
+        if (alive) setState({ events, loaded: true });
+      } catch {
+        if (alive) setState(previous => ({ ...previous, loaded: true }));
+      }
+    });
+    return () => { alive = false; stop(); };
+  }, [enabled]);
   return state;
 }
 

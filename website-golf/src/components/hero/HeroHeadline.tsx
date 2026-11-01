@@ -62,7 +62,7 @@ export function HeroHeadline() {
     transition: { duration: 0.7, delay: 0.1 + i * 0.12, ease: [0.22, 1, 0.36, 1] as const },
   };
 
-  return <Typography ref={ref} variant="h1" sx={{ fontSize: { xs: 'clamp(3.15rem, 12.5vw, 4.8rem)', md: 'clamp(4.8rem, 6.1vw, 6.6rem)' }, lineHeight: 1.02, color: 'primary.main', maxWidth: 680 }}>
+  return <Typography ref={ref} variant="h1" sx={{ fontSize: { xs: 'clamp(2.8rem, 11vw, 4.2rem)', md: 'clamp(3.8rem, 5.5vw, 5.2rem)' }, lineHeight: 1.02, color: 'primary.dark', maxWidth: 680 }}>
     <Box component="span" sx={visuallyHidden}>A little {MESSAGES[0][0]} A lot of {MESSAGES[0][1]}</Box>
     <Box component="span" aria-hidden sx={{ display: 'block' }}>
       <motion.span {...line(0)} style={{ display: 'block' }}>A little</motion.span>
