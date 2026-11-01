@@ -50,7 +50,7 @@ export function VisitSection() {
               Golf: a collared shirt and golf shoes or clean trainers. FootGolf: trainers or turf shoes, no metal studs.
             </Tile>
             <Tile icon={<SportsGolfRounded />} title="No clubs? No worries">
-              {cheapestRental !== null ? <>Rental sets from {money(cheapestRental)}. </> : null}FootGolf, Putt-Golf and lessons include all the equipment.
+              {cheapestRental !== null ? <>Rental sets from {money(cheapestRental)}. </> : null}FootGolf and lessons include all the equipment.
             </Tile>
             <Tile icon={<StorefrontRounded />} title="Opening hours">
               {openingHoursLines(club).map((line) => <Box component="span" key={line} sx={{ display: 'block' }}>{line}</Box>)}

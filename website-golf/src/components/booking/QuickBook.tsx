@@ -4,7 +4,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../../booking/activityIcons';
 import { bookableDays } from '../../booking/availability';
 import { bookHref } from '../../booking/BookingFlowContext';
-import type { Activity } from '../../booking/config';
+import { onlineActivities, type Activity } from '../../booking/config';
 import { krabiNow, shortDayLabel } from '../../booking/dates';
 import { fromPrice, money, peopleLabel } from '../../booking/pricing';
 import { useSite } from '../../context/SiteDataContext';
@@ -20,7 +20,9 @@ const paper = { mt: 1, borderRadius: '24px', boxShadow: '0 18px 40px rgba(23,60,
 // panel — then straight onto that day's tee sheet at /book. `stacked` puts
 // the activity on its own row, for narrow columns.
 export function QuickBook({ maxWidth = 640, stacked = false }: { maxWidth?: number | string; stacked?: boolean }) {
-  const { activities, club } = useSite();
+  const site = useSite();
+  const { club } = site;
+  const activities = onlineActivities(site);
   const days = bookableDays(club.booking.windowDays);
   const [chosen, setActivity] = useState<string>(activities[0]?.id ?? '');
   // The live list may arrive after the first render, and staff may remove an activity.

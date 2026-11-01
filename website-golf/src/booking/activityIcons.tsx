@@ -5,6 +5,7 @@ import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import SchoolRounded from '@mui/icons-material/SchoolRounded';
 import SportsGolfRounded from '@mui/icons-material/SportsGolfRounded';
 import SportsSoccerRounded from '@mui/icons-material/SportsSoccerRounded';
+import SportsTennisRounded from '@mui/icons-material/SportsTennisRounded';
 import StarRounded from '@mui/icons-material/StarRounded';
 import type { SvgIconProps } from '@mui/material';
 import type { ActivityIconKey } from './config';
@@ -12,7 +13,7 @@ import type { ActivityIconKey } from './config';
 // The icons staff can pick for an activity in /admin.
 export const ICON_COMPONENTS: Record<ActivityIconKey, typeof GolfCourseRounded> = {
   golf: GolfCourseRounded, football: SportsSoccerRounded, flag: FlagRounded, range: SportsGolfRounded,
-  lesson: SchoolRounded, trophy: EmojiEventsRounded, group: GroupsRounded, star: StarRounded,
+  lesson: SchoolRounded, racket: SportsTennisRounded, trophy: EmojiEventsRounded, group: GroupsRounded, star: StarRounded,
 };
 
 export function ActivityIcon({ icon, ...props }: { icon: ActivityIconKey | undefined } & SvgIconProps) {

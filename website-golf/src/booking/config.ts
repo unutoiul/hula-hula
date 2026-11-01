@@ -20,7 +20,7 @@ export interface ActivityOption {
   lastStart: string;
 }
 
-export const ICONS = ['golf', 'football', 'flag', 'range', 'lesson', 'trophy', 'group', 'star'] as const;
+export const ICONS = ['golf', 'football', 'flag', 'range', 'lesson', 'racket', 'trophy', 'group', 'star'] as const;
 export type ActivityIconKey = (typeof ICONS)[number];
 
 export interface Activity {
@@ -29,6 +29,14 @@ export interface Activity {
   name: string;
   icon: ActivityIconKey;
   tagline: string;
+  /** The longer story on its own page (/activities/<id>); blank lines start a new paragraph. */
+  about: string;
+  /**
+   * Bookable on the website. Off: it's still on the site (its page, the
+   * activities list, the prices) with a "message us" button, and staff can
+   * still put bookings on the tee sheet.
+   */
+  bookOnline: boolean;
   includes: string[];
   options: ActivityOption[];
   /** Optional: what one person on their own pays (a lesson for one costs more each). */
@@ -74,6 +82,8 @@ export interface ClubSettings {
   hoursNote: string;
   transfer: { pickups: string[]; leadMinutes: number };
   booking: { holdMinutes: number; windowDays: number; minLeadMinutes: number; cancellationHours: number; caddieTip: number };
+  /** "Facilities in our clubhouse", one line each. */
+  facilities: string[];
 }
 
 export interface SiteData { activities: Activity[]; rentals: Rental[]; club: ClubSettings }
@@ -82,33 +92,41 @@ const p = (name: string) => `/images/golf/${name}-1600.webp`;
 
 export const DEFAULT_ACTIVITIES: Activity[] = [
   {
-    id: 'golf', name: 'Golf', icon: 'golf', tagline: '9-hole, par 36 course',
+    id: 'golf', name: 'Golf', icon: 'golf', tagline: '9-hole, par 36 course', bookOnline: true,
+    about: 'Nine holes, par 36 and 3,011 yards: a course for every level that still asks for strategy. Narrow fairways, water hazards and greens running 8.5 to 9 feet keep you thinking, and Phanom Bencha mountain watches over the lot.\n\nEvery round comes with a caddie and a golf cart, so all you need to bring is your swing. No clubs? Rent a set at the clubhouse.',
     includes: ['Green fee', 'Caddie', 'Golf cart'],
-    options: [
-      { id: '9', label: '9 holes', price: 1400, minutes: 135, lastStart: '15:30' },
-      { id: '18', label: '18 holes', price: 2080, minutes: 270, lastStart: '13:30' },
-    ],
+    options: [{ id: '9', label: '9 holes', price: 1400, minutes: 135, lastStart: '15:30' }],
     firstStart: '07:00', interval: 10, capacity: 4, units: 1, privateGroup: false, minPlayers: 1, maxPlayers: 4,
     rentals: true, caddie: true, noSkillNeeded: false, askExperience: false, askHandicap: true,
     wear: 'A collared shirt, and golf shoes or clean trainers.',
     slotNoun: 'tee time', optionsLabel: 'Holes', peopleNoun: 'player', durationBadge: '',
-    card: { kicker: 'Golf · 9 or 18 holes', title: 'Tee off in the tropics', detail: 'Narrow fairways, water to carry and quick greens, with Phanom Bencha mountain on the horizon. Green fee, caddie and cart included.', images: [p('fairwaySign'), p('golfSwing'), p('sunnyFairway')] },
+    card: { kicker: 'Golf · 9 holes', title: 'Tee off in the tropics', detail: 'Narrow fairways, water to carry and quick greens, with Phanom Bencha mountain on the horizon. Green fee, caddie and cart included.', images: [p('fairwaySign'), p('golfSwing'), p('sunnyFairway')] },
   },
   {
-    id: 'footgolf', name: 'FootGolf', icon: 'football', tagline: 'Full 18-hole FootGolf course',
+    id: 'fling-golf', name: 'Fling Golf', icon: 'flag', tagline: 'Golf with one stick and a throw', bookOnline: false,
+    about: 'Fling Golf is played on the golf course with a single Flingstick: a lacrosse-style stick you use to scoop, carry and fling a golf ball down the fairway. One stick does every shot, from the tee to the green.\n\nIt’s quick to learn and great fun in a group, whether you play golf or not. Message us to book a round and we’ll get you set up.',
+    includes: [],
+    options: [{ id: '9', label: '9 holes', price: 0, minutes: 90, lastStart: '16:00' }],
+    firstStart: '08:00', interval: 15, capacity: 4, units: 1, privateGroup: false, minPlayers: 1, maxPlayers: 4,
+    rentals: false, caddie: false, noSkillNeeded: true, askExperience: false, askHandicap: false,
+    wear: 'Comfortable clothes and trainers.',
+    slotNoun: 'tee time', optionsLabel: 'Holes', peopleNoun: 'player', durationBadge: '',
+    card: { kicker: 'Fling Golf · 9 holes', title: 'One stick. Every shot.', detail: 'Scoop, swing and fling a golf ball down our fairways with a lacrosse-style Flingstick. Easy to learn, huge fun in a group.', images: [p('sunnyFairway'), p('pondFairway')] },
+  },
+  {
+    id: 'footgolf', name: 'FootGolf', icon: 'football', tagline: '9-hole FootGolf course', bookOnline: true,
+    about: 'Golf rules, football feet. Kick a football from the tee to the hole across nine holes on our fairways: fewest kicks wins.\n\nIt’s an active, laugh-out-loud game for all ages, and no golf skill is needed. The course fee, a caddie, a golf cart and the football are all included.',
     includes: ['Course fee', 'Caddie', 'Golf cart', 'Football'],
-    options: [
-      { id: '9', label: '9 holes', price: 850, minutes: 75, lastStart: '16:30' },
-      { id: '18', label: '18 holes', price: 1180, minutes: 150, lastStart: '15:00' },
-    ],
+    options: [{ id: '9', label: '9 holes', price: 850, minutes: 75, lastStart: '16:30' }],
     firstStart: '08:00', interval: 15, capacity: 6, units: 1, privateGroup: false, minPlayers: 1, maxPlayers: 6,
     rentals: false, caddie: true, noSkillNeeded: true, askExperience: false, askHandicap: false,
     wear: 'Trainers or turf shoes — no metal studs, please.',
     slotNoun: 'tee time', optionsLabel: 'Holes', peopleNoun: 'player', durationBadge: '1–3 hr',
-    card: { kicker: 'FootGolf · 9 or 18 holes', title: 'Golf rules. Football feet.', detail: 'A full 18-hole FootGolf course right on the fairways. Kick, chase, laugh, repeat — fun for all ages.', images: [p('footgolfGroup'), p('footgolfKick'), p('footgolfFairway')] },
+    card: { kicker: 'FootGolf · 9 holes', title: 'Golf rules. Football feet.', detail: 'A 9-hole FootGolf course right on the fairways. Kick, chase, laugh, repeat — fun for all ages.', images: [p('footgolfGroup'), p('footgolfKick'), p('footgolfFairway')] },
   },
   {
-    id: 'puttgolf', name: 'Putt-Golf', icon: 'flag', tagline: 'Mini-golf on real greens',
+    id: 'puttgolf', name: 'Putt-Golf', icon: 'flag', tagline: 'Mini-golf on real greens', bookOnline: true,
+    about: 'Putt-Golf is mini-golf with a twist. Ride a golf cart from green to green on our real course while your caddie sets fun starting points and guides you through every hole.\n\nA relaxed, playful way to enjoy golf: perfect for families, first-timers and a casual day out.',
     includes: ['Course fee', 'Caddie', 'Golf cart', 'Putters & balls'],
     options: [{ id: '1h', label: '1 hour', price: 1050, minutes: 60, lastStart: '16:30' }],
     firstStart: '08:00', interval: 30, capacity: 6, units: 1, privateGroup: false, minPlayers: 1, maxPlayers: 6,
@@ -118,7 +136,8 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'Putt-Golf · 1 hour', title: 'Mini-golf on real greens', detail: 'Ride a cart from green to green while your caddie sets fun starting points. Perfect for families and first-timers.', images: [p('puttingGreen'), p('pondFairway')] },
   },
   {
-    id: 'range', name: 'Driving range', icon: 'range', tagline: 'Private bays for up to five',
+    id: 'range', name: 'Driving range', icon: 'range', tagline: 'Private bays for up to five', bookOnline: true,
+    about: 'The most comfortable driving range you’ve ever hit from. Each bay is a private, cosy room with a sofa, a launch monitor to track every swing, and food and drinks brought right to you, with room for up to five friends.\n\nPriced per person by the hour, with our chipping and putting course included for free.',
     includes: ['Private bay with sofa', 'Launch monitor', 'Chipping & putting course'],
     options: [
       { id: '1h', label: '1 hour', price: 250, minutes: 60, lastStart: '17:00' },
@@ -132,7 +151,19 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'Driving range · by the hour', title: 'Your own private bay', detail: 'Cosy bays for up to five, each with a sofa, a launch monitor and food and drinks brought to you. Chipping and putting course included.', images: [p('rangeBays')] },
   },
   {
-    id: 'lesson', name: 'Golf lesson', icon: 'lesson', tagline: 'Half-day lesson for beginners',
+    id: 'pickleball', name: 'Pickleball', icon: 'racket', tagline: 'The paddle game everyone’s playing', bookOnline: false,
+    about: 'Pickleball mixes tennis, badminton and table tennis: a small court, solid paddles and a light plastic ball. The rules take a minute to learn, the rallies go on and on, and it’s as much fun for first-timers as for the competitive types.\n\nMessage us to book a court, for singles or doubles.',
+    includes: [],
+    options: [{ id: '1h', label: '1 hour', price: 0, minutes: 60, lastStart: '17:00' }],
+    firstStart: '08:00', interval: 60, capacity: 4, units: 1, privateGroup: true, minPlayers: 1, maxPlayers: 4,
+    rentals: false, caddie: false, noSkillNeeded: true, askExperience: false, askHandicap: false,
+    wear: 'Sporty clothes and court or running shoes.',
+    slotNoun: 'court', optionsLabel: 'How long', peopleNoun: 'player', durationBadge: '',
+    card: { kicker: 'Pickleball · by the hour', title: 'Paddles up!', detail: 'A little court, a light ball and long, laughing rallies. Easy to pick up, hard to put down.', images: [] },
+  },
+  {
+    id: 'lesson', name: 'Golf lesson', icon: 'lesson', tagline: 'Half-day lesson for beginners', bookOnline: true,
+    about: 'Never held a club? Perfect. Our half-day lesson for beginners is all about a fun, relaxed first taste of golf (not too serious), so you hit your very first shots with confidence.\n\nThree and a half hours with coaching, range time and all the equipment, on your own or with up to two friends.',
     includes: ['Coaching', 'Driving range', 'All equipment'],
     options: [{ id: 'half', label: 'Half day', price: 2100, minutes: 210, lastStart: '14:00' }],
     soloPrice: 2990,
@@ -163,6 +194,16 @@ export const DEFAULT_CLUB: ClubSettings = {
   hoursNote: '',
   transfer: { pickups: ['08:00', '13:30'], leadMinutes: 60 },
   booking: { holdMinutes: 10, windowDays: 60, minLeadMinutes: 60, cancellationHours: 24, caddieTip: 300 },
+  facilities: [
+    'H Café & Restaurant with fairway views',
+    'Balcony looking out to Phanom Bencha mountain',
+    'Comfy lounge by the coffee counter',
+    'Private driving range bays with launch monitors',
+    'Free chipping & putting course',
+    'Caddies and golf carts',
+    'Rental club sets',
+    'Free shuttle twice a day',
+  ],
 };
 
 export const DEFAULT_SITE: SiteData = { activities: DEFAULT_ACTIVITIES, rentals: DEFAULT_RENTALS, club: DEFAULT_CLUB };
@@ -198,6 +239,8 @@ export function normaliseActivity(raw: Record<string, unknown>, id: string): Act
     name: str(raw.name, base.name, 60) || 'Activity',
     icon: ICONS.includes(raw.icon as ActivityIconKey) ? raw.icon as ActivityIconKey : 'golf',
     tagline: str(raw.tagline, '', 120),
+    about: str(raw.about, '', 1500),
+    bookOnline: bool(raw.bookOnline, true),
     includes: list(raw.includes),
     options: options.length ? options : [{ id: 'o1', label: '1 hour', price: 0, minutes: 60, lastStart: '16:00' }],
     soloPrice: typeof raw.soloPrice === 'number' && raw.soloPrice > 0 ? num(raw.soloPrice, 0, 0, 1_000_000) : undefined,
@@ -261,12 +304,22 @@ export function normaliseClub(raw: unknown): ClubSettings {
       cancellationHours: num(booking.cancellationHours, d.booking.cancellationHours, 0, 720),
       caddieTip: num(booking.caddieTip, d.booking.caddieTip, 0, 10_000),
     },
+    facilities: Array.isArray(r.facilities) ? list(r.facilities) : d.facilities,
   };
 }
 
 // ── Rules built on the settings ─────────────────────────────────────────────
 
 export const findActivity = (site: Pick<SiteData, 'activities'>, id: string) => site.activities.find((a) => a.id === id);
+
+/** What guests can book on the website (everything, should none be switched on, so the booking pages still render). */
+export function onlineActivities(site: Pick<SiteData, 'activities'>): Activity[] {
+  const online = site.activities.filter((a) => a.bookOnline);
+  return online.length ? online : site.activities;
+}
+
+/** Whether staff have put prices on it yet (new activities can go live as "ask us" first). */
+export const hasPrices = (activity: Activity) => activity.options.some((o) => o.price > 0);
 
 /** "Golf lesson" for an activity that's since been deleted, by its id. */
 export const activityName = (site: Pick<SiteData, 'activities'>, id: string) => findActivity(site, id)?.name ?? id.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());

@@ -27,11 +27,11 @@ export const fetchEvent = async (slug: string) => { const r = await call<EventsR
 export const startOrder = (request: EventOrderRequest) => call<EventOrderStarted>('/api/event-order', { method: 'POST', body: JSON.stringify(request) });
 export const fetchOrder = (ref: string, key: string) => call<EventOrderView>(`/api/event-order?${new URLSearchParams({ ref, key })}`);
 
-/** Upcoming published events for the homepage (an empty list until loaded, or if it fails). */
-export function useUpcomingEvents(): PublicEvent[] {
-  const [events, setEvents] = useState<PublicEvent[]>([]);
-  useEffect(() => { fetchEvents().then(setEvents).catch(() => setEvents([])); }, []);
-  return events;
+/** Upcoming published events for the homepage; `loaded` once the answer is in (an empty list if it fails). */
+export function useUpcomingEvents(): { events: PublicEvent[]; loaded: boolean } {
+  const [state, setState] = useState<{ events: PublicEvent[]; loaded: boolean }>({ events: [], loaded: false });
+  useEffect(() => { fetchEvents().then((events) => setState({ events, loaded: true })).catch(() => setState({ events: [], loaded: true })); }, []);
+  return state;
 }
 
 /** "Sat 14 Dec · 9:00 am – 4:00 pm", or "Sat 14 Dec – Sun 15 Dec" for a multi-day event. */

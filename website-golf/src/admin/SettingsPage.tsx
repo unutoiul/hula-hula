@@ -5,7 +5,7 @@ import { normaliseClub, openingHoursLines, WEEKDAYS, type ClubSettings } from '.
 import { timeLabel } from '../booking/dates';
 import { useSiteData } from '../context/SiteDataContext';
 import { supabase } from './supabase';
-import { PageTitle, Section, toInt } from './ui';
+import { linesToList, listToLines, PageTitle, Section, toInt } from './ui';
 
 // /admin/settings — the club-wide things the website shows and the booking
 // rules it follows: the top-bar message, opening hours (a closed day takes no
@@ -15,13 +15,16 @@ export function SettingsPage() {
   const { reload } = useSiteData();
   const [club, setClub] = useState<ClubSettings | null>(null);
   const [newPickup, setNewPickup] = useState('');
+  const [facilities, setFacilities] = useState('');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     void supabase!.from('golf_settings').select('value').eq('key', 'club').maybeSingle().then(({ data, error }) => {
       if (error) setStatus({ ok: false, text: error.message });
-      setClub(normaliseClub(data?.value));
+      const loaded = normaliseClub(data?.value);
+      setClub(loaded);
+      setFacilities(listToLines(loaded.facilities));
     });
   }, []);
 
@@ -33,11 +36,12 @@ export function SettingsPage() {
 
   const save = async () => {
     setBusy(true);
-    const cleaned = normaliseClub(club);
+    const cleaned = normaliseClub({ ...club, facilities: linesToList(facilities) });
     const { error } = await supabase!.from('golf_settings').upsert({ key: 'club', value: cleaned });
     setBusy(false);
     if (error) { setStatus({ ok: false, text: error.message }); return; }
     setClub(cleaned);
+    setFacilities(listToLines(cleaned.facilities));
     setStatus({ ok: true, text: 'Saved — the website shows it within about half a minute.' });
     void reload();
   };
@@ -89,6 +93,10 @@ export function SettingsPage() {
         </Stack>
         <TextField label="Minutes from pick-up to the club" type="number" value={club.transfer.leadMinutes} onChange={(e) => set({ transfer: { ...club.transfer, leadMinutes: Math.max(0, toInt(e.target.value)) } })}
           helperText="A pick-up is offered for starts at least this long after it." slotProps={{ htmlInput: { min: 0, inputMode: 'numeric' } }} sx={{ mt: 2, maxWidth: 360 }} />
+      </Section>
+
+      <Section title="Facilities in the clubhouse" hint="The list in the clubhouse part of the homepage. One per line.">
+        <TextField fullWidth multiline minRows={5} value={facilities} onChange={(e) => { setStatus(null); setFacilities(e.target.value); }} placeholder={'H Café & Restaurant\nRental club sets'} />
       </Section>
 
       <Section title="Booking rules">

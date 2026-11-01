@@ -34,7 +34,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const site = await loadSite();
   const text = (value: unknown, max: number) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
-  const activity = findActivity(site, text(body.activity, 40));
+  // Only what's switched on for online booking; the others are booked by message.
+  const found = findActivity(site, text(body.activity, 40));
+  const activity = found?.bookOnline ? found : undefined;
   const option = activity?.options.find((o) => o.id === text(body.option, 10));
   const date = text(body.date, 10);
   const time = text(body.time, 5);

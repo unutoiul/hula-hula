@@ -16,8 +16,8 @@ export function CourseSection() {
     <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1fr' }, gap: { xs: 5, md: 9 }, alignItems: 'center', py: { xs: 5, md: 9 } }}>
         <Reveal sx={{ position: 'relative', display: 'grid', gridTemplateColumns: '1.3fr .8fr', gap: 2, alignItems: 'center' }}>
-          <ScrollTilt amount={2}><Box sx={{ height: { xs: 310, md: 420 }, borderRadius: '24px 24px 90px 24px', overflow: 'hidden', border: '7px solid #fffef8', boxShadow: '0 14px 32px rgba(23,60,44,.10)' }}><ClubPhoto image={p.puttingGreen.src} alt="A green with a red pin flag beside the water hazard, palms behind" /></Box></ScrollTilt>
-          <ScrollTilt amount={-4}><Box sx={{ height: { xs: 260, md: 330 }, overflow: 'hidden', border: '6px solid white', borderRadius: 3, transform: 'rotate(5deg)' }}><ClubPhoto image={p.clubhouse.src} alt="The Hula Hula Golf Club clubhouse and sign across the lawn" sizes="25vw" sx={{ objectPosition: '45% center' }} /></Box></ScrollTilt>
+          <ScrollTilt amount={2}><Box sx={{ height: { xs: 310, md: 420 }, borderRadius: '24px 24px 90px 24px', overflow: 'hidden', border: '7px solid #fffef8', boxShadow: '0 14px 32px rgba(23,60,44,.10)' }}><ClubPhoto image={p.clubhouse.src} alt="The Hula Hula Golf Club clubhouse and sign across the lawn" sx={{ objectPosition: '45% center' }} /></Box></ScrollTilt>
+          <ScrollTilt amount={-4}><Box sx={{ height: { xs: 260, md: 330 }, overflow: 'hidden', border: '6px solid white', borderRadius: 3, transform: 'rotate(5deg)' }}><ClubPhoto image={p.puttingGreen.src} alt="A green with a red pin flag beside the water hazard, palms behind" sizes="25vw" sx={{ objectPosition: '42% center' }} /></Box></ScrollTilt>
           <Sticker sx={{ position: 'absolute', bottom: -30, left: '45%' }}>Hello,<br />fairway!</Sticker>
         </Reveal>
         <Reveal delay={0.12} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
@@ -31,7 +31,8 @@ export function CourseSection() {
           </Stack>
           <Stack direction="row" spacing={3} alignItems="center" justifyContent={{ xs: 'center', md: 'flex-start' }} sx={{ mt: 3 }}>
             <Button href="/book?activity=golf" onClick={linkClick('/book?activity=golf')} color="inherit" endIcon={<ArrowOutward />}>Book a round</Button>
-            <SunDoodle size={54} color="#50830d" />
+            <Button href="/activities/golf" onClick={linkClick('/activities/golf')} color="inherit">Prices &amp; details</Button>
+            <SunDoodle size={54} color="#50830d" sx={{ display: { xs: 'none', sm: 'block' } }} />
           </Stack>
         </Reveal>
       </Box>

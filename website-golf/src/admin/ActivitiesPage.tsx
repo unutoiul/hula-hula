@@ -15,7 +15,7 @@ interface Row { activity: Activity; active: boolean; sortOrder: number }
 
 // A new activity starts from a sensible blank: one option, an hour long.
 const blank = (): Activity => ({
-  ...DEFAULT_ACTIVITIES[2], id: '', name: '', tagline: '', icon: 'star', includes: [],
+  ...DEFAULT_ACTIVITIES.find((a) => a.id === 'puttgolf')!, id: '', name: '', tagline: '', about: '', bookOnline: true, icon: 'star', includes: [],
   options: [{ id: 'o1', label: '1 hour', price: 0, minutes: 60, lastStart: '16:00' }], soloPrice: undefined,
   card: { kicker: '', title: '', detail: '', images: [] }, durationBadge: '',
 });
@@ -91,6 +91,7 @@ export function ActivitiesPage() {
           <Typography noWrap sx={{ fontWeight: 700 }}>{row.activity.name}</Typography>
           <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{row.activity.options.map((o) => `${o.label} ${money(o.price)}`).join(' · ')}</Typography>
           {!row.active && <Chip size="small" label="Hidden from the website" sx={{ mt: .5 }} />}
+          {row.active && !row.activity.bookOnline && <Chip size="small" color="warning" variant="outlined" label="Booked by message, not online" sx={{ mt: .5 }} />}
         </Box>
         <Tooltip title={row.active ? 'On the website — tap to hide' : 'Hidden — tap to show on the website'}>
           <Switch checked={row.active} onChange={() => void toggle(row)} inputProps={{ 'aria-label': `Show ${row.activity.name} on the website` }} />

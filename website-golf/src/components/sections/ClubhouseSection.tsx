@@ -1,8 +1,12 @@
-import { Box, Container, Stack, Typography } from '@mui/material';
+import CheckRounded from '@mui/icons-material/CheckRounded';
+import East from '@mui/icons-material/East';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
+import { useSite } from '../../context/SiteDataContext';
 import { cafeMoments } from '../../data/content';
 import { photoAssets as p } from '../../data/photos';
 import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
+import { linkClick } from '../../router';
 import { fonts } from '../../theme';
 import { ClubPhoto } from '../common/ClubPhoto';
 import { Reveal, ScrollTilt } from '../common/ScrollMotion';
@@ -12,6 +16,7 @@ import { Polaroid, Sticker, SunDoodle } from '../common/VacationDecor';
 // The clubhouse café: a big framed photo that follows whichever moment of the
 // day is picked on the right, then the interior below.
 export function ClubhouseSection() {
+  const { club } = useSite();
   const [active, setActive] = useState(0);
   const moment = cafeMoments[active];
   return <Box id="clubhouse" component="section" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET }}>
@@ -19,7 +24,7 @@ export function ClubhouseSection() {
       <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'center', md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: 6, position: 'relative', textAlign: { xs: 'center', md: 'left' } }}>
         <Pineapple sx={{ left: { xs: 'auto', md: 600 }, right: { xs: 6, md: 'auto' }, top: { xs: 2, md: 40 } }} />
         <Box>
-          <Typography variant="overline" color="success.main">The clubhouse</Typography>
+          <Typography variant="overline" color="success.main">The clubhouse · H Café &amp; Restaurant</Typography>
           <Typography variant="h2" sx={{ fontSize: { xs: 43, md: 64 }, lineHeight: 1.03, mt: 1.5 }}>The tenth hole.<br /><Box component="span" color="primary.main">Coffee with a view.</Box></Typography>
         </Box>
         <Typography sx={{ maxWidth: 360, color: 'text.secondary', lineHeight: 1.8 }}>Nine holes out there, and our favourite one in here. The clubhouse café looks straight down the fairways to Phanom Bencha mountain.</Typography>
@@ -66,8 +71,22 @@ export function ClubhouseSection() {
             <Polaroid image={p.cafeLounge.src} alt="Long cushioned lounge sofa beside the coffee counter" caption="Your seat is saved." rotate={3} sizes="320px" />
           </Box>
           <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: 3, lineHeight: 1.7, textAlign: { xs: 'center', md: 'left' }, fontFamily: fonts.sans }}>Open to everyone — no tee time needed. Driving range bays get food and drinks brought right to the sofa.</Typography>
+          <Box sx={{ textAlign: { xs: 'center', md: 'left' }, mt: 2 }}>
+            <Button href="/activities/cafe" onClick={linkClick('/activities/cafe')} variant="outlined" endIcon={<East sx={{ fontSize: 17 }} />}>Visit H Café</Button>
+          </Box>
         </Reveal>
       </Box>
+
+      {/* Facilities in the clubhouse: the list staff keep in /admin/settings. */}
+      {club.facilities.length > 0 && <Reveal><Box sx={{ mt: { xs: 6, md: 8 }, p: { xs: 3, md: 4.5 }, borderRadius: '28px', bgcolor: 'primary.light', position: 'relative' }}>
+        <Typography variant="h3" sx={{ fontSize: { xs: 30, md: 40 }, lineHeight: 1.1, textAlign: { xs: 'center', md: 'left' } }}>Facilities in our clubhouse</Typography>
+        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, mt: { xs: 2.5, md: 3 }, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' }, gap: { xs: 1.25, md: 1.75 } }}>
+          {club.facilities.map((item) => <Box component="li" key={item} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: '16px', bgcolor: 'background.paper', boxShadow: '0 4px 14px rgba(0,109,138,.08)' }}>
+            <Box aria-hidden sx={{ width: 32, height: 32, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'secondary.main', color: 'text.primary', '& svg': { fontSize: 18 } }}><CheckRounded /></Box>
+            <Typography sx={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.35 }}>{item}</Typography>
+          </Box>)}
+        </Box>
+      </Box></Reveal>}
     </Container>
   </Box>;
 }

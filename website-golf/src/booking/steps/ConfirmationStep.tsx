@@ -13,6 +13,7 @@ import { downloadIcs, googleCalendarUrl } from '../calendar';
 import { clubRules, findActivity } from '../config';
 import { dayLabel, durationLabel, timeLabel } from '../dates';
 import { money, peopleLabel } from '../pricing';
+import { CARD_PEEK, PineappleGolfer } from '../../components/common/PineappleGolfer';
 
 // The end of the booking: the reference, when and where, what to pay at the
 // club, a calendar entry, and the few things worth knowing before the day.
@@ -26,7 +27,8 @@ export function ConfirmationStep() {
   const whatsappText = encodeURIComponent(`Hi Hula Hula Golf Club! About my booking ${reservation.ref} on ${dayLabel(reservation.date)} at ${timeLabel(reservation.time)}: `);
 
   return <Box sx={{ maxWidth: 720, mx: 'auto' }}>
-    <Box sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '28px', p: { xs: 3, md: 4.5 }, boxShadow: '0 18px 55px rgba(23,60,44,.07)' }}>
+    <Box sx={{ position: 'relative', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '28px', p: { xs: 3, md: 4.5 }, boxShadow: '0 18px 55px rgba(23,60,44,.07)' }}>
+      <PineappleGolfer sizes="110px" sx={CARD_PEEK} />
       <Stack direction="row" spacing={1.5} alignItems="center"><CheckCircleRounded sx={{ color: 'success.main', fontSize: 40 }} /><Typography variant="overline" sx={{ color: 'success.dark' }}>Booked · {reservation.ref}</Typography></Stack>
       <Typography variant="h1" sx={{ fontSize: { xs: 34, md: 46 }, mt: 1, lineHeight: 1.08 }}>You’re on the tee sheet!</Typography>
       <Typography sx={{ color: 'text.secondary', mt: 1.25 }}>

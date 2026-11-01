@@ -1,12 +1,14 @@
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import East from '@mui/icons-material/East';
+import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
+import { thingHref } from '../../activities/things';
 import { ActivityIcon } from '../../booking/activityIcons';
 import { bookHref } from '../../booking/BookingFlowContext';
 import { timeLabel } from '../../booking/dates';
 import { money } from '../../booking/pricing';
-import { useSite } from '../../context/SiteDataContext';
+import { useContact, useSite } from '../../context/SiteDataContext';
 import { SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { linkClick } from '../../router';
 import { fonts } from '../../theme';
@@ -34,6 +36,7 @@ function spans(count: number): number[] {
 // never disagree.
 export function PricesSection() {
   const { activities, rentals, club } = useSite();
+  const contact = useContact();
   const span = spans(activities.length);
   const rentalPrices = rentals.map((r) => r.price).sort((a, b) => a - b);
   return <Box id="prices" component="section" sx={{ py: SECTION_Y, bgcolor: '#e7f4cc', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
@@ -75,8 +78,13 @@ export function PricesSection() {
                   </Stack>)}
                 </Stack>
 
-                <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ mt: 'auto' }}>
-                  <Button href={bookHref({ activity: activity.id })} onClick={linkClick(bookHref({ activity: activity.id }))} variant="outlined" size="small" endIcon={<East sx={{ fontSize: 17 }} />}>Book</Button>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" useFlexGap gap={1} sx={{ mt: 'auto', '& .MuiButton-root': { whiteSpace: 'nowrap' } }}>
+                  <Stack direction="row" alignItems="center" spacing={.5}>
+                    {activity.bookOnline
+                      ? <Button href={bookHref({ activity: activity.id })} onClick={linkClick(bookHref({ activity: activity.id }))} variant="outlined" size="small" endIcon={<East sx={{ fontSize: 17 }} />}>Book</Button>
+                      : <Button href={`${contact.whatsapp}?text=${encodeURIComponent(`Hi Hula Hula Golf Club! I'd like to book ${activity.name}: `)}`} target="_blank" rel="noopener noreferrer" variant="outlined" size="small" startIcon={<WhatsApp sx={{ fontSize: 17 }} />}>Message us</Button>}
+                    <Button href={thingHref(activity.id)} onClick={linkClick(thingHref(activity.id))} size="small" color="inherit">Details</Button>
+                  </Stack>
                   {activity.noSkillNeeded && <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'secondary.dark', border: '1.5px dashed', borderColor: 'secondary.dark', borderRadius: 1, px: 1, py: .4, transform: 'rotate(-2deg)', whiteSpace: 'nowrap' }}>No golf skill needed</Typography>}
                 </Stack>
               </Box>
@@ -100,7 +108,7 @@ export function PricesSection() {
 function Price({ label, amount }: { label: string; amount: number }) {
   return <Box>
     <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'text.secondary' }}>{label}</Typography>
-    <Typography sx={{ fontFamily: fonts.playful, fontSize: { xs: 30, md: 36 }, lineHeight: 1.1, color: 'primary.main', fontVariantNumeric: 'tabular-nums' }}>{money(amount)}</Typography>
+    <Typography sx={{ fontFamily: fonts.playful, fontSize: { xs: 30, md: 36 }, lineHeight: 1.1, color: 'primary.main', fontVariantNumeric: 'tabular-nums' }}>{amount > 0 ? money(amount) : 'Ask us'}</Typography>
   </Box>;
 }
 

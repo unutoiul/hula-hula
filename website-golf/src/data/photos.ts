@@ -145,7 +145,96 @@ export const photoAssets = {
     "width": 534,
     "height": 326,
     "source": "website/photos/06 Hula Hula Golf Club/Brochures and Promotions/hula-hula-golf-club-golf-footgolf-and-events-packages.png"
+  },
+  "artGolfClub": {
+    "src": "/images/golf/artGolfClub-1600.webp",
+    "srcSet": "/images/golf/artGolfClub-480.webp 480w, /images/golf/artGolfClub-960.webp 960w, /images/golf/artGolfClub-1600.webp 1350w",
+    "avifSrcSet": "/images/golf/artGolfClub-480.avif 480w, /images/golf/artGolfClub-960.avif 960w, /images/golf/artGolfClub-1600.avif 1350w",
+    "width": 1350,
+    "height": 1070,
+    "source": "marketing/01-hula-hula-golf-club-card.png"
+  },
+  "artDrivingRange": {
+    "src": "/images/golf/artDrivingRange-1600.webp",
+    "srcSet": "/images/golf/artDrivingRange-480.webp 480w, /images/golf/artDrivingRange-960.webp 960w, /images/golf/artDrivingRange-1600.webp 1350w",
+    "avifSrcSet": "/images/golf/artDrivingRange-480.avif 480w, /images/golf/artDrivingRange-960.avif 960w, /images/golf/artDrivingRange-1600.avif 1350w",
+    "width": 1350,
+    "height": 1070,
+    "source": "marketing/02-hula-hula-driving-range-card.png"
+  },
+  "artPuttingGreen": {
+    "src": "/images/golf/artPuttingGreen-1600.webp",
+    "srcSet": "/images/golf/artPuttingGreen-480.webp 480w, /images/golf/artPuttingGreen-960.webp 960w, /images/golf/artPuttingGreen-1600.webp 1350w",
+    "avifSrcSet": "/images/golf/artPuttingGreen-480.avif 480w, /images/golf/artPuttingGreen-960.avif 960w, /images/golf/artPuttingGreen-1600.avif 1350w",
+    "width": 1350,
+    "height": 1070,
+    "source": "marketing/03-hula-hula-putting-green-card.png"
+  },
+  "artSunsetGolf": {
+    "src": "/images/golf/artSunsetGolf-1600.webp",
+    "srcSet": "/images/golf/artSunsetGolf-480.webp 480w, /images/golf/artSunsetGolf-960.webp 960w, /images/golf/artSunsetGolf-1600.webp 1350w",
+    "avifSrcSet": "/images/golf/artSunsetGolf-480.avif 480w, /images/golf/artSunsetGolf-960.avif 960w, /images/golf/artSunsetGolf-1600.avif 1350w",
+    "width": 1350,
+    "height": 1070,
+    "source": "marketing/04-hula-hula-sunset-golf-card.png"
+  },
+  "art19thHole": {
+    "src": "/images/golf/art19thHole-1600.webp",
+    "srcSet": "/images/golf/art19thHole-480.webp 480w, /images/golf/art19thHole-960.webp 960w, /images/golf/art19thHole-1600.webp 1350w",
+    "avifSrcSet": "/images/golf/art19thHole-480.avif 480w, /images/golf/art19thHole-960.avif 960w, /images/golf/art19thHole-1600.avif 1350w",
+    "width": 1350,
+    "height": 1070,
+    "source": "marketing/05-hula-hula-the-19th-hole-card.png"
+  },
+  "villaTerrace": {
+    "src": "/images/golf/villaTerrace-1600.webp",
+    "srcSet": "/images/golf/villaTerrace-480.webp 480w, /images/golf/villaTerrace-960.webp 960w, /images/golf/villaTerrace-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/villaTerrace-480.avif 480w, /images/golf/villaTerrace-960.avif 960w, /images/golf/villaTerrace-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "website/photos/02 Rooms and Villas/Two-Storey Pool Villa/hula-hula-two-storey-pool-villa-private-pool-terrace-with-loungers-and-parasol.jpg"
+  },
+  "villaBedroom": {
+    "src": "/images/golf/villaBedroom-1600.webp",
+    "srcSet": "/images/golf/villaBedroom-480.webp 480w, /images/golf/villaBedroom-960.webp 960w, /images/golf/villaBedroom-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/villaBedroom-480.avif 480w, /images/golf/villaBedroom-960.avif 960w, /images/golf/villaBedroom-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "website/photos/02 Rooms and Villas/Two-Storey Pool Villa/hula-hula-two-storey-pool-villa-four-poster-bed-with-towel-swans-front-view.jpg"
+  },
+  "villaLiving": {
+    "src": "/images/golf/villaLiving-1600.webp",
+    "srcSet": "/images/golf/villaLiving-480.webp 480w, /images/golf/villaLiving-960.webp 960w, /images/golf/villaLiving-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/villaLiving-480.avif 480w, /images/golf/villaLiving-960.avif 960w, /images/golf/villaLiving-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "website/photos/02 Rooms and Villas/Two-Storey Pool Villa/hula-hula-two-storey-pool-villa-living-room-sofa-and-dining-table.jpg"
+  },
+  "villaPoolBed": {
+    "src": "/images/golf/villaPoolBed-1600.webp",
+    "srcSet": "/images/golf/villaPoolBed-480.webp 480w, /images/golf/villaPoolBed-960.webp 960w, /images/golf/villaPoolBed-1600.webp 1264w",
+    "avifSrcSet": "/images/golf/villaPoolBed-480.avif 480w, /images/golf/villaPoolBed-960.avif 960w, /images/golf/villaPoolBed-1600.avif 1264w",
+    "width": 1264,
+    "height": 842,
+    "source": "website/photos/02 Rooms and Villas/Two-Storey Pool Villa/hula-hula-two-storey-pool-villa-downstairs-bed-and-private-pool-terrace.jpg"
+  },
+  "villaBath": {
+    "src": "/images/golf/villaBath-1600.webp",
+    "srcSet": "/images/golf/villaBath-480.webp 480w, /images/golf/villaBath-960.webp 960w, /images/golf/villaBath-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/villaBath-480.avif 480w, /images/golf/villaBath-960.avif 960w, /images/golf/villaBath-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "website/photos/02 Rooms and Villas/Two-Storey Pool Villa/hula-hula-two-storey-pool-villa-rose-petal-bath-and-four-poster-bedroom.jpg"
   }
 } satisfies Record<string, PhotoAsset>;
 
 export const photoByUrl = new Map<string, PhotoAsset>(Object.values(photoAssets).map(photo => [photo.src, photo]));
+
+export const pineappleGolfer: PhotoAsset = {
+  "src": "/images/mascot/pineapple-golfer-480.webp",
+  "srcSet": "/images/mascot/pineapple-golfer-240.webp 240w, /images/mascot/pineapple-golfer-480.webp 480w",
+  "avifSrcSet": "/images/mascot/pineapple-golfer-240.avif 240w, /images/mascot/pineapple-golfer-480.avif 480w",
+  "width": 480,
+  "height": 687,
+  "source": "marketing/06-hula-hula-pineapple-golfer-transparent.png"
+};

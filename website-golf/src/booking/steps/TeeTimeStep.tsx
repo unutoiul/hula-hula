@@ -12,6 +12,7 @@ import { ActivityIcon } from '../activityIcons';
 import { fetchTeeSheet } from '../api';
 import { DAY_PARTS, dayPartOf, fits, type DayPart, type Slot } from '../availability';
 import { bookHref, useBookingFlow } from '../BookingFlowContext';
+import { onlineActivities } from '../config';
 import { BookingSummary } from '../components/BookingSummary';
 import { DateStrip } from '../components/DateStrip';
 import { addDays, durationLabel, fromMinutes, shortDayLabel, timeLabel, toMinutes } from '../dates';
@@ -46,7 +47,9 @@ export function TeeTimeStep() {
   const each = pricePerPerson(activity, option, search.players);
   const goOn = () => { if (time) navigate('/book/extras'); };
   const continueButton = <Button fullWidth variant="contained" disabled={!time} onClick={goOn} endIcon={<East />}>Continue</Button>;
-  const { activities } = useSite();
+  const site = useSite();
+  const activities = onlineActivities(site);
+  const byMessage = site.activities.filter((a) => !activities.includes(a));
   const people = activity.peopleNoun === 'person' ? 'People' : 'Players';
   // A private-group activity (lessons) has a few fixed sessions — no need to filter by time of day.
   const fewStarts = activity.privateGroup;
@@ -73,6 +76,9 @@ export function TeeTimeStep() {
             </Box>;
           })}
         </Box>
+        {byMessage.length > 0 && <Typography sx={{ fontSize: 13.5, color: 'text.secondary', mt: 1.5 }}>
+          {byMessage.map((a) => a.name).join(' or ')}? Those are booked by message — <Link href={`${CONTACT.whatsapp}?text=${encodeURIComponent(`Hi Hula Hula Golf Club! I'd like to book ${byMessage[0].name}: `)}`} target="_blank" rel="noopener noreferrer">WhatsApp us</Link>.
+        </Typography>}
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2, sm: 4 }} sx={{ mt: 2.5 }} alignItems={{ sm: 'center' }}>
           {activity.options.length > 1 && <Box>
             <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', fontSize: 10.5 }}>{activity.optionsLabel}</Typography>

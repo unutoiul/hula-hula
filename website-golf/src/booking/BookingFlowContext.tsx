@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useSite } from '../context/SiteDataContext';
 import { createReservation, ApiError, type Guest, type Reservation } from './api';
 import { isBookableDay } from './availability';
-import { findActivity, pickupFor, type Activity, type ActivityOption, type SiteData } from './config';
+import { findActivity, onlineActivities, pickupFor, type Activity, type ActivityOption, type SiteData } from './config';
 import { isISODate, krabiNow } from './dates';
 import { priceLines, totalOf, type PriceLine } from './pricing';
 
@@ -43,7 +43,8 @@ export function searchFromQuery(query: URLSearchParams): Partial<Search> {
 
 /** Keeps a search valid: a live activity and one of its options, players within the group size, a bookable day. */
 export function normalise(search: Partial<Search>, site: SiteData): Search {
-  const activity = findActivity(site, search.activity ?? '') ?? site.activities[0];
+  const online = onlineActivities(site);
+  const activity = findActivity({ activities: online }, search.activity ?? '') ?? online[0];
   const option = activity.options.some((o) => o.id === search.option) ? search.option! : activity.options[0].id;
   const players = Math.min(activity.maxPlayers, Math.max(activity.minPlayers, search.players ?? 2));
   const date = search.date && isBookableDay(search.date, site.club.booking.windowDays) ? search.date : krabiNow().date;
@@ -111,7 +112,8 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
     return () => window.clearTimeout(id);
   }, [state.heldUntil]);
 
-  const activity = findActivity(site, state.search.activity) ?? site.activities[0];
+  const online = onlineActivities(site);
+  const activity = findActivity({ activities: online }, state.search.activity) ?? online[0];
   const option = activity.options.find((o) => o.id === state.search.option) ?? activity.options[0];
 
   const setSearch = useCallback((change: Partial<Search>) => setState((s) => {

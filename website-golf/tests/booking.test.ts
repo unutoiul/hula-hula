@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/availability.ts';
-import { DEFAULT_CLUB, DEFAULT_SITE, findActivity, normaliseActivity, normaliseClub, openingHoursLines, pickupFor, slugify } from '../src/booking/config.ts';
+import { DEFAULT_CLUB, DEFAULT_SITE, findActivity, normaliseActivity, normaliseClub, onlineActivities, openingHoursLines, pickupFor, slugify } from '../src/booking/config.ts';
 import { addDays, fromMinutes, isISODate, krabiNow, timeLabel, toMinutes } from '../src/booking/dates.ts';
 import { money, priceLines, totalOf } from '../src/booking/pricing.ts';
 
@@ -23,9 +23,9 @@ const at = (slots: ReturnType<typeof buildSheet>, time: string) => slots.find((s
 
 describe('prices (from the club brochure)', () => {
   it('golf is per player and includes rental sets as extra lines', () => {
-    const lines = priceLines(golf, option(golf, '18'), 3, { standard: 1, premium: 1 }, DEFAULT_SITE.rentals);
-    assert.equal(lines[0].amount, 3 * 2080);
-    assert.equal(totalOf(lines), 3 * 2080 + 500 + 1000);
+    const lines = priceLines(golf, option(golf, '9'), 3, { standard: 1, premium: 1 }, DEFAULT_SITE.rentals);
+    assert.equal(lines[0].amount, 3 * 1400);
+    assert.equal(totalOf(lines), 3 * 1400 + 500 + 1000);
   });
   it('a lesson on your own costs 2,990; two or three pay 2,100 each', () => {
     assert.equal(totalOf(priceLines(lesson, lesson.options[0], 1)), 2990);
@@ -77,8 +77,12 @@ describe('the tee sheet', () => {
     assert.equal(toMinutes(slots[1].time) - toMinutes(slots[0].time), golf.interval);
     assert.ok(slots.every((s) => s.spotsLeft === golf.capacity));
   });
-  it('stops earlier for 18 holes', () => {
-    assert.equal(sheet(golf, '18').at(-1)!.time, option(golf, '18').lastStart);
+  it('stops at the option’s last start', () => {
+    assert.equal(sheet(golf, '9').at(-1)!.time, option(golf, '9').lastStart);
+  });
+  it('only online activities reach the booking pages', () => {
+    assert.deepEqual(onlineActivities(DEFAULT_SITE).map((a) => a.id), ['golf', 'footgolf', 'puttgolf', 'range', 'lesson']);
+    assert.ok(DEFAULT_SITE.activities.every((a) => a.options.every((o) => o.label !== '18 holes')));
   });
   it('drops today’s starts that are too soon — but staff see the whole day', () => {
     const later = { date: day, minutes: 10 * 60 + 5 };

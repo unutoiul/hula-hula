@@ -41,8 +41,12 @@ export function ActivityEditor({ initial, isNew, takenIds, onClose, onSave }: {
     <DialogContent dividers>
       <Stack spacing={3}>
         <Group title="What it is">
-          <TextField label="Name" required value={a.name} onChange={(e) => set({ name: e.target.value.slice(0, 60) })} helperText={isNew ? (id ? `Its link will be /book?activity=${id}` : ' ') : `Link name: ${a.id} (stays the same)`} />
+          <TextField label="Name" required value={a.name} onChange={(e) => set({ name: e.target.value.slice(0, 60) })} helperText={isNew ? (id ? `Its page will be /activities/${id}` : ' ') : `Its page: /activities/${a.id} (the link stays the same)`} />
           <TextField label="Short description" value={a.tagline} onChange={(e) => set({ tagline: e.target.value.slice(0, 120) })} placeholder="e.g. 9-hole, par 36 course" />
+          <TextField label="About it (its own page)" multiline minRows={4} value={a.about} onChange={(e) => set({ about: e.target.value.slice(0, 1500) })}
+            helperText="A few sentences for the activity's page. Leave an empty line between paragraphs." />
+          <Toggle checked={a.bookOnline} onChange={(v) => set({ bookOnline: v })} label="Guests can book it online"
+            hint="Off: it stays on the website with a “Message us” button instead of booking, and you can still add bookings on the tee sheet. Handy until the prices and times are set." />
           <Box>
             <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: .75 }}>Icon</Typography>
             <ToggleButtonGroup exclusive value={a.icon} onChange={(_, v) => { if (v) set({ icon: v }); }} sx={{ flexWrap: 'wrap' }}>
@@ -51,7 +55,7 @@ export function ActivityEditor({ initial, isNew, takenIds, onClose, onSave }: {
           </Box>
         </Group>
 
-        <Group title="Prices & options" hint="Each option is a way to book it — 9 or 18 holes, 1 or 2 hours… Prices are per person, in baht.">
+        <Group title="Prices & options" hint="Each option is a way to book it — 9 holes, 1 or 2 hours… Prices are per person, in baht. A price of 0 shows as “Ask us”.">
           <TextField label="The options are called" value={a.optionsLabel} onChange={(e) => set({ optionsLabel: e.target.value.slice(0, 20) })} placeholder="Holes, How long…" sx={{ maxWidth: 280 }} />
           {a.options.map((o, i) => <Box key={i} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: '1.4fr 1fr 1fr 1fr auto' }, gap: 1.25, alignItems: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(23,60,44,.03)' }}>
             <TextField label="Option" value={o.label} onChange={(e) => setOption(i, { label: e.target.value.slice(0, 40) })} sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }} />
@@ -96,8 +100,8 @@ export function ActivityEditor({ initial, isNew, takenIds, onClose, onSave }: {
           </Stack>
         </Group>
 
-        <Group title="Card on the homepage" hint="The “ways to play” card. Without a photo, the activity only shows in the prices and booking.">
-          <TextField label="Small heading" value={a.card.kicker} onChange={(e) => set({ card: { ...a.card, kicker: e.target.value.slice(0, 60) } })} placeholder="FootGolf · 9 or 18 holes" />
+        <Group title="Card on the homepage & photos" hint="Its card in the homepage's activities list, and the photos on its page. Without a photo it shows its icon instead.">
+          <TextField label="Small heading" value={a.card.kicker} onChange={(e) => set({ card: { ...a.card, kicker: e.target.value.slice(0, 60) } })} placeholder="FootGolf · 9 holes" />
           <TextField label="Title" value={a.card.title} onChange={(e) => set({ card: { ...a.card, title: e.target.value.slice(0, 80) } })} placeholder="Golf rules. Football feet." />
           <TextField label="Text" multiline minRows={2} value={a.card.detail} onChange={(e) => set({ card: { ...a.card, detail: e.target.value.slice(0, 300) } })} />
           <ImagePicker value={a.card.images} onChange={(images) => set({ card: { ...a.card, images } })} max={4} label="Photos" />

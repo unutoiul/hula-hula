@@ -1,0 +1,56 @@
+[
+  {
+    "file": "01-hula-hula-golf-club-card.png",
+    "width": 1402,
+    "height": 1122,
+    "bytes": 2777661,
+    "pixelFormat": "Format24bppRgb",
+    "transparentSamples": 0,
+    "semiTransparentSamples": 0
+  },
+  {
+    "file": "02-hula-hula-driving-range-card.png",
+    "width": 1402,
+    "height": 1122,
+    "bytes": 2805172,
+    "pixelFormat": "Format24bppRgb",
+    "transparentSamples": 0,
+    "semiTransparentSamples": 0
+  },
+  {
+    "file": "03-hula-hula-putting-green-card.png",
+    "width": 1402,
+    "height": 1122,
+    "bytes": 2800079,
+    "pixelFormat": "Format24bppRgb",
+    "transparentSamples": 0,
+    "semiTransparentSamples": 0
+  },
+  {
+    "file": "04-hula-hula-sunset-golf-card.png",
+    "width": 1402,
+    "height": 1122,
+    "bytes": 2803193,
+    "pixelFormat": "Format24bppRgb",
+    "transparentSamples": 0,
+    "semiTransparentSamples": 0
+  },
+  {
+    "file": "05-hula-hula-the-19th-hole-card.png",
+    "width": 1402,
+    "height": 1122,
+    "bytes": 2810332,
+    "pixelFormat": "Format24bppRgb",
+    "transparentSamples": 0,
+    "semiTransparentSamples": 0
+  },
+  {
+    "file": "06-hula-hula-pineapple-golfer-transparent.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1446401,
+    "pixelFormat": "Format32bppArgb",
+    "transparentSamples": 3804,
+    "semiTransparentSamples": 2435
+  }
+]

@@ -13,6 +13,7 @@ import { toMinutes } from '../booking/dates';
 import { money, plural } from '../booking/pricing';
 import { GuestStepper } from '../components/booking/GuestStepper';
 import { ClubPhoto } from '../components/common/ClubPhoto';
+import { CARD_PEEK, PineappleGolfer } from '../components/common/PineappleGolfer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { useContact } from '../context/SiteDataContext';
 import { photoAssets as p } from '../data/photos';
@@ -248,7 +249,7 @@ function OrderPage() {
   }, [ref, key]);
 
   const card = (children: ReactNode) => <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 }, py: { xs: 5, md: 8 } }}>
-    <Box sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '28px', p: { xs: 3, md: 4.5 }, boxShadow: '0 18px 55px rgba(23,60,44,.07)' }}>{children}</Box>
+    <Box sx={{ position: 'relative', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '28px', p: { xs: 3, md: 4.5 }, boxShadow: '0 18px 55px rgba(23,60,44,.07)' }}>{children}</Box>
   </Container>;
 
   if (problem === 'missing') return card(<>
@@ -288,6 +289,7 @@ function OrderPage() {
   const minutes = order.startTime && order.endTime && order.endTime > order.startTime ? toMinutes(order.endTime) - toMinutes(order.startTime) : 180;
   const calendarItem = order.startTime ? { uid: order.ref, title: order.eventTitle, date: order.startsOn, time: order.startTime, minutes, note: `Order ${order.ref} · ${order.packageName} × ${order.quantity}.` } : null;
   return card(<>
+    <PineappleGolfer sizes="110px" sx={CARD_PEEK} />
     <Stack direction="row" spacing={1.5} alignItems="center"><CheckCircleRounded sx={{ color: 'success.main', fontSize: 40 }} /><Typography variant="overline" sx={{ color: 'success.dark' }}>Confirmed · {order.ref}</Typography></Stack>
     <Typography variant="h1" sx={{ fontSize: { xs: 34, md: 42 }, mt: 1, lineHeight: 1.08 }}>You’re in!</Typography>
     <Typography sx={{ color: 'text.secondary', mt: 1.25 }}>We’ve emailed your confirmation to <strong>{order.email}</strong>. Quote <strong>{order.ref}</strong> if you get in touch.</Typography>
