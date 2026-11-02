@@ -1,7 +1,7 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
-import { Alert, Autocomplete, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, MenuItem, Stack, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, Autocomplete, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, InputAdornment, MenuItem, Stack, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { CarouselCard } from '../components/common/CarouselCard';
 import type { Highlight } from '../components/sections/cmsCards';
@@ -77,20 +77,28 @@ export function ContentManager({ config }: { config: ContentConfig }) {
         {rows.map((row) => {
           const image = config.firstImage(row);
           const live = Boolean(row[config.liveKey]);
-          return <Stack key={row.id} direction="row" alignItems="center" spacing={2} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: '18px', bgcolor: 'background.paper', opacity: live ? 1 : .7 }}>
-            <Box sx={{ width: 72, height: 54, flexShrink: 0, borderRadius: '12px', overflow: 'hidden', bgcolor: 'divider' }}>
+          // One line on wider screens; on phones the switch and buttons move
+          // to their own row so the title gets the full width.
+          return <Box key={row.id} sx={{
+            display: 'grid', gridTemplateColumns: { xs: '64px minmax(0, 1fr)', sm: '72px minmax(0, 1fr) auto' }, alignItems: 'center', columnGap: { xs: 1.5, sm: 2 },
+            p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: '18px', bgcolor: 'background.paper', opacity: live ? 1 : .7,
+          }}>
+            <Box sx={{ width: { xs: 64, sm: 72 }, height: { xs: 48, sm: 54 }, borderRadius: '12px', overflow: 'hidden', bgcolor: 'divider' }}>
               {image && <Box component="img" src={thumbOf(image)} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
             </Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{String(row.title)}</Typography>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: { sm: 'nowrap' }, display: { xs: '-webkit-box', sm: 'block' }, WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.3 }}>{String(row.title)}</Typography>
               <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{config.subtitle(row)}</Typography>
             </Box>
-            <Tooltip title={live ? 'On the website — switch off to hide' : 'Hidden — switch on to show on the website'}>
-              <Switch checked={live} onChange={(e) => void run(supabase!.from(config.table).update({ [config.liveKey]: e.target.checked }).eq('id', row.id!))} slotProps={{ input: { 'aria-label': `Show “${String(row.title)}” on the website` } }} />
-            </Tooltip>
-            <IconButton aria-label={`Edit “${String(row.title)}”`} onClick={() => setEditing(row)}><EditRounded fontSize="small" /></IconButton>
-            <IconButton aria-label={`Delete “${String(row.title)}”`} onClick={() => remove(row)}><DeleteOutlineRounded fontSize="small" /></IconButton>
-          </Stack>;
+            <Stack direction="row" alignItems="center" sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' }, mt: { xs: 1, sm: 0 }, pt: { xs: .5, sm: 0 }, borderTop: '0 solid', borderTopWidth: { xs: 1, sm: 0 }, borderColor: 'divider' }}>
+              <Tooltip title={live ? 'On the website — switch off to hide' : 'Hidden — switch on to show on the website'}>
+                <FormControlLabel sx={{ mr: 'auto', ml: { xs: -1, sm: 0 } }} label={<Typography sx={{ fontSize: 13, color: 'text.secondary', display: { sm: 'none' } }}>{live ? 'On the website' : 'Hidden'}</Typography>}
+                  control={<Switch checked={live} onChange={(e) => void run(supabase!.from(config.table).update({ [config.liveKey]: e.target.checked }).eq('id', row.id!))} slotProps={{ input: { 'aria-label': `Show “${String(row.title)}” on the website` } }} />} />
+              </Tooltip>
+              <IconButton aria-label={`Edit “${String(row.title)}”`} onClick={() => setEditing(row)}><EditRounded fontSize="small" /></IconButton>
+              <IconButton aria-label={`Delete “${String(row.title)}”`} onClick={() => remove(row)}><DeleteOutlineRounded fontSize="small" /></IconButton>
+            </Stack>
+          </Box>;
         })}
       </Stack>}
     {editing && <EditDialog config={config} initial={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void load(); }} />}
@@ -101,6 +109,7 @@ function EditDialog({ config, initial, onClose, onSaved }: { config: ContentConf
   const [row, setRow] = useState<Row>(initial);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const phone = useMediaQuery(useTheme().breakpoints.down('sm'), { noSsr: true });
   const set = (key: string, value: unknown) => setRow((current) => ({ ...current, [key]: value }));
   const missing = config.fields.filter((f) => 'required' in f && f.required && !String(row[f.key] ?? '').trim());
 
@@ -116,7 +125,7 @@ function EditDialog({ config, initial, onClose, onSaved }: { config: ContentConf
     if (saveError) setError(saveError.message); else onSaved();
   };
 
-  return <Dialog open onClose={onClose} maxWidth="md" fullWidth scroll="paper">
+  return <Dialog open onClose={onClose} maxWidth="md" fullWidth fullScreen={phone} scroll="paper">
     <DialogTitle>{row.id ? `Edit ${config.noun}` : `New ${config.noun}`}</DialogTitle>
     <DialogContent dividers>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 300px' }, gap: 3 }}>

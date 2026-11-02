@@ -3,7 +3,7 @@ import LogoutRounded from '@mui/icons-material/LogoutRounded';
 import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import West from '@mui/icons-material/West';
-import { Alert, Box, Button, CircularProgress, Container, IconButton, InputAdornment, Link, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, IconButton, InputAdornment, Link, Stack, Tab, Tabs, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import type { Session } from '@supabase/supabase-js';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { linkClick } from '../router';
@@ -28,6 +28,7 @@ export default function AdminApp() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [tab, setTab] = useState(0);
+  const phone = useMediaQuery(useTheme().breakpoints.down('sm'), { noSsr: true });
 
   // Keep the CMS out of search engines.
   useEffect(() => {
@@ -62,19 +63,26 @@ export default function AdminApp() {
     <Button fullWidth variant="outlined" onClick={() => void supabase!.auth.signOut()} sx={{ mt: 2.5 }}>Sign out</Button>
   </CentredCard>;
 
-  return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 3, md: 5 } }}>
+  const signOut = () => void supabase!.auth.signOut();
+  return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 2, md: 5 } }}>
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2} sx={{ mb: 4 }}>
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Box component="img" src="/logo/hula-hula.svg" alt="" sx={{ height: 48, width: 'auto' }} />
-          <Box>
-            <Typography variant="h1" sx={{ fontSize: { xs: 24, md: 30 } }}>Website admin</Typography>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Activities, events, offers and website bookings</Typography>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2} sx={{ mb: { xs: 2, md: 4 } }}>
+        <Stack direction="row" alignItems="center" spacing={{ xs: 1.5, sm: 2 }} sx={{ minWidth: 0 }}>
+          <Box component="img" src="/logo/hula-hula.svg" alt="" sx={{ height: { xs: 40, sm: 48 }, width: 'auto' }} />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h1" sx={{ fontSize: { xs: 22, md: 30 } }}>Website admin</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>Activities, events, offers and website bookings</Typography>
           </Box>
         </Stack>
-        <Button size="small" startIcon={<LogoutRounded />} onClick={() => void supabase!.auth.signOut()}>Sign out</Button>
+        {phone
+          ? <IconButton aria-label="Sign out" onClick={signOut} sx={{ color: 'primary.main' }}><LogoutRounded /></IconButton>
+          : <Button size="small" startIcon={<LogoutRounded />} onClick={signOut}>Sign out</Button>}
       </Stack>
-      <Tabs value={tab} onChange={(_, next: number) => setTab(next)} variant="scrollable" allowScrollButtonsMobile sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
+      {/* A fixed row, never scrollable: scrollable tabs add arrow buttons and
+          slide the row along on every click. On phones the four tabs share
+          the width equally. */}
+      <Tabs value={tab} onChange={(_, next: number) => setTab(next)} variant={phone ? 'fullWidth' : 'standard'}
+        sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider', '& .MuiTab-root': phone ? { minWidth: 0, px: .5, fontSize: 14 } : {} }}>
         {TABS.map((t) => <Tab key={t.label} label={t.label} />)}
       </Tabs>
       {TABS[tab].render()}

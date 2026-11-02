@@ -49,11 +49,15 @@ export function BookingsPanel() {
           const rooms = b.items.reduce((sum, item) => sum + item.quantity, 0);
           return <Box key={b.ref} sx={{ p: 2, border: '1px solid', borderColor: b.keyed_at ? 'divider' : 'secondary.dark', borderRadius: '18px', bgcolor: 'background.paper' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={1.5}>
-              <Box>
-                <Typography sx={{ fontWeight: 700 }}>{b.ref} · {dayLabel(b.check_in)} → {dayLabel(b.check_out)}</Typography>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: 700 }}>
+                  {b.ref}<Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}> · </Box>
+                  <Box component="span" sx={{ display: { xs: 'block', sm: 'inline' }, fontWeight: { xs: 600, sm: 700 } }}>{dayLabel(b.check_in)} → {dayLabel(b.check_out)}</Box>
+                </Typography>
                 <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{plural(rooms, 'room')}: {b.items.map((item) => `${item.quantity} × ${item.roomTypeName} (${item.rateName})`).join(', ')}</Typography>
                 <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Paid {money(b.paid_amount ?? b.deposit_amount, b.currency)} of {money(b.total_amount, b.currency)}{b.tran_ref ? ` · 2C2P ${b.tran_ref}` : ''}</Typography>
-                <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ mt: 1 }}>
+                {/* Chips wrap onto two lines rather than cutting the warning off on a phone. */}
+                <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ mt: 1, '& .MuiChip-root': { height: 'auto', minHeight: 24, maxWidth: '100%' }, '& .MuiChip-label': { whiteSpace: 'normal', py: .25 } }}>
                   {b.status === 'paid' && <Chip size="small" color="warning" label={b.delivery_error ? 'Email to reservations failing — retrying' : 'Sending to reservations…'} />}
                   {b.flags.map((flag) => <Chip key={flag} size="small" color="warning" variant="outlined" label={FLAG_LABELS[flag] ?? flag} />)}
                 </Stack>
@@ -61,7 +65,7 @@ export function BookingsPanel() {
               <Box sx={{ flexShrink: 0 }}>
                 {b.keyed_at
                   ? <Chip icon={<CheckRounded />} label="In SiteMinder" color="success" variant="outlined" />
-                  : <Button variant="contained" size="small" onClick={() => void markKeyed(b.ref)}>Entered in SiteMinder</Button>}
+                  : <Button variant="contained" size="small" onClick={() => void markKeyed(b.ref)} sx={{ width: { xs: '100%', sm: 'auto' } }}>Entered in SiteMinder</Button>}
               </Box>
             </Stack>
           </Box>;
