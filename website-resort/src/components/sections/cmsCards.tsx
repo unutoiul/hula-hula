@@ -3,7 +3,7 @@ import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRound
 import East from '@mui/icons-material/East';
 import type { ReactNode } from 'react';
 import type { Offer, SiteEvent } from '../../../shared/siteContent';
-import { ONSITE_BOOKING, toBookHref, useBookingSearch } from '../../context/BookingSearchContext';
+import { ONSITE_BOOKING, toBookHref, toISODate, useBookingSearch } from '../../context/BookingSearchContext';
 import { useContactForm } from '../../context/ContactFormContext';
 import { useSiteContent } from '../../context/SiteContentContext';
 import { photoAssets as p } from '../../data/photos';
@@ -24,7 +24,7 @@ export interface Highlight {
   title: string;
   description: string;
   perks: string[];
-  /** Small print: the minimum stay, or when an event is on. */
+  /** Small print: an offer's stay dates, minimum stay and last booking day, or when an event is on. */
   note: string | null;
   image: string;
   ctaLabel?: string; onCta?: () => void; ctaHref?: string; ctaIcon?: ReactNode;
@@ -35,26 +35,42 @@ const dayOnly = new Intl.DateTimeFormat('en-GB', { day: 'numeric' });
 const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' });
 const asDay = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
 
+/** "24 – 26 Dec", "30 Dec – 2 Jan" */
+const dayRange = (from: string, to: string) => {
+  const a = asDay(from), b = asDay(to);
+  return a.getMonth() === b.getMonth() ? `${dayOnly.format(a)} – ${dayMonth.format(b)}` : `${dayMonth.format(a)} – ${dayMonth.format(b)}`;
+};
+
 function eventDates({ startsOn, endsOn }: SiteEvent): string {
-  if (startsOn && endsOn && endsOn !== startsOn) {
-    const a = asDay(startsOn), b = asDay(endsOn);
-    return a.getMonth() === b.getMonth() ? `${dayOnly.format(a)} – ${dayMonth.format(b)}` : `${dayMonth.format(a)} – ${dayMonth.format(b)}`;
-  }
+  if (startsOn && endsOn && endsOn !== startsOn) return dayRange(startsOn, endsOn);
   return startsOn || endsOn ? day.format(asDay((startsOn ?? endsOn)!)) : '';
+}
+
+/** "Stays 20 Dec – 5 Jan · min. 3 nights · book by 15 Dec" */
+function offerTerms({ stayFrom, stayTo, minNights, validTo }: Offer): string | null {
+  const stays = stayFrom && stayTo ? `Stays ${dayRange(stayFrom, stayTo)}`
+    : stayFrom ? `Stays from ${dayMonth.format(asDay(stayFrom))}`
+      : stayTo ? `Stays until ${dayMonth.format(asDay(stayTo))}` : '';
+  const nights = minNights && minNights > 1 ? (stays ? `min. ${minNights} nights` : `Minimum stay ${minNights} nights`) : '';
+  const bookBy = validTo ? `${stays || nights ? 'book' : 'Book'} by ${dayMonth.format(asDay(validTo))}` : '';
+  return [stays, nights, bookBy].filter(Boolean).join(' · ') || null;
 }
 
 export function eventWhen(event: SiteEvent): string {
   return [eventDates(event), event.timeLabel].filter(Boolean).join(' · ') || 'Ongoing';
 }
 
-// Dates that qualify for an offer: the guest's dates, stretched to the
-// offer's minimum stay if they're shorter.
+// Dates that qualify for an offer: the guest's dates if they already fit,
+// otherwise the first stay inside the offer's stay dates that's long enough.
 function offerDates(offer: Offer, checkIn: Date, checkOut: Date): [Date, Date] {
   const nights = Math.max(1, Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000));
   const minNights = offer.minNights ?? 1;
-  if (nights >= minNights) return [checkIn, checkOut];
-  const end = new Date(checkIn); end.setDate(end.getDate() + minNights);
-  return [checkIn, end];
+  const fits = nights >= minNights && (!offer.stayTo || toISODate(checkIn) <= offer.stayTo) && (!offer.stayFrom || toISODate(checkOut) > offer.stayFrom);
+  if (fits) return [checkIn, checkOut];
+  const tomorrow = new Date(); tomorrow.setHours(0, 0, 0, 0); tomorrow.setDate(tomorrow.getDate() + 1);
+  const start = offer.stayFrom && asDay(offer.stayFrom) > tomorrow ? asDay(offer.stayFrom) : tomorrow;
+  const end = new Date(start); end.setDate(end.getDate() + Math.max(nights, minNights));
+  return [start, end];
 }
 
 const bookIcon = <East sx={{ fontSize: 17 }} />;
@@ -67,7 +83,7 @@ export function offerHighlight(offer: Offer): Highlight {
     id: offer.id, kind: 'offer', label: offer.kicker || offer.badge || 'Special offer',
     tag: offer.discountPercent > 0 ? `−${offer.discountPercent}%` : null,
     title: offer.title, description: offer.description, perks: offer.perks,
-    note: offer.minNights && offer.minNights > 1 ? `Minimum stay ${offer.minNights} nights` : null,
+    note: offerTerms(offer),
     image: offer.imageUrl ?? p.poolOverview.src,
     // Offers are priced by our own booking page; while that's switched off
     // (SiteMinder's engine doesn't know them), guests ask the team instead.

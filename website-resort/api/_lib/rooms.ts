@@ -2,6 +2,7 @@ import type { AvailabilityResponse, DepositType, RateOffer, RoomCapacity, RoomTy
 import { bestDeal, type Deal, nightlyDiscounts } from './dealRules.js';
 import { depositFor, type DefaultDeposit } from './deposit.js';
 import { fromSatang, toSatang } from './money.js';
+import { todayInBangkok } from './search.js';
 import type { Catalog, SmPenalty, SmQuote, SmRoomRate, SmRoomType } from './siteminder.js';
 import { isTestMode } from './twoc2p.js';
 
@@ -77,6 +78,7 @@ export function cancellationTerms(ratePenalties: SmPenalty[] | undefined, proper
 export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<string, number>, checkIn: string, promo: string | undefined, fallback: DefaultDeposit, deals: Deal[] = []): PricedRate[] {
   const currency = catalog.property.currencyIsoCode || 'THB';
   const priced: PricedRate[] = [];
+  const today = todayInBangkok();
   for (const quote of quotes) {
     const roomType = catalog.roomTypes.get(quote.roomTypeUuid);
     const rate = catalog.rates.get(quote.roomRateUuid);
@@ -94,7 +96,7 @@ export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<stri
     if (available <= 0) continue;
     // The best special offer for this room and stay, taken off the nights it covers.
     const originalTotal = toSatang(quote.price.gross);
-    const deal = bestDeal(deals, { nightDates: nights.map((night) => night.date), roomTypeUuid: quote.roomTypeUuid, promo });
+    const deal = bestDeal(deals, { today, nightDates: nights.map((night) => night.date), roomTypeUuid: quote.roomTypeUuid, promo });
     let savings = 0;
     if (deal) {
       const off = nights.length

@@ -39,6 +39,8 @@ export interface ContentConfig {
   /** The live preview: an activity's card, or the offer/event card the homepage shows. */
   preview: (row: Row) => (CarouselCardData & { ctaLabel?: string }) | Highlight;
   firstImage: (row: Row) => string | null;
+  /** Why the form can't be saved yet, e.g. dates the wrong way round. */
+  check?: (row: Row) => string | null;
 }
 
 const thumbOf = (src: string) => photoByUrl.get(src)?.srcSet.split(',')[0].trim().split(' ')[0] ?? src;
@@ -112,6 +114,7 @@ function EditDialog({ config, initial, onClose, onSaved }: { config: ContentConf
   const phone = useMediaQuery(useTheme().breakpoints.down('sm'), { noSsr: true });
   const set = (key: string, value: unknown) => setRow((current) => ({ ...current, [key]: value }));
   const missing = config.fields.filter((f) => 'required' in f && f.required && !String(row[f.key] ?? '').trim());
+  const problem = config.check?.(row) ?? null;
 
   const save = async () => {
     setSaving(true); setError(null);
@@ -181,11 +184,12 @@ function EditDialog({ config, initial, onClose, onSaved }: { config: ContentConf
           <Box sx={{ position: 'sticky', top: 0 }}><PreviewCard card={config.preview(row)} /></Box>
         </Box>
       </Box>
+      {problem && <Alert severity="warning" sx={{ mt: 2 }}>{problem}</Alert>}
       {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
     </DialogContent>
     <DialogActions>
       <Button onClick={onClose}>Cancel</Button>
-      <Button variant="contained" disabled={saving || missing.length > 0} onClick={() => void save()}>{saving ? 'Saving…' : 'Save'}</Button>
+      <Button variant="contained" disabled={saving || missing.length > 0 || !!problem} onClick={() => void save()}>{saving ? 'Saving…' : 'Save'}</Button>
     </DialogActions>
   </Dialog>;
 }

@@ -6,6 +6,9 @@ import type { ContentConfig, Row } from './ContentManager';
 // names match supabase/migrations/0001_booking_and_cms.sql.
 
 const text = (row: Row, key: string) => (typeof row[key] === 'string' ? row[key] as string : '');
+const day = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const dayOf = (iso: string) => day.format(new Date(`${iso}T00:00:00`));
+const todayInBangkok = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
 
 export const activitiesConfig: ContentConfig = {
   table: 'activities',
@@ -72,7 +75,7 @@ const perksOf = (row: Row) => (row.perks as string[] | undefined) ?? [];
 export const offersConfig: ContentConfig = {
   table: 'offers',
   noun: 'offer',
-  intro: 'Special offers for rooms booked on the website: a % off, perks like a welcome drink, or both (a package). An offer is live the moment you switch it on, and stays until you switch it off. The booking page applies the best matching offer to each room automatically — or only with a promo code if you set one — and the reservations email shows the discount and the perks to arrange.',
+  intro: 'Special offers for rooms booked on the website: a % off, perks like a welcome drink, or both (a package). A switched-on offer shows on the website between its dates (or straight away and until you switch it off, if you leave them empty), and its discount counts only for nights inside its stay dates. The booking page applies the best matching offer to each room automatically — or only with a promo code if you set one — and the reservations email shows the discount and the perks to arrange.',
   liveKey: 'active',
   fields: [
     { key: 's-show', label: 'What guests see', kind: 'section' },
@@ -83,10 +86,14 @@ export const offersConfig: ContentConfig = {
     { key: 'show_on_homepage', label: 'Show as a card on the homepage', kind: 'switch', helper: 'Switch off for a secret promo-code offer' },
 
     { key: 's-deal', label: 'Discount & perks', kind: 'section', helper: 'Use a discount, perks, or both. A perks-only offer is a package.' },
-    { key: 'discount_percent', label: 'Discount', kind: 'number', min: 0, max: 90, unit: '%', helper: 'Off the room price, for every night of the stay' },
+    { key: 'discount_percent', label: 'Discount', kind: 'number', min: 0, max: 90, unit: '%', helper: 'Off the room price, on the nights inside the stay dates' },
     { key: 'perks', label: 'Perks included', kind: 'tags', suggestions: PERK_SUGGESTIONS, helper: 'Pick from the list or type your own and press Enter (up to 8)' },
 
-    { key: 's-when', label: 'When it applies', kind: 'section', helper: 'The offer is live while it’s switched on. Leave empty for no minimum.' },
+    { key: 's-when', label: 'When it applies', kind: 'section', helper: 'Leave any of these empty for no limit.' },
+    { key: 'valid_from', label: 'Shows on the website from', kind: 'date', helper: 'First day guests see it and can book it' },
+    { key: 'valid_to', label: 'Shows on the website until', kind: 'date', helper: 'Last day to book — it disappears after this day' },
+    { key: 'stay_from', label: 'Discount for stays from', kind: 'date', helper: 'The discount counts for nights from this date…' },
+    { key: 'stay_to', label: 'Discount for stays until', kind: 'date', helper: '…up to and including this night' },
     { key: 'min_nights', label: 'Minimum stay', kind: 'number', min: 1, max: 31, unit: 'nights' },
 
     { key: 's-rooms', label: 'Rooms & promo code', kind: 'section' },
@@ -96,7 +103,7 @@ export const offersConfig: ContentConfig = {
   ],
   blank: () => ({
     title: '', badge: 'Special offer', description: '', image_url: null, show_on_homepage: true, discount_percent: 0, perks: [],
-    min_nights: null,
+    valid_from: null, valid_to: null, stay_from: null, stay_to: null, min_nights: null,
     room_type_uuids: [], promo_code: '', cta_label: '', active: false,
   }),
   subtitle: (row) => [
@@ -104,12 +111,25 @@ export const offersConfig: ContentConfig = {
     perksOf(row).length ? `${perksOf(row).length} perk${perksOf(row).length === 1 ? '' : 's'}` : '',
     row.min_nights ? `${String(row.min_nights)}+ nights` : '',
     text(row, 'promo_code') && `code ${text(row, 'promo_code')}`,
+    showing(row),
+    text(row, 'stay_from') || text(row, 'stay_to') ? `stays ${text(row, 'stay_from') ? dayOf(text(row, 'stay_from')) : '…'} – ${text(row, 'stay_to') ? dayOf(text(row, 'stay_to')) : '…'}` : '',
     row.show_on_homepage === false ? 'not on homepage' : '',
   ].filter(Boolean).join(' · '),
   preview: (row) => offerHighlight({
     id: 'preview', kicker: null, title: text(row, 'title') || 'Offer name', description: text(row, 'description'), imageUrl: text(row, 'image_url') || null,
-    promoCode: text(row, 'promo_code') || null, discountPercent: percentOf(row), badge: text(row, 'badge') || null, perks: perksOf(row),
+    promoCode: text(row, 'promo_code') || null, validFrom: text(row, 'valid_from') || null, validTo: text(row, 'valid_to') || null,
+    stayFrom: text(row, 'stay_from') || null, stayTo: text(row, 'stay_to') || null, discountPercent: percentOf(row), badge: text(row, 'badge') || null, perks: perksOf(row),
     minNights: Number(row.min_nights) || null, ctaLabel: text(row, 'cta_label') || null,
   }),
   firstImage: (row) => text(row, 'image_url') || null,
+  check: (row) => (text(row, 'valid_from') && text(row, 'valid_to') && text(row, 'valid_to') < text(row, 'valid_from') ? '“Shows on the website until” is before “from”.'
+    : text(row, 'stay_from') && text(row, 'stay_to') && text(row, 'stay_to') < text(row, 'stay_from') ? '“Discount for stays until” is before “from”.' : null),
 };
+
+// Whether a switched-on offer is on the website today, going by its dates.
+function showing(row: Row): string {
+  const from = text(row, 'valid_from'), to = text(row, 'valid_to'), today = todayInBangkok();
+  if (to && to < today) return `ended ${dayOf(to)}`;
+  if (from && from > today) return `shows from ${dayOf(from)}`;
+  return to ? `until ${dayOf(to)}` : '';
+}

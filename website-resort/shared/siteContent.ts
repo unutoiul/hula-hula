@@ -32,10 +32,15 @@ export interface Offer {
   imageUrl: string | null;
   /** Needed to get the offer when set; otherwise it applies automatically on /book. */
   promoCode: string | null;
-  /** Off the room price. 0 = perks only (a package). */
+  /** When it can be booked (and shows); null = no limit. */
+  validFrom: string | null;
+  validTo: string | null;
+  /** Off the room price, on the nights between stayFrom and stayTo. 0 = perks only (a package). */
   discountPercent: number;
   badge: string | null;
   perks: string[];
+  stayFrom: string | null;
+  stayTo: string | null;
   minNights: number | null;
   ctaLabel: string | null;
 }

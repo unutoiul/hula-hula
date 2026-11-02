@@ -7,11 +7,12 @@ import { dbConfigured, rest } from './db.js';
 // without offers rather than not at all.
 
 interface OfferRow {
-  id: string; title: string; badge: string | null; discount_percent: number | string; perks: string[]; promo_code: string | null; min_nights: number | null;
+  id: string; title: string; badge: string | null; discount_percent: number | string; perks: string[]; promo_code: string | null;
+  valid_from: string | null; valid_to: string | null; stay_from: string | null; stay_to: string | null; min_nights: number | null;
   room_type_uuids: string[]; sort_order: number;
 }
 
-const COLUMNS = 'id,title,badge,discount_percent,perks,promo_code,min_nights,room_type_uuids,sort_order';
+const COLUMNS = 'id,title,badge,discount_percent,perks,promo_code,valid_from,valid_to,stay_from,stay_to,min_nights,room_type_uuids,sort_order';
 const TTL_MS = 60_000;
 let cache: { loadedAt: number; deals: Deal[] } | null = null;
 
@@ -22,7 +23,8 @@ export async function loadDeals(): Promise<Deal[]> {
     const rows = await rest<OfferRow[]>(`/offers?select=${COLUMNS}&active=eq.true&order=sort_order.asc`);
     const deals = rows.map((row): Deal => ({
       id: row.id, title: row.title, badge: row.badge, discountPercent: Number(row.discount_percent) || 0, perks: row.perks ?? [],
-      promoCode: row.promo_code, minNights: row.min_nights, roomTypeUuids: row.room_type_uuids ?? [], sortOrder: row.sort_order,
+      promoCode: row.promo_code, validFrom: row.valid_from, validTo: row.valid_to, stayFrom: row.stay_from, stayTo: row.stay_to,
+      minNights: row.min_nights, roomTypeUuids: row.room_type_uuids ?? [], sortOrder: row.sort_order,
     }));
     cache = { loadedAt: Date.now(), deals };
     return deals;

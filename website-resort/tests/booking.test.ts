@@ -102,9 +102,9 @@ describe('special offers', async () => {
   const { bestDeal, isEligible, nightlyDiscounts } = await import('../api/_lib/dealRules.ts');
   const base = {
     id: 'a', title: 'Book direct', badge: 'Special offer', discountPercent: 10, perks: [], promoCode: null,
-    minNights: null, roomTypeUuids: [], sortOrder: 0,
+    validFrom: null, validTo: null, stayFrom: null, stayTo: null, minNights: null, roomTypeUuids: [], sortOrder: 0,
   };
-  const ctx = { nightDates: ['2026-12-10', '2026-12-11', '2026-12-12'], roomTypeUuid: 'deluxe' };
+  const ctx = { today: '2026-11-01', nightDates: ['2026-12-10', '2026-12-11', '2026-12-12'], roomTypeUuid: 'deluxe' };
 
   it('applies automatically, or only with its code', () => {
     assert.ok(isEligible(base, ctx));
@@ -113,7 +113,12 @@ describe('special offers', async () => {
     assert.ok(isEligible(coded, { ...ctx, promo: ' honey ' }));
   });
 
-  it('checks minimum nights and rooms', () => {
+  it('checks booking window, stay dates, minimum nights and rooms', () => {
+    assert.ok(!isEligible({ ...base, validTo: '2026-10-31' }, ctx));
+    assert.ok(!isEligible({ ...base, validFrom: '2026-11-02' }, ctx));
+    assert.ok(isEligible({ ...base, validFrom: '2026-11-01', validTo: '2026-11-01' }, ctx)); // both days count
+    assert.ok(!isEligible({ ...base, stayFrom: '2027-01-01' }, ctx));
+    assert.ok(isEligible({ ...base, stayFrom: '2026-12-12' }, ctx)); // covers the last night
     assert.ok(!isEligible({ ...base, minNights: 4 }, ctx));
     assert.ok(isEligible({ ...base, minNights: 3 }, ctx));
     assert.ok(!isEligible({ ...base, roomTypeUuids: ['villa'] }, ctx));
@@ -127,9 +132,10 @@ describe('special offers', async () => {
     assert.equal(bestDeal([], ctx), null);
   });
 
-  it('discounts every night, in whole baht', () => {
+  it('discounts only the nights inside the stay dates, in whole baht', () => {
     const nights = ctx.nightDates.map((date) => ({ date, amount: 845000 }));
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10 }, nights), [84500, 84500, 84500]);
+    assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10, stayTo: '2026-12-11' }, nights), [84500, 84500, 0]);
     // 75% of ฿8,450 is ฿6,337.50 — rounded to ฿6,338 so prices stay in whole baht.
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 75 }, [{ date: '2026-12-10', amount: 845000 }]), [633800]);
   });
