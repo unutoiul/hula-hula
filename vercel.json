@@ -1,3 +1,5 @@
 {
-  "rewrites": [{ "source": "/((?!api/|@|src/|node_modules/)[^.]*)", "destination": "/" }]
+  "regions": ["sin1"],
+  "rewrites": [{ "source": "/((?!api/|@|src/|node_modules/)[^.]*)", "destination": "/" }],
+  "crons": [{ "path": "/api/cron/reconcile", "schedule": "0 20 * * *" }]
 }

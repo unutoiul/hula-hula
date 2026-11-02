@@ -9,6 +9,8 @@ export interface DateRange {
   // calendar — the hero bar's popover — can react to a range just having
   // completed without this hook needing to know that popover exists.
   selectingCheckout: boolean;
+  /** Set both dates at once — e.g. from a /book?checkIn=…&checkOut=… link. */
+  setRange: (checkIn: Date, checkOut: Date) => void;
 }
 
 // Two-click range selection: the first click always starts a new check-in
@@ -36,5 +38,11 @@ export function useDateRange(initialCheckIn: Date, initialCheckOut: Date, onRang
     }
   };
 
-  return { checkIn, checkOut, selectDay, selectingCheckout };
+  const setRange = (nextCheckIn: Date, nextCheckOut: Date) => {
+    setCheckIn(nextCheckIn);
+    setCheckOut(nextCheckOut);
+    setSelectingCheckout(false);
+  };
+
+  return { checkIn, checkOut, selectDay, selectingCheckout, setRange };
 }

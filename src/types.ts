@@ -14,6 +14,12 @@ export interface CarouselCardData {
   images: string[];
 }
 
+/** A room card that is also a SiteMinder room type — the id links the
+ * homepage photos and copy to the live rates on /book. */
+export interface RoomContent extends CarouselCardData {
+  siteminderRoomTypeUuid?: string;
+}
+
 export interface Meal {
   name: string;
   hours: string;

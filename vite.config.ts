@@ -15,7 +15,7 @@ export default defineConfig({
     // the "blank white page, console full of 404s" failure). So: run Vite's
     // own dev server here for everything, and only forward /api calls to a
     // separate `vercel dev` instance that exists purely to execute them.
-    // Run `vercel dev --listen 3001` alongside `npm run dev` for this to work.
+    // Run `npm run dev:api` (vercel dev on 3001, with .env.local) alongside `npm run dev`.
     proxy: {
       '/api': { target: 'http://localhost:3001', changeOrigin: true },
     },

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#fbfdf4" />
+    <meta name="description" content="Your happy place in Ao Nang, Krabi. Discover tropical pools, rooms and villas, floating breakfasts, and playful days at Hula Hula Resort." />
+    <title>Hula Hula Resort | Tropical Vibes &amp; Good Times in Krabi</title>
+    <link rel="preload" as="font" href="/fonts/fredoka-variable.ttf" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" />
+    <link rel="stylesheet" href="/vendor/scrollcraft/scrollcraft.css" />
+    <link rel="stylesheet" href="/styles/hula-scroll.css" />
+    <link rel="icon" type="image/svg+xml" href="/logo/hula-hula.svg" />
+    <link rel="preload" as="image" href="/video/hero-poster.webp" type="image/webp" />
+    <script type="module" crossorigin src="/assets/index-ClCEMwOd.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

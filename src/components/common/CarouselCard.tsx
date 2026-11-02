@@ -7,7 +7,7 @@ import { ResortPhoto } from './ResortPhoto';
 
 interface CarouselCardProps extends CarouselCardData {
   active: boolean; onClick: () => void; width?: number | string;
-  ctaLabel: string; ctaHref?: string; onCta?: () => void; ctaIcon?: ReactNode; ctaIconPosition?: 'start' | 'end';
+  ctaLabel?: string; ctaHref?: string; onCta?: () => void; ctaIcon?: ReactNode; ctaIconPosition?: 'start' | 'end';
 }
 
 export function CarouselCard({ images, kicker, title, detail, ctaLabel, ctaHref, onCta, ctaIcon, ctaIconPosition = 'end' }: CarouselCardProps) {
@@ -25,7 +25,7 @@ export function CarouselCard({ images, kicker, title, detail, ctaLabel, ctaHref,
       <Typography variant="overline" sx={{ color: 'success.main', fontSize: 11 }}>{kicker}</Typography>
       <Typography variant="h3" sx={{ fontSize: { xs: 26, md: 29 }, lineHeight: 1.1, mt: 1, mb: 1.5 }}>{title}</Typography>
       <Typography sx={{ fontSize: 14, lineHeight: 1.7, color: 'text.secondary', mb: 3 }}>{detail}</Typography>
-      <Stack direction="row" justifyContent={{ xs: 'center', sm: 'flex-start' }} sx={{ mt: 'auto' }}><Button {...(onCta ? { onClick: onCta } : { href: ctaHref })} variant="outlined" size="small" startIcon={ctaIconPosition === 'start' ? ctaIcon : undefined} endIcon={ctaIconPosition === 'end' ? ctaIcon : undefined}>{ctaLabel}</Button></Stack>
+      {ctaLabel && <Stack direction="row" justifyContent={{ xs: 'center', sm: 'flex-start' }} sx={{ mt: 'auto' }}><Button {...(onCta ? { onClick: onCta } : { href: ctaHref })} variant="outlined" size="small" startIcon={ctaIconPosition === 'start' ? ctaIcon : undefined} endIcon={ctaIconPosition === 'end' ? ctaIcon : undefined}>{ctaLabel}</Button></Stack>}
     </Box>
   </Box>;
 }

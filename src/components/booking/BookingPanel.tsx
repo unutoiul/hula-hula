@@ -4,7 +4,6 @@ import { fonts } from '../../theme';
 import { CheckAvailabilityButton } from './CheckAvailabilityButton';
 import { GuestStepper } from './GuestStepper';
 import { RangeCalendar } from './RangeCalendar';
-import { SearchResults } from './SearchResults';
 
 const panelDateFmt = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 const MS_PER_NIGHT = 1000 * 60 * 60 * 24;
@@ -12,9 +11,8 @@ const MS_PER_NIGHT = 1000 * 60 * 60 * 24;
 // The Arrival section's full booking widget: the same two-month calendar and
 // guest count as the hero search bar — literally the same state, via
 // BookingSearchContext, so dates picked in either place show up in both.
-// "Check availability" currently hands off to SiteMinder (see
-// CheckAvailabilityButton); SearchResults below renders the in-page search's
-// results once that is switched back on.
+// "Check availability" goes on to the booking pages (see
+// CheckAvailabilityButton).
 export function BookingPanel() {
   const theme = useTheme();
   const today = new Date();
@@ -60,7 +58,5 @@ export function BookingPanel() {
         <Box sx={{ mt: 3 }}><CheckAvailabilityButton /></Box>
       </Box>
     </Box>
-
-    <SearchResults />
   </>;
 }

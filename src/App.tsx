@@ -1,5 +1,6 @@
-import { Box } from '@mui/material';
-import { eventFacts, experiences, meals, navItems } from './data/content';
+import { Box, CircularProgress } from '@mui/material';
+import { lazy, Suspense, useEffect, useRef } from 'react';
+import { eventFacts, meals, navItems } from './data/content';
 import { BookingSearchProvider } from './context/BookingSearchContext';
 import { ContactFormProvider } from './context/ContactFormContext';
 import { CookieConsent } from './components/layout/CookieConsent';
@@ -16,6 +17,8 @@ import { RestaurantSection } from './components/sections/RestaurantSection';
 import { FloatingBreakfastSection } from './components/sections/FloatingBreakfastSection';
 import { ResortPromotionsSection } from './components/sections/ResortPromotionsSection';
 import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
+import { SiteContentProvider } from './context/SiteContentContext';
+import { useLocation } from './router';
 import { BeachBall, Bubbles, Gulls, Longtail, PaperBoat, RisingSun, SEAM, SectionSeam, SwimRing } from './components/common/SectionSeam';
 
 function ResortPage() {
@@ -24,7 +27,7 @@ function ResortPage() {
   return <Box component="main" id="top" sx={{ overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' } }}>
     <CookieConsent />
     <Header navItems={navItems} />
-    <BookingSearchProvider><ContactFormProvider>
+    <SiteContentProvider>
       <Hero />
       <HotelSection />
       {/* Every change of section colour gets the same wave; a few of them carry
@@ -34,7 +37,7 @@ function ResortPage() {
       <SectionSeam from={SEAM.pool} to={SEAM.lime} mirror><SwimRing left="80%" /></SectionSeam>
       <RestaurantSection meals={meals} />
       <SectionSeam from={SEAM.lime} to={SEAM.sea}><Longtail left="10%" /></SectionSeam>
-      <ActivitiesSection experiences={experiences} />
+      <ActivitiesSection />
       <SectionSeam from={SEAM.sea} to={SEAM.lime} mirror><BeachBall left="74%" /></SectionSeam>
       <ResortPromotionsSection />
       <SectionSeam from={SEAM.lime} to={SEAM.cream}><Gulls left="70%" /></SectionSeam>
@@ -46,10 +49,35 @@ function ResortPage() {
       <ContactSection />
       <SectionSeam from={SEAM.cream} to={SEAM.sun} mirror behind={<RisingSun left="78%" />} />
       <Footer />
-    </ContactFormProvider></BookingSearchProvider>
+    </SiteContentProvider>
   </Box>;
 }
 
-function App() { return <MotionPreferenceProvider><ResortPage /></MotionPreferenceProvider>; }
+// The booking pages and the CMS are separate bundles, fetched only when someone goes there.
+const BookingApp = lazy(() => import('./booking/BookingApp'));
+const AdminApp = lazy(() => import('./admin/AdminApp'));
+
+const loading = <Box sx={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}><CircularProgress aria-label="Loading" /></Box>;
+
+function Routes() {
+  const { pathname } = useLocation();
+  // Moving between pages (not the first load, where the browser restores the
+  // scroll itself): start at the top, or at the section in the link (/#arrival).
+  const firstLoad = useRef(true);
+  useEffect(() => {
+    if (firstLoad.current) { firstLoad.current = false; return; }
+    const target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null;
+    if (target) target.scrollIntoView();
+    else if (pathname === '/') window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pathname]);
+
+  if (pathname.startsWith('/admin')) return <Suspense fallback={loading}><AdminApp /></Suspense>;
+  // The search (dates, guests) and the contact popup carry across the homepage and /book.
+  return <BookingSearchProvider><ContactFormProvider>
+    {pathname.startsWith('/book') ? <Suspense fallback={loading}><BookingApp /></Suspense> : <ResortPage />}
+  </ContactFormProvider></BookingSearchProvider>;
+}
+
+function App() { return <MotionPreferenceProvider><Routes /></MotionPreferenceProvider>; }
 
 export default App;

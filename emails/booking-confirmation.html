@@ -1,0 +1,78 @@
+<!doctype html>
+<!--
+  Resend template "booking-confirmation": the guest's confirmation once their
+  online payment has gone through (api/_lib/finalize.ts). Replies go to the
+  reservations inbox. Edit here, then `npm run email:publish`.
+  Like contact-confirmation.html it never repeats free text the guest typed
+  (special requests) — only the booking itself. BALANCE_DISPLAY hides the
+  "pay at the hotel" row when everything was paid online; PROMO_DISPLAY shows
+  the promo line. Same email-client rules as contact-enquiry.html.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>You’re booked! — Hula Hula Resort</title>
+</head>
+<body style="margin:0;padding:0;background:#fbfdf4;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">{{{PREVIEW}}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbfdf4;">
+    <tr><td align="center" style="padding:28px 14px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border:1px solid #d6e1ce;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:8px;background:#f9f70c;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td align="center" style="padding:26px 28px 8px;">
+          <a href="{{{SITE_URL}}}"><img src="{{{SITE_URL}}}/email/hula-hula-logo.png" width="120" height="104" alt="Hula Hula Resort" style="display:block;border:0;width:120px;height:auto;"></a>
+        </td></tr>
+        <tr><td align="center" style="padding:6px 28px 0;">
+          <span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#e7f4cc;color:#50830d;font:700 11px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;">Booking confirmed · {{{BOOKING_REF}}}</span>
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px 6px;font:700 26px/1.25 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">You’re booked, {{{GUEST_FIRST_NAME}}}! Hello, holiday.</td></tr>
+        <tr><td align="center" style="padding:0 34px 22px;font:400 16px/1.7 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">
+          Thanks for booking with us. Here’s everything in one place — keep this email, and quote <strong style="color:#173c2c;">{{{BOOKING_REF}}}</strong> if you get in touch.
+        </td></tr>
+
+        <tr><td style="padding:0 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e7f4cc;border-radius:18px;">
+            <tr>
+              <td width="50%" style="padding:16px 20px;font:400 15px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#50830d;">Check-in</span><br><strong>{{{CHECK_IN}}}</strong><br><span style="font-size:13px;color:#4b6457;">from {{{CHECK_IN_TIME}}}</span></td>
+              <td width="50%" style="padding:16px 20px;font:400 15px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#50830d;">Check-out</span><br><strong>{{{CHECK_OUT}}}</strong><br><span style="font-size:13px;color:#4b6457;">by {{{CHECK_OUT_TIME}}}</span></td>
+            </tr>
+            <tr><td colspan="2" style="padding:0 20px 16px;font:400 14px/1.5 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">{{{NIGHTS}}} · {{{GUESTS}}}</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{{{ROOMS_HTML}}}</table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;border-top:2px solid #173c2c;">
+            <tr><td style="padding:10px 0 3px;">Total for your stay</td><td align="right" style="padding:10px 0 3px;"><strong>{{{TOTAL}}}</strong></td></tr>
+            <tr><td style="padding:3px 0;color:#50830d;">Paid online</td><td align="right" style="padding:3px 0;color:#50830d;"><strong>{{{PAID_NOW}}}</strong></td></tr>
+            <tr style="display:{{{BALANCE_DISPLAY}}};"><td style="padding:3px 0;">To pay at the hotel</td><td align="right" style="padding:3px 0;"><strong>{{{BALANCE}}}</strong></td></tr>
+          </table>
+          <div style="display:{{{PROMO_DISPLAY}}};padding:8px 0 0;font:400 13px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#50830d;">{{{PROMO_LINE}}}</div>
+          <div style="padding:8px 0 0;font:400 12px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">Payment reference {{{PAYMENT_REF}}}</div>
+        </td></tr>
+
+        <tr><td style="padding:20px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #d6e1ce;border-radius:16px;">
+            <tr><td style="padding:14px 18px;font:400 14px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><strong>Cancellation</strong><br><span style="color:#4b6457;">{{{CANCELLATION}}}</span></td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td align="center" style="padding:26px 28px 4px;font:700 17px/1.4 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">Anything we can arrange before you arrive?</td></tr>
+        <tr><td align="center" style="padding:8px 28px 6px;">
+          <a href="https://wa.me/66961230789" style="display:inline-block;margin:0 4px 10px;padding:13px 24px;border-radius:999px;background:#50830d;color:#ffffff;font:700 14px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;text-decoration:none;">Chat on WhatsApp</a><a href="tel:+66961230789" style="display:inline-block;margin:0 4px 10px;padding:12px 23px;border-radius:999px;border:1px solid #006d8a;color:#006d8a;font:700 14px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;text-decoration:none;">Call +66 96 123 0789</a>
+        </td></tr>
+        <tr><td align="center" style="padding:14px 28px 4px;font:400 16px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">See you on the sunny side,<br><strong>The Hula Hula team</strong></td></tr>
+        <tr><td align="center" style="padding:12px 28px 20px;">
+          <img src="{{{SITE_URL}}}/email/hula-hula-pineapple.png" width="132" height="88" alt="" role="presentation" style="display:block;border:0;width:132px;max-width:100%;height:auto;">
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px;background:#fbfdf4;border-top:1px solid #d6e1ce;font:400 12px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">
+          Hula Hula Resort · 222 Moo 3, Klongheng Road, Ao Nang, Krabi 81180 · reservation@hulahularesort.com · <a href="{{{SITE_URL}}}" style="color:#006d8a;">Visit the website</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
