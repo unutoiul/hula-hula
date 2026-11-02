@@ -14,6 +14,7 @@ export const newRef = () => `HH${Array.from({ length: 6 }, () => CROCKFORD[rando
 // Letters and digits only, and at most 20 of them: QR payments (PromptPay)
 // refuse anything longer.
 export const invoiceNoFor = (ref: string) => `WEB${ref}`;
+export const isWebsiteInvoice = (invoiceNo: string) => invoiceNo.startsWith('WEB') && REF_PATTERN.test(invoiceNo.slice(3));
 
 export const newAccessKey = () => randomBytes(32).toString('base64url');
 

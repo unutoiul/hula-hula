@@ -1,6 +1,7 @@
 import { type BookingRow, getByInvoice, PII_WIPE, updateWhere } from './bookings.js';
 import { CONFIRMATION_TEMPLATE, confirmationVariables, formatDay } from './bookingEmails.js';
 import { bookingAdminBcc, bookingAdminTo, bookingFrom, deliverReservation } from './deliver.js';
+import { isWebsiteInvoice } from './ids.js';
 import { formatMoney, toSatang } from './money.js';
 import { sendTemplate, sendText } from './resend.js';
 import { getCatalog } from './siteminder.js';
@@ -25,7 +26,12 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
 
   const inquiry = await paymentInquiry(invoiceNo);
   if (!row) {
-    if (inquiry.respCode === PAID) {
+    // Only invoices this site issued: the same merchant account also takes
+    // QuickPay links and test payments made from the 2C2P portal, which never
+    // had a booking here.
+    if (inquiry.respCode === PAID && !isWebsiteInvoice(invoiceNo)) {
+      console.info('Paid invoice from outside the website ignored', invoiceNo, source);
+    } else if (inquiry.respCode === PAID) {
       console.error('Paid invoice with no booking on file', invoiceNo, source);
       await alertTeam(`Payment with no booking: ${invoiceNo}`, `2C2P reports a successful payment for invoice ${invoiceNo} (${inquiry.amount ?? '?'} ${inquiry.currencyCode ?? ''}, reference ${inquiry.tranRef ?? inquiry.referenceNo ?? 'unknown'}), but the website has no booking for it. Please check the 2C2P portal.`);
     }

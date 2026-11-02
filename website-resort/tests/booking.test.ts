@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { describe, it } from 'node:test';
 import { depositFor } from '../api/_lib/deposit.ts';
-import { invoiceNoFor, newAccessKey, newRef, REF_PATTERN, ACCESS_KEY_PATTERN } from '../api/_lib/ids.ts';
+import { invoiceNoFor, isWebsiteInvoice, newAccessKey, newRef, REF_PATTERN, ACCESS_KEY_PATTERN } from '../api/_lib/ids.ts';
 import { signHS256, verifyHS256 } from '../api/_lib/jwt.ts';
 import { distributeGuests, fits } from '../shared/occupancy.ts';
 
@@ -70,6 +70,12 @@ describe('references', () => {
       assert.match(invoiceNoFor(ref), /^[A-Z0-9]{1,20}$/);
     }
     assert.match(newAccessKey(), ACCESS_KEY_PATTERN);
+  });
+
+  it('tells the website’s invoices from QuickPay and portal payments', () => {
+    assert.ok(isWebsiteInvoice(invoiceNoFor(newRef())));
+    assert.ok(!isWebsiteInvoice('TEST1793615775403'));
+    assert.ok(!isWebsiteInvoice('WEB123'));
   });
 });
 

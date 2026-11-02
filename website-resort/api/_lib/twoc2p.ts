@@ -85,12 +85,22 @@ export async function createPaymentToken(request: PaymentTokenRequest): Promise<
     backendReturnUrl: request.backendReturnUrl,
     userDefined1: request.ref,
     idempotencyID: request.invoiceNo,
-    uiParams: { userInfo: { name: request.guest.name.slice(0, 50), email: request.guest.email, countryCode: request.guest.country } },
+    uiParams: { userInfo: { name: cardholderName(request.guest.name), email: request.guest.email, countryCode: request.guest.country } },
   });
   if (result.respCode !== PAID || !result.webPaymentUrl || !result.paymentToken) {
     throw new TwoC2PError(result.respCode ?? 'UNKNOWN', `2C2P refused the payment token: ${result.respCode} ${result.respDesc ?? ''}`.trim());
   }
   return { webPaymentUrl: result.webPaymentUrl, paymentToken: result.paymentToken };
+}
+
+// The guest's name pre-fills the cardholder name on 2C2P's page, but that
+// form refuses digits, most symbols and several scripts (Thai, Cyrillic,
+// Arabic, kana) with "Incorrect name" and won't continue until it's retyped.
+// Pre-fill only names in Latin letters; otherwise the guest types it.
+const CARDHOLDER_NAME = /^[\p{Script=Latin}][\p{Script=Latin} .'-]*$/u;
+export function cardholderName(name: string): string | undefined {
+  const trimmed = name.trim().replace(/\s+/g, ' ').slice(0, 50).trim();
+  return CARDHOLDER_NAME.test(trimmed) ? trimmed : undefined;
 }
 
 export function paymentInquiry(invoiceNo: string): Promise<InquiryResult> {
