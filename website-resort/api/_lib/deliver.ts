@@ -12,8 +12,10 @@ import { sendTemplate, splitAddresses } from './resend.js';
 
 export interface DeliveryResult { method: 'email' | 'siteconnect'; externalId?: string }
 
+// Mail is sent from hulahularesort.com (the domain verified in Resend) and
+// goes to, and is answered at, the reservations inbox on hulahulaholiday.com.
 export const bookingFrom = () => process.env.BOOKING_FROM || process.env.CONTACT_FROM || 'Hula Hula Resort <reservation@hulahularesort.com>';
-export const bookingAdminTo = () => splitAddresses(process.env.BOOKING_ADMIN_TO || process.env.CONTACT_TO || 'reservation@hulahularesort.com');
+export const bookingAdminTo = () => splitAddresses(process.env.BOOKING_ADMIN_TO || process.env.CONTACT_TO || 'reservation@hulahulaholiday.com');
 export const bookingAdminBcc = () => splitAddresses(process.env.BOOKING_ADMIN_BCC ?? process.env.CONTACT_BCC ?? 'contact@bluetrendy.com');
 
 export async function deliverReservation(row: BookingRow): Promise<DeliveryResult> {

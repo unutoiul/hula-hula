@@ -55,7 +55,7 @@ export const galleryPhotos: GalleryPhoto[] = [
 export const CONTACT: ContactInfo = {
   phone: '+66 96 123 0789', tel: 'tel:+66961230789',
   landline: '+66 75 661 388', landlineTel: 'tel:+6675661388',
-  email: 'reservation@hulahularesort.com',
+  email: 'reservation@hulahulaholiday.com',
   address: '222 Moo 3, Klongheng Road, Ban Ao Nang, Muang, Krabi 81180, Thailand',
   facebook: 'https://www.facebook.com/hulahulagolfclub', instagram: 'https://www.instagram.com/hulahulagolfclub',
   line: 'http://line.me/ti/p/@hulahulagolfclub', whatsapp: 'https://wa.me/66961230789',

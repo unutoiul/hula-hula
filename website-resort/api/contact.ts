@@ -17,7 +17,7 @@ const krabiTime = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeSt
 // on the confirmation it's the resort inbox. Needs
 // RESEND_API_KEY; RESEND_CONTACT_ENQUIRY_TEMPLATE_ID and
 // RESEND_CONTACT_CONFIRMATION_TEMPLATE_ID default to the template aliases.
-// CONTACT_TO (default reservation@hulahularesort.com), CONTACT_BCC (default
+// CONTACT_TO (default reservation@hulahulaholiday.com), CONTACT_BCC (default
 // contact@bluetrendy.com, blind-copied so the resort doesn't see it; comma-separated, or empty for none), CONTACT_FROM
 // (an address on a domain verified in Resend) and SITE_URL are optional
 // overrides. Bots that fill the hidden "hp_ref" field, or submit faster than
@@ -54,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Contact email is not configured: RESEND_API_KEY missing');
     return res.status(500).json({ error: 'Email is not configured on the server' });
   }
-  const to = process.env.CONTACT_TO || 'reservation@hulahularesort.com';
+  const to = process.env.CONTACT_TO || 'reservation@hulahulaholiday.com';
   const bcc = splitAddresses(process.env.CONTACT_BCC ?? 'contact@bluetrendy.com');
   const from = process.env.CONTACT_FROM || 'Hula Hula Resort <reservation@hulahularesort.com>';
   const siteUrl = process.env.SITE_URL || `https://${req.headers['x-forwarded-host'] ?? req.headers.host}`;
