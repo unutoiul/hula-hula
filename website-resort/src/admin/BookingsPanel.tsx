@@ -4,7 +4,7 @@ import RefreshRounded from '@mui/icons-material/RefreshRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
 import {
   Alert, Box, Button, ButtonBase, Checkbox, CircularProgress, FormControlLabel, IconButton, InputAdornment, MenuItem, Stack, Table, TableBody,
-  TableCell, TableHead, TableRow, TextField, Tooltip, Typography, useMediaQuery, useTheme,
+  TableCell, TableHead, TablePagination, TableRow, TextField, Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { countryName } from '../booking/countries';
@@ -17,7 +17,13 @@ import {
 import { InfoButton } from './InfoButton';
 import { supabase } from './supabase';
 
-const PAGE = 50;
+const PAGE_SIZES = [25, 100, 250];
+const PAGE_SIZE_KEY = 'hh-admin-bookings-per-page';
+
+// The page size each person picked, kept in their browser.
+function savedPageSize(): number {
+  try { const n = Number(localStorage.getItem(PAGE_SIZE_KEY)); return PAGE_SIZES.includes(n) ? n : PAGE_SIZES[0]; } catch { return PAGE_SIZES[0]; }
+}
 const REFRESH_MS = 60_000;
 
 // /admin → Bookings: the reservations desk. Every booking made on the
@@ -29,7 +35,8 @@ export function BookingsPanel() {
   const [loading, setLoading] = useState(false);
   const [loadedAt, setLoadedAt] = useState<Date | null>(null);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [shown, setShown] = useState(PAGE);
+  const [page, setPage] = useState(0);
+  const [perPage, setPerPage] = useState(savedPageSize);
   const [openRef, setOpenRef] = useState<string | null>(null);
   const wide = useMediaQuery(useTheme().breakpoints.up('md'), { noSsr: true });
 
@@ -47,9 +54,13 @@ export function BookingsPanel() {
     return () => window.clearInterval(timer);
   }, [load]);
 
-  const update = (next: Partial<Filters>) => { setFilters((current) => ({ ...current, ...next })); setShown(PAGE); };
+  const update = (next: Partial<Filters>) => { setFilters((current) => ({ ...current, ...next })); setPage(0); };
   const list = useMemo(() => applyFilters(rows ?? [], filters), [rows, filters]);
   const counts = useMemo(() => Object.fromEntries(VIEWS.map((v) => [v.value, (rows ?? []).filter((b) => inView(b, v.value)).length])), [rows]);
+  // Stay on a page that still exists when the list shrinks (an archive, a refresh).
+  const lastPage = Math.max(0, Math.ceil(list.length / perPage) - 1);
+  const current = Math.min(page, lastPage);
+  const pageRows = list.slice(current * perPage, (current + 1) * perPage);
   const open = rows?.find((b) => b.ref === openRef) ?? null;
   const filtered = filters.query || filters.stay !== 'any' || filters.hideTests || filters.sort !== 'booked';
 
@@ -122,8 +133,13 @@ export function BookingsPanel() {
         <Typography sx={{ fontWeight: 700 }}>{filters.view === 'action' && !filtered ? 'All caught up' : 'No bookings match'}</Typography>
         <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: .5 }}>{filters.view === 'action' && !filtered ? 'Every paid booking is in SiteMinder.' : 'Try another view or clear the filters.'}</Typography>
       </Box>
-      : wide ? <BookingTable rows={list.slice(0, shown)} onOpen={setOpenRef} /> : <BookingCards rows={list.slice(0, shown)} onOpen={setOpenRef} />}
-    {list.length > shown && <Stack alignItems="center" sx={{ mt: 2 }}><Button variant="outlined" size="small" onClick={() => setShown((n) => n + PAGE)}>Show {Math.min(PAGE, list.length - shown)} more</Button></Stack>}
+      : <>
+        {wide ? <BookingTable rows={pageRows} onOpen={setOpenRef} /> : <BookingCards rows={pageRows} onOpen={setOpenRef} />}
+        <TablePagination component="div" count={list.length} page={current} onPageChange={(_, next) => { setPage(next); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          rowsPerPage={perPage} rowsPerPageOptions={PAGE_SIZES} labelRowsPerPage="Per page"
+          onRowsPerPageChange={(e) => { const n = Number(e.target.value); setPerPage(n); setPage(0); try { localStorage.setItem(PAGE_SIZE_KEY, String(n)); } catch { /* private window */ } }}
+          sx={{ mt: 1, borderBottom: 0, '& .MuiTablePagination-toolbar': { px: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }, '& .MuiTablePagination-spacer': { display: 'none' } }} />
+      </>}
 
     <BookingDetail booking={open} onClose={() => setOpenRef(null)} onChanged={load} />
   </Box>;
