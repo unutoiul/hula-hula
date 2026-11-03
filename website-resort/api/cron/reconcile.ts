@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { deleteWhere, listWhere, PII_WIPE, updateWhere } from '../_lib/bookings.js';
+import { deleteWhere, listWhere, updateWhere } from '../_lib/bookings.js';
 import { confirmPayment, deliver } from '../_lib/finalize.js';
 import { allowMethods } from '../_lib/http.js';
 
@@ -10,17 +10,16 @@ const KEEP_DAYS = 30;
 // sends CRON_SECRET as a bearer token. It sweeps up whatever the webhook and
 // the confirmation page didn't finish:
 //   • pending bookings well past their payment window: one last check with
-//     2C2P, then expired with the guest's details wiped
+//     2C2P, then expired
 //   • paid bookings whose hand-off email failed: try again
-//   • any handed-off booking still holding personal details: wipe them
-//   • expired and failed bookings older than 30 days: delete
+//   • expired and failed bookings (never paid) older than 30 days: delete,
+//     guest details and all. Paid bookings stay, for /admin → Bookings.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ['GET'])) return;
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) return res.status(401).json({ error: 'Unauthorized' });
 
-  const counts = { checked: 0, expired: 0, redelivered: 0, wiped: 0, deleted: 0, errors: 0 };
-  const now = () => new Date().toISOString();
+  const counts = { checked: 0, expired: 0, redelivered: 0, deleted: 0, errors: 0 };
 
   const stale = await listWhere(`status=eq.pending&expires_at=lt.${new Date(Date.now() - GRACE_MS).toISOString()}&limit=100`);
   for (const row of stale) {
@@ -28,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const after = await confirmPayment(row.invoice_no, 'cron');
       if (after?.status === 'pending') {
-        const expired = await updateWhere(`id=eq.${row.id}&status=eq.pending`, { status: 'expired', ...PII_WIPE, pii_wiped_at: now() });
+        const expired = await updateWhere(`id=eq.${row.id}&status=eq.pending`, { status: 'expired' });
         counts.expired += expired.length;
       }
     } catch (error) {
@@ -47,7 +46,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  counts.wiped += (await updateWhere('status=in.(delivered,expired,failed)&pii_wiped_at=is.null', { ...PII_WIPE, pii_wiped_at: now() })).length;
   counts.deleted += await deleteWhere(`status=in.(expired,failed)&created_at=lt.${new Date(Date.now() - KEEP_DAYS * 86_400_000).toISOString()}`);
 
   console.info('Cron reconcile', counts);

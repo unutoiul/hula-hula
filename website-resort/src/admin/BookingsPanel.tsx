@@ -1,75 +1,236 @@
-import CheckRounded from '@mui/icons-material/CheckRounded';
-import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
-import { dayLabel, money, plural } from '../booking/format';
+import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
+import CloseRounded from '@mui/icons-material/CloseRounded';
+import RefreshRounded from '@mui/icons-material/RefreshRounded';
+import SearchRounded from '@mui/icons-material/SearchRounded';
+import {
+  Alert, Box, Button, ButtonBase, Checkbox, CircularProgress, FormControlLabel, IconButton, InputAdornment, MenuItem, Stack, Table, TableBody,
+  TableCell, TableHead, TableRow, TextField, Tooltip, Typography, useMediaQuery, useTheme,
+} from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { countryName } from '../booking/countries';
+import { dayMonthLabel, money, plural, shortDayLabel } from '../booking/format';
+import { BookingDetail, StatusChip } from './BookingDetail';
+import {
+  addDays, applyFilters, DEFAULT_FILTERS, type DeskBooking, type Filters, guestName, inView, isPaid, isTest, needsAction, nightCount,
+  paymentBadge, roomCount, siteMinderBadge, SORTS, STAY_FILTERS, stampShortLabel, todayInBangkok, VIEWS,
+} from './bookingModel';
+import { InfoButton } from './InfoButton';
 import { supabase } from './supabase';
 
-interface AdminBooking {
-  ref: string; status: 'paid' | 'delivered'; check_in: string; check_out: string;
-  items: { roomTypeName: string; rateName: string; quantity: number }[]; currency: string;
-  total_amount: number; deposit_amount: number; paid_amount: number | null; tran_ref: string | null; flags: string[];
-  created_at: string; paid_at: string | null; delivered_at: string | null; keyed_at: string | null; delivery_error: string | null;
-}
+const PAGE = 50;
+const REFRESH_MS = 60_000;
 
-const FLAG_LABELS: Record<string, string> = {
-  paid_after_expiry: 'Paid after hold expired — check availability',
-  amount_mismatch: 'Amount differs — check 2C2P',
-  guest_email_failed: 'Guest email failed — forward it',
-  details_deleted: 'Guest details missing — see 2C2P',
-  test_payment: 'TEST payment — nothing charged, collect at the hotel',
-};
-
-// Paid website bookings from the last 60 days — no guest details, which are
-// deleted once the booking email has gone to reservations. "Entered in
-// SiteMinder" tells the website SiteMinder now counts the room, so it stops
-// holding it back from other guests.
+// /admin → Bookings: the reservations desk. Every booking made on the
+// website, with the guest's details, payment and SiteMinder status; a to-do
+// count up top, filters, and the whole booking in a side panel.
 export function BookingsPanel() {
-  const [rows, setRows] = useState<AdminBooking[] | null>(null);
+  const [rows, setRows] = useState<DeskBooking[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadedAt, setLoadedAt] = useState<Date | null>(null);
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [shown, setShown] = useState(PAGE);
+  const [openRef, setOpenRef] = useState<string | null>(null);
+  const wide = useMediaQuery(useTheme().breakpoints.up('md'), { noSsr: true });
 
   const load = useCallback(async () => {
-    const { data, error: loadError } = await supabase!.rpc('admin_bookings');
-    if (loadError) setError(loadError.message); else setRows(data as AdminBooking[]);
+    setLoading(true);
+    const { data, error: loadError } = await supabase!.rpc('admin_booking_list');
+    setLoading(false);
+    if (loadError) { setError(loadError.message); return; }
+    setRows(data as DeskBooking[]); setError(null); setLoadedAt(new Date());
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  // New bookings turn up on their own while the tab is open.
+  useEffect(() => {
+    void load();
+    const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void load(); }, REFRESH_MS);
+    return () => window.clearInterval(timer);
+  }, [load]);
 
-  const markKeyed = async (ref: string) => {
-    const { error: markError } = await supabase!.rpc('admin_mark_keyed', { p_ref: ref });
-    if (markError) setError(markError.message);
-    await load();
-  };
+  const update = (next: Partial<Filters>) => { setFilters((current) => ({ ...current, ...next })); setShown(PAGE); };
+  const list = useMemo(() => applyFilters(rows ?? [], filters), [rows, filters]);
+  const counts = useMemo(() => Object.fromEntries(VIEWS.map((v) => [v.value, (rows ?? []).filter((b) => inView(b, v.value)).length])), [rows]);
+  const open = rows?.find((b) => b.ref === openRef) ?? null;
+  const filtered = filters.query || filters.stay !== 'any' || filters.hideTests || filters.sort !== 'booked';
 
-  if (error) return <Alert severity="error">{error}</Alert>;
-  if (!rows) return <CircularProgress />;
+  if (error && !rows) return <Alert severity="error" action={<Button color="inherit" size="small" onClick={() => void load()}>Try again</Button>}>{error}</Alert>;
+  if (!rows) return <Stack alignItems="center" sx={{ py: 8 }}><CircularProgress aria-label="Loading bookings" /></Stack>;
+
   return <Box>
-    <Typography sx={{ color: 'text.secondary', mb: 3, maxWidth: 640 }}>Bookings paid on the website. Each one arrives as an “ACTION: enter in SiteMinder” email with the guest’s details; once it’s in SiteMinder, mark it here. Refunds are made in the 2C2P portal.</Typography>
-    {rows.length === 0 ? <Typography sx={{ color: 'text.secondary', py: 4, textAlign: 'center' }}>No website bookings in the last 60 days.</Typography>
-      : <Stack spacing={1.5}>
-        {rows.map((b) => {
-          const rooms = b.items.reduce((sum, item) => sum + item.quantity, 0);
-          return <Box key={b.ref} sx={{ p: 2, border: '1px solid', borderColor: b.keyed_at ? 'divider' : 'secondary.dark', borderRadius: '18px', bgcolor: 'background.paper' }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={1.5}>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 700 }}>
-                  {b.ref}<Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}> · </Box>
-                  <Box component="span" sx={{ display: { xs: 'block', sm: 'inline' }, fontWeight: { xs: 600, sm: 700 } }}>{dayLabel(b.check_in)} → {dayLabel(b.check_out)}</Box>
-                </Typography>
-                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{plural(rooms, 'room')}: {b.items.map((item) => `${item.quantity} × ${item.roomTypeName} (${item.rateName})`).join(', ')}</Typography>
-                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Paid {money(b.paid_amount ?? b.deposit_amount, b.currency)} of {money(b.total_amount, b.currency)}{b.tran_ref ? ` · 2C2P ${b.tran_ref}` : ''}</Typography>
-                {/* Chips wrap onto two lines rather than cutting the warning off on a phone. */}
-                <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ mt: 1, '& .MuiChip-root': { height: 'auto', minHeight: 24, maxWidth: '100%' }, '& .MuiChip-label': { whiteSpace: 'normal', py: .25 } }}>
-                  {b.status === 'paid' && <Chip size="small" color="warning" label={b.delivery_error ? 'Email to reservations failing — retrying' : 'Sending to reservations…'} />}
-                  {b.flags.map((flag) => <Chip key={flag} size="small" color="warning" variant="outlined" label={FLAG_LABELS[flag] ?? flag} />)}
-                </Stack>
-              </Box>
-              <Box sx={{ flexShrink: 0 }}>
-                {b.keyed_at
-                  ? <Chip icon={<CheckRounded />} label="In SiteMinder" color="success" variant="outlined" />
-                  : <Button variant="contained" size="small" onClick={() => void markKeyed(b.ref)} sx={{ width: { xs: '100%', sm: 'auto' } }}>Entered in SiteMinder</Button>}
-              </Box>
-            </Stack>
-          </Box>;
-        })}
-      </Stack>}
+    <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
+      <Stack direction="row" alignItems="center" spacing={.5}>
+        <Typography sx={{ fontWeight: 700 }}>Reservations</Typography>
+        <InfoButton label="About bookings">
+          <p>Every booking made on the website, with the guest’s details. Each paid one also arrives as an “ACTION: enter in SiteMinder” email; once it’s in SiteMinder, open it here and press “Entered in SiteMinder”.</p>
+          <p>“Unfinished” are guests who started booking but didn’t pay; they’re deleted after 30 days. Archive bookings you’re done with to keep the list short — nothing is deleted.</p>
+          <p>Refunds are made in the 2C2P portal.</p>
+        </InfoButton>
+      </Stack>
+      <Stack direction="row" alignItems="center" spacing={.5}>
+        {loadedAt && <Typography sx={{ fontSize: 12, color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>Updated {loadedAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</Typography>}
+        <Tooltip title="Refresh"><span><IconButton aria-label="Refresh" onClick={() => void load()} disabled={loading}>{loading ? <CircularProgress size={18} /> : <RefreshRounded />}</IconButton></span></Tooltip>
+      </Stack>
+    </Stack>
+    {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>{error}</Alert>}
+
+    <Summary rows={rows} filters={filters} onPick={(next) => update(next)} />
+
+    {/* Which bookings: a row of views with counts, then search and filters. */}
+    <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ mt: 3, mb: 1.5 }} role="tablist" aria-label="Which bookings">
+      {VIEWS.map((v) => {
+        const active = filters.view === v.value;
+        return <Tooltip key={v.value} title={v.hint}>
+          <ButtonBase role="tab" aria-selected={active} onClick={() => update({ view: v.value })} sx={{
+            px: 1.5, height: 34, borderRadius: 99, fontSize: 13, fontWeight: 700, gap: .75,
+            border: '1px solid', borderColor: active ? 'primary.main' : 'divider', bgcolor: active ? 'primary.main' : 'background.paper', color: active ? '#fff' : 'text.primary',
+          }}>
+            {v.label}
+            <Box component="span" sx={{ minWidth: 20, px: .6, height: 20, borderRadius: 99, display: 'inline-grid', placeItems: 'center', fontSize: 11,
+              bgcolor: active ? 'rgba(255,255,255,.22)' : v.value === 'action' && counts.action ? '#fff1cc' : 'rgba(23,60,44,.06)', color: active ? '#fff' : v.value === 'action' && counts.action ? '#7a4f00' : 'text.secondary' }}>{counts[v.value]}</Box>
+          </ButtonBase>
+        </Tooltip>;
+      })}
+    </Stack>
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr) minmax(0, 1fr)', md: 'minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr)' }, gap: 1.25, mb: 1 }}>
+      <TextField size="small" placeholder="Search name, email, phone, reference…" value={filters.query} onChange={(e) => update({ query: e.target.value })}
+        sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}
+        slotProps={{ input: {
+          startAdornment: <InputAdornment position="start"><SearchRounded sx={{ fontSize: 20 }} /></InputAdornment>,
+          endAdornment: filters.query ? <InputAdornment position="end"><IconButton size="small" aria-label="Clear search" onClick={() => update({ query: '' })}><CloseRounded sx={{ fontSize: 18 }} /></IconButton></InputAdornment> : undefined,
+        } }} />
+      <TextField size="small" select label="Stay dates" value={filters.stay} onChange={(e) => update({ stay: e.target.value as Filters['stay'] })}>
+        {STAY_FILTERS.map((s) => <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>)}
+      </TextField>
+      <TextField size="small" select label="Sort" value={filters.sort} onChange={(e) => update({ sort: e.target.value as Filters['sort'] })}>
+        {SORTS.map((s) => <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>)}
+      </TextField>
+    </Box>
+    {filters.stay === 'custom' && <Stack direction="row" spacing={1.25} sx={{ mb: 1 }}>
+      <TextField size="small" type="date" label="Arriving from" value={filters.from} onChange={(e) => update({ from: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} sx={{ flex: 1 }} />
+      <TextField size="small" type="date" label="Arriving until" value={filters.to} onChange={(e) => update({ to: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} sx={{ flex: 1 }} />
+    </Stack>}
+    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
+      <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{plural(list.length, 'booking')}</Typography>
+      <Stack direction="row" alignItems="center">
+        <FormControlLabel control={<Checkbox size="small" checked={filters.hideTests} onChange={(e) => update({ hideTests: e.target.checked })} />} label={<Typography sx={{ fontSize: 13 }}>Hide test payments</Typography>} sx={{ mr: filtered ? 1 : 0 }} />
+        {filtered && <Button size="small" variant="text" onClick={() => update({ ...DEFAULT_FILTERS, view: filters.view })} sx={{ minHeight: 0 }}>Clear filters</Button>}
+      </Stack>
+    </Stack>
+
+    {list.length === 0
+      ? <Box sx={{ py: 7, textAlign: 'center', border: '1px dashed', borderColor: 'divider', borderRadius: '18px' }}>
+        <Typography sx={{ fontWeight: 700 }}>{filters.view === 'action' && !filtered ? 'All caught up' : 'No bookings match'}</Typography>
+        <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: .5 }}>{filters.view === 'action' && !filtered ? 'Every paid booking is in SiteMinder.' : 'Try another view or clear the filters.'}</Typography>
+      </Box>
+      : wide ? <BookingTable rows={list.slice(0, shown)} onOpen={setOpenRef} /> : <BookingCards rows={list.slice(0, shown)} onOpen={setOpenRef} />}
+    {list.length > shown && <Stack alignItems="center" sx={{ mt: 2 }}><Button variant="outlined" size="small" onClick={() => setShown((n) => n + PAGE)}>Show {Math.min(PAGE, list.length - shown)} more</Button></Stack>}
+
+    <BookingDetail booking={open} onClose={() => setOpenRef(null)} onChanged={load} />
   </Box>;
+}
+
+// Four numbers that answer "what needs doing?" — each one a shortcut to the matching list.
+function Summary({ rows, filters, onPick }: { rows: DeskBooking[]; filters: Filters; onPick: (next: Partial<Filters>) => void }) {
+  const today = todayInBangkok();
+  const live = rows.filter((b) => isPaid(b) && !b.archived_at);
+  const month = today.slice(0, 7);
+  const paidThisMonth = rows.filter((b) => isPaid(b) && b.paid_at && new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(b.paid_at)).startsWith(month));
+  const takings = paidThisMonth.reduce((sum, b) => sum + (b.paid_amount ?? b.deposit_amount), 0);
+  const tiles = [
+    { label: 'To enter in SiteMinder', value: String(rows.filter(needsAction).length), note: 'Paid, waiting for reservations', tone: rows.some(needsAction) ? 'warning' : 'ok', pick: { view: 'action', stay: 'any', sort: 'booked' } },
+    { label: 'Arriving in 7 days', value: String(live.filter((b) => b.check_in >= today && b.check_in <= addDays(today, 7)).length), note: `Today: ${live.filter((b) => b.check_in === today).length}`, tone: 'ok', pick: { view: 'paid', stay: 'week', sort: 'arrival' } },
+    { label: 'Staying now', value: String(live.filter((b) => b.check_in <= today && b.check_out > today).length), note: 'Website guests in house', tone: 'ok', pick: { view: 'paid', stay: 'inHouse', sort: 'arrival' } },
+    { label: 'Paid online this month', value: money(takings, rows[0]?.currency ?? 'THB'), note: `${plural(paidThisMonth.length, 'booking')}${paidThisMonth.some(isTest) ? ' · incl. test payments' : ''}`, tone: 'ok', pick: { view: 'paid', stay: 'any', sort: 'booked' } },
+  ] as const;
+  return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: { xs: 1, sm: 1.5 } }}>
+    {tiles.map((tile) => {
+      const active = filters.view === tile.pick.view && filters.stay === tile.pick.stay && filters.sort === tile.pick.sort;
+      const warn = tile.tone === 'warning';
+      return <ButtonBase key={tile.label} onClick={() => onPick(tile.pick)} sx={{
+        display: 'block', textAlign: 'left', p: { xs: 1.5, sm: 2 }, borderRadius: '18px', border: '1px solid', minWidth: 0,
+        borderColor: active ? 'primary.main' : warn ? '#f0d27a' : 'divider', bgcolor: warn ? '#fffaeb' : 'background.paper',
+        boxShadow: active ? '0 0 0 1px #006d8a inset' : 'none', transition: 'border-color .15s', '&:hover': { borderColor: 'primary.main' },
+      }}>
+        <Typography sx={{ fontSize: 12, fontWeight: 700, color: warn ? '#7a4f00' : 'text.secondary', lineHeight: 1.3 }}>{tile.label}</Typography>
+        <Typography sx={{ fontFamily: 'Fredoka, sans-serif', fontSize: { xs: 24, sm: 30 }, lineHeight: 1.2, mt: .5, fontVariantNumeric: 'tabular-nums', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tile.value}</Typography>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: .25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tile.note}</Typography>
+      </ButtonBase>;
+    })}
+  </Box>;
+}
+
+const stayText = (b: DeskBooking) => `${shortDayLabel(b.check_in)} → ${dayMonthLabel(b.check_out)}`;
+const roomsText = (b: DeskBooking) => b.items.length === 1 ? `${b.items[0].quantity > 1 ? `${b.items[0].quantity} × ` : ''}${b.items[0].roomTypeName}` : plural(roomCount(b), 'room');
+const amountOf = (b: DeskBooking) => (isPaid(b) ? b.paid_amount ?? b.deposit_amount : b.deposit_amount);
+
+function BookingTable({ rows, onOpen }: { rows: DeskBooking[]; onOpen: (ref: string) => void }) {
+  const head = { fontSize: 12, fontWeight: 700, color: 'text.secondary', py: 1.25, borderColor: 'divider', whiteSpace: 'nowrap' } as const;
+  return <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '18px', overflow: 'hidden', bgcolor: 'background.paper' }}>
+    <Table size="small" sx={{ '& td': { borderColor: 'divider', py: 1.5 } }}>
+      <TableHead sx={{ bgcolor: 'rgba(23,60,44,.03)' }}>
+        <TableRow>
+          <TableCell sx={head}>Guest</TableCell>
+          <TableCell sx={head}>Stay</TableCell>
+          <TableCell sx={head}>Booked</TableCell>
+          <TableCell sx={head} align="right">Paid</TableCell>
+          <TableCell sx={head}>Payment</TableCell>
+          <TableCell sx={head}>SiteMinder</TableCell>
+          <TableCell sx={{ ...head, width: 32 }} />
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {rows.map((b) => {
+          const sm = siteMinderBadge(b);
+          return <TableRow key={b.ref} hover tabIndex={0} onClick={() => onOpen(b.ref)} onKeyDown={(e) => { if (e.key === 'Enter') onOpen(b.ref); }}
+            sx={{ cursor: 'pointer', opacity: isPaid(b) || b.status === 'pending' ? 1 : .72, '&:last-child td': { borderBottom: 0 }, '&:focus-visible': { outline: '2px solid #006d8a', outlineOffset: -2 } }}>
+            <TableCell sx={{ maxWidth: 240 }}>
+              <Typography sx={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName(b)}</Typography>
+              <Typography sx={{ fontSize: 12, color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.ref}{b.guest_country ? ` · ${countryName(b.guest_country)}` : ''}</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography sx={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>{stayText(b)}</Typography>
+              <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'nowrap' }}>{plural(nightCount(b), 'night')} · {roomsText(b)}</Typography>
+            </TableCell>
+            <TableCell sx={{ fontSize: 13, color: 'text.secondary', whiteSpace: 'nowrap' }}>{stampShortLabel(b.created_at)}</TableCell>
+            <TableCell align="right">
+              <Typography sx={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{money(amountOf(b), b.currency)}</Typography>
+              {b.balance_amount > 0 && <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'nowrap' }}>of {money(b.total_amount, b.currency)}</Typography>}
+            </TableCell>
+            <TableCell><Stack direction="row" spacing={.5}><StatusChip badge={paymentBadge(b)} />{isTest(b) && <StatusChip badge={{ label: 'Test', tone: 'info' }} />}</Stack></TableCell>
+            <TableCell>{sm ? <StatusChip badge={sm} /> : <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>—</Typography>}</TableCell>
+            <TableCell sx={{ pl: 0 }}><ChevronRightRounded sx={{ color: 'text.secondary', display: 'block' }} /></TableCell>
+          </TableRow>;
+        })}
+      </TableBody>
+    </Table>
+  </Box>;
+}
+
+function BookingCards({ rows, onOpen }: { rows: DeskBooking[]; onOpen: (ref: string) => void }) {
+  return <Stack spacing={1.25}>
+    {rows.map((b) => {
+      const sm = siteMinderBadge(b);
+      return <ButtonBase key={b.ref} onClick={() => onOpen(b.ref)} sx={{
+        display: 'block', textAlign: 'left', p: 1.75, borderRadius: '18px', border: '1px solid', bgcolor: 'background.paper',
+        borderColor: needsAction(b) ? '#f0d27a' : 'divider', opacity: isPaid(b) || b.status === 'pending' ? 1 : .75,
+      }}>
+        <Stack direction="row" justifyContent="space-between" spacing={1.5}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName(b)}</Typography>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{stayText(b)} · {plural(nightCount(b), 'night')}</Typography>
+          </Box>
+          <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+            <Typography sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{money(amountOf(b), b.currency)}</Typography>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{b.ref}</Typography>
+          </Box>
+        </Stack>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{roomsText(b)} · booked {stampShortLabel(b.created_at)}</Typography>
+        <Stack direction="row" flexWrap="wrap" useFlexGap gap={.5} sx={{ mt: 1 }}>
+          <StatusChip badge={paymentBadge(b)} />
+          {sm && <StatusChip badge={sm} />}
+          {isTest(b) && <StatusChip badge={{ label: 'Test', tone: 'info' }} />}
+        </Stack>
+      </ButtonBase>;
+    })}
+  </Stack>;
 }

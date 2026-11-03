@@ -1,4 +1,4 @@
-import { type BookingRow, getByInvoice, PII_WIPE, updateWhere } from './bookings.js';
+import { type BookingRow, getByInvoice, updateWhere } from './bookings.js';
 import { CONFIRMATION_TEMPLATE, confirmationVariables, formatDay } from './bookingEmails.js';
 import { bookingAdminBcc, bookingAdminTo, bookingFrom, deliverReservation } from './deliver.js';
 import { isWebsiteInvoice } from './ids.js';
@@ -67,7 +67,7 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
   return current?.status === 'paid' ? deliver(current) : current;
 }
 
-/** Claim the hand-off, send it, then wipe the guest's details. Exported for the cron's retries. */
+/** Claim the hand-off and send it. Exported for the cron's retries. */
 export async function deliver(row: BookingRow): Promise<BookingRow> {
   const staleBefore = new Date(Date.now() - DELIVERY_STALE_MS).toISOString();
   const [claimed] = await updateWhere(`id=eq.${row.id}&status=eq.paid&or=(delivery_claimed_at.is.null,delivery_claimed_at.lt.${staleBefore})`, {
@@ -89,9 +89,9 @@ export async function deliver(row: BookingRow): Promise<BookingRow> {
     const now = new Date().toISOString();
     const [done] = await updateWhere(`id=eq.${claimed.id}&status=eq.paid`, {
       status: 'delivered', delivered_at: now, delivery_method: result.method, delivery_error: null,
-      guest_emailed_at: guestEmailedAt, flags: [...flags], ...PII_WIPE, pii_wiped_at: now,
+      guest_emailed_at: guestEmailedAt, flags: [...flags],
     });
-    console.info('Booking handed off and details wiped', claimed.ref, result.method);
+    console.info('Booking handed off', claimed.ref, result.method);
     return done ?? withFlags;
   } catch (error) {
     console.error('Booking hand-off failed', claimed.ref, error);

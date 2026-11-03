@@ -14,8 +14,8 @@ const PHONE = /^[+()\d\s.-]{6,30}$/;
 const ARRIVALS = ['Not sure yet', 'Before 12:00 (early check-in on request)', '12:00 – 15:00', '15:00 – 18:00', '18:00 – 21:00', 'After 21:00'];
 
 // Step 2: who's coming. Everything typed here goes only to the booking: it's
-// sent to the resort with the reservation and deleted from the website
-// straight after.
+// sent to the resort with the reservation and kept with it for the
+// reservations team (/admin → Bookings).
 export function DetailsStep() {
   const { guest, updateGuest, startPayment, totals, availability, cart, plan } = useBookingFlow();
   const { siteMinderUrl } = useBookingSearch();

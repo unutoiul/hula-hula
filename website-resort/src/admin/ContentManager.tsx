@@ -9,6 +9,7 @@ import { HighlightCard } from '../components/sections/HighlightsSection';
 import { photoByUrl } from '../data/photos';
 import type { CarouselCardData } from '../types';
 import { ImageField } from './ImageField';
+import { InfoButton } from './InfoButton';
 import { supabase } from './supabase';
 
 // One editor for every CMS table: a list (show/hide, edit, delete; new items
@@ -43,6 +44,9 @@ export interface ContentConfig {
   check?: (row: Row) => string | null;
 }
 
+const plural = (noun: string) => (noun.endsWith('y') ? `${noun.slice(0, -1)}ies` : `${noun}s`);
+const capitalised = (text: string) => text[0].toUpperCase() + text.slice(1);
+
 const thumbOf = (src: string) => photoByUrl.get(src)?.srcSet.split(',')[0].trim().split(' ')[0] ?? src;
 
 export function ContentManager({ config }: { config: ContentConfig }) {
@@ -68,8 +72,11 @@ export function ContentManager({ config }: { config: ContentConfig }) {
   };
 
   return <Box>
-    <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={2} sx={{ mb: 3 }}>
-      <Typography sx={{ color: 'text.secondary', maxWidth: 560 }}>{config.intro}</Typography>
+    <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 2.5 }}>
+      <Stack direction="row" alignItems="center" spacing={.5} sx={{ minWidth: 0 }}>
+        <Typography sx={{ fontWeight: 700 }}>{rows ? `${rows.length} ${rows.length === 1 ? config.noun : plural(config.noun)}` : capitalised(plural(config.noun))}</Typography>
+        <InfoButton label={`About ${plural(config.noun)}`}>{config.intro}</InfoButton>
+      </Stack>
       <Button variant="contained" startIcon={<AddRounded />} onClick={() => setEditing({ ...config.blank(), sort_order: ((rows?.at(-1)?.sort_order as number | undefined) ?? 0) + 10 })}>Add {config.noun}</Button>
     </Stack>
     {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>{error}</Alert>}

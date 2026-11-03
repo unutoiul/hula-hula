@@ -1,10 +1,10 @@
 import type { DepositType } from '../../shared/bookingContract.js';
 import { rest } from './db.js';
 
-// The bookings table (supabase/migrations/0001_booking_and_cms.sql). A row
-// lives from "Continue to payment" until the booking has been handed to the
-// resort; then every personal detail is wiped and only what's needed for
-// refunds and reconciliation stays. Status changes are conditional updates,
+// The bookings table (supabase/migrations/0001_booking_and_cms.sql and
+// 0006_booking_desk.sql). A row is written at "Continue to payment" and,
+// once paid, kept with the guest's details for staff at /admin → Bookings;
+// attempts that were never paid are deleted after 30 days. Status changes are conditional updates,
 // so when the webhook, the confirmation page's polling and the nightly cron
 // race on the same booking, exactly one of them wins each step.
 
@@ -79,11 +79,6 @@ export interface BookingRow {
 export type NewBooking = Pick<BookingRow,
   'ref' | 'invoice_no' | 'access_key_hash' | 'check_in' | 'check_out' | 'promo_code' | 'items' | 'currency' | 'total_amount' | 'deposit_amount'
   | 'guest_first_name' | 'guest_last_name' | 'guest_email' | 'guest_phone' | 'guest_country' | 'arrival_time' | 'special_requests' | 'expires_at'>;
-
-export const PII_WIPE = {
-  guest_first_name: null, guest_last_name: null, guest_email: null, guest_phone: null,
-  guest_country: null, arrival_time: null, special_requests: null,
-} as const;
 
 const RETURN_ROWS = 'return=representation';
 

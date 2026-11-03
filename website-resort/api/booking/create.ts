@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { BookingRoomRequest, CreateBookingErrorCode, CreateBookingResponse, GuestDetails } from '../../shared/bookingContract.js';
 import { fits } from '../../shared/occupancy.js';
-import { type BookingItem, insertPending, PII_WIPE, softHolds, updateWhere } from '../_lib/bookings.js';
+import { type BookingItem, insertPending, softHolds, updateWhere } from '../_lib/bookings.js';
 import { DbError, dbConfigured } from '../_lib/db.js';
 import { loadDeals } from '../_lib/deals.js';
 import { defaultDeposit } from '../_lib/deposit.js';
@@ -147,7 +147,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } satisfies CreateBookingResponse);
   } catch (error) {
     console.error('Booking: 2C2P payment token failed', booking.ref, error);
-    await updateWhere(`id=eq.${booking.id}`, { status: 'failed', ...PII_WIPE, pii_wiped_at: new Date().toISOString() }).catch(() => {});
+    await updateWhere(`id=eq.${booking.id}`, { status: 'failed' }).catch(() => {});
     return fail(502, 'PAYMENT_UNAVAILABLE', 'Our payment provider isn’t responding — please try again in a few minutes.');
   }
 }
