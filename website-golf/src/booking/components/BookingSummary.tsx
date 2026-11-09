@@ -1,6 +1,7 @@
 import TimerOutlined from '@mui/icons-material/TimerOutlined';
 import { Box, Chip, Divider, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
+import { PaymentLogos } from '../../components/common/PaymentMethods';
 import { fonts } from '../../theme';
 import { ActivityIcon } from '../activityIcons';
 import { useBookingFlow, useHoldSecondsLeft } from '../BookingFlowContext';
@@ -51,6 +52,7 @@ export function BookingSummary({ action }: { action?: ReactNode }) {
     <Divider sx={{ my: 2 }} />
     <Stack direction="row" justifyContent="space-between" alignItems="baseline"><Typography sx={{ fontWeight: 700 }}>Total</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 24 }}>{money(total)}</Typography></Stack>
     <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: .25 }}>{total > 0 ? 'Paid online when you book.' : 'Nothing to pay.'}</Typography>
+    {total > 0 && <PaymentLogos size={26} sx={{ mt: 1 }} />}
     <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ mt: 1.5 }}>
       {activity.includes.map((item) => <Chip key={item} label={item} size="small" sx={{ bgcolor: 'success.light', color: 'success.dark', fontWeight: 600, fontSize: 11 }} />)}
     </Stack>

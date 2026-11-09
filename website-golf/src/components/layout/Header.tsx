@@ -18,7 +18,7 @@ type NavGroup = { label: string; href: string; items?: [string, string][] };
 
 // Two groups either side of the logo on large screens, all of them in the menu.
 const GROUPS: NavGroup[] = [
-  { label: 'Play', href: '/activities', items: [['The golf course', '/course'], ['FootGolf', '/activities/footgolf'], ['All activities', '/activities'], ['Prices & rentals', '/prices']] },
+  { label: 'Play', href: '/activities', items: [['The golf course', '/course'], ['FootGolf', '/activities/footgolf'], ['Fling Golf', '/activities/fling-golf'], ['Driving range', '/activities/range'], ['Pickleball', '/activities/pickleball'], ['All activities', '/activities'], ['Prices & rentals', '/prices']] },
   { label: 'Events & offers', href: '/events' },
   { label: 'Clubhouse', href: '/clubhouse' },
   { label: 'Visit', href: '/visit', items: [['Plan your visit', '/visit'], ['Photo gallery', '/gallery'], ['Contact the club', '/contact']] },

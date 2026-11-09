@@ -13,6 +13,7 @@ import { SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { linkClick } from '../../router';
 import { fonts } from '../../theme';
 import { ClubPhoto } from '../common/ClubPhoto';
+import { PaymentLogos } from '../common/PaymentMethods';
 import { Reveal } from '../common/ScrollMotion';
 import { Sticker } from '../common/VacationDecor';
 
@@ -94,6 +95,10 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
         })}
       </Box>
 
+      <Stack alignItems="center" spacing={1} sx={{ mt: 3 }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>Pay online when you book</Typography>
+        <PaymentLogos sx={{ justifyContent: 'center' }} />
+      </Stack>
       {preview && <Box sx={{ textAlign: 'center', mt: 3 }}><Button href="/prices" onClick={linkClick('/prices')} variant="outlined" endIcon={<East />}>All prices, packages & rentals</Button></Box>}
       <Reveal><Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 3, md: 4 }} alignItems="center" sx={{ mt: { xs: 5, md: 6 }, p: { xs: 2.5, md: 3 }, borderRadius: '24px', border: '1px dashed', borderColor: 'success.main', position: 'relative' }}>
         <Sticker rotate={-8} sx={{ flexShrink: 0, width: 100, height: 100, fontSize: 17 }}>Tip your<br />caddie!</Sticker>

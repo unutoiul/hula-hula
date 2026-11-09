@@ -12,6 +12,7 @@ import { COUNTRIES, guessCountry } from '../booking/countries';
 import { toMinutes } from '../booking/dates';
 import { money, plural } from '../booking/pricing';
 import { GuestStepper } from '../components/booking/GuestStepper';
+import { PaymentLogos } from '../components/common/PaymentMethods';
 import { CARD_PEEK, PineappleGolfer } from '../components/common/PineappleGolfer';
 import { PageIntro } from '../components/layout/PageIntro';
 import { PublicPageLayout } from '../components/layout/PublicPageLayout';
@@ -125,6 +126,7 @@ function EventPage({ slug }: { slug: string }) {
 
       <Box id="packages" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET, mt: { xs: 6, md: 9 } }}>
         <Typography variant="h2" sx={{ fontSize: { xs: 34, md: 48 }, textAlign: { xs: 'center', md: 'left' } }}>Choose your package</Typography>
+        {event.salesOpen && event.packages.length > 0 && <PaymentLogos sx={{ mt: 1.5, justifyContent: { xs: 'center', md: 'flex-start' } }} />}
         {!event.salesOpen && <Alert severity="info" sx={{ mt: 2 }}>Online sales for this event are closed. WhatsApp us on {contact.phone} and we’ll see what we can do.</Alert>}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: `repeat(${Math.min(3, Math.max(1, event.packages.length))}, 1fr)` }, gap: 2.5, mt: 3 }}>
           {event.packages.map((pack) => <PackageCard key={pack.id} pack={pack} open={event.salesOpen} onBuy={(quantity) => setBuying({ pack, quantity })} />)}
@@ -232,6 +234,7 @@ function CheckoutDialog({ event, pack, quantity, testPayments, onClose }: { even
           {busy ? 'Taking you to secure payment…' : `Pay ${money(total)} securely`}
         </Button>
         <Typography sx={{ fontSize: 12, color: 'text.secondary', textAlign: 'center', mt: 1.25 }}>You’ll pay on Payso’s secure page and come straight back here. Your places are held for 20 minutes.</Typography>
+        <PaymentLogos size={26} sx={{ mt: 1.25, justifyContent: 'center' }} />
       </Box>
     </DialogContent>
   </Dialog>;

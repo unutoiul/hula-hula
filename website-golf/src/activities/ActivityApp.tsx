@@ -9,6 +9,7 @@ import { durationLabel, timeLabel } from '../booking/dates';
 import { money } from '../booking/pricing';
 import { ThingCard } from '../components/activities/ThingCard';
 import { ClubPhoto } from '../components/common/ClubPhoto';
+import { PaymentLogos } from '../components/common/PaymentMethods';
 import { PageIntro } from '../components/layout/PageIntro';
 import { PublicPageLayout } from '../components/layout/PublicPageLayout';
 import { useContact, useSite, useSiteData } from '../context/SiteDataContext';
@@ -100,6 +101,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
     </>}
     <ActionButton action={actions[0]} fullWidth sx={{ mt: 3 }} />
     {priced && <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.25, textAlign: 'center' }}>In Thai baht{activity.bookOnline ? ', paid online when you book' : ''}.</Typography>}
+    {priced && activity.bookOnline && <PaymentLogos size={26} sx={{ mt: 1.25, justifyContent: 'center' }} />}
   </>;
 
   return <><Page model={{
