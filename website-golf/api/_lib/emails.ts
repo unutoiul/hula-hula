@@ -36,12 +36,25 @@ function clubDetails(site: SiteData, siteUrl: string) {
   return { contact, vars: { CLUB_AREA: escape(contact.area), CLUB_EMAIL: escape(contact.email), SITE_URL: escape(siteUrl) } };
 }
 
+// The "please check" box in the club's emails.
+const flagVars = (flags: string[]) => ({
+  FLAGS_HTML: flags.length ? flags.map((flag) => `• ${escape(flag)}`).join('<br>') : undefined,
+  FLAGS_DISPLAY: flags.length ? 'block' : undefined,
+});
+
+const BOOKING_FLAG_TEXT: Record<string, string> = {
+  paid_after_expiry: 'Paid after the hold on this time ran out. Check the tee sheet isn’t overbooked; if it is, refund the guest in the Payso control panel and let them know.',
+  amount_mismatch: 'Payso reports a different amount from the booking total. Check the payment in the Payso control panel.',
+};
+
+const bookingPaidLabel = (r: Reservation) => (r.total === 0 ? 'Nothing to pay' : r.testPayment ? 'Paid (test — nothing was charged)' : 'Paid online');
+
 function summary(r: Reservation, site: SiteData) {
   const activity = findActivity(site, r.activity);
   const people = plural(r.players, activity?.peopleNoun ?? 'player', activity?.peopleNoun === 'person' ? 'people' : 'players');
   return {
     wear: activity?.wear ?? '', people, when: `${timeLabel(r.time)} · ${dayLabel(r.date)}`,
-    vars: { BOOKING_REF: escape(r.ref), TEE_TIME: timeLabel(r.time), TEE_DAY: dayLabel(r.date), ACTIVITY: escape(`${r.activityName} · ${r.optionLabel}`), GROUP: escape(`${people} · about ${durationLabel(r.minutes)}`), LINES_HTML: linesHtml(r.lines), TOTAL: escape(money(r.total)) },
+    vars: { BOOKING_REF: escape(r.ref), TEE_TIME: timeLabel(r.time), TEE_DAY: dayLabel(r.date), ACTIVITY: escape(`${r.activityName} · ${r.optionLabel}`), GROUP: escape(`${people} · about ${durationLabel(r.minutes)}`), LINES_HTML: linesHtml(r.lines), TOTAL: escape(money(r.total)), PAID_LABEL: bookingPaidLabel(r) },
   };
 }
 
@@ -66,17 +79,18 @@ export function bookingConfirmation(r: Reservation, guest: Guest, siteUrl: strin
   };
 }
 
-export function bookingNotification(r: Reservation, guest: Guest, experience: string, siteUrl: string, site: SiteData): TemplateMessage {
+export function bookingNotification(r: Reservation, guest: Guest, experience: string, siteUrl: string, site: SiteData, flags: string[] = []): TemplateMessage {
   const { people, when, vars } = summary(r, site);
   const { vars: club } = clubDetails(site, siteUrl);
   const name = `${guest.firstName} ${guest.lastName}`.trim();
   const whatsapp = whatsappLink(guest.phone);
+  const checks = [...(r.testPayment ? ['TEST payment on a Payso demo account — no money was taken.'] : []), ...flags.map((flag) => BOOKING_FLAG_TEXT[flag]).filter(Boolean)];
   const rentals = site.rentals.filter((rent) => (r.rentals[rent.id] ?? 0) > 0).map((rent) => `${r.rentals[rent.id]} × ${rent.label}`).join(', ');
   return {
     subject: `New booking: ${r.activityName} ${when} — ${name} (${r.players})`,
     template: TEMPLATES.bookingNotification,
     variables: {
-      ...vars, ...club,
+      ...vars, ...club, ...flagVars(checks),
       PREVIEW: escape(`${name} · ${r.activityName} · ${when} · ${people}`),
       GUEST_NAME: escape(name),
       GUEST_EMAIL: escape(guest.email),
@@ -150,8 +164,7 @@ export function eventNotification(o: PaidOrder, siteUrl: string, site: SiteData)
       GUEST_PHONE: escape(o.phone),
       GUEST_COUNTRY: escape(countryName(o.country)),
       NOTES: o.notes ? clip(escape(o.notes).replace(/\n/g, '<br>')) : undefined,
-      FLAGS_HTML: flags.length ? flags.map((flag) => `• ${escape(flag)}`).join('<br>') : undefined,
-      FLAGS_DISPLAY: flags.length ? 'block' : undefined,
+      ...flagVars(flags),
       WHATSAPP_URL: whatsapp,
       WHATSAPP_DISPLAY: whatsapp ? 'inline-block' : undefined,
     },

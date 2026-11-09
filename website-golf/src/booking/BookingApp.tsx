@@ -12,9 +12,9 @@ import { TeeTimeStep } from './steps/TeeTimeStep';
 // /book, /book/extras, /book/details, /book/confirmation — the tee time
 // booking flow, laid out the way golf booking engines usually are: pick the
 // activity, day and group, choose a start from the tee sheet (held for a few
-// minutes), add extras, give the lead player's details, and get a
-// confirmation with a reference and a calendar entry. Loaded only when
-// someone heads here (React.lazy in App).
+// minutes), add extras, give the lead player's details, pay on Payso's page,
+// and get a confirmation with a reference and a calendar entry. Loaded only
+// when someone heads here (React.lazy in App).
 
 const STEPS = [
   { path: '/book', label: 'Tee time' },
@@ -41,13 +41,13 @@ export default function BookingApp() {
 }
 
 function BookingShell() {
-  const { pathname } = useLocation();
-  const { time, reservation } = useBookingFlow();
+  const { pathname, query } = useLocation();
+  const { time } = useBookingFlow();
   const step = Math.max(0, STEPS.findIndex((s) => s.path === pathname));
 
-  // Steps can't be skipped: no time held → back to the tee sheet; nothing booked → no confirmation.
+  // Steps can't be skipped: no time held → back to the tee sheet; no booking in the link → no confirmation.
   const blockedTo = (pathname === '/book/extras' || pathname === '/book/details') && !time ? '/book'
-    : pathname === '/book/confirmation' && !reservation ? '/book'
+    : pathname === '/book/confirmation' && !query.get('ref') ? '/book'
     : null;
   useEffect(() => { if (blockedTo) navigate(blockedTo, { replace: true }); }, [blockedTo]);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);

@@ -357,8 +357,8 @@ export function clubRules(wear: string, club: ClubSettings) {
   return [
     { title: 'Arrive early', text: 'Please check in at the clubhouse 20–30 minutes before your start.' },
     { title: 'What to wear', text: wear },
-    { title: 'Payment', text: 'Pay at the club on the day. Nothing is charged online.' },
-    { title: 'Changes & cancellation', text: `Free up to ${club.booking.cancellationHours} hours before your start — just WhatsApp or email us. Later cancellations and no-shows may be charged.` },
+    { title: 'Payment', text: 'Paid online when you book, on Payso’s secure page.' },
+    { title: 'Changes & cancellation', text: `Free up to ${club.booking.cancellationHours} hours before your start — just WhatsApp or email us and we’ll refund you. Later cancellations and no-shows may not be refunded.` },
     { title: 'Weather', text: 'If a storm stops play, we’ll help you find a new time.' },
   ];
 }

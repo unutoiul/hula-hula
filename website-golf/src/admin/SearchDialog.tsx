@@ -24,7 +24,7 @@ export function SearchDialog({ open, onClose, onPick }: { open: boolean; onClose
     let cancelled = false;
     const id = window.setTimeout(async () => {
       const like = `"*${term}*"`;
-      const { data, error: searchError } = await supabase!.from('golf_bookings').select('*')
+      const { data, error: searchError } = await supabase!.from('golf_bookings').select('*').not('status', 'in', '(pending,expired)')
         .or(`ref.ilike.${like},first_name.ilike.${like},last_name.ilike.${like},phone.ilike.${like},email.ilike.${like}`)
         .order('play_date', { ascending: false }).limit(20);
       if (cancelled) return;

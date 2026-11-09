@@ -1,16 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSite } from '../context/SiteDataContext';
-import { createReservation, ApiError, type Guest, type Reservation } from './api';
+import { createReservation, ApiError, type Guest, type ReservationStarted } from './api';
 import { isBookableDay } from './availability';
 import { findActivity, onlineActivities, pickupFor, type Activity, type ActivityOption, type SiteData } from './config';
 import { isISODate, krabiNow } from './dates';
 import { priceLines, totalOf, type PriceLine } from './pricing';
 
 // The booking in progress, shared by every step: what's being booked and when,
-// the picked time and how long it's held, extras, the guest's details, and —
-// at the end — the reservation. Kept in this tab's sessionStorage, so a reload
-// carries on where it was and closing the tab forgets it. Activities, prices
-// and rules are the live ones staff set in /admin (useSite).
+// the picked time and how long it's held, extras and the guest's details. Kept
+// in this tab's sessionStorage, so a reload carries on where it was and closing
+// the tab forgets it. Activities, prices and rules are the live ones staff set
+// in /admin (useSite).
 
 export interface Search { activity: string; option: string; date: string; players: number }
 export interface Extras { rentals: Record<string, number>; transfer: string | null; pickupFrom: string; experience: string }
@@ -22,7 +22,6 @@ interface FlowState {
   heldUntil: number | null;
   extras: Extras;
   guest: GuestForm;
-  reservation: Reservation | null;
 }
 
 const STORE = 'hhg-booking';
@@ -64,7 +63,7 @@ function load(site: SiteData): FlowState {
       return { ...saved, search: normalise(saved.search, site), heldUntil: held ? saved.heldUntil : null, time: held ? saved.time : null };
     }
   } catch { /* start fresh */ }
-  return { search: normalise({}, site), time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest, reservation: null };
+  return { search: normalise({}, site), time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest };
 }
 
 interface BookingFlow extends FlowState {
@@ -79,8 +78,10 @@ interface BookingFlow extends FlowState {
   releaseTime: () => void;
   updateExtras: (change: Partial<Extras>) => void;
   updateGuest: (change: Partial<GuestForm>) => void;
-  confirm: (meta: { hp: string; elapsedMs: number }) => Promise<{ error: string; taken?: boolean } | { ok: true }>;
+  confirm: (meta: { hp: string; elapsedMs: number }) => Promise<{ error: string; taken?: boolean } | ReservationStarted>;
   startOver: () => void;
+  /** Once it's booked, the guest's details don't need to stay in the browser. */
+  forgetGuest: () => void;
 }
 
 const BookingFlowContext = createContext<BookingFlow | null>(null);
@@ -130,7 +131,8 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
   const releaseTime = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null })), []);
   const updateExtras = useCallback((change: Partial<Extras>) => setState((s) => ({ ...s, extras: { ...s.extras, ...change } })), []);
   const updateGuest = useCallback((change: Partial<GuestForm>) => setState((s) => ({ ...s, guest: { ...s.guest, ...change } })), []);
-  const startOver = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras, reservation: null })), []);
+  const startOver = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras })), []);
+  const forgetGuest = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest })), []);
 
   // Rentals only for activities that have them, and never more sets than players.
   const rentals = useMemo(() => activity.rentals
@@ -142,14 +144,11 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
     if (!state.time) return { error: 'Please pick a time first.' };
     try {
       const { acceptedPolicies: _accepted, ...guest } = state.guest;
-      const reservation = await createReservation({
+      return await createReservation({
         ...state.search, time: state.time, rentals, transfer: state.extras.transfer,
         pickupFrom: state.extras.transfer ? state.extras.pickupFrom.trim() : '', experience: state.extras.experience,
         guest, hp, elapsedMs,
       });
-      // Once it's booked, the guest's details don't need to stay in the browser.
-      setState((s) => ({ ...s, reservation, time: null, heldUntil: null, extras: emptyExtras, guest: { ...emptyGuest, acceptedPolicies: false } }));
-      return { ok: true as const };
     } catch (error) {
       return { error: error instanceof ApiError ? error.message : 'We couldn’t reach the booking system. Please try again, or WhatsApp us.', taken: error instanceof ApiError && error.code === 'taken' };
     }
@@ -157,7 +156,7 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
 
   const value: BookingFlow = {
     ...state, extras: { ...state.extras, rentals }, activity, option, lines, total: totalOf(lines), holdExpired,
-    setSearch, selectTime, releaseTime, updateExtras, updateGuest, confirm, startOver,
+    setSearch, selectTime, releaseTime, updateExtras, updateGuest, confirm, startOver, forgetGuest,
   };
   return <BookingFlowContext.Provider value={value}>{children}</BookingFlowContext.Provider>;
 }

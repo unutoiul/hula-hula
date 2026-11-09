@@ -321,10 +321,15 @@ function OrderPage() {
       <Typography sx={{ mt: .5 }}>{eventWhen({ startsOn: order.startsOn, endsOn: null, startTime: order.startTime, endTime: order.endTime }, true)}</Typography>
       <Typography sx={{ mt: .5 }}>{order.packageName} × {order.quantity} · {order.testPayment ? 'test payment' : `paid ${money(order.total)}`}</Typography>
     </Box>
-    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
-      {calendarItem && <Button variant="contained" startIcon={<EventRounded />} href={googleCalendarUrl(calendarItem, contact)} target="_blank" rel="noopener noreferrer">Add to Google Calendar</Button>}
-      {calendarItem && <Button variant="outlined" onClick={() => downloadIcs(calendarItem, contact)}>Apple / Outlook (.ics)</Button>}
-      <Button href={eventHref} onClick={linkClick(eventHref)} color="inherit">Back to the event</Button>
-    </Stack>
+    {calendarItem && <>
+      <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary', mt: 3 }}>Add it to your calendar</Typography>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 1.5, mt: 1 }}>
+        <Button variant="contained" startIcon={<EventRounded />} href={googleCalendarUrl(calendarItem, contact)} target="_blank" rel="noopener noreferrer" sx={{ whiteSpace: 'nowrap' }}>Google Calendar</Button>
+        <Button variant="outlined" onClick={() => downloadIcs(calendarItem, contact)} sx={{ whiteSpace: 'nowrap' }}>Apple / Outlook</Button>
+      </Box>
+    </>}
+    <Box sx={{ textAlign: 'center', mt: 2.5 }}>
+      <Button href={eventHref} onClick={linkClick(eventHref)} color="inherit" sx={{ whiteSpace: 'nowrap' }}>Back to the event</Button>
+    </Box>
   </>);
 }

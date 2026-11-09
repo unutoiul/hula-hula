@@ -31,6 +31,9 @@ export const isConfigured = () => REQUIRED.every((name) => process.env[name]);
  * moves. Off by default so that a guest is never told a real charge was a test. */
 export const isTestMode = () => process.env.PAYSO_DEMO === 'true';
 
+/** Payso takes 50 characters at most; our own confirmation still goes to the guest's real address. */
+export const customerEmailFor = (guestEmail: string, clubEmail: string) => (guestEmail.length <= 50 ? guestEmail : clubEmail);
+
 export interface PaymentRequest {
   referenceNo: string;
   description: string;
@@ -78,6 +81,18 @@ export interface InquiryResult {
   referenceNo?: string;
   amount?: number;
   cardType?: string;
+}
+
+/** What a confirmed payment writes on its event order or tee time, flagging anything staff should check. */
+export function paidFields(row: { total: number; flags: string[]; status: string; expires_at: string | null }, inquiry: InquiryResult) {
+  const flags = new Set(row.flags);
+  // Paid after its hold ran out: the place may have gone to someone else meanwhile.
+  if (row.status === 'expired' || (row.expires_at && Date.now() > Date.parse(row.expires_at))) flags.add('paid_after_expiry');
+  if (typeof inquiry.amount === 'number' && Math.round(inquiry.amount * 100) !== row.total * 100) flags.add('amount_mismatch');
+  return {
+    paid_at: new Date().toISOString(), paid_amount: inquiry.amount ?? row.total, tran_ref: inquiry.referenceNo ?? null, channel_code: inquiry.cardType ?? null,
+    resp_code: inquiry.status, resp_desc: inquiry.statusName ?? null, test_payment: isTestMode(), flags: [...flags],
+  };
 }
 
 interface InquiryRow { ReferenceNo?: unknown; Status?: string; StatusName?: string; Total?: unknown; CardType?: string }

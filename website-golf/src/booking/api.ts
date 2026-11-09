@@ -1,7 +1,7 @@
 import type { Slot } from './availability';
-import type { ErrorResponse, Reservation, ReservationRequest, TeeSheetResponse } from './contract';
+import type { ErrorResponse, ReservationRequest, ReservationStarted, ReservationView, TeeSheetResponse } from './contract';
 
-export type { Guest, Reservation, ReservationRequest } from './contract';
+export type { Guest, ReservationRequest, ReservationStarted, ReservationView } from './contract';
 
 // The booking pages' only way to the club's tee sheet: the functions in api/,
 // which read and write the bookings in Supabase.
@@ -27,6 +27,10 @@ export async function fetchTeeSheet(activity: string, option: string, date: stri
   return (await call<TeeSheetResponse>(`/api/tee-sheet?${params}`)).slots;
 }
 
-export function createReservation(request: ReservationRequest): Promise<Reservation> {
-  return call<Reservation>('/api/reservations', { method: 'POST', body: JSON.stringify(request) });
+export function createReservation(request: ReservationRequest): Promise<ReservationStarted> {
+  return call<ReservationStarted>('/api/reservations', { method: 'POST', body: JSON.stringify(request) });
+}
+
+export function fetchReservation(ref: string, key: string): Promise<ReservationView> {
+  return call<ReservationView>(`/api/reservations?${new URLSearchParams({ ref, key })}`);
 }

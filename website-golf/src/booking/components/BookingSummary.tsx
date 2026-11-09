@@ -10,7 +10,7 @@ import { money, peopleLabel } from '../pricing';
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
 // The running summary beside every step: what, when, for how many, the hold
-// on the picked time, and the price — all paid at the club on the day.
+// on the picked time, and the price — paid online at the end.
 export function BookingSummary({ action }: { action?: ReactNode }) {
   const { activity, option, search, time, lines, total, extras } = useBookingFlow();
   const secondsLeft = useHoldSecondsLeft();
@@ -50,7 +50,7 @@ export function BookingSummary({ action }: { action?: ReactNode }) {
     </Stack>
     <Divider sx={{ my: 2 }} />
     <Stack direction="row" justifyContent="space-between" alignItems="baseline"><Typography sx={{ fontWeight: 700 }}>Total</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 24 }}>{money(total)}</Typography></Stack>
-    <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: .25 }}>Paid at the club on the day — nothing to pay online.</Typography>
+    <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: .25 }}>{total > 0 ? 'Paid online when you book.' : 'Nothing to pay.'}</Typography>
     <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ mt: 1.5 }}>
       {activity.includes.map((item) => <Chip key={item} label={item} size="small" sx={{ bgcolor: 'success.light', color: 'success.dark', fontWeight: 600, fontSize: 11 }} />)}
     </Stack>

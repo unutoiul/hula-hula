@@ -47,7 +47,7 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
           <Typography variant="overline" color="success.dark">Prices &amp; packages</Typography>
           <Typography variant="h2" sx={{ fontSize: { xs: 43, md: 64 }, lineHeight: 1.03, mt: 1.5 }}>Simple prices.<br /><Box component="span" color="primary.main">Good times included.</Box></Typography>
         </Box>
-        <Typography sx={{ maxWidth: 380, color: 'text.secondary', lineHeight: 1.8 }}>Per person, in Thai baht, paid at the club on the day. Caddie, cart and equipment are in the price wherever you need them.</Typography>
+        <Typography sx={{ maxWidth: 380, color: 'text.secondary', lineHeight: 1.8 }}>Per person, in Thai baht, paid online when you book. Caddie, cart and equipment are in the price wherever you need them.</Typography>
       </Stack></Reveal>}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(6, 1fr)' }, gap: { xs: 2, md: 2.5 } }}>

@@ -132,7 +132,7 @@ export function TeeTimeStep() {
           </>}
         </Box>
         <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 2 }}>
-          Prices per {activity.peopleNoun} in Thai baht, paid at the club. Includes {activity.includes.join(', ').toLowerCase()}. Times are Krabi time.
+          Prices per {activity.peopleNoun} in Thai baht, paid online when you book. Includes {activity.includes.join(', ').toLowerCase()}. Times are Krabi time.
         </Typography>
       </Panel>
     </Box>

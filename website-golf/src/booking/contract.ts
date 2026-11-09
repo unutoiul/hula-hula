@@ -51,7 +51,15 @@ export interface Reservation {
   email: string;
   /** Whether the confirmation email went out. */
   emailed: boolean;
+  /** Paid on a Payso demo account: nothing was charged. */
+  testPayment?: boolean;
 }
+
+/** POST /api/reservations: the page to pay on, or null when there's nothing to pay and it's already booked. */
+export interface ReservationStarted { ref: string; key: string; webPaymentUrl: string | null }
+
+/** GET /api/reservations?ref&key */
+export interface ReservationView extends Reservation { status: 'pending' | 'confirmed' | 'expired' | 'cancelled' }
 
 /** GET /api/tee-sheet */
 export interface TeeSheetResponse { slots: Slot[] }

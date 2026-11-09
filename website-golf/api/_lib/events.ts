@@ -5,7 +5,7 @@ import { eventConfirmation, eventNotification, type PaidOrder } from './emails.t
 import { emailConfigured, sendTemplate, splitAddresses } from './resend.ts';
 import { contactLinks } from '../../src/booking/config.ts';
 import { loadSite } from './site.ts';
-import { isTestMode, PAID, paymentInquiry } from './payso.ts';
+import { PAID, paidFields, paymentInquiry } from './payso.ts';
 
 // Events and their orders in Supabase (supabase/events.sql), read and
 // written with the secret key. confirmOrderPayment() is the one path from
@@ -88,14 +88,7 @@ export async function confirmOrderPayment(invoiceNo: string, source: 'webhook' |
     return order;
   }
 
-  const flags = new Set(order.flags);
-  // Paid after its hold ran out: the places may have gone to someone else meanwhile.
-  if (order.status === 'expired' || (order.expires_at && Date.now() > Date.parse(order.expires_at))) flags.add('paid_after_expiry');
-  if (typeof inquiry.amount === 'number' && Math.round(inquiry.amount * 100) !== order.total * 100) flags.add('amount_mismatch');
-  const [paid] = await updateOrders(`id=eq.${order.id}&status=in.(pending,expired)`, {
-    status: 'paid', paid_at: new Date().toISOString(), paid_amount: inquiry.amount ?? order.total, tran_ref: inquiry.referenceNo ?? null,
-    channel_code: inquiry.cardType ?? null, resp_code: inquiry.status, resp_desc: inquiry.statusName ?? null, test_payment: isTestMode(), flags: [...flags],
-  });
+  const [paid] = await updateOrders(`id=eq.${order.id}&status=in.(pending,expired)`, { status: 'paid', ...paidFields(order, inquiry) });
   if (paid) console.info('Event order paid', paid.ref, source);
   const current = paid ?? await getOrder(`id=eq.${order.id}`);
   return current?.status === 'paid' ? sendOrderEmails(current) : current;

@@ -1,12 +1,14 @@
 <!doctype html>
 <!--
   Resend template "golf-booking-notification": goes to the club's inbox when a
-  guest books a tee time on the website (api/reservations.ts). The booking is
-  already on the tee sheet in /admin; this is the heads-up, and the guest is
-  the reply-to so a plain "Reply" answers them. Edit here, then
+  guest books and pays for a tee time on the website (api/_lib/teeTimes.ts).
+  The booking is already on the tee sheet in /admin; this is the heads-up, and
+  the guest is the reply-to so a plain "Reply" answers them. Edit here, then
   `npm run email:publish`. Same rules as golf-booking-confirmation.html.
-  WHATSAPP_DISPLAY shows the WhatsApp button when the guest's phone looks
-  like a WhatsApp number ("none;mso-hide:all" hides it).
+  FLAGS_DISPLAY switches on the "please check" box (a test payment, paid after
+  the hold ran out, an amount that doesn't match) and WHATSAPP_DISPLAY shows
+  the WhatsApp button when the guest's phone looks like a WhatsApp number
+  ("none;mso-hide:all" hides them).
 -->
 <html lang="en">
 <head>
@@ -29,7 +31,13 @@
           <span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#e7f4cc;color:#50830d;font:700 11px/1 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;">New online booking · {{{BOOKING_REF}}}</span>
         </td></tr>
         <tr><td align="center" style="padding:16px 28px 4px;font:700 26px/1.2 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{GUEST_NAME}}} booked a tee time</td></tr>
-        <tr><td align="center" style="padding:0 34px 22px;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">Booked on the Hula Hula Golf Club website. It’s already on the tee sheet; they pay at the club on the day.</td></tr>
+        <tr><td align="center" style="padding:0 34px 22px;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">Booked on the Hula Hula Golf Club website. It’s already on the tee sheet.</td></tr>
+
+        <tr><td style="padding:0 28px 18px;display:{{{FLAGS_DISPLAY}}};">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fbc5;border:1px solid #e4e208;border-radius:18px;">
+            <tr><td style="padding:16px 22px;font:400 14px/1.7 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;"><span style="font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#686b0b;">Please check</span><br>{{{FLAGS_HTML}}}</td></tr>
+          </table>
+        </td></tr>
 
         <tr><td style="padding:0 28px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e7f4cc;border-radius:18px;">
@@ -44,7 +52,7 @@
         <tr><td style="padding:18px 28px 0;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{{{LINES_HTML}}}</table>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;border-top:2px solid #173c2c;">
-            <tr><td style="padding:10px 0 3px;">To collect at the club</td><td align="right" style="padding:10px 0 3px;"><strong>{{{TOTAL}}}</strong></td></tr>
+            <tr><td style="padding:10px 0 3px;color:#50830d;">{{{PAID_LABEL}}}</td><td align="right" style="padding:10px 0 3px;color:#50830d;"><strong>{{{TOTAL}}}</strong></td></tr>
           </table>
         </td></tr>
 

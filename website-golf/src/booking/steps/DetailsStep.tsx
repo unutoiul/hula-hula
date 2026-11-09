@@ -14,8 +14,8 @@ import { STICKY_TOP } from '../../layoutConstants';
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
 
-// Step 3: who's coming, the club's conditions, and confirm. The booking is
-// made in the lead player's name; the confirmation goes to their email.
+// Step 3: who's coming, the club's conditions, and on to payment. The booking
+// is made in the lead player's name; the confirmation goes to their email.
 export function DetailsStep() {
   const { activity, guest, updateGuest, confirm, total, time } = useBookingFlow();
   const [tried, setTried] = useState(false);
@@ -27,6 +27,13 @@ export function DetailsStep() {
   const startedAt = useRef(performance.now());
 
   useEffect(() => { if (!guest.country) updateGuest({ country: guessCountry() }); }, []);
+
+  // Coming back from Payso with the browser's Back button restores this page as it was left.
+  useEffect(() => {
+    const restored = (event: PageTransitionEvent) => { if (event.persisted) setSending(false); };
+    window.addEventListener('pageshow', restored);
+    return () => window.removeEventListener('pageshow', restored);
+  }, []);
 
   const errors = {
     firstName: !guest.firstName.trim() ? 'Please add a first name' : '',
@@ -45,9 +52,10 @@ export function DetailsStep() {
     if (Object.values(errors).some(Boolean) || !time) return;
     setSending(true);
     const result = await confirm({ hp, elapsedMs: Math.round(performance.now() - startedAt.current) });
-    setSending(false);
-    if ('error' in result) { setError(result.error); setTaken(!!result.taken); return; }
-    navigate('/book/confirmation');
+    if ('error' in result) { setSending(false); setError(result.error); setTaken(!!result.taken); return; }
+    // On to Payso's own secure page; it sends the guest back to /book/confirmation.
+    if (result.webPaymentUrl) window.location.assign(result.webPaymentUrl);
+    else navigate(`/book/confirmation?${new URLSearchParams({ ref: result.ref, key: result.key })}`);
   };
 
   const { club } = useSite();
@@ -97,9 +105,9 @@ export function DetailsStep() {
       {error && <Alert severity="error" sx={{ mt: 2 }} action={taken ? <Button color="inherit" size="small" onClick={() => navigate('/book')}>Pick a time</Button> : undefined}>{error}</Alert>}
       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} spacing={2} sx={{ mt: 3 }}>
         <Button type="submit" variant="contained" size="large" disabled={sending || !time}>
-          {sending ? 'Booking your time…' : `Confirm booking · ${money(total)} at the club`}
+          {sending ? (total > 0 ? 'Taking you to secure payment…' : 'Booking your time…') : total > 0 ? `Pay ${money(total)} securely` : 'Confirm booking'}
         </Button>
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>No payment now — you pay at the clubhouse on the day.</Typography>
+        {total > 0 && <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>You’ll pay on Payso’s secure page and come straight back here. Your time is held for 20 minutes.</Typography>}
       </Stack>
     </Box>
 

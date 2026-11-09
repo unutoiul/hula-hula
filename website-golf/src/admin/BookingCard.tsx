@@ -56,6 +56,7 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
       <Stack alignItems="flex-end" spacing={.5} sx={{ flexShrink: 0 }}>
         {b.status !== 'booked' && <Chip size="small" color={STATUS[b.status].color} label={STATUS[b.status].label} />}
         <Stack direction="row" spacing={.5}>
+          {b.paid_at && <Chip size="small" variant="outlined" color="success" label={b.test_payment ? 'Test' : 'Paid'} />}
           {b.transfer && <Chip size="small" variant="outlined" label="Pick-up" />}
           {b.source !== 'online' && <Chip size="small" variant="outlined" label={SOURCE[b.source]} />}
         </Stack>
@@ -76,8 +77,10 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
           {rentals && <Detail label="Rentals">{rentals}</Detail>}
           {b.transfer && <Detail label="Pick-up">{timeLabel(hhmm(b.transfer))} from {b.pickup_from}</Detail>}
           {b.notes && <Detail label="Notes"><Box component="span" sx={{ whiteSpace: 'pre-line' }}>{b.notes}</Box></Detail>}
-          <Detail label="To pay">{b.lines.map((l) => `${l.label} ${money(l.amount)}`).join(' + ')}{b.lines.length > 1 ? ` = ${money(b.total)}` : ''}</Detail>
+          <Detail label={b.paid_at ? 'Paid online' : 'To pay'}>{b.lines.map((l) => `${l.label} ${money(l.amount)}`).join(' + ')}{b.lines.length > 1 ? ` = ${money(b.total)}` : ''}</Detail>
+          {b.tran_ref && <Detail label="Payso">{b.tran_ref}</Detail>}
         </Box>
+        {b.flags.includes('paid_after_expiry') && <Alert severity="warning" sx={{ mt: 1.5 }}>Paid after the hold ran out — check this time isn’t overbooked.</Alert>}
 
         {(b.phone || b.email) && <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
           {phoneDigits.length >= 8 && <Button size="small" variant="outlined" startIcon={<CallRounded />} href={`tel:+${phoneDigits}`}>Call</Button>}
@@ -99,7 +102,7 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
 
     <Dialog open={confirmCancel} onClose={() => setConfirmCancel(false)}>
       <DialogTitle>Cancel {b.first_name}’s booking?</DialogTitle>
-      <DialogContent><Typography>{name} at {timeLabel(hhmm(b.start_time))} for {plural(b.players, 'person', 'people')}. The time opens up again on the website straight away. Let them know — this doesn’t email them.</Typography></DialogContent>
+      <DialogContent><Typography>{name} at {timeLabel(hhmm(b.start_time))} for {plural(b.players, 'person', 'people')}. The time opens up again on the website straight away. Let them know — this doesn’t email them.{b.paid_at ? ' They paid online, so any refund is made in the Payso control panel.' : ''}</Typography></DialogContent>
       <DialogActions>
         <Button onClick={() => setConfirmCancel(false)}>Keep it</Button>
         <Button color="error" variant="contained" disabled={busy} onClick={() => void setStatus('cancelled')}>Cancel booking</Button>

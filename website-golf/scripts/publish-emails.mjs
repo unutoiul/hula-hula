@@ -32,6 +32,7 @@ const TEE_TIME = [
   { key: 'GROUP', type: 'string' },
   { key: 'LINES_HTML', type: 'string' },
   { key: 'TOTAL', type: 'string' },
+  { key: 'PAID_LABEL', type: 'string', fallback_value: 'Paid online' },
 ];
 const ORDER = [
   { key: 'ORDER_REF', type: 'string' },
@@ -76,6 +77,8 @@ const TEMPLATES = [
       { key: 'NOTES', type: 'string', fallback_value: 'None' },
       { key: 'WHATSAPP_URL', type: 'string', fallback_value: 'https://wa.me/' },
       { key: 'WHATSAPP_DISPLAY', type: 'string', fallback_value: HIDDEN },
+      { key: 'FLAGS_HTML', type: 'string', fallback_value: '' },
+      { key: 'FLAGS_DISPLAY', type: 'string', fallback_value: HIDDEN },
     ],
   },
   {

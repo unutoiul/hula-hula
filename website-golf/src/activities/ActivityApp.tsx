@@ -99,7 +99,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
       </Stack>
     </>}
     <ActionButton action={actions[0]} fullWidth sx={{ mt: 3 }} />
-    {priced && <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.25, textAlign: 'center' }}>In Thai baht{activity.bookOnline ? ', paid at the club on the day' : ''}.</Typography>}
+    {priced && <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.25, textAlign: 'center' }}>In Thai baht{activity.bookOnline ? ', paid online when you book' : ''}.</Typography>}
   </>;
 
   return <><Page model={{

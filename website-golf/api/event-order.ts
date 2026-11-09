@@ -1,19 +1,17 @@
-import { timingSafeEqual } from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { ErrorResponse, EventOrderStarted, EventOrderView } from '../src/booking/contract.ts';
 import { contactLinks } from '../src/booking/config.ts';
 import { DbError, rest } from './_lib/db.ts';
 import { confirmOrderPayment, getOrder, loadPublicEvents, updateOrders, viewOf, type OrderRow } from './_lib/events.ts';
 import { allowMethods, queryString, readJsonBody, siteUrl } from './_lib/http.ts';
-import { ACCESS_KEY_PATTERN, invoiceNoFor, newAccessKey, newOrderRef, ORDER_REF_PATTERN, sha256Hex } from './_lib/ids.ts';
-import { createPayment, isConfigured as paymentConfigured, isTestMode } from './_lib/payso.ts';
+import { ACCESS_KEY_PATTERN, invoiceNoFor, newAccessKey, newOrderRef, ORDER_REF_PATTERN, sameHash, sha256Hex } from './_lib/ids.ts';
+import { createPayment, customerEmailFor, isConfigured as paymentConfigured, isTestMode } from './_lib/payso.ts';
 import { loadSite } from './_lib/site.ts';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
 const HOLD_MINUTES = 20;
 const INQUIRY_EVERY_MS = 5_000;
-const PAYSO_EMAIL_MAX = 50;
 
 // /api/event-order
 //   POST — buy event packages: checks the event, package and places again,
@@ -82,8 +80,7 @@ async function start(req: VercelRequest, res: VercelResponse) {
         referenceNo: invoiceNo,
         description: `Hula Hula Golf ${ref} - ${event.title} - ${pack.name} x${quantity}`,
         amount: pack.price * quantity,
-        // Payso takes 50 characters at most; our own confirmation still goes to the guest's address.
-        email: guest.email.length <= PAYSO_EMAIL_MAX ? guest.email : contactLinks((await loadSite()).club.contact).email,
+        email: customerEmailFor(guest.email, contactLinks((await loadSite()).club.contact).email),
         returnUrl: `${site}/api/payment/payso-return?ref=${ref}&key=${key}`,
         postbackUrl: `${site}/api/payment/payso-postback?refno=${invoiceNo}`,
       });
@@ -121,9 +118,4 @@ async function status(req: VercelRequest, res: VercelResponse) {
     console.error('Order status failed', ref, error);
     return res.status(502).json({ error: 'Could not check your order right now.' });
   }
-}
-
-function sameHash(a: string, b: string) {
-  const left = Buffer.from(a), right = Buffer.from(b);
-  return left.length === right.length && timingSafeEqual(left, right);
 }

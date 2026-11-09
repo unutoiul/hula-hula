@@ -1,32 +1,45 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/availability.ts';
 import { contactLinks, EXPERIENCE_LEVELS, findActivity, pickupFor } from '../src/booking/config.ts';
-import type { ErrorResponse, Guest, Reservation } from '../src/booking/contract.ts';
+import type { ErrorResponse, Guest, ReservationStarted } from '../src/booking/contract.ts';
 import { isISODate } from '../src/booking/dates.ts';
 import { priceLines, totalOf } from '../src/booking/pricing.ts';
 import { DbError, rest } from './_lib/db.ts';
-import { bookingConfirmation, bookingNotification } from './_lib/emails.ts';
-import { allowMethods, readJsonBody, siteUrl } from './_lib/http.ts';
-import { emailConfigured, sendTemplate, splitAddresses } from './_lib/resend.ts';
+import { allowMethods, queryString, readJsonBody, siteUrl } from './_lib/http.ts';
+import { ACCESS_KEY_PATTERN, BOOKING_REF_PATTERN, invoiceNoFor, newAccessKey, sameHash, sha256Hex } from './_lib/ids.ts';
+import { createPayment, customerEmailFor, isConfigured as paymentConfigured, isTestMode } from './_lib/payso.ts';
 import { loadDay } from './_lib/sheet.ts';
 import { loadSite } from './_lib/site.ts';
+import { confirmBookingPayment, getBooking, sendBookingEmails, updateBookings, viewOf } from './_lib/teeTimes.ts';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
+const HOLD_MINUTES = 20;
+const INQUIRY_EVERY_MS = 5_000;
 
-// POST /api/reservations — books a tee time. Everything the browser sends is
-// checked again here against the club's current settings and priced here
-// (never trusted from the page), then saved through golf_book(), which takes
-// the last place atomically. Then the guest gets a confirmation and the club
-// a "new booking" email, from the Resend templates in emails/
-// (RESEND_API_KEY; `npm run email:publish`). GOLF_EMAIL_FROM (an
-// address on a domain verified in Resend), GOLF_BOOKINGS_TO (default the
-// club's email from its settings), GOLF_BOOKINGS_BCC and SITE_URL are
-// optional overrides.
+// /api/reservations
+//   POST — books a tee time. Everything the browser sends is checked again
+//          here against the club's current settings and priced here (never
+//          trusted from the page), then saved through golf_book(), which takes
+//          the last place atomically and holds it for HOLD_MINUTES while the
+//          guest pays on Payso's page. Something with nothing to pay is booked
+//          straight away.
+//   GET ?ref&key — the booking for /book/confirmation. While it's pending this
+//          asks Payso directly (at most every few seconds), so a confirmation
+//          never depends on Payso's notification arriving.
+// The guest and the club are emailed once it's confirmed, from the Resend
+// templates in emails/ (RESEND_API_KEY; `npm run email:publish`).
+// GOLF_EMAIL_FROM (an address on a domain verified in Resend), GOLF_BOOKINGS_TO
+// (default the club's email from its settings), GOLF_BOOKINGS_BCC and SITE_URL
+// are optional overrides.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (!allowMethods(req, res, ['POST'])) return;
+  if (!allowMethods(req, res, ['GET', 'POST'])) return;
   res.setHeader('Cache-Control', 'no-store');
-  const fail = (status: number, error: string, code?: ErrorResponse['code']) => res.status(status).json({ error, ...(code && { code }) } satisfies ErrorResponse);
+  return req.method === 'POST' ? book(req, res) : status(req, res);
+}
+
+async function book(req: VercelRequest, res: VercelResponse) {
+  const fail = (code: number, error: string, kind?: ErrorResponse['code']) => res.status(code).json({ error, ...(kind && { code: kind }) } satisfies ErrorResponse);
 
   const body = readJsonBody(req);
   if (body.hp) return fail(400, 'Please try again.');
@@ -78,6 +91,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const lines = priceLines(activity, option, players, rentals, site.rentals);
     const total = totalOf(lines);
+    const needsPayment = total > 0;
+    if (needsPayment && !paymentConfigured()) return fail(503, 'Online payment isn’t switched on yet — please WhatsApp us and we’ll book you in.', 'unavailable');
+
     const ref = await rest<string>('/rpc/golf_book', {
       method: 'POST',
       body: {
@@ -85,18 +101,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           activity: activity.id, option: option.id, play_date: date, start_time: time, minutes: option.minutes, players, rentals,
           transfer, pickup_from: transfer ? pickupFrom : '', experience, first_name: guest.firstName, last_name: guest.lastName,
           email: guest.email, phone: guest.phone, country: guest.country, handicap: guest.handicap, notes: guest.notes, lines, total, source: 'online',
+          ...(needsPayment && { status: 'pending', expires_at: new Date(Date.now() + HOLD_MINUTES * 60_000).toISOString() }),
         },
         p_capacity: activity.capacity, p_units: activity.units, p_private: activity.privateGroup, p_force: false,
       },
     });
 
-    const reservation: Reservation = {
-      ref, activity: activity.id, activityName: activity.name, optionLabel: option.label, date, time, minutes: option.minutes, players, rentals,
-      transfer, pickupFrom: transfer ? pickupFrom : '', lines, total, email: guest.email, emailed: false,
-    };
-    reservation.emailed = await sendEmails(reservation, guest, experience, siteUrl(req), site);
-    console.info('Golf booking saved', ref, activity.id, date, time, players);
-    return res.status(200).json(reservation);
+    const origin = siteUrl(req);
+    const key = newAccessKey();
+    const invoiceNo = invoiceNoFor(ref);
+    const [booking] = await updateBookings(`ref=eq.${ref}`, { access_key_hash: sha256Hex(key), ...(needsPayment && { invoice_no: invoiceNo, test_payment: isTestMode() }) });
+    console.info('Golf booking saved', ref, activity.id, date, time, players, needsPayment ? 'awaiting payment' : 'nothing to pay');
+
+    if (!needsPayment) {
+      // Never fails the booking — it's saved, and staff see it in /admin either way.
+      await sendBookingEmails(booking, origin).catch((error) => console.error('Booking emails failed', ref, error));
+      return res.status(200).json({ ref, key, webPaymentUrl: null } satisfies ReservationStarted);
+    }
+
+    try {
+      const { redirectUrl, transactionId } = await createPayment({
+        referenceNo: invoiceNo,
+        description: `Hula Hula Golf ${ref} - ${activity.name} ${option.label} x${players} - ${date} ${time}`,
+        amount: total,
+        email: customerEmailFor(guest.email, contactLinks(site.club.contact).email),
+        returnUrl: `${origin}/api/payment/payso-return?booking=${ref}&key=${key}`,
+        postbackUrl: `${origin}/api/payment/payso-postback?refno=${invoiceNo}`,
+      });
+      await updateBookings(`id=eq.${booking.id}`, { payment_token: transactionId });
+      return res.status(200).json({ ref, key, webPaymentUrl: redirectUrl } satisfies ReservationStarted);
+    } catch (error) {
+      console.error('Tee time: Payso create payment failed', ref, error);
+      await updateBookings(`id=eq.${booking.id}`, { status: 'expired' }).catch(() => {});
+      return fail(502, 'Our payment provider isn’t responding — please try again in a few minutes.', 'unavailable');
+    }
   } catch (error) {
     if (error instanceof DbError && error.message.includes('taken')) return fail(409, 'Sorry — that time was just taken. Please pick another.', 'taken');
     console.error('Golf booking failed', error);
@@ -104,19 +142,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-// Never fails the booking — it's saved, and staff see it in /admin either way.
-async function sendEmails(reservation: Reservation, guest: Guest, experience: string, site: string, data: Awaited<ReturnType<typeof loadSite>>): Promise<boolean> {
-  if (!emailConfigured()) { console.warn('Booking emails skipped: RESEND_API_KEY not set'); return false; }
-  const contact = contactLinks(data.club.contact);
-  const from = process.env.GOLF_EMAIL_FROM || 'Hula Hula Golf Club <golf@hulahularesort.com>';
-  const club = splitAddresses(process.env.GOLF_BOOKINGS_TO || contact.email);
-  const bcc = splitAddresses(process.env.GOLF_BOOKINGS_BCC ?? '');
-  const [guestResult, clubResult] = await Promise.allSettled([
-    sendTemplate({ from, to: [guest.email], replyTo: contact.email, ...bookingConfirmation(reservation, guest, site, data), idempotencyKey: `golf-booking-${reservation.ref}-guest` }),
-    sendTemplate({ from, to: club, bcc, replyTo: guest.email, ...bookingNotification(reservation, guest, experience, site, data), idempotencyKey: `golf-booking-${reservation.ref}-club` }),
-  ]);
-  if (clubResult.status === 'rejected' || !clubResult.value.ok) console.error('Club booking email failed', reservation.ref, clubResult.status === 'rejected' ? clubResult.reason : clubResult.value.body);
-  const guestOk = guestResult.status === 'fulfilled' && guestResult.value.ok;
-  if (!guestOk) console.error('Guest booking email failed', reservation.ref, guestResult.status === 'rejected' ? guestResult.reason : guestResult.value.body);
-  return guestOk;
+async function status(req: VercelRequest, res: VercelResponse) {
+  const notFound = () => res.status(404).json({ error: 'We couldn’t find that booking.' });
+  const ref = queryString(req, 'ref');
+  const key = queryString(req, 'key');
+  if (!BOOKING_REF_PATTERN.test(ref) || !ACCESS_KEY_PATTERN.test(key)) return notFound();
+  try {
+    let booking = await getBooking(`ref=eq.${ref}`);
+    if (!booking?.access_key_hash || !sameHash(sha256Hex(key), booking.access_key_hash)) return notFound();
+    if (booking.status === 'pending' && booking.invoice_no) {
+      const [won] = await updateBookings(`id=eq.${booking.id}&status=eq.pending&or=(last_inquiry_at.is.null,last_inquiry_at.lt.${new Date(Date.now() - INQUIRY_EVERY_MS).toISOString()})`, { last_inquiry_at: new Date().toISOString() });
+      if (won) booking = (await confirmBookingPayment(booking.invoice_no, 'status').catch((error) => { console.error('Booking status: inquiry failed', ref, error); return null; })) ?? booking;
+    }
+    return res.status(200).json(viewOf(booking, await loadSite()));
+  } catch (error) {
+    console.error('Booking status failed', ref, error);
+    return res.status(502).json({ error: 'Could not check your booking right now.' });
+  }
 }

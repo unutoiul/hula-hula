@@ -43,7 +43,8 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
   const load = useCallback(async () => {
     setLoading(true);
     const [b, k] = await Promise.all([
-      supabase!.from('golf_bookings').select('*').eq('play_date', date).order('start_time').order('created_at'),
+      // Guests still paying, or who never finished, aren't on the sheet yet.
+      supabase!.from('golf_bookings').select('*').eq('play_date', date).not('status', 'in', '(pending,expired)').order('start_time').order('created_at'),
       supabase!.from('golf_blocks').select('*').eq('play_date', date).order('start_time'),
     ]);
     setLoading(false);
@@ -103,7 +104,7 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
       <Stat label="Bookings" value={String(active.length)} />
       <Stat label="People" value={String(active.reduce((sum, b) => sum + b.players, 0))} />
       <Stat label="Arrived" value={`${active.filter((b) => b.status === 'checked_in').length}/${active.filter((b) => b.status !== 'no_show').length}`} />
-      <Stat label="Due" value={money(active.filter((b) => b.status !== 'no_show').reduce((sum, b) => sum + b.total, 0))} small />
+      <Stat label="Due" value={money(active.filter((b) => b.status !== 'no_show' && !b.paid_at).reduce((sum, b) => sum + b.total, 0))} small />
     </Box>
 
     {/* For the driver */}

@@ -37,6 +37,11 @@ export interface StaffBooking {
   total: number;
   source: BookingSource;
   status: BookingStatus;
+  /** Set when it was paid online through Payso. */
+  paid_at: string | null;
+  tran_ref: string | null;
+  test_payment: boolean;
+  flags: string[];
   created_at: string;
 }
 
