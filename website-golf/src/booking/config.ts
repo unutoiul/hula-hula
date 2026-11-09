@@ -114,7 +114,7 @@ const p = (name: string) => `/images/golf/${name}-1600.webp`;
 export const DEFAULT_ACTIVITIES: Activity[] = [
   {
     id: 'golf', name: 'Golf', icon: 'golf', tagline: '9-hole, par 36 course', bookOnline: true,
-    about: 'Nine holes, par 36 and 3,011 yards: a course for every level that still asks for strategy. Narrow fairways, water hazards and greens running 8.5 to 9 feet keep you thinking, and Phanom Bencha mountain watches over the lot.\n\nEvery round comes with a caddie and a golf cart, so all you need to bring is your swing. No clubs? Rent a set at the clubhouse.',
+    about: 'Nine holes, par 36 and 3,011 yards: a course for every level that still asks for strategy. Narrow fairways, water hazards and greens averaging 9 feet keep you thinking, and Phanom Bencha mountain watches over the lot.\n\nEvery round comes with a caddie and a golf cart, so all you need to bring is your swing. No clubs? Rent a set at the clubhouse.',
     includes: ['Green fee', 'Caddie', 'Golf cart'],
     options: [{ id: '9', label: '9 holes', price: 1600, minutes: 135, lastStart: '15:30' }, { id: '18', label: '18 holes', price: 2400, minutes: 270, lastStart: '13:00' }],
     firstStart: '07:00', interval: 10, capacity: 4, units: 1, privateGroup: false, minPlayers: 1, maxPlayers: 4,

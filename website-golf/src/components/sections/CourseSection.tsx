@@ -10,7 +10,7 @@ import { Reveal, ScrollTilt } from '../common/ScrollMotion';
 import { Sticker, SunDoodle } from '../common/VacationDecor';
 
 // The course itself: the facts from the club's brochure (9 holes, par 36,
-// 3,011 yards, 8.5–9 ft greens) and what every round includes.
+// 3,011 yards, 9 ft greens) and what every round includes.
 export function CourseSection() {
   return <Box id="course" component="section" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET, pb: SECTION_Y }}>
     <Container maxWidth="xl">

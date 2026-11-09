@@ -9,7 +9,7 @@ export const COURSE_FACTS = [
   { value: '9 / 18', label: 'hole packages' },
   { value: '36', label: 'par' },
   { value: '3,011', label: 'yards' },
-  { value: '8.5–9', label: 'ft green speed' },
+  { value: '9', label: 'ft green speed' },
 ];
 
 export interface CafeMoment { name: string; detail: string; image: string; objectPosition?: string }
