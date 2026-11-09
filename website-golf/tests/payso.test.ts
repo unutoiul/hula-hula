@@ -267,8 +267,24 @@ describe('paying for a tee time', () => {
 
   it('charges only for rentals offered on the sport being booked', async () => {
     world({ settings: [{ key: 'rentals', value: [{ id: 'p-a', label: 'Set A', price: 500, group: 'Premium', activities: ['golf'] }, { id: 'paddle', label: 'Paddle', price: 100, group: 'Gear', activities: ['pickleball'] }] }] });
-    await book({ 'p-a': 1, paddle: 1 });
+    const unavailable = await book({ 'p-a': 1, paddle: 1 });
+    assert.equal(unavailable.status, 400);
+    assert.equal(rpc, null);
+    assert.equal(paysoBody, null);
+    const allowed = await book({ 'p-a': 1 });
+    assert.equal(allowed.status, 200);
     assert.equal(paysoBody!.amount, option.price * 2 + 500);
+  });
+
+  it('charges independent equipment types together using their database allowances', async () => {
+    world({ settings: [{ key: 'rentals', value: [
+      { id: 'racket', label: 'Racket', price: 100, unit: 'racket', activities: ['golf'] },
+      { id: 'ball', label: 'Ball', price: 20, unit: 'ball', maxPerPlayer: 3, activities: ['golf'] },
+    ] }] });
+    const result = await book({ racket: 2, ball: 6 });
+    assert.equal(result.status, 200);
+    assert.equal(paysoBody!.amount, option.price * 2 + 200 + 120);
+    assert.deepEqual(rpc!.p_booking.rentals, { racket: 2, ball: 6 });
   });
 
   it('lets the time go at once when Payso refuses', async () => {

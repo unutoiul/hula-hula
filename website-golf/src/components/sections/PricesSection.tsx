@@ -40,7 +40,7 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
   const contact = useContact();
   const visible = preview ? activities.filter(a => a.id === 'golf' || a.id === 'footgolf') : activities;
   const span = spans(visible.length);
-  const rentalPrices = rentals.map((r) => r.price).sort((a, b) => a - b);
+  const rentalPrices = rentals.filter(rental => rental.price > 0).map((r) => r.price).sort((a, b) => a - b);
   return <Box id="prices" component="section" sx={{ py: SECTION_Y, bgcolor: '#e7f4cc', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl">
       {showIntro && <Reveal><Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'center', md: 'flex-end' }} justifyContent="space-between" gap={3} sx={{ mb: { xs: 5, md: 6 }, textAlign: { xs: 'center', md: 'left' } }}>
@@ -104,7 +104,7 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
         <Sticker rotate={-8} sx={{ flexShrink: 0, width: 100, height: 100, fontSize: 17 }}>Tip your<br />caddie!</Sticker>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 4 }, flex: 1, textAlign: { xs: 'center', md: 'left' } }}>
           <Note title="Caddie tip">Not included — {money(club.booking.caddieTip)} per caddie is customary, in cash.</Note>
-          {rentalPrices.length > 0 && <Note title="Rentals">{rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} a set.</Note>}
+          {rentalPrices.length > 0 && <Note title="Paid equipment rentals">{rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} per item. Included equipment is marked free.</Note>}
           {club.transfer.pickups.length > 0 && <Note title="Free transfer">Pick-ups at {club.transfer.pickups.map(timeLabel).join(' and ')}. Ask when you book.</Note>}
         </Box>
       </Stack></Reveal>

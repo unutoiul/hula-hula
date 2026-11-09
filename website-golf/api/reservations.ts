@@ -4,6 +4,7 @@ import { contactLinks, EXPERIENCE_LEVELS, findActivity, pickupFor, rentalsFor } 
 import type { ErrorResponse, Guest, ReservationStarted } from '../src/booking/contract.ts';
 import { isISODate } from '../src/booking/dates.ts';
 import { priceLines, totalOf } from '../src/booking/pricing.ts';
+import { normaliseRentalSelection, rentalSelectionError } from '../src/booking/rentals.ts';
 import { DbError, rest } from './_lib/db.ts';
 import { allowMethods, queryString, readJsonBody, siteUrl } from './_lib/http.ts';
 import { ACCESS_KEY_PATTERN, BOOKING_REF_PATTERN, invoiceNoFor, newAccessKey, sameHash, sha256Hex } from './_lib/ids.ts';
@@ -69,14 +70,13 @@ async function book(req: VercelRequest, res: VercelResponse) {
     return fail(400, 'Please check your name, email, phone and country.', 'invalid');
   }
 
-  // Only rentals this activity offers, never more than one each.
-  const sentRentals = (body.rentals ?? {}) as Record<string, unknown>;
-  const rentals: Record<string, number> = {};
-  for (const r of rentalsFor(activity, site.rentals)) {
-    const count = Number(sentRentals[r.id]);
-    if (Number.isInteger(count) && count > 0) rentals[r.id] = count;
-  }
-  if (Object.values(rentals).reduce((sum, n) => sum + n, 0) > players) return fail(400, 'That’s more rental sets than players.', 'invalid');
+  // Validate against this sport?s live equipment and per-type quantity limits.
+  const sentRentals = body.rentals ?? {};
+  if (typeof sentRentals !== 'object' || Array.isArray(sentRentals)) return fail(400, 'Please choose your equipment again.', 'invalid');
+  const offered = rentalsFor(activity, site.rentals);
+  const rentalError = rentalSelectionError(offered, players, sentRentals as Record<string, unknown>);
+  if (rentalError) return fail(400, rentalError, 'invalid');
+  const rentals = normaliseRentalSelection(offered, players, sentRentals as Record<string, number>);
 
   const transfer = text(body.transfer, 5) || null;
   const pickupFrom = text(body.pickupFrom, 160);

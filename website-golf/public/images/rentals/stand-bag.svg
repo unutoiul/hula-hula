@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="680" viewBox="40 70 600 680" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <title>Golf stand bag</title>
+  <path d="M478 372 456 646M480 372 600 718" stroke="#7c6a45" stroke-width="9"/>
+  <circle cx="456" cy="648" r="10" fill="#c9773b"/>
+  <circle cx="600" cy="720" r="10" fill="#c9773b"/>
+  <path d="M452 132 438 186M510 172 496 206M578 130 530 210" stroke="#7b878d" stroke-width="9"/>
+  <g fill="#c5ced2" stroke="#7b878d" stroke-width="6">
+    <rect x="436" y="96" width="76" height="38" rx="10" transform="rotate(14 474 115)"/>
+    <rect x="472" y="138" width="86" height="40" rx="10" transform="rotate(10 515 158)"/>
+    <rect x="562" y="144" width="60" height="36" rx="9" transform="rotate(-8 592 162)"/>
+  </g>
+  <ellipse cx="584" cy="110" rx="44" ry="26" transform="rotate(8 584 110)" fill="#7d7592" stroke="#544d66" stroke-width="6"/>
+  <path d="M345 170Q440 158 522 226C508 290 470 380 440 440 420 520 380 620 298 714 225 735 130 730 68 702 52 660 50 610 92 524 120 490 160 470 178 452Z" fill="#93b494" stroke="#36544a" stroke-width="8"/>
+  <path d="M283 415Q345 425 392 470C398 500 396 525 388 552 372 600 345 650 302 694 260 690 205 668 178 642 190 590 235 490 283 415Z" fill="#a6c3a4" stroke="#36544a" stroke-width="8"/>
+  <path d="M252 418C215 480 170 565 150 645M178 462C135 530 100 590 72 644M72 650C140 690 220 706 298 702" stroke="#36544a" stroke-width="6"/>
+  <path d="M252 366C215 360 190 385 192 425" stroke="#36544a" stroke-width="7"/>
+  <path d="M344 184 322 222M322 248 258 350M244 376 188 454" stroke="#36544a" stroke-width="28"/>
+  <path d="M344 184 322 222M322 248 258 350M244 376 188 454" stroke="#c9773b" stroke-width="19"/>
+  <path d="M338 176Q440 158 524 228" stroke="#36544a" stroke-width="20"/>
+  <path d="M338 176Q440 158 524 228" stroke="#c9773b" stroke-width="12"/>
+  <path d="M396 178V198" stroke="#c9773b" stroke-width="13"/>
+  <circle cx="396" cy="213" r="15" stroke="#36544a" stroke-width="7"/>
+  <path d="M66 702C130 732 225 735 296 716" stroke="#c9773b" stroke-width="15"/>
+  <path d="M60 652C78 658 96 660 116 658" stroke="#c9773b" stroke-width="13"/>
+</svg>

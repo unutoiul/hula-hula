@@ -11,8 +11,10 @@ import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
 import { BookingSummary } from '../components/BookingSummary';
 import { EXPERIENCE_LEVELS, pickupFor, rentalName, rentalsFor } from '../config';
+import { ActivityIcon } from '../activityIcons';
 import { fromMinutes, timeLabel, toMinutes } from '../dates';
 import { money } from '../pricing';
+import { rentalLimit } from '../rentals';
 import { RentalSets } from '../../components/activities/RentalCard';
 import { STICKY_TOP } from '../../layoutConstants';
 
@@ -42,9 +44,9 @@ export function ExtrasStep() {
       <Typography sx={{ color: 'text.secondary', mt: 1, mb: 3 }}>All optional — skip anything you don’t need.</Typography>
 
       <Stack spacing={2.5}>
-        {offered.length > 0 && <Card icon={<SportsGolfRounded />} title="Rentals" hint="Bringing your own? Skip this. Paid online with your booking.">
-          <RentalSets rentals={offered} compact control={(r, label) => <GuestStepper label={label} name={`${rentalName(r)} sets`} value={extras.rentals[r.id] ?? 0} min={0}
-            max={search.players - offered.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
+        {offered.length > 0 && <Card icon={<ActivityIcon icon={activity.icon} />} title="Equipment" hint={offered.every(item => item.price === 0) ? 'Included at no extra charge. Choose how many kits your group needs.' : 'Choose your equipment below. Any paid rentals are added to your booking.'}>
+          <RentalSets rentals={offered} compact control={(r, label) => <GuestStepper label={label} name={rentalName(r)} value={extras.rentals[r.id] ?? 0} min={0}
+            max={rentalLimit(r, search.players, extras.rentals, offered)}
             onChange={(count) => updateExtras({ rentals: { ...extras.rentals, [r.id]: count } })} />} />
         </Card>}
 

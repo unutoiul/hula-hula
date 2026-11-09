@@ -71,11 +71,20 @@ export interface Activity {
 
 export interface Rental {
   id: string; label: string; price: number; image?: string; description?: string;
+  /** Display and quantity settings, editable for any kind of sports equipment. */
+  unit?: string;
+  icon?: RentalIconKey;
+  maxPerPlayer?: number;
+  /** Alternatives with the same value share their per-player allowance. */
+  quantityGroup?: string;
   /** The heading it's listed under ("Premium", "Normal"). */
   group?: string;
   /** The activities that offer it. Without this list, every activity with `rentals` switched on does. */
   activities?: string[];
 }
+
+export const RENTAL_ICONS = ['equipment', 'golf', 'racket', 'ball', 'basket'] as const;
+export type RentalIconKey = (typeof RENTAL_ICONS)[number];
 
 export interface OpeningDay { open: string; close: string; closed: boolean }
 
@@ -188,10 +197,16 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
 ];
 
 export const DEFAULT_RENTALS: Rental[] = [
-  { id: 'premium-clubs', label: 'Premium Clubs', price: 2000 },
+  { id: 'premium-clubs', label: 'Set A', group: 'Premium', price: 1500, image: '/images/rentals/premium-set-a.webp', unit: 'set', icon: 'golf', quantityGroup: 'Club sets', maxPerPlayer: 1, activities: ['golf', 'range'] },
+  { id: 'premium-set-b', label: 'Set B', group: 'Premium', price: 1500, image: '/images/rentals/premium-set-b.webp', unit: 'set', icon: 'golf', quantityGroup: 'Club sets', maxPerPlayer: 1, activities: ['golf', 'range'] },
   // Past bookings are stored against these ids, which is why Set A is `premium`.
-  { id: 'premium', label: 'Set A', price: 1000 },
-  { id: 'standard', label: 'Set B', price: 500 },
+  { id: 'premium', label: 'Set A', group: 'Normal', price: 1000, image: '/images/rentals/normal-set-a.webp', unit: 'set', icon: 'golf', quantityGroup: 'Club sets', maxPerPlayer: 1, activities: ['golf', 'range'] },
+  { id: 'standard', label: 'Set B', group: 'Normal', price: 500, image: '/images/rentals/normal-set-b.webp', unit: 'set', icon: 'golf', quantityGroup: 'Club sets', maxPerPlayer: 1, activities: ['golf', 'range'] },
+  { id: 'fling-golf-kit', label: 'Flingstick & ball', group: 'Included equipment', price: 0, image: '/images/rentals/fling-golf-kit.webp', unit: 'kit', icon: 'golf', activities: ['fling-golf'], description: 'Included for your round. No rental charge.' },
+  { id: 'footgolf-ball', label: 'Football', group: 'Included equipment', price: 0, image: '/images/rentals/footgolf-ball.webp', unit: 'ball', icon: 'ball', activities: ['footgolf'], description: 'Included for your round. No rental charge.' },
+  { id: 'pickleball-kit', label: 'Paddle & ball', group: 'Included equipment', price: 0, image: '/images/rentals/pickleball-kit.webp', unit: 'kit', icon: 'racket', activities: ['pickleball'], description: 'Included for your session. No rental charge.' },
+  { id: 'lesson-kit', label: 'Clubs & practice balls', group: 'Included equipment', price: 0, image: '/images/rentals/normal-set-a.webp', unit: 'kit', icon: 'golf', activities: ['lesson'], description: 'Included with your golf lesson. No rental charge.' },
+  { id: 'puttgolf-kit', label: 'Putter & ball', group: 'Included equipment', price: 0, image: '/images/rentals/puttgolf-kit.webp', unit: 'kit', icon: 'golf', activities: ['puttgolf'], description: 'Included for your round. No rental charge.' },
 ];
 
 const everyDay = (open: string, close: string): OpeningDay[] => Array.from({ length: 7 }, () => ({ open, close, closed: false }));
@@ -285,7 +300,14 @@ export function normaliseActivity(raw: Record<string, unknown>, id: string): Act
 
 export function normaliseRentals(raw: unknown): Rental[] {
   if (!Array.isArray(raw)) return DEFAULT_RENTALS;
-  return raw.map((r: Record<string, unknown>, i) => ({ id: str(r?.id, `r${i + 1}`, 20) || `r${i + 1}`, label: str(r?.label, 'Club set', 60) || 'Club set', price: num(r?.price, 0, 0, 100_000), image: str(r?.image, '', 1000), description: str(r?.description, '', 240), group: str(r?.group, '', 40), ...(Array.isArray(r?.activities) && { activities: (r.activities as unknown[]).filter((id): id is string => typeof id === 'string') }) }));
+  return raw.map((r: Record<string, unknown>, i) => ({
+    id: str(r?.id, `r${i + 1}`, 20) || `r${i + 1}`, label: str(r?.label, 'Equipment', 60) || 'Equipment', price: num(r?.price, 0, 0, 100_000),
+    image: str(r?.image, '', 1000), description: str(r?.description, '', 240), group: str(r?.group, '', 40),
+    unit: str(r?.unit, 'set', 20).trim() || 'item', icon: RENTAL_ICONS.includes(r?.icon as RentalIconKey) ? r.icon as RentalIconKey : 'equipment',
+    maxPerPlayer: num(r?.maxPerPlayer, 1, 1, 20),
+    quantityGroup: str(r?.quantityGroup, ['premium-clubs', 'premium', 'standard'].includes(String(r?.id)) ? 'Club sets' : '', 60).trim(),
+    ...(Array.isArray(r?.activities) && { activities: (r.activities as unknown[]).filter((id): id is string => typeof id === 'string') }),
+  }));
 }
 
 // Staff sort rentals into groups in /admin, like Premium and Normal, each with

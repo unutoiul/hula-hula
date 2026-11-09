@@ -2,7 +2,9 @@ import { Alert, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, Dia
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
 import { buildSheet, fits, rulesFrom } from '../booking/availability';
-import { findActivity } from '../booking/config';
+import { findActivity, rentalName, rentalsFor } from '../booking/config';
+import { normaliseRentalSelection, rentalLimit } from '../booking/rentals';
+import { RentalSets } from '../components/activities/RentalCard';
 import { useSite } from '../context/SiteDataContext';
 import { shortDayLabel, timeLabel } from '../booking/dates';
 import { money, plural, priceLines, totalOf } from '../booking/pricing';
@@ -28,6 +30,7 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
+  const [equipment, setEquipment] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +40,7 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
   // Start fresh each time it opens.
   useEffect(() => {
     if (!open) return;
-    setTime(''); setForce(false); setName(''); setPhoneNumber(''); setEmail(''); setNotes(''); setError(null);
+    setTime(''); setForce(false); setName(''); setPhoneNumber(''); setEmail(''); setNotes(''); setEquipment({}); setError(null);
   }, [open]);
 
   const sheet = useMemo(() => buildSheet(activity, option, date,
@@ -46,12 +49,14 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
     { rules: rulesFrom(site.club), includePast: true }), [activity, option, date, bookings, blocks, site.club]);
   const slot = sheet.find((s) => s.time === time);
   const overbook = !!slot && !fits(slot, players);
-  const lines = priceLines(activity, option, players);
+  const offered = rentalsFor(activity, site.rentals);
+  const rentals = normaliseRentalSelection(offered, players, equipment);
+  const lines = priceLines(activity, option, players, rentals, offered);
   const people = activity.peopleNoun === 'person' ? 'People' : 'Players';
 
   const pickActivity = (id: string) => {
     const next = findActivity(site, id)!;
-    setActivityId(id); setOptionId(next.options[0].id); setTime('');
+    setActivityId(id); setOptionId(next.options[0].id); setTime(''); setEquipment({});
     setPlayers((p) => Math.min(next.maxPlayers, Math.max(next.minPlayers, p)));
   };
 
@@ -65,7 +70,7 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
       p_booking: {
         activity: activity.id, option: option.id, play_date: date, start_time: time, minutes: option.minutes, players,
         first_name: first, last_name: rest.join(' '), phone: phoneNumber.trim(), email: email.trim().toLowerCase(), notes: notes.trim(),
-        lines, total: totalOf(lines), source,
+        lines, total: totalOf(lines), source, rentals,
       },
       p_capacity: activity.capacity, p_units: activity.units, p_private: activity.privateGroup, p_force: force,
     });
@@ -94,6 +99,10 @@ export function AddBookingDialog({ open, date, bookings, blocks, onClose, onSave
           })}
         </TextField>
         {overbook && <FormControlLabel control={<Checkbox checked={force} onChange={(e) => setForce(e.target.checked)} />} label="Squeeze them in (go over what’s free)" />}
+        {offered.length > 0 && <Box>
+          <Typography sx={{ fontWeight: 700, mb: 1 }}>Rental equipment (optional)</Typography>
+          <RentalSets rentals={offered} compact control={(rental, label) => <GuestStepper label={label} name={rentalName(rental)} value={rentals[rental.id] ?? 0} max={rentalLimit(rental, players, rentals, offered)} onChange={count => setEquipment({ ...rentals, [rental.id]: count })} />} />
+        </Box>}
         <TextField label="Name" required value={name} onChange={(e) => setName(e.target.value.slice(0, 120))} autoComplete="off" />
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
           <TextField label="Phone / WhatsApp" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value.slice(0, 30))} fullWidth />

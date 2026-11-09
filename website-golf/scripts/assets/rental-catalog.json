@@ -1,0 +1,141 @@
+[
+  {
+    "id": "premium-clubs",
+    "label": "Set A",
+    "group": "Premium",
+    "price": 1500,
+    "description": "Taylormade QI 35",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/premium-set-a-943e05e2050c.webp",
+    "activities": [
+      "golf",
+      "range"
+    ],
+    "unit": "set",
+    "icon": "golf",
+    "maxPerPlayer": 1,
+    "quantityGroup": "Club sets"
+  },
+  {
+    "id": "premium-set-b",
+    "label": "Set B",
+    "group": "Premium",
+    "price": 1500,
+    "description": "",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/premium-set-b-68f0aa3a45d3.webp",
+    "activities": [
+      "golf",
+      "range"
+    ],
+    "unit": "set",
+    "icon": "golf",
+    "maxPerPlayer": 1,
+    "quantityGroup": "Club sets"
+  },
+  {
+    "id": "premium",
+    "label": "Set A",
+    "group": "Normal",
+    "price": 1000,
+    "description": "",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/normal-set-a-50ee860eaf53.webp",
+    "activities": [
+      "golf",
+      "range"
+    ],
+    "unit": "set",
+    "icon": "golf",
+    "maxPerPlayer": 1,
+    "quantityGroup": "Club sets"
+  },
+  {
+    "id": "standard",
+    "label": "Set B",
+    "group": "Normal",
+    "price": 500,
+    "description": "",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/normal-set-b-fc76ffb19380.webp",
+    "activities": [
+      "golf",
+      "range"
+    ],
+    "unit": "set",
+    "icon": "golf",
+    "maxPerPlayer": 1,
+    "quantityGroup": "Club sets"
+  },
+  {
+    "id": "fling-golf-kit",
+    "label": "Flingstick & ball",
+    "activities": [
+      "fling-golf"
+    ],
+    "icon": "golf",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/fling-golf-kit-5c22192c1625.webp",
+    "description": "Flingstick and golf ball included for your round. No rental charge.",
+    "price": 0,
+    "group": "Included equipment",
+    "unit": "kit",
+    "maxPerPlayer": 1,
+    "quantityGroup": ""
+  },
+  {
+    "id": "footgolf-ball",
+    "label": "Football",
+    "activities": [
+      "footgolf"
+    ],
+    "icon": "ball",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/footgolf-ball-c78f0931705b.webp",
+    "description": "Football included for your round. No rental charge.",
+    "price": 0,
+    "group": "Included equipment",
+    "unit": "ball",
+    "maxPerPlayer": 1,
+    "quantityGroup": ""
+  },
+  {
+    "id": "pickleball-kit",
+    "label": "Paddle & ball",
+    "activities": [
+      "pickleball"
+    ],
+    "icon": "racket",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/pickleball-kit-db19f5f3e4c0.webp",
+    "description": "Pickleball paddle and ball included for your session. No rental charge.",
+    "price": 0,
+    "group": "Included equipment",
+    "unit": "kit",
+    "maxPerPlayer": 1,
+    "quantityGroup": ""
+  },
+  {
+    "id": "lesson-kit",
+    "label": "Clubs & practice balls",
+    "activities": [
+      "lesson"
+    ],
+    "icon": "golf",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/normal-set-a-50ee860eaf53.webp",
+    "description": "Practice clubs and balls included with your golf lesson. No rental charge.",
+    "price": 0,
+    "group": "Included equipment",
+    "unit": "kit",
+    "maxPerPlayer": 1,
+    "quantityGroup": ""
+  },
+  {
+    "id": "puttgolf-kit",
+    "label": "Putter & ball",
+    "activities": [
+      "puttgolf"
+    ],
+    "icon": "golf",
+    "image": "https://axazsljvxwdusntcnrev.supabase.co/storage/v1/object/public/club-images/rentals/puttgolf-kit-826c4b19d8c9.webp",
+    "description": "Putter and golf ball included for your round. No rental charge.",
+    "price": 0,
+    "group": "Included equipment",
+    "unit": "kit",
+    "maxPerPlayer": 1,
+    "quantityGroup": ""
+  }
+]

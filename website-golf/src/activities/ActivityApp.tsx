@@ -83,7 +83,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
     { title: 'What to wear', text: activity.wear },
     ...(activity.noSkillNeeded ? [{ title: 'No golf skill needed', text: 'First-timers are very welcome. We’ll show you how it works.' }] : []),
     ...(activity.caddie ? [{ title: 'Caddie tip', text: `Not included: ${money(club.booking.caddieTip)} per caddie is customary, in cash.` }] : []),
-    ...(rentalPrices.length ? [{ title: 'Rentals', text: `${rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} a set, added when you book.` }] : []),
+    ...(rentalPrices.length ? [{ title: 'Equipment', text: rentalPrices.every(price => price === 0) ? 'Equipment is included with your booking at no extra charge.' : `${rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} per item, added when you book.` }] : []),
     ...(club.transfer.pickups.length ? [{ title: 'Free shuttle', text: `Pick-ups at ${club.transfer.pickups.map(timeLabel).join(' and ')}. Ask when you book.` }] : []),
     ...(activity.bookOnline ? [clubRules(activity.wear, club).find((r) => r.title === 'Payment')!] : []),
   ];

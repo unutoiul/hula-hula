@@ -5,6 +5,7 @@ import { isBookableDay } from './availability';
 import { findActivity, onlineActivities, pickupFor, rentalsFor, type Activity, type ActivityOption, type SiteData } from './config';
 import { isISODate, krabiNow } from './dates';
 import { priceLines, totalOf, type PriceLine } from './pricing';
+import { normaliseRentalSelection } from './rentals';
 
 // The booking in progress, shared by every step: what's being booked and when,
 // the picked time and how long it's held, extras and the guest's details. Kept
@@ -134,8 +135,8 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
   const startOver = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras })), []);
   const forgetGuest = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest })), []);
 
-  // Only what this activity offers, and never more sets than players.
-  const rentals = useMemo(() => Object.fromEntries(rentalsFor(activity, site.rentals).map((r) => [r.id, Math.min(state.extras.rentals[r.id] ?? 0, state.search.players)]).filter(([, n]) => (n as number) > 0)),
+  // Equipment types have independent allowances; alternatives can share one.
+  const rentals = useMemo(() => normaliseRentalSelection(rentalsFor(activity, site.rentals), state.search.players, state.extras.rentals),
     [activity, site.rentals, state.extras.rentals, state.search.players]);
   const lines = useMemo(() => priceLines(activity, option, state.search.players, rentals, site.rentals), [activity, option, state.search.players, rentals, site.rentals]);
 

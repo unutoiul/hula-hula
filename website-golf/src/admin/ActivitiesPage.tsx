@@ -1,10 +1,10 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
-import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Switch, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Stack, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
-import { assignRentalIds, DEFAULT_ACTIVITIES, normaliseActivity, normaliseRentals, type Activity, type Rental } from '../booking/config';
+import { assignRentalIds, DEFAULT_ACTIVITIES, normaliseActivity, normaliseRentals, rentalsFor, type Activity, type Rental } from '../booking/config';
 import { money } from '../booking/pricing';
 import { notifyContentChanged } from '../data/contentSync';
 import { ActivityEditor } from './ActivityEditor';
@@ -18,7 +18,7 @@ interface Row { activity: Activity; active: boolean; sortOrder: number }
 const blank = (): Activity => ({
   ...DEFAULT_ACTIVITIES.find((a) => a.id === 'puttgolf')!, id: '', name: '', tagline: '', about: '', bookOnline: true, icon: 'star', includes: [],
   options: [{ id: 'o1', label: '1 hour', price: 0, minutes: 60, lastStart: '16:00' }], soloPrice: undefined,
-  card: { kicker: '', title: '', detail: '', images: [] }, durationBadge: '',
+  card: { kicker: '', title: '', detail: '', images: [] }, durationBadge: '', rentals: true,
 });
 
 // /admin/activities — every activity and its prices (show/hide on the
@@ -32,6 +32,8 @@ export function ActivitiesPage() {
   const [deleting, setDeleting] = useState<Activity | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [savedRentals, setSavedRentals] = useState(false);
+  const [rentalSport, setRentalSport] = useState('all');
+  const [savingRentals, setSavingRentals] = useState(false);
 
   const load = useCallback(async () => {
     const [a, s] = await Promise.all([
@@ -39,6 +41,7 @@ export function ActivitiesPage() {
       supabase!.from('golf_settings').select('value').eq('key', 'rentals').maybeSingle(),
     ]);
     if (a.error) { setError(a.error.message); return; }
+    if (s.error) { setError(s.error.message); return; }
     const loaded = (a.data as { id: string; active: boolean; sort_order: number; data: Record<string, unknown> }[]).map((r) => ({ activity: normaliseActivity(r.data, r.id), active: r.active, sortOrder: r.sort_order }));
     setRows(loaded);
     // Rentals from before groups existed are offered wherever rentals were switched on.
@@ -76,10 +79,12 @@ export function ActivitiesPage() {
   };
 
   const saveRentals = async () => {
+    setSavingRentals(true);
     setSavedRentals(false);
-    const cleaned = assignRentalIds(rentals.filter((r) => r.label.trim()).map((r) => ({ ...r, label: r.label.trim(), group: r.group?.trim() ?? '' })));
+    const cleaned = normaliseRentals(assignRentalIds(rentals.filter((r) => r.label.trim()).map((r) => ({ ...r, label: r.label.trim(), group: r.group?.trim() ?? '' }))));
     const failure = await after(await supabase!.from('golf_settings').upsert({ key: 'rentals', value: cleaned }));
     if (!failure) setSavedRentals(true);
+    setSavingRentals(false);
   };
 
   if (!rows) return error ? <Alert severity="error">{error}</Alert> : <Box sx={{ textAlign: 'center', py: 6 }}><CircularProgress /></Box>;
@@ -96,6 +101,7 @@ export function ActivitiesPage() {
           <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{row.activity.options.map((o) => `${o.label} ${money(o.price)}`).join(' · ')}</Typography>
           {!row.active && <Chip size="small" label="Hidden from the website" sx={{ mt: .5 }} />}
           {row.active && !row.activity.bookOnline && <Chip size="small" color="warning" variant="outlined" label="Booked by message, not online" sx={{ mt: .5 }} />}
+          <Chip size="small" clickable label={`${rentalsFor(row.activity, rentals).length} rental items`} onClick={() => { setRentalSport(row.activity.id); document.getElementById('rental-equipment')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} sx={{ mt: .5, ml: .5 }} />
         </Box>
         <Tooltip title={row.active ? 'On the website — tap to hide' : 'Hidden — tap to show on the website'}>
           <Switch checked={row.active} onChange={() => void toggle(row)} inputProps={{ 'aria-label': `Show ${row.activity.name} on the website` }} />
@@ -106,12 +112,16 @@ export function ActivitiesPage() {
       {rows.length === 0 && <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>No activities yet — the website shows the built-in ones until you add some.</Typography>}
     </Stack>
 
-    <Box sx={{ mt: 3 }}>
-      <Section title="Rentals" hint="Make a group for each kind of rental, like Premium and Normal, and add its sets. Then tap the sports that offer it. Guests see each group as a heading with its sets underneath.">
-        <RentalGroupsEditor rentals={rentals} sports={rows.map((r) => ({ id: r.activity.id, name: r.activity.name }))} onChange={(next) => { setRentals(next); setSavedRentals(false); }} />
+    <Box id="rental-equipment" sx={{ mt: 3, scrollMarginTop: 100 }}>
+      <Section title="Rental equipment" hint="Add equipment for any sport. Set its price, quantity allowance and illustration, then choose which sports offer it. Everything is saved to the live database.">
+        <TextField select label="Equipment for sport" value={rentalSport} onChange={event => setRentalSport(event.target.value)} sx={{ mb: 2, minWidth: 240 }}>
+          <MenuItem value="all">All sports</MenuItem>
+          {rows.map(row => <MenuItem key={row.activity.id} value={row.activity.id}>{row.activity.name}</MenuItem>)}
+        </TextField>
+        <RentalGroupsEditor rentals={rentals} sportId={rentalSport} sports={rows.map((r) => ({ id: r.activity.id, name: r.activity.name }))} onChange={(next) => { setRentals(next); setSavedRentals(false); }} />
         <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="flex-end" sx={{ mt: 2 }}>
           {savedRentals && <Typography sx={{ fontSize: 13, color: 'success.dark' }}>Saved</Typography>}
-          <Button variant="contained" onClick={() => void saveRentals()}>Save rentals</Button>
+          <Button variant="contained" disabled={savingRentals} onClick={() => void saveRentals()}>{savingRentals ? 'Saving…' : 'Save equipment'}</Button>
         </Stack>
       </Section>
     </Box>
