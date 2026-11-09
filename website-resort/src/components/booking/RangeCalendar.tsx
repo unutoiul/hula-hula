@@ -9,23 +9,16 @@ const monthFmt = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numer
 const WEEKDAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const isSameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
-interface DayCell {
-  date: Date;
-  current: boolean;
-}
-
-// Sunday-first grid for one month, padded with the trailing/leading days of
-// its neighbors (shown faded) just to complete each week row — no fixed
-// 6-row grid, so shorter months stay visually shorter.
-function getMonthCells(year: number, month: number): DayCell[] {
-  const firstWeekday = new Date(year, month, 1).getDay();
-  const daysInThisMonth = new Date(year, month + 1, 0).getDate();
-  const daysInPrevMonth = new Date(year, month, 0).getDate();
-  const cells: DayCell[] = [];
-  for (let i = firstWeekday - 1; i >= 0; i--) cells.push({ date: new Date(year, month - 1, daysInPrevMonth - i), current: false });
-  for (let d = 1; d <= daysInThisMonth; d++) cells.push({ date: new Date(year, month, d), current: true });
-  for (let d = 1; cells.length % 7 !== 0; d++) cells.push({ date: new Date(year, month + 1, d), current: false });
-  return cells;
+// Sunday-first grid for one month. Empty cells stand in for the days before
+// the 1st, so every date appears once, in its own month — no fixed 6-row
+// grid, so shorter months stay visually shorter.
+function getMonthCells(year: number, month: number): (Date | null)[] {
+  const daysBefore = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  return [
+    ...Array.from({ length: daysBefore }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1)),
+  ];
 }
 
 interface MonthGridProps {
@@ -45,8 +38,9 @@ function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: Mon
     <Typography sx={{ fontFamily: fonts.playful, fontSize: { xs: 16, sm: 14 }, fontWeight: 400, textAlign: 'center', lineHeight: '40px', mb: .5 }}>{monthFmt.format(new Date(year, month, 1))}</Typography>
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '2px' }}>
       {WEEKDAY_LABELS.map((w) => <Typography key={w} sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: { xs: 12, sm: 10.5 }, textAlign: 'center', color: 'text.secondary', pb: .5 }}>{w}</Typography>)}
-      {getMonthCells(year, month).map(({ date, current }) => {
-        const disabled = !current || date < minDate;
+      {getMonthCells(year, month).map((date, index) => {
+        if (!date) return <Box key={`blank-${index}`} />;
+        const disabled = date < minDate;
         const isCheckIn = isSameDay(date, checkIn);
         const isCheckOut = isSameDay(date, checkOut);
         const inRange = date > checkIn && date < checkOut;
