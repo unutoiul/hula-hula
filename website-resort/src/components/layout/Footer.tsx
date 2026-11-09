@@ -1,6 +1,7 @@
 import { Box, Container, Stack, Typography } from '@mui/material';
 import { CONTACT } from '../../data/content';
 import { ClubMark } from '../common/ClubMark';
+import { DesignCredit } from './DesignCredit';
 import { MotionToggleLink } from './MotionToggle';
 import { TropicalBackdrop, tropicalSectionSx } from '../common/TropicalBackdrop';
 
@@ -22,6 +23,7 @@ export function Footer() {
           <a href={CONTACT.tel}>{CONTACT.phone}</a> · <a href={CONTACT.landlineTel}>{CONTACT.landline}</a><br /><Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>{CONTACT.email}</Box>
         </Typography>
           <Typography variant="overline">© {new Date().getFullYear()} Hula Hula Resort<MotionToggleLink /></Typography>
+        <DesignCredit />
       </Stack>
     </Container>
   </Box>;

@@ -4,6 +4,7 @@ import { useContact, useSite } from '../../context/SiteDataContext';
 import { ClubMark } from '../common/ClubMark';
 import { AllPaymentMethods } from '../common/PaymentMethods';
 import { RisingSun, SEAM, SectionSeam } from '../common/SectionSeam';
+import { DesignCredit } from './DesignCredit';
 import { MotionToggleLink } from './MotionToggle';
 import { TropicalBackdrop, tropicalSectionSx } from '../common/TropicalBackdrop';
 
@@ -41,6 +42,7 @@ export function Footer({ from = SEAM.cream, mobileActionSpace = false }: { from?
           <Typography variant="overline">Staying over? <Link href={CONTACT.resort} target="_blank" rel="noopener noreferrer" color="inherit">Hula Hula Resort, Ao Nang</Link></Typography>
           <AllPaymentMethods />
           <Typography component="div" variant="overline" sx={{ '& button': { minHeight: 44 } }}>© {new Date().getFullYear()} Hula Hula Golf Club<MotionToggleLink /></Typography>
+          <DesignCredit />
         </Stack>
       </Container>
     </Box>

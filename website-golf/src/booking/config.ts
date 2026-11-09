@@ -182,8 +182,10 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
 ];
 
 export const DEFAULT_RENTALS: Rental[] = [
-  { id: 'standard', label: 'Set B · Standard club set', price: 500 },
-  { id: 'premium', label: 'Set A · Newer clubs & more variety', price: 1000 },
+  { id: 'premium-clubs', label: 'Premium Clubs', price: 2000 },
+  // Past bookings are stored against these ids, which is why Set A is `premium`.
+  { id: 'premium', label: 'Set A', price: 1000 },
+  { id: 'standard', label: 'Set B', price: 500 },
 ];
 
 const everyDay = (open: string, close: string): OpeningDay[] => Array.from({ length: 7 }, () => ({ open, close, closed: false }));

@@ -43,7 +43,7 @@ export function ExtrasStep() {
       <Stack spacing={2.5}>
         {activity.rentals && rentals.length > 0 && <Card icon={<SportsGolfRounded />} title="Rental clubs" hint="Bringing your own? Skip this. Sets are paid online with your booking.">
           <Stack spacing={1.5}>
-            {rentals.map((r) => <RentalCard key={r.id} rental={r}><GuestStepper label="Sets" value={extras.rentals[r.id] ?? 0} min={0}
+            {rentals.map((r) => <RentalCard key={r.id} rental={r} compact><GuestStepper label="Sets" value={extras.rentals[r.id] ?? 0} min={0}
               max={search.players - rentals.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
               onChange={(count) => updateExtras({ rentals: { ...extras.rentals, [r.id]: count } })} /></RentalCard>)}
           </Stack>
