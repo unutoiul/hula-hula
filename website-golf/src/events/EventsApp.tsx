@@ -1,5 +1,4 @@
 import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
-import CheckRounded from '@mui/icons-material/CheckRounded';
 import EventRounded from '@mui/icons-material/EventRounded';
 import LockRounded from '@mui/icons-material/LockRounded';
 import PlaceRounded from '@mui/icons-material/PlaceRounded';
@@ -11,7 +10,6 @@ import type { EventOrderView, PublicEvent, PublicPackage } from '../booking/cont
 import { COUNTRIES, guessCountry } from '../booking/countries';
 import { toMinutes } from '../booking/dates';
 import { money, plural } from '../booking/pricing';
-import { GuestStepper } from '../components/booking/GuestStepper';
 import { PaymentLogos } from '../components/common/PaymentMethods';
 import { CARD_PEEK, PineappleGolfer } from '../components/common/PineappleGolfer';
 import { PageIntro } from '../components/layout/PageIntro';
@@ -22,7 +20,7 @@ import { watchContent } from '../data/contentSync';
 import { linkClick, navigate, useLocation } from '../router';
 import { fonts } from '../theme';
 import { EventApiError, eventWhen, fetchEvent, fetchOrder, startOrder } from './api';
-import { SECTION_SCROLL_OFFSET, STICKY_TOP } from '../layoutConstants';
+import { EventDetails } from './EventDetails';
 
 // /events/<slug> — an event's own page: the poster, the story, the schedule
 // and its packages, each bought through Payso's secure payment page.
@@ -84,7 +82,6 @@ function EventPage({ slug }: { slug: string }) {
     <Button href="/events" onClick={linkClick('/events')} variant="contained" sx={{ mt: 3 }}>See what’s on</Button>
   </Container>;
 
-  const paragraphs = event.description.split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean);
   const soldOut = event.packages.every((pk) => pk.left === 0);
 
   return <>
@@ -100,67 +97,11 @@ function EventPage({ slug }: { slug: string }) {
 
     <Container maxWidth="xl" sx={{ mt: { xs: 4, md: 7 } }}>
       {loadError && <Alert severity="warning" sx={{ mb: 3 }}>{loadError}</Alert>}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.5fr) minmax(0, 1fr)' }, gap: { xs: 4, md: 6 }, alignItems: 'start' }}>
-        <Box>
-          {paragraphs.length > 0 && <>
-            <Typography variant="h2" sx={{ fontSize: { xs: 32, md: 42 } }}>About the day</Typography>
-            {paragraphs.map((text, i) => <Typography key={i} sx={{ mt: 2, fontSize: 16.5, lineHeight: 1.8, color: 'text.secondary', whiteSpace: 'pre-line' }}>{text}</Typography>)}
-          </>}
-          {event.highlights.length > 0 && <Box sx={{ mt: 4, p: { xs: 2.5, md: 3 }, borderRadius: '24px', bgcolor: 'success.light' }}>
-            <Typography variant="h3" sx={{ fontSize: 24 }}>Highlights</Typography>
-            <Stack spacing={1.25} sx={{ mt: 1.5 }}>
-              {event.highlights.map((h) => <Stack key={h} direction="row" spacing={1.25} alignItems="flex-start"><CheckCircleRounded sx={{ color: 'success.main', fontSize: 20, mt: '2px' }} /><Typography>{h}</Typography></Stack>)}
-            </Stack>
-          </Box>}
-        </Box>
-        {event.schedule.length > 0 && <Box sx={{ position: { md: 'sticky' }, top: { md: STICKY_TOP }, p: { xs: 2.5, md: 3 }, borderRadius: '24px', border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', bgcolor: 'background.paper' }}>
-          <Typography variant="h3" sx={{ fontSize: 24, mb: 2 }}>The schedule</Typography>
-          <Stack spacing={0}>
-            {event.schedule.map((item, i) => <Stack key={i} direction="row" spacing={2} sx={{ pb: 1.75, position: 'relative' }}>
-              <Typography sx={{ fontFamily: fonts.playful, color: 'primary.main', minWidth: 58, fontVariantNumeric: 'tabular-nums' }}>{item.time}</Typography>
-              <Typography sx={{ fontSize: 15 }}>{item.text}</Typography>
-            </Stack>)}
-          </Stack>
-        </Box>}
-      </Box>
-
-      <Box id="packages" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET, mt: { xs: 6, md: 9 } }}>
-        <Typography variant="h2" sx={{ fontSize: { xs: 34, md: 48 }, textAlign: { xs: 'center', md: 'left' } }}>Choose your package</Typography>
-        {event.salesOpen && event.packages.length > 0 && <PaymentLogos sx={{ mt: 1.5, justifyContent: { xs: 'center', md: 'flex-start' } }} />}
-        {!event.salesOpen && <Alert severity="info" sx={{ mt: 2 }}>Online sales for this event are closed. WhatsApp us on {contact.phone} and we’ll see what we can do.</Alert>}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: `repeat(${Math.min(3, Math.max(1, event.packages.length))}, 1fr)` }, gap: 2.5, mt: 3 }}>
-          {event.packages.map((pack) => <PackageCard key={pack.id} pack={pack} open={event.salesOpen} onBuy={(quantity) => setBuying({ pack, quantity })} />)}
-        </Box>
-        {event.packages.length === 0 && <Typography sx={{ color: 'text.secondary', mt: 2 }}>Packages are coming soon — WhatsApp us to save a place.</Typography>}
-      </Box>
+      <EventDetails event={event} phone={contact.phone} onBuy={(pack, quantity) => setBuying({ pack, quantity })} />
     </Container>
 
     {buying && <CheckoutDialog event={event} pack={buying.pack} quantity={buying.quantity} testPayments={testPayments} onClose={() => setBuying(null)} />}
   </>;
-}
-
-function PackageCard({ pack, open, onBuy }: { pack: PublicPackage; open: boolean; onBuy: (quantity: number) => void }) {
-  const max = Math.min(pack.maxPerOrder, pack.left);
-  const [quantity, setQuantity] = useState(1);
-  useEffect(() => { setQuantity(value => Math.max(1, Math.min(value, max))); }, [max]);
-  const soldOut = pack.left === 0;
-  return <Box component="article" sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2.5, md: 3 }, borderRadius: '24px', bgcolor: 'background.paper', border: '1px solid rgba(23,60,44,.10)', borderTop: '5px solid', borderTopColor: soldOut ? 'divider' : 'secondary.main', boxShadow: '0 10px 26px rgba(23,60,44,.07)', opacity: soldOut ? .7 : 1 }}>
-    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
-      <Typography variant="h3" sx={{ fontSize: 26, lineHeight: 1.15 }}>{pack.name}</Typography>
-      <Chip size="small" label={soldOut ? 'Sold out' : pack.left <= 10 ? `${pack.left} left` : 'Available'} color={soldOut ? 'default' : pack.left <= 10 ? 'warning' : 'success'} sx={{ fontWeight: 700, flexShrink: 0 }} />
-    </Stack>
-    <Typography sx={{ fontFamily: fonts.playful, fontSize: 38, color: 'primary.main', lineHeight: 1.1, mt: 1 }}>{money(pack.price)}<Box component="span" sx={{ fontSize: 15, color: 'text.secondary', fontFamily: fonts.sans }}> per person</Box></Typography>
-    {pack.description && <Typography sx={{ color: 'text.secondary', mt: 1.5, lineHeight: 1.7 }}>{pack.description}</Typography>}
-    {pack.includes.length > 0 && <Stack component="ul" spacing={.75} sx={{ listStyle: 'none', p: 0, m: 0, mt: 2 }}>
-      {pack.includes.map((item) => <Stack component="li" key={item} direction="row" spacing={1} alignItems="flex-start"><CheckRounded sx={{ fontSize: 18, color: 'success.main', mt: '2px' }} /><Typography sx={{ fontSize: 14.5 }}>{item}</Typography></Stack>)}
-    </Stack>}
-    <Box sx={{ mt: 'auto', pt: 2.5 }}>
-      {open && !soldOut && <>
-        {max > 1 && <GuestStepper label="How many" value={quantity} min={1} max={max} onChange={setQuantity} />}
-        <Button fullWidth variant="contained" onClick={() => onBuy(quantity)} sx={{ mt: 1.5 }}>Book {quantity > 1 ? `${quantity} · ${money(pack.price * quantity)}` : `· ${money(pack.price)}`}</Button>
-      </>}
-    </Box>
-  </Box>;
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
