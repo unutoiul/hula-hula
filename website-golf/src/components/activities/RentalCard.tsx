@@ -1,92 +1,113 @@
+import StarRounded from '@mui/icons-material/StarRounded';
 import { Box, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
-import type { Rental } from '../../booking/config';
+import { groupRentals, isPremiumRental, rentalSetLetter, type Rental, type RentalGroup } from '../../booking/config';
 import { money } from '../../booking/pricing';
-import { fonts } from '../../theme';
 
-type Club = readonly ['wood' | 'iron' | 'putter', number];
-interface Look { bg: string; bag: string; trim: string; stripe: string; wood: string; clubs: Club[]; mark: string; edge: string; blurb: string }
+const ICON_SX = { display: 'block', height: '88%', width: 'auto', maxWidth: '100%' };
 
-// Fuller bag and richer colours the higher the set. Worked out from the name
-// staff give a set, so a set re-added in /admin keeps its picture.
-const PREMIUM: Look = { bg: '#f8edc2', bag: '#124e39', trim: '#d9a521', stripe: '#f6d976', wood: '#d9a521', clubs: [['wood', 36], ['wood', 50], ['iron', 32], ['iron', 48], ['putter', 34]], mark: 'star', edge: '#d9a521', blurb: 'Our best clubs for your round.' };
-const SET_A: Look = { bg: '#d9f5fc', bag: '#006d8a', trim: '#00495d', stripe: '#f9f70c', wood: '#00495d', clubs: [['wood', 40], ['iron', 50], ['iron', 34], ['putter', 44]], mark: 'A', edge: 'divider', blurb: 'Newer clubs & more variety.' };
-const SET_B: Look = { bg: '#e7f4cc', bag: '#50830d', trim: '#315707', stripe: '#fffdf3', wood: '#315707', clubs: [['wood', 42], ['iron', 50], ['putter', 36]], mark: 'B', edge: 'divider', blurb: 'A standard set for your round.' };
+/** Set A: a stand bag leaning back on its legs. An illustration, not the actual inventory. */
+function StandBag() {
+  const line = '#36544a';
+  const trim = '#c9773b';
+  return <Box component="svg" viewBox="40 70 600 680" aria-hidden="true" fill="none" strokeLinecap="round" strokeLinejoin="round" sx={ICON_SX}>
+    <path d="M478 372 456 646M480 372 600 718" stroke="#7c6a45" strokeWidth="9" />
+    <circle cx="456" cy="648" r="10" fill={trim} />
+    <circle cx="600" cy="720" r="10" fill={trim} />
+    <path d="M452 132 438 186M510 172 496 206M578 130 530 210" stroke="#7b878d" strokeWidth="9" />
+    <g fill="#c5ced2" stroke="#7b878d" strokeWidth="6">
+      <rect x="436" y="96" width="76" height="38" rx="10" transform="rotate(14 474 115)" />
+      <rect x="472" y="138" width="86" height="40" rx="10" transform="rotate(10 515 158)" />
+      <rect x="562" y="144" width="60" height="36" rx="9" transform="rotate(-8 592 162)" />
+    </g>
+    <ellipse cx="584" cy="110" rx="44" ry="26" transform="rotate(8 584 110)" fill="#7d7592" stroke="#544d66" strokeWidth="6" />
+    <path d="M345 170Q440 158 522 226C508 290 470 380 440 440 420 520 380 620 298 714 225 735 130 730 68 702 52 660 50 610 92 524 120 490 160 470 178 452Z" fill="#93b494" stroke={line} strokeWidth="8" />
+    <path d="M283 415Q345 425 392 470C398 500 396 525 388 552 372 600 345 650 302 694 260 690 205 668 178 642 190 590 235 490 283 415Z" fill="#a6c3a4" stroke={line} strokeWidth="8" />
+    <path d="M252 418C215 480 170 565 150 645M178 462C135 530 100 590 72 644M72 650C140 690 220 706 298 702" stroke={line} strokeWidth="6" />
+    <path d="M252 366C215 360 190 385 192 425" stroke={line} strokeWidth="7" />
+    <path d="M344 184 322 222M322 248 258 350M244 376 188 454" stroke={line} strokeWidth="28" />
+    <path d="M344 184 322 222M322 248 258 350M244 376 188 454" stroke={trim} strokeWidth="19" />
+    <path d="M338 176Q440 158 524 228" stroke={line} strokeWidth="20" />
+    <path d="M338 176Q440 158 524 228" stroke={trim} strokeWidth="12" />
+    <path d="M396 178V198" stroke={trim} strokeWidth="13" />
+    <circle cx="396" cy="213" r="15" stroke={line} strokeWidth="7" />
+    <path d="M66 702C130 732 225 735 296 716" stroke={trim} strokeWidth="15" />
+    <path d="M60 652C78 658 96 660 116 658" stroke={trim} strokeWidth="13" />
+  </Box>;
+}
+
+/** Set B: a driver, a fairway wood and a putter, standing up in a row. */
+function ThreeClubs() {
+  const ink = '#141b18';
+  const pale = '#f2f7e8';
+  return <Box component="svg" viewBox="60 70 600 740" aria-hidden="true" fill="none" strokeLinecap="round" strokeLinejoin="round" sx={ICON_SX}>
+    <path d="M254 782Q254 792 262 792 270 792 270 782V282C270 240 284 190 286 138 288 118 278 102 258 98L134 96C112 100 88 122 78 146 72 160 84 170 100 176 150 190 215 194 236 214 248 236 254 262 254 282Z" fill={ink} />
+    <ellipse cx="186" cy="143" rx="43" ry="41" fill={pale} />
+    <path d="M150 124H224M144 143H230M150 162H224" stroke={ink} strokeWidth="8" />
+    <path d="M90 150C98 130 110 112 128 100" stroke={pale} strokeWidth="6" />
+    <path d="M332 782Q332 792 340 792 348 792 348 782V300L350 226C420 205 470 172 498 136 512 124 512 108 500 100 460 78 390 84 360 112 326 150 322 190 330 232L332 300Z" fill={ink} />
+    <path d="M344 206C336 176 342 150 370 124 395 102 450 96 488 112 462 150 415 186 344 206Z" fill={pale} />
+    <path d="M362 154 428 122M358 180 462 126M392 176 440 150" stroke={ink} strokeWidth="8" />
+    <path d="M409 782Q409 792 417 792 425 792 425 782V370L431 339H610C628 339 640 326 640 310 640 294 628 281 610 281H400C384 281 372 294 372 310 372 326 382 340 400 340H403L409 370Z" fill={ink} />
+    <path d="M436 294H476M426 310H500M412 326H528" stroke={pale} strokeWidth="6" />
+  </Box>;
+}
+
+interface Look { bg: string; Icon: () => ReactNode; blurb: string }
+
+// Worked out from the name staff give a set, so a set re-added in /admin keeps its picture.
+const SET_A: Look = { bg: '#f8edc9', Icon: StandBag, blurb: 'Newer clubs & more variety.' };
+const SET_B: Look = { bg: '#dcebc6', Icon: ThreeClubs, blurb: 'A standard set for your round.' };
+const PREMIUM: Look = { ...SET_A, blurb: 'Our best clubs for your round.' };
 
 function lookOf(label: string): Look {
-  if (/premium/i.test(label)) return PREMIUM;
-  const letter = /^set\s+([a-z])\b/i.exec(label.trim())?.[1].toUpperCase();
-  return letter === 'A' ? SET_A : { ...SET_B, mark: letter ?? '' };
+  const letter = rentalSetLetter(label);
+  if (letter) return letter === 'A' ? SET_A : SET_B;
+  return /premium/i.test(label) ? PREMIUM : SET_B;
 }
 
-// Each drawn from the tip of its shaft, facing left.
-const HEADS = {
-  wood: 'M1.5 0C2.5-10-6-18-16-16-26-14-27-4-21 0-15 4-3 4 1.5 0Z',
-  iron: 'M1.5-3-13-13C-17-15-20-12-19-8L-16 0C-15 3-12 4-9 3L1.5 0Z',
-  putter: 'M1.5-6H-16C-19-6-20-4-20-2V1C-20 3-19 5-16 5H-8C-5 5-3 3-1 1L1.5-1Z',
-};
-
-/** A neutral equipment illustration, not a photograph of the actual inventory. */
-function ClubBag({ look }: { look: Look }) {
-  const { bag, trim, stripe, wood, clubs, mark } = look;
-  const middle = (clubs.length - 1) / 2;
-  return <Box component="svg" viewBox="0 0 140 180" aria-hidden="true" sx={{ display: 'block', height: '92%', width: 'auto' }}>
-    <ellipse cx="70" cy="172" rx="46" ry="4" fill="#173c2c" opacity=".14" />
-    {/* Leaning back on its stand, like a bag parked by the tee. */}
-    <g transform="rotate(-7 72 168)">
-      <path d="M56 104 30 167M58 108 44 168.5" stroke="#6f8389" strokeWidth="3" strokeLinecap="round" />
-      <ellipse cx="72" cy="66" rx="23" ry="6.5" fill="#173c2c" />
-      {clubs.map(([club, length], i) => {
-        const step = i - middle;
-        return <g key={i} transform={`translate(${72 + step * 9} 68) rotate(${step * 9})${step > 0 ? ' scale(-1 1)' : ''}`}>
-          <path d={`M0 8V${-length}`} stroke="#90a2a6" strokeWidth="2.8" strokeLinecap="round" />
-          <path transform={`translate(0 ${-length})`} d={HEADS[club]} fill={club === 'wood' ? wood : '#6f8389'} stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
-        </g>;
-      })}
-      <path d="M92 106C110 106 110 146 91 146Z" fill={trim} />
-      <path d="M50 76H94L91 156Q90.5 166 81 166H63Q53.5 166 53 156Z" fill={bag} />
-      <path d="M53.4 148H90.6L90.4 156Q90 166 81 166H63Q54 166 53.6 156Z" fill={trim} />
-      <path d="M51.6 118H92.4L92.2 122H51.8Z" fill={stripe} />
-      <path d="M48 66Q72 80 96 66V76Q96 83 89 83H55Q48 83 48 76Z" fill={trim} />
-      <rect x="61" y="127" width="22" height="15" rx="4" fill="#fff" fillOpacity=".18" />
-      <path d="M65 132H79" stroke={stripe} strokeWidth="2" strokeLinecap="round" />
-      {mark === 'star'
-        ? <path d="M72 88 74.8 95.6 82.5 96.1 76.6 101 78.5 108.4 72 104.3 65.5 108.4 67.4 101 61.5 96.1 69.2 95.6Z" fill={trim} />
-        : mark && <>
-          <circle cx="72" cy="100" r="12" fill="#fffdf3" />
-          <text x="72" y="106" textAnchor="middle" fontFamily={fonts.serif} fontSize="17" fontWeight="600" fill={bag}>{mark}</text>
-        </>}
-    </g>
-    {mark === 'star' && <g fill={trim}>
-      <path d="m124 62 2.4 6.6 6.6 2.4-6.6 2.4-2.4 6.6-2.4-6.6-6.6-2.4 6.6-2.4Z" />
-      <path d="m112 104 1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6Z" />
-    </g>}
+export function RentalVisual({ rental, height = 148 }: { rental: Pick<Rental, 'label' | 'image'>; height?: number | { xs: number; md: number } }) {
+  const { bg, Icon } = lookOf(rental.label);
+  return <Box sx={{ bgcolor: bg, borderRadius: '18px', height, display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
+    {rental.image ? <Box component="img" src={rental.image} alt={rental.label} loading="lazy" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Icon />}
   </Box>;
-}
-
-export function RentalVisual({ rental, height = 148 }: { rental: Rental; height?: number | { xs: number; md: number } }) {
-  return <Box sx={{ bgcolor: lookOf(rental.label).bg, borderRadius: '18px', height, display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
-    {rental.image ? <Box component="img" src={rental.image} alt={rental.label} loading="lazy" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <ClubBag look={lookOf(rental.label)} />}
-  </Box>;
-}
-
-/** The sets side by side on large screens, one under another below that. */
-export function RentalGrid({ children }: { children: ReactNode }) {
-  return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'repeat(3, minmax(0,1fr))' }, gap: { xs: 2, md: 3 } }}>{children}</Box>;
 }
 
 const BESIDE = { xs: '80px minmax(0,1fr)', sm: '96px minmax(0,1fr)' };
 
-// Picture beside the words on small screens (and always when `compact`, for
-// the narrow booking column); picture on top when the cards sit side by side.
-export function RentalCard({ rental, children, compact = false }: { rental: Rental; children?: ReactNode; compact?: boolean }) {
-  const look = lookOf(rental.label);
-  return <Box sx={{ display: 'grid', gridTemplateColumns: compact ? BESIDE : { ...BESIDE, md: 'minmax(0,1fr)' }, alignContent: 'start', gap: 2, border: '1px solid', borderColor: look.edge, bgcolor: 'background.paper', borderRadius: '24px', p: 2, minWidth: 0 }}>
-    <RentalVisual rental={rental} height={compact ? 96 : { xs: 96, md: 172 }} />
+type Control = (rental: Rental, label: ReactNode) => ReactNode;
+
+// The set's picture and words, then a row for each of its options. The rows
+// run the full width so a stepper fits beside them on the narrowest phones.
+function RentalSetCard({ group, compact, control }: { group: RentalGroup; compact: boolean; control?: Control }) {
+  const [first] = group.rentals;
+  const tierOf = (rental: Rental) => !group.letter ? 'Per set' : isPremiumRental(rental) ? 'Premium' : 'Normal';
+  const option = (rental: Rental) => <Stack direction={control ? { xs: 'column', sm: 'row' } : 'row'} alignItems={control ? { xs: 'flex-start', sm: 'center' } : 'center'} columnGap={1.25} sx={{ minWidth: 0 }}>
+    <Stack direction="row" alignItems="center" spacing={.4}>
+      {isPremiumRental(rental) && group.letter && <StarRounded aria-hidden sx={{ fontSize: 17, color: '#d9a521' }} />}
+      <Typography component="span" sx={{ fontSize: 15, fontWeight: 700 }}>{tierOf(rental)}</Typography>
+    </Stack>
+    <Typography component="span" sx={{ fontSize: 15, fontWeight: 800, color: 'primary.main', whiteSpace: 'nowrap' }}>{money(rental.price)}</Typography>
+  </Stack>;
+  return <Box sx={{ display: 'grid', gridTemplateColumns: compact ? BESIDE : { ...BESIDE, md: 'minmax(0,1fr)' }, alignContent: 'start', columnGap: 2, rowGap: 1.5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', p: 2, minWidth: 0 }}>
+    <RentalVisual rental={{ label: first.label, image: group.rentals.find((r) => r.image)?.image }} height={compact ? 96 : { xs: 96, md: 172 }} />
     <Box sx={{ minWidth: 0, alignSelf: 'center' }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="baseline" spacing={1}><Typography sx={{ fontWeight: 700 }}>{rental.label}</Typography><Typography sx={{ fontWeight: 800, color: 'primary.main', whiteSpace: 'nowrap' }}>{money(rental.price)}</Typography></Stack>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .5 }}>{rental.description || look.blurb} Priced per set.</Typography>
-      {children && <Box sx={{ mt: 1 }}>{children}</Box>}
+      <Typography sx={{ fontWeight: 700, fontSize: 17 }}>{group.name}</Typography>
+      <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .5 }}>{first.description || lookOf(first.label).blurb} Priced per set.</Typography>
+    </Box>
+    <Box sx={{ gridColumn: '1 / -1', minWidth: 0 }}>
+      {group.rentals.map((rental) => <Box key={rental.id} sx={{ py: control ? .75 : 1, borderTop: '1px solid', borderColor: 'divider' }}>
+        {control ? control(rental, option(rental)) : option(rental)}
+        {rental !== first && rental.description && <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .25 }}>{rental.description}</Typography>}
+      </Box>)}
     </Box>
   </Box>;
+}
+
+/** Each set with its Normal and Premium options. Side by side on large screens, unless `compact`. */
+export function RentalSets({ rentals, compact = false, control }: { rentals: Rental[]; compact?: boolean; control?: Control }) {
+  const groups = groupRentals(rentals);
+  const cards = groups.map((group) => <RentalSetCard key={group.id} group={group} compact={compact} control={control} />);
+  if (compact) return <Stack spacing={1.5}>{cards}</Stack>;
+  return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: `repeat(${Math.max(1, Math.min(groups.length, 3))}, minmax(0,1fr))` }, gap: { xs: 2, md: 3 } }}>{cards}</Box>;
 }

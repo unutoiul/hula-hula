@@ -282,6 +282,28 @@ export function normaliseRentals(raw: unknown): Rental[] {
   return raw.map((r: Record<string, unknown>, i) => ({ id: str(r?.id, `r${i + 1}`, 20) || `r${i + 1}`, label: str(r?.label, 'Club set', 60) || 'Club set', price: num(r?.price, 0, 0, 100_000), image: str(r?.image, '', 1000), description: str(r?.description, '', 240) }));
 }
 
+// Set A and Set B each come as Normal or Premium. That's read from the name a
+// row has in /admin ("Set A", "Set A Premium"), so the rows themselves stay as
+// they are and past bookings, stored against a row's id, still add up.
+export interface RentalGroup { id: string; name: string; letter: string; rentals: Rental[] }
+
+export const isPremiumRental = (rental: Pick<Rental, 'label'>) => /\bpremium\b/i.test(rental.label);
+export const rentalSetLetter = (label: string) => /\bset\s+([a-z])\b/i.exec(label)?.[1].toUpperCase() ?? '';
+
+/** One group per lettered set, Normal before Premium. A row with no letter stands alone. */
+export function groupRentals(rentals: Rental[]): RentalGroup[] {
+  const groups = new Map<string, RentalGroup>();
+  for (const rental of rentals) {
+    const letter = rentalSetLetter(rental.label);
+    const id = letter ? `set-${letter.toLowerCase()}` : rental.id;
+    const group = groups.get(id) ?? { id, name: letter ? `Set ${letter}` : rental.label, letter, rentals: [] };
+    group.rentals.push(rental);
+    groups.set(id, group);
+  }
+  for (const group of groups.values()) group.rentals.sort((a, b) => Number(isPremiumRental(a)) - Number(isPremiumRental(b)));
+  return [...groups.values()];
+}
+
 export function normaliseClub(raw: unknown): ClubSettings {
   const r = (raw ?? {}) as Record<string, unknown>;
   const d = DEFAULT_CLUB;

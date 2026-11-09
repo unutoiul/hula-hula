@@ -13,7 +13,7 @@ import { BookingSummary } from '../components/BookingSummary';
 import { EXPERIENCE_LEVELS, pickupFor } from '../config';
 import { fromMinutes, timeLabel, toMinutes } from '../dates';
 import { money } from '../pricing';
-import { RentalCard } from '../../components/activities/RentalCard';
+import { RentalSets } from '../../components/activities/RentalCard';
 import { STICKY_TOP } from '../../layoutConstants';
 
 // Step 2: rental clubs, the free shuttle and — for lessons — how much golf
@@ -42,11 +42,9 @@ export function ExtrasStep() {
 
       <Stack spacing={2.5}>
         {activity.rentals && rentals.length > 0 && <Card icon={<SportsGolfRounded />} title="Rental clubs" hint="Bringing your own? Skip this. Sets are paid online with your booking.">
-          <Stack spacing={1.5}>
-            {rentals.map((r) => <RentalCard key={r.id} rental={r} compact><GuestStepper label="Sets" value={extras.rentals[r.id] ?? 0} min={0}
-              max={search.players - rentals.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
-              onChange={(count) => updateExtras({ rentals: { ...extras.rentals, [r.id]: count } })} /></RentalCard>)}
-          </Stack>
+          <RentalSets rentals={rentals} compact control={(r, label) => <GuestStepper label={label} name={`${r.label} sets`} value={extras.rentals[r.id] ?? 0} min={0}
+            max={search.players - rentals.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
+            onChange={(count) => updateExtras({ rentals: { ...extras.rentals, [r.id]: count } })} />} />
         </Card>}
 
         {club.transfer.pickups.length > 0 && <Card icon={<AirportShuttleRounded />} title="Free shuttle" hint={`Our free transfer has pick-ups at ${club.transfer.pickups.map(timeLabel).join(' and ')}.`}>

@@ -17,7 +17,7 @@ import { places, type Place } from '../data/content';
 import { linkClick, navigate, useLocation } from '../router';
 import { fonts } from '../theme';
 import { thingsToDo, type ThingIconKey } from './things';
-import { RentalCard, RentalGrid } from '../components/activities/RentalCard';
+import { RentalSets } from '../components/activities/RentalCard';
 import { CourseGuide } from './CourseGuide';
 import { STICKY_TOP } from '../layoutConstants';
 import { SEAM } from '../components/common/SectionSeam';
@@ -111,7 +111,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
     {activity.rentals && rentals.length > 0 && <Container maxWidth="xl" sx={{ mt: 6 }}>
       <Typography variant="h2" sx={{ fontSize: { xs: 32, md: 42 }, mb: 1 }}>Your clubs, sorted.</Typography>
       <Typography sx={{ color: 'text.secondary', mb: 3 }}>Travel light. Choose a rental set and add it to your booking.</Typography>
-      <RentalGrid>{rentals.map((r) => <RentalCard key={r.id} rental={r} />)}</RentalGrid>
+      <RentalSets rentals={rentals} />
     </Container>}
     <CourseGuide id={activity.id} />
   </>;

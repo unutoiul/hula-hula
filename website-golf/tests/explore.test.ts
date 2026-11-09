@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { describe, it } from 'node:test';
-import { DEFAULT_CLUB, normaliseClub, normaliseRentals } from '../src/booking/config.ts';
+import { DEFAULT_CLUB, groupRentals, normaliseClub, normaliseRentals } from '../src/booking/config.ts';
 import { activeOffers } from '../src/booking/offers.ts';
 import { courseMapImage, GOLF_HOLES, golfHole } from '../src/data/course.ts';
 import { refineMapLabels } from '../scripts/refine-course-labels.ts';
@@ -47,6 +47,19 @@ describe('course and rental presentation', () => {
     assert.equal(rental.image, '/uploads/set-a.webp');
     assert.equal(rental.description, 'Newer clubs');
     assert.equal(rental.price, 1000);
+  });
+  it('groups each rental set with its Normal and Premium options', () => {
+    const groups = groupRentals([
+      { id: 'a-premium', label: 'Set A Premium', price: 2000 },
+      { id: 'premium', label: 'Set A', price: 1000 },
+      { id: 'standard', label: 'Set B', price: 500 },
+      { id: 'b-premium', label: 'set b premium', price: 900 },
+    ]);
+    assert.deepEqual(groups.map((g) => [g.name, g.rentals.map((r) => r.id)]), [['Set A', ['premium', 'a-premium']], ['Set B', ['standard', 'b-premium']]]);
+  });
+  it('keeps a rental with no set letter on its own, so it never disappears', () => {
+    const groups = groupRentals([{ id: 'premium-clubs', label: 'Premium Clubs', price: 2000 }, { id: 'premium', label: 'Set A', price: 1000 }]);
+    assert.deepEqual(groups.map((g) => [g.name, g.letter, g.rentals.length]), [['Premium Clubs', '', 1], ['Set A', 'A', 1]]);
   });
   it('serves only the current vector maps for all 18 selections in both activities', () => {
     const maps = new Set<string>();

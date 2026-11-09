@@ -105,7 +105,7 @@ export function ActivitiesPage() {
     </Stack>
 
     <Box sx={{ mt: 3 }}>
-      <Section title="Rental clubs" hint="Offered on golf and range bookings that allow rentals. Prices per set.">
+      <Section title="Rental clubs" hint="Offered on golf and range bookings that allow rentals. Prices per set. Name them Set A, Set A Premium, Set B and Set B Premium, and the website shows each set with its Normal and Premium price together.">
         <Stack spacing={1.25}>
           {rentals.map((r, i) => <Box key={i} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '20px' }}>
             <RentalVisual rental={r} />
