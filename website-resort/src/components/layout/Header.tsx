@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { CONTACT } from '../../data/content';
 import type { NavItem } from '../../types';
 import { ClubMark } from '../common/ClubMark';
-import { SiteList, SiteTabs, SwitcherLogo } from './SiteSwitcher';
+import { HomeLogo, SiteDropdown, SiteList, SiteTabs } from './SiteSwitcher';
 import { NavLink } from './NavLink';
 import { TropicalBackdrop } from '../common/TropicalBackdrop';
 
@@ -34,13 +34,16 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
     {/* Contact strip: always-on details at the very top; folds away on scroll. */}
     <Box sx={{ position: 'relative', overflow: 'hidden', height: scrolled ? 0 : { xs: 34, md: 36 }, transition: 'height .35s ease', bgcolor: 'primary.main', color: 'white' }}>
       <Container maxWidth="xl" sx={{ height: '100%' }}>
-        {/* The Resort | Golf Club tabs on the left (large screens), contact details on the right. */}
-        <Stack direction="row" alignItems="center" justifyContent={{ xs: 'center', md: 'flex-end', lg: 'space-between' }} sx={{ height: '100%' }}>
-          <Box sx={{ display: { xs: 'none', lg: 'block' } }}><SiteTabs /></Box>
-          <Stack direction="row" alignItems="center" divider={<Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,.35)' }} />} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ height: '100%', fontSize: { xs: 12, md: 13 }, fontWeight: 600, '& a': { color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', minHeight: 32 }, '& a:hover': { textDecoration: 'underline' }, '& svg': { fontSize: 16 } }}>
-            <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${CONTACT.phone}`}><WhatsApp />{CONTACT.phone}</Link>
+        {/* The Resort | Golf Club tabs (large screens) and the websites dropdown on the left, contact details on the right. */}
+        <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1.5} sx={{ height: '100%' }}>
+          <Stack direction="row" alignItems="center" spacing={{ xs: 0, lg: 1 }}>
+            <Box sx={{ display: { xs: 'none', lg: 'block' } }}><SiteTabs /></Box>
+            <SiteDropdown />
+          </Stack>
+          <Stack direction="row" alignItems="center" divider={<Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,.35)' }} />} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ height: '100%', flexShrink: 0, fontSize: { xs: 12, md: 13 }, fontWeight: 600, '& a': { color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', minHeight: 32 }, '& a:hover': { textDecoration: 'underline' }, '& svg': { fontSize: 16 } }}>
+            <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${CONTACT.phone}`}><WhatsApp /><Box component="span" sx={{ '@media (max-width: 389px)': { display: 'none' } }}>{CONTACT.phone}</Box></Link>
             <Link href={CONTACT.landlineTel} aria-label={`Call ${CONTACT.landline}`} sx={{ display: { xs: 'none !important', sm: 'inline-flex !important' } }}><PhoneRounded />{CONTACT.landline}</Link>
-            <Link href={`mailto:${CONTACT.email}`} aria-label={`Email ${CONTACT.email}`}><MailOutlineRounded /><Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>{CONTACT.email}</Box><Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Email us</Box></Link>
+            <Link href={`mailto:${CONTACT.email}`} aria-label={`Email ${CONTACT.email}`}><MailOutlineRounded /><Box component="span" sx={{ display: { xs: 'none', md: 'inline' } }}>{CONTACT.email}</Box><Box component="span" sx={{ display: { xs: 'inline', md: 'none' } }}>Email us</Box></Link>
           </Stack>
         </Stack>
       </Container>
@@ -48,7 +51,7 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
     <Container maxWidth="xl">
       <Box sx={{ minHeight: scrolled ? { xs: 72, md: 80 } : { xs: 100, md: 136 }, transition: 'min-height .35s ease', display: 'grid', gridTemplateColumns: { xs: 'auto 1fr', lg: '1fr auto 1fr' }, alignItems: 'center', gap: { xs: 1.5, md: 3 }, py: 1 }}>
         <Stack component="nav" aria-label="Main navigation" direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>{navItems.slice(0, 3).map(([label, href]) => <NavLink key={href} href={href} active={active === href}>{label}</NavLink>)}</Stack>
-        <Box sx={{ gridColumn: { xs: 1, lg: 2 } }}><SwitcherLogo size={scrolled ? 'small' : 'header'} /></Box>
+        <Box sx={{ gridColumn: { xs: 1, lg: 2 } }}><HomeLogo size={scrolled ? 'small' : 'header'} /></Box>
         <Stack direction="row" alignItems="center" justifyContent="flex-end" gap={{ xs: 1.5, lg: 3 }} sx={{ gridColumn: { xs: 2, lg: 3 } }}>
           <Stack component="nav" aria-label="More navigation" direction="row" spacing={4} sx={{ display: { xs: 'none', lg: 'flex' } }}>{navItems.filter(([, href]) => href === '#offers' || href === '#events' || href === '#contact').map(([label, href]) => <NavLink key={href} href={href} active={active === href}>{label}</NavLink>)}</Stack>
           <Button href="#arrival" variant="contained" color="secondary" endIcon={<ArrowOutward sx={{ fontSize: 17 }} />} sx={{ whiteSpace: 'nowrap', flexShrink: 0, '@media (max-width: 359px)': { px: 2, '& .MuiButton-endIcon': { display: 'none' } } }}>Book happy</Button>

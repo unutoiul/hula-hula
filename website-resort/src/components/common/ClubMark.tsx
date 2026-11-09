@@ -20,8 +20,8 @@ export type MarkSize = keyof typeof MARK_SIZES;
 // `size` drives which tier above is used; the header switches between
 // header (at the top of the page) and small (once scrolled), so its height
 // transitions while the other contexts (footer, cookie dialog) render at a
-// fixed size. Just the artwork: the header wraps it in the site switcher,
-// everywhere else in a link (ClubMark).
+// fixed size. Just the artwork: the header wraps it in its home link
+// (HomeLogo), everywhere else in ClubMark's.
 export function ClubMarkArt({ size = 'default' }: { size?: MarkSize }) {
   return <Box component="img" src="/logo/hula-hula.svg" alt="" sx={{
     height: MARK_SIZES[size],

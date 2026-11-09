@@ -2,18 +2,19 @@ import BeachAccessRounded from '@mui/icons-material/BeachAccessRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import East from '@mui/icons-material/East';
 import GolfCourseRounded from '@mui/icons-material/GolfCourseRounded';
-import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
-import { Box, Popover, Stack, Tooltip, Typography } from '@mui/material';
+import KeyboardArrowDownRounded from '@mui/icons-material/KeyboardArrowDownRounded';
+import { Box, Popover, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { fonts } from '../../theme';
 import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 
 // The Hula Hula family: the resort and the golf club are two websites that
-// hand guests to each other. Three ways across, all the same list: the
-// "Resort | Golf Club" tabs in the top strip, the header logo (its swap badge
-// opens the list), and the mobile menu. The golf club's copy of this file
-// is website-golf/src/components/layout/SiteSwitcher.tsx — keep the two in
-// step. The golf club lives on its Vercel address until it has its own domain.
+// hand guests to each other. Three ways across: the "Resort | Golf Club" tabs
+// in the top strip (large screens), the dropdown beside them (every screen),
+// and the mobile menu. The header logo just goes home. The golf club's copy of
+// this file is website-golf/src/components/layout/SiteSwitcher.tsx — keep the
+// two in step. The golf club lives on its Vercel address until it has its own
+// domain.
 
 export const SITES = [
   { id: 'resort', name: 'Hula Hula Resort', short: 'Resort', line: 'Tropical stays & pool villas in Ao Nang', url: 'https://hulahularesort.com', image: '/images/switcher/resort.webp', Icon: BeachAccessRounded },
@@ -21,7 +22,7 @@ export const SITES = [
 ] as const;
 
 const HERE = 'resort';
-const other = SITES.find((s) => s.id !== HERE)!;
+const here = SITES.find((s) => s.id === HERE)!;
 
 /** The two-way tab in the blue strip at the very top (large screens). */
 export function SiteTabs() {
@@ -37,7 +38,7 @@ export function SiteTabs() {
   </Stack>;
 }
 
-/** Both places as cards, the current one marked — in the logo's panel and the mobile menu. */
+/** Both places as cards, the current one marked — in the dropdown's panel and the mobile menu. */
 export function SiteList({ onHere }: { onHere?: () => void }) {
   return <Stack spacing={1}>
     {SITES.map(({ id, name, line, url, image }) => {
@@ -64,33 +65,37 @@ export function SiteList({ onHere }: { onHere?: () => void }) {
 }
 
 /**
- * The header logo: a small swap badge on its corner says it does more than go
- * home — a tap opens both places, with "You're here" on this one (which
- * scrolls back to the top) and a one-tap jump to the other.
+ * The dropdown beside the tabs: every screen size gets it, and on phones it's
+ * the quick way across. Below large screens it says which site you're on,
+ * since the tabs that would show that aren't there.
  */
-export function SwitcherLogo({ size }: { size: MarkSize }) {
+export function SiteDropdown() {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   return <>
-    <Tooltip title={`Switch to ${other.name}`} placement="bottom" disableHoverListener={!!anchor}>
-      <Box component="button" type="button" onClick={(e) => setAnchor(e.currentTarget)} aria-haspopup="dialog" aria-expanded={!!anchor}
-        aria-label={`${SITES.find((s) => s.id === HERE)!.name} — switch to ${other.name}`} sx={{
-          position: 'relative', display: 'inline-flex', p: 0, border: 0, bgcolor: 'transparent', cursor: 'pointer', lineHeight: 0, borderRadius: '16px',
-          transition: 'transform .25s ease', '&:hover': { transform: 'translateY(-1px) scale(1.02)' }, '&:hover .swap-badge': { bgcolor: 'primary.main', color: 'common.white' },
-        }}>
-        <ClubMarkArt size={size} />
-        <Box className="swap-badge" aria-hidden sx={{
-          position: 'absolute', top: { xs: -2, md: 2 }, right: { xs: -10, md: -12 }, width: { xs: 22, md: 26 }, height: { xs: 22, md: 26 }, borderRadius: '50%',
-          display: 'grid', placeItems: 'center', bgcolor: 'secondary.main', color: 'text.primary', border: '2px solid #fffef8', boxShadow: '0 3px 8px rgba(23,60,44,.18)',
-          transition: 'background-color .2s ease, color .2s ease', '& svg': { fontSize: { xs: 14, md: 16 } },
-        }}><SwapHorizRounded /></Box>
-      </Box>
-    </Tooltip>
-    <Popover open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-      slotProps={{ paper: { sx: { mt: 1.5, borderRadius: '24px', boxShadow: '0 22px 50px rgba(23,60,44,.18)', width: 380, maxWidth: 'calc(100vw - 24px)' } } }}>
+    <Box component="button" type="button" onClick={(e) => setAnchor(e.currentTarget)} aria-haspopup="dialog" aria-expanded={!!anchor} aria-label={`Our websites: you’re on ${here.name}`} sx={{
+      display: 'inline-flex', alignItems: 'center', gap: .5, flexShrink: 0, height: { xs: 30, lg: 32 }, pl: 1.25, pr: .75, border: 0, borderRadius: 999, cursor: 'pointer',
+      font: 'inherit', fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap', color: 'common.white', bgcolor: anchor ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.14)',
+      transition: 'background-color .2s ease', '&:hover': { bgcolor: 'rgba(255,255,255,.22)' }, '&:focus-visible': { outline: '2px solid white', outlineOffset: '-2px' }, '& svg': { fontSize: 15 },
+    }}>
+      <Box component="span" sx={{ display: { xs: 'inline-flex', lg: 'none' }, alignItems: 'center', gap: .6 }}><here.Icon />{here.short}</Box>
+      <Box component="span" sx={{ display: { xs: 'none', lg: 'inline' } }}>Our websites</Box>
+      <KeyboardArrowDownRounded sx={{ fontSize: '18px !important', transition: 'transform .2s ease', transform: anchor ? 'rotate(180deg)' : 'none' }} />
+    </Box>
+    <Popover open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', boxShadow: '0 22px 50px rgba(23,60,44,.18)', width: 380, maxWidth: 'calc(100vw - 32px)' } } }}>
       <Box sx={{ p: 1.5 }}>
         <Typography variant="overline" sx={{ display: 'block', px: .5, mb: 1, color: 'text.secondary' }}>The Hula Hula family</Typography>
         <SiteList onHere={() => setAnchor(null)} />
       </Box>
     </Popover>
   </>;
+}
+
+/** The header logo: always the way home. */
+export function HomeLogo({ size }: { size: MarkSize }) {
+  return <Box component="a" href="#top" aria-label={`${here.name} home`} sx={{
+    display: 'inline-flex', lineHeight: 0, borderRadius: '16px', transition: 'transform .25s ease', '&:hover': { transform: 'translateY(-1px) scale(1.02)' },
+  }}>
+    <ClubMarkArt size={size} />
+  </Box>;
 }
