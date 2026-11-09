@@ -24,7 +24,7 @@ async function shrink(file: File): Promise<Blob> {
 // Photos for an event cover or an activity card: chosen from the club's own
 // photo library (already sized for the web) or uploaded from the phone.
 // `max` 1 keeps a single photo; more lets staff build a small gallery.
-export function ImagePicker({ value, onChange, max = 1, label = 'Photo' }: { value: string[]; onChange: (images: string[]) => void; max?: number; label?: string }) {
+export function ImagePicker({ value, onChange, max = 1, label = 'Photo', fit = 'cover' }: { value: string[]; onChange: (images: string[]) => void; max?: number; label?: string; fit?: 'cover' | 'contain' }) {
   const theme = useTheme();
   const phone = useMediaQuery(theme.breakpoints.down('sm'));
   const [open, setOpen] = useState(false);
@@ -55,7 +55,7 @@ export function ImagePicker({ value, onChange, max = 1, label = 'Photo' }: { val
     <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{label}{max > 1 ? ` (up to ${max}; the first one leads)` : ''}</Typography>
     <Stack direction="row" flexWrap="wrap" useFlexGap gap={1.25}>
       {value.map((src, i) => <Box key={src} sx={{ position: 'relative', width: 116, height: 84, borderRadius: '12px', overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-        <ClubPhoto image={src} alt={`Photo ${i + 1}`} sizes="120px" />
+        {fit === 'contain' ? <Box component="img" src={src} alt={`Equipment image ${i + 1}`} sx={{ width: '100%', height: '100%', objectFit: 'contain', p: .75 }} /> : <ClubPhoto image={src} alt={`Photo ${i + 1}`} sizes="120px" />}
         <IconButton aria-label={`Remove photo ${i + 1}`} size="small" onClick={() => onChange(value.filter((v) => v !== src))} sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'rgba(255,255,255,.9)', '&:hover': { bgcolor: 'white' } }}><CloseRounded sx={{ fontSize: 16 }} /></IconButton>
       </Box>)}
       {value.length < max && <Button variant="outlined" onClick={() => setOpen(true)} startIcon={<AddPhotoAlternateRounded />} sx={{ height: 84, borderStyle: 'dashed', borderRadius: '12px', minWidth: 116 }}>{value.length ? 'Add' : 'Choose'}</Button>}

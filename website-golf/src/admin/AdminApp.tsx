@@ -77,7 +77,7 @@ export default function AdminApp() {
 
   return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: { xs: 12, md: 6 } }}>
     <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'rgba(255,253,243,.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid', borderColor: 'divider' }}>
-      <Container maxWidth="md" sx={{ px: { xs: 1.5, sm: 3 } }}>
+      <Container maxWidth={page.path === '/admin/activities' ? 'lg' : 'md'} sx={{ px: { xs: 1.5, sm: 3 } }}>
         <Stack direction="row" alignItems="center" spacing={1.5} sx={{ minHeight: 56 }}>
           <Box component="img" src="/logo/hula-hula-golf.png" alt="" sx={{ height: 38, width: 'auto' }} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -93,7 +93,7 @@ export default function AdminApp() {
         </Tabs>
       </Container>
     </Box>
-    <Container maxWidth="md" sx={{ px: { xs: 1.5, sm: 3 }, pt: 2.5 }}>
+    <Container maxWidth={page.path === '/admin/activities' ? 'lg' : 'md'} sx={{ px: { xs: 1.5, sm: 3 }, pt: { xs: 2.5, md: 4 } }}>
       {page.path === '/admin/events' ? (eventId ? <EventEditor key={eventId} id={eventId} /> : <EventsPage />)
         : page.path === '/admin/offers' ? <OffersPage />
         : page.path === '/admin/activities' ? <ActivitiesPage />
