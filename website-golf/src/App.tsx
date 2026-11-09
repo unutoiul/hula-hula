@@ -34,8 +34,8 @@ function ClubPage() {
     <Header />
     <Box component="main" id="main-content" tabIndex={-1}>
     <Hero nextEvent={events[0]} />
-    {events.length > 0 && <><SectionSeam from={SEAM.cream} to={SEAM.forest} /><EventsSection events={events} loaded={loaded} home /><SectionSeam from={SEAM.forest} to={SEAM.cream} mirror /></>}
-    {hasOffers && <><SectionSeam from={SEAM.cream} to={SEAM.lime} /><OffersSection preview /><SectionSeam from={SEAM.lime} to={SEAM.cream} mirror /></>}
+    {events.length > 0 && <><SectionSeam from={SEAM.cream} to={SEAM.forest} /><EventsSection events={events} loaded={loaded} home /><SectionSeam from={SEAM.forest} to={hasOffers ? SEAM.lime : SEAM.cream} mirror /></>}
+    {hasOffers && <>{events.length === 0 && <SectionSeam from={SEAM.cream} to={SEAM.lime} />}<OffersSection preview /><SectionSeam from={SEAM.lime} to={SEAM.cream} mirror /></>}
     <CourseSection />
     <SectionSeam from={SEAM.cream} to={SEAM.sea}><PinFlag left="78%" /></SectionSeam>
     <ActivitiesSection />

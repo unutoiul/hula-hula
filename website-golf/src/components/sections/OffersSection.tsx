@@ -10,7 +10,7 @@ export function OffersSection({ preview = false }: { preview?: boolean }) {
   const contact = useContact();
   const offers = activeOffers(club.offers);
   if (!offers.length) return preview ? null : <Container sx={{ py: 8 }}><Typography variant="h2" sx={{ fontSize: 34 }}>More good days are on the way.</Typography><Typography sx={{ mt: 2 }}>Ask our team about current packages and group rates.</Typography><Button href={contact.whatsapp} target="_blank" rel="noopener noreferrer" sx={{ mt: 2 }}>Ask the club</Button></Container>;
-  return <Box component="section" id="offers" aria-labelledby="offers-heading" sx={{ py: { xs: 6, md: 9 }, bgcolor: '#e7f4cc' }}>
+  return <Box component="section" id="offers" aria-labelledby="offers-heading" sx={{ pt: preview ? { xs: 4, md: 6 } : { xs: 6, md: 9 }, pb: { xs: 6, md: 9 }, bgcolor: '#e7f4cc' }}>
     <Container maxWidth="xl">
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'flex-end' }} gap={2} sx={{ mb: 3 }}>
         <Box><Typography variant="overline" color="success.dark">A little extra to enjoy</Typography><Typography id="offers-heading" variant="h2" sx={{ mt: 1, fontSize: { xs: 34, md: 46 } }}>Good days. Even better offers.</Typography></Box>
