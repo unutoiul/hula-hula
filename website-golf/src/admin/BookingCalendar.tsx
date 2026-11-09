@@ -56,7 +56,7 @@ export function BookingCalendar({ value, today, month, totals, onSelect, onMonth
         const background = selected ? 'primary.main' : !total ? 'transparent' : past ? 'rgba(23,60,44,.05)' : busyTint(total.bookings, busiest);
         return <Box key={day} component="button" type="button" onClick={() => onSelect(day)} aria-pressed={selected} aria-current={isToday ? 'date' : undefined}
           aria-label={`${dayLabel(day)}: ${total ? plural(total.bookings, 'booking') : 'no bookings'}`} title={total ? `${plural(total.bookings, 'booking')} · ${plural(total.people, 'person', 'people')}` : undefined} sx={{
-            display: 'flex', flexDirection: 'column', alignItems: { xs: 'center', md: 'flex-start' }, justifyContent: 'space-between', gap: .25, minWidth: 0, minHeight: { xs: 52, sm: 60, md: 66 }, p: { xs: .5, md: 1 },
+            display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-between', gap: .25, minWidth: 0, minHeight: { xs: 52, sm: 60, md: 48 }, py: { xs: .5, md: .5 }, px: { xs: .5, md: 1.25 },
             border: isToday && !selected ? '2px solid' : '1px solid', borderColor: isToday ? 'primary.main' : total && !selected ? 'transparent' : selected ? 'primary.main' : 'rgba(23,60,44,.08)', borderRadius: '14px',
             bgcolor: background, color: selected ? 'primary.contrastText' : past ? 'text.secondary' : 'text.primary', cursor: 'pointer', font: 'inherit', transition: 'background-color .15s ease, border-color .15s ease',
             '&:hover': selected ? undefined : { borderColor: 'primary.main' }, '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.dark', outlineOffset: '1px' },
@@ -65,10 +65,7 @@ export function BookingCalendar({ value, today, month, totals, onSelect, onMonth
             <Box component="span" sx={{ fontSize: { xs: 14, sm: 15 }, fontWeight: selected || isToday ? 800 : 600, lineHeight: 1.3, fontVariantNumeric: 'tabular-nums' }}>{Number(day.slice(8))}</Box>
             {isToday && <Box component="span" sx={{ display: { xs: 'none', md: 'inline' }, fontSize: 10.5, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: selected ? 'inherit' : 'primary.main' }}>Today</Box>}
           </Stack>
-          {total && <Stack direction="row" alignItems="center" spacing={.5} component="span" sx={{ fontSize: 12, lineHeight: 1 }}>
-            <Box component="span" sx={{ minWidth: 20, height: 20, px: '5px', boxSizing: 'border-box', borderRadius: '10px', display: 'grid', placeItems: 'center', fontWeight: 800, fontVariantNumeric: 'tabular-nums', bgcolor: selected ? 'common.white' : past ? 'rgba(23,60,44,.14)' : 'primary.main', color: selected ? 'primary.main' : past ? 'text.secondary' : 'common.white' }}>{total.bookings}</Box>
-            <Box component="span" sx={{ display: { xs: 'none', md: 'inline' }, fontWeight: 600, color: selected ? 'inherit' : 'text.secondary' }}>booked</Box>
-          </Stack>}
+          {total && <Box component="span" sx={{ minWidth: 20, height: 20, px: '5px', boxSizing: 'border-box', borderRadius: '10px', display: 'grid', placeItems: 'center', fontSize: 12, lineHeight: 1, fontWeight: 800, fontVariantNumeric: 'tabular-nums', bgcolor: selected ? 'common.white' : past ? 'rgba(23,60,44,.14)' : 'primary.main', color: selected ? 'primary.main' : past ? 'text.secondary' : 'common.white' }}>{total.bookings}</Box>}
         </Box>;
       })}
     </Box>
