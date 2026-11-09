@@ -84,7 +84,7 @@ export function HomeLogo({ size }: { size: MarkSize }) {
     }}>
       <ClubMarkArt size={size} />
     </Box>
-    <Tooltip title="Switch website" placement="bottom" disableHoverListener={!!anchor}>
+    <Tooltip title="Switch website" placement="bottom" disableInteractive disableFocusListener disableTouchListener disableHoverListener={!!anchor}>
       <Box component="button" type="button" onClick={(e) => setAnchor(e.currentTarget)} aria-haspopup="dialog" aria-expanded={!!anchor} aria-label={`Switch website: you’re on ${here.name}`} sx={{
         position: 'absolute', top: { xs: -2, md: 2 }, right: { xs: -10, md: -12 }, width: { xs: 22, md: 26 }, height: { xs: 22, md: 26 }, p: 0, borderRadius: '50%', cursor: 'pointer',
         display: 'grid', placeItems: 'center', bgcolor: 'secondary.main', color: 'text.primary', border: '2px solid #fffef8', boxShadow: '0 3px 8px rgba(23,60,44,.18)',
