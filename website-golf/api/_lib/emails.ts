@@ -98,8 +98,8 @@ export function bookingNotification(r: Reservation, guest: Guest, experience: st
 export interface PaidOrder extends EventOrderView { firstName: string; lastName: string; phone: string; country: string; notes: string; unitPrice: number; flags: string[] }
 
 const FLAG_TEXT: Record<string, string> = {
-  paid_after_expiry: 'Paid after the hold on these places ran out. Check the package isn’t oversold; if it is, refund the guest in the 2C2P portal and let them know.',
-  amount_mismatch: '2C2P reports a different amount from the order total. Check the payment in the 2C2P portal.',
+  paid_after_expiry: 'Paid after the hold on these places ran out. Check the package isn’t oversold; if it is, refund the guest in the Payso control panel and let them know.',
+  amount_mismatch: 'Payso reports a different amount from the order total. Check the payment in the Payso control panel.',
 };
 
 function orderSummary(o: PaidOrder, siteUrl: string, site: SiteData) {
@@ -138,7 +138,7 @@ export function eventNotification(o: PaidOrder, siteUrl: string, site: SiteData)
   const { vars } = orderSummary(o, siteUrl, site);
   const name = `${o.firstName} ${o.lastName}`.trim();
   const whatsapp = whatsappLink(o.phone);
-  const flags = [...(o.testPayment ? ['TEST payment through 2C2P’s sandbox — no money was taken.'] : []), ...o.flags.map((flag) => FLAG_TEXT[flag]).filter(Boolean)];
+  const flags = [...(o.testPayment ? ['TEST payment on a Payso demo account — no money was taken.'] : []), ...o.flags.map((flag) => FLAG_TEXT[flag]).filter(Boolean)];
   return {
     subject: `Event order: ${o.packageName} × ${o.quantity} — ${name}${o.testPayment ? ' (test)' : ''}`,
     template: TEMPLATES.eventNotification,

@@ -264,7 +264,7 @@ function OrderRow({ order: o, onChanged }: { order: StaffOrder; onChanged: () =>
     <Collapse in={open} unmountOnExit>
       <Box sx={{ px: 1.5, pb: 1.5, pt: 1, borderTop: '1px dashed', borderColor: 'divider' }}>
         <Typography sx={{ fontSize: 14 }}>{o.phone}{o.email ? ` · ${o.email}` : ''}</Typography>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Ordered {shortDayLabel(o.created_at.slice(0, 10))}{o.tran_ref ? ` · 2C2P ${o.tran_ref}` : ''}</Typography>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>Ordered {shortDayLabel(o.created_at.slice(0, 10))}{o.tran_ref ? ` · Payso ${o.tran_ref}` : ''}</Typography>
         {o.notes && <Typography sx={{ fontSize: 14, mt: .75, whiteSpace: 'pre-line' }}>{o.notes}</Typography>}
         {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
         {o.flags.includes('paid_after_expiry') && <Alert severity="warning" sx={{ mt: 1 }}>Paid after the hold ran out — check the package isn’t over-sold.</Alert>}
@@ -276,7 +276,7 @@ function OrderRow({ order: o, onChanged }: { order: StaffOrder; onChanged: () =>
           {o.status === 'paid' && o.source === 'online' && <Button size="small" color="warning" disabled={busy} onClick={() => void setStatus('refunded')}>Mark refunded</Button>}
           {(o.status === 'cancelled' || o.status === 'refunded') && <Button size="small" disabled={busy} onClick={() => void setStatus('paid')}>Undo</Button>}
         </Stack>
-        {o.status === 'paid' && o.source === 'online' && <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>Refunds are made in the 2C2P portal; mark it here once done. Cancelling frees the places.</Typography>}
+        {o.status === 'paid' && o.source === 'online' && <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>Refunds are made in the Payso control panel; mark it here once done. Cancelling frees the places.</Typography>}
       </Box>
     </Collapse>
   </Box>;

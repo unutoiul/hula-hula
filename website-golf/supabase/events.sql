@@ -1,5 +1,5 @@
 -- Hula Hula Golf Club: events (a pro day, a tournament…) with packages sold
--- online through 2C2P. Runs after golf.sql, in the golf club's Supabase
+-- online through Payso. Runs after golf.sql, in the golf club's Supabase
 -- project. Safe to read top to bottom:
 --   golf_events          → the event page: date, story, schedule, cover photo
 --   golf_event_packages  → what's on sale: price, how many, what's included
@@ -54,7 +54,7 @@ create policy golf_event_packages_staff on public.golf_event_packages for all to
 create table public.golf_event_orders (
   id uuid primary key default gen_random_uuid(),
   ref text not null unique,
-  -- 2C2P's invoice number for online orders (null for sales at the desk).
+  -- The payment reference sent to Payso for online orders (null for sales at the desk).
   invoice_no text unique,
   -- Only the browser that started the order can read its status (sha256 of its key).
   access_key_hash text,
@@ -73,7 +73,7 @@ create table public.golf_event_orders (
   notes text not null default '' check (length(notes) <= 1000),
   source text not null default 'online' check (source in ('online', 'desk')),
   status text not null default 'pending' check (status in ('pending', 'paid', 'failed', 'expired', 'cancelled', 'refunded')),
-  -- Paid on 2C2P's sandbox: no real money moved.
+  -- Paid on a test or demo payment account: no real money moved.
   test_payment boolean not null default false,
   -- e.g. paid_after_expiry (the places may have gone to someone else meanwhile)
   flags text[] not null default '{}',

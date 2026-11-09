@@ -24,7 +24,7 @@ import { EventApiError, eventWhen, fetchEvent, fetchOrder, startOrder } from './
 import { SECTION_SCROLL_OFFSET, STICKY_TOP } from '../layoutConstants';
 
 // /events/<slug> — an event's own page: the poster, the story, the schedule
-// and its packages, each bought through 2C2P's secure payment page.
+// and its packages, each bought through Payso's secure payment page.
 // /events/order?ref&key — where the guest lands after paying. Loaded only
 // when someone heads here (React.lazy in App).
 
@@ -191,7 +191,7 @@ function CheckoutDialog({ event, pack, quantity, testPayments, onClose }: { even
     setBusy(true); setError(null);
     try {
       const { webPaymentUrl } = await startOrder({ slug: event.slug, packageId: pack.id, quantity, guest, hp, elapsedMs: Math.round(performance.now() - startedAt.current) });
-      // On to 2C2P's own secure page; it sends the guest back to /events/order.
+      // On to Payso's own secure page; it sends the guest back to /events/order.
       window.location.assign(webPaymentUrl);
     } catch (err) {
       setBusy(false);
@@ -226,12 +226,12 @@ function CheckoutDialog({ event, pack, quantity, testPayments, onClose }: { even
           <Typography>{plural(quantity, 'place')} × {money(pack.price)}</Typography>
           <Typography sx={{ fontFamily: fonts.playful, fontSize: 26 }}>{money(total)}</Typography>
         </Stack>
-        {testPayments && <Alert severity="info" sx={{ mt: 2 }}>Test mode: payments go through 2C2P’s sandbox, so nothing is charged. To try it, use card 4111 1111 1111 1111, expiry 12/28, CVV 123, and code 123456 at the bank check.</Alert>}
+        {testPayments && <Alert severity="info" sx={{ mt: 2 }}>Test mode: this is a Payso demo account, so nothing is charged. To try it, use card 4311 1510 0999 9993, expiry 12/30, CVV 180.</Alert>}
         {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
         <Button type="submit" fullWidth variant="contained" size="large" disabled={busy} startIcon={busy ? <CircularProgress size={16} color="inherit" /> : <LockRounded />} sx={{ mt: 2.5 }}>
           {busy ? 'Taking you to secure payment…' : `Pay ${money(total)} securely`}
         </Button>
-        <Typography sx={{ fontSize: 12, color: 'text.secondary', textAlign: 'center', mt: 1.25 }}>You’ll pay on 2C2P’s secure page (card or Thai QR) and come straight back here. Your places are held for 20 minutes.</Typography>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary', textAlign: 'center', mt: 1.25 }}>You’ll pay on Payso’s secure page and come straight back here. Your places are held for 20 minutes.</Typography>
       </Box>
     </DialogContent>
   </Dialog>;
@@ -284,7 +284,7 @@ function OrderPage() {
     {problem === 'slow'
       ? <>
         <Typography variant="h1" sx={{ fontSize: 30 }}>Still waiting for the payment</Typography>
-        <Typography sx={{ color: 'text.secondary', mt: 1.5 }}>The bank hasn’t confirmed it yet. If you completed the payment, your confirmation will arrive by email shortly — there’s no need to pay again. Order {ref}.</Typography>
+        <Typography sx={{ color: 'text.secondary', mt: 1.5 }}>The bank hasn’t confirmed it yet. If you completed the payment, your confirmation will arrive by email shortly — there’s no need to pay again. If you cancelled, nothing was charged and your places are released within 20 minutes. Order {ref}.</Typography>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center" sx={{ mt: 3 }}>
           <Button variant="contained" onClick={() => window.location.reload()}>Check again</Button>
           <Button variant="outlined" href={contact.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp us</Button>
@@ -300,7 +300,7 @@ function OrderPage() {
   const eventHref = order.eventSlug ? `/events/${order.eventSlug}` : '/';
   if (order.status !== 'paid') return card(<>
     <Typography variant="h1" sx={{ fontSize: 30 }}>{order.status === 'failed' ? 'Your payment didn’t go through' : order.status === 'expired' ? 'This order ran out of time' : 'This order was cancelled'}</Typography>
-    <Alert severity="warning" sx={{ mt: 2 }}>{order.failureReason ?? (order.status === 'expired' ? 'The payment window closed before the payment finished.' : 'No payment was taken for this order.')} Nothing was charged.</Alert>
+    <Alert severity="warning" sx={{ mt: 2 }}>{order.status === 'expired' ? 'The payment window closed before the payment finished.' : 'No payment was taken for this order.'} Nothing was charged.</Alert>
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
       <Button variant="contained" href={eventHref} onClick={linkClick(eventHref)}>Try again</Button>
       <Button variant="outlined" href={contact.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp us</Button>
@@ -315,7 +315,7 @@ function OrderPage() {
     <Stack direction="row" spacing={1.5} alignItems="center"><CheckCircleRounded sx={{ color: 'success.main', fontSize: 40 }} /><Typography variant="overline" sx={{ color: 'success.dark' }}>Confirmed · {order.ref}</Typography></Stack>
     <Typography variant="h1" sx={{ fontSize: { xs: 34, md: 42 }, mt: 1, lineHeight: 1.08 }}>You’re in!</Typography>
     <Typography sx={{ color: 'text.secondary', mt: 1.25 }}>We’ve emailed your confirmation to <strong>{order.email}</strong>. Quote <strong>{order.ref}</strong> if you get in touch.</Typography>
-    {order.testPayment && <Alert severity="info" sx={{ mt: 2 }}>This was a test payment on 2C2P’s sandbox — nothing was charged.</Alert>}
+    {order.testPayment && <Alert severity="info" sx={{ mt: 2 }}>This was a test payment on a Payso demo account — nothing was charged.</Alert>}
     <Box sx={{ mt: 3, p: 2.5, bgcolor: 'primary.light', borderRadius: '20px' }}>
       <Typography sx={{ fontFamily: fonts.playful, fontSize: 24, color: 'primary.dark', lineHeight: 1.2 }}>{order.eventTitle}</Typography>
       <Typography sx={{ mt: .5 }}>{eventWhen({ startsOn: order.startsOn, endsOn: null, startTime: order.startTime, endTime: order.endTime }, true)}</Typography>

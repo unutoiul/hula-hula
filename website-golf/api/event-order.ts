@@ -1,25 +1,28 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { ErrorResponse, EventOrderStarted, EventOrderView } from '../src/booking/contract.ts';
+import { contactLinks } from '../src/booking/config.ts';
 import { DbError, rest } from './_lib/db.ts';
 import { confirmOrderPayment, getOrder, loadPublicEvents, updateOrders, viewOf, type OrderRow } from './_lib/events.ts';
 import { allowMethods, queryString, readJsonBody, siteUrl } from './_lib/http.ts';
 import { ACCESS_KEY_PATTERN, invoiceNoFor, newAccessKey, newOrderRef, ORDER_REF_PATTERN, sha256Hex } from './_lib/ids.ts';
-import { createPaymentToken, isConfigured as paymentConfigured, isTestMode } from './_lib/twoc2p.ts';
+import { createPayment, isConfigured as paymentConfigured, isTestMode } from './_lib/payso.ts';
+import { loadSite } from './_lib/site.ts';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
 const HOLD_MINUTES = 20;
 const INQUIRY_EVERY_MS = 5_000;
+const PAYSO_EMAIL_MAX = 50;
 
 // /api/event-order
 //   POST — buy event packages: checks the event, package and places again,
 //          holds the places for HOLD_MINUTES (golf_event_reserve), and asks
-//          2C2P for a payment page for exactly that amount. The browser goes
-//          there; 2C2P sends it back through /api/payment/2c2p-return.
+//          Payso for a payment page for exactly that amount. The browser goes
+//          there; Payso sends it back through /api/payment/payso-return.
 //   GET ?ref&key — the order's status for /events/order. While it's pending
-//          this asks 2C2P directly (at most every few seconds), so a
-//          confirmation never depends on 2C2P's notification arriving.
+//          this asks Payso directly (at most every few seconds), so a
+//          confirmation never depends on Payso's notification arriving.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ['GET', 'POST'])) return;
   res.setHeader('Cache-Control', 'no-store');
@@ -74,19 +77,21 @@ async function start(req: VercelRequest, res: VercelResponse) {
 
     const site = siteUrl(req);
     try {
-      const { webPaymentUrl, paymentToken } = await createPaymentToken({
-        invoiceNo: invoiceNoFor(ref),
-        description: `Hula Hula Golf Club · ${event.title} · ${pack.name} × ${quantity} · ${ref}`,
-        amount: pack.price * quantity, currencyCode: 'THB', paymentExpiry: expiresAt,
-        frontendReturnUrl: `${site}/api/payment/2c2p-return?ref=${ref}&key=${key}`,
-        backendReturnUrl: `${site}/api/payment/2c2p-backend`,
-        ref, guest: { name: `${guest.firstName} ${guest.lastName}`, email: guest.email, country: guest.country },
+      const invoiceNo = invoiceNoFor(ref);
+      const { redirectUrl, transactionId } = await createPayment({
+        referenceNo: invoiceNo,
+        description: `Hula Hula Golf ${ref} - ${event.title} - ${pack.name} x${quantity}`,
+        amount: pack.price * quantity,
+        // Payso takes 50 characters at most; our own confirmation still goes to the guest's address.
+        email: guest.email.length <= PAYSO_EMAIL_MAX ? guest.email : contactLinks((await loadSite()).club.contact).email,
+        returnUrl: `${site}/api/payment/payso-return?ref=${ref}&key=${key}`,
+        postbackUrl: `${site}/api/payment/payso-postback?refno=${invoiceNo}`,
       });
-      await updateOrders(`id=eq.${orderId}`, { payment_token: paymentToken });
+      await updateOrders(`id=eq.${orderId}`, { payment_token: transactionId });
       console.info('Event order pending payment', ref, event.slug, pack.name, quantity);
-      return res.status(200).json({ ref, key, webPaymentUrl } satisfies EventOrderStarted);
+      return res.status(200).json({ ref, key, webPaymentUrl: redirectUrl } satisfies EventOrderStarted);
     } catch (error) {
-      console.error('Event order: 2C2P payment token failed', ref, error);
+      console.error('Event order: Payso create payment failed', ref, error);
       await updateOrders(`id=eq.${orderId}`, { status: 'failed' }).catch(() => {});
       return fail(502, 'Our payment provider isn’t responding — please try again in a few minutes.', 'unavailable');
     }
@@ -96,10 +101,6 @@ async function start(req: VercelRequest, res: VercelResponse) {
     return fail(500, 'We couldn’t start your order just now. Please try again, or WhatsApp us.');
   }
 }
-
-// 2C2P answers that mean "nothing final yet"; anything else that isn't a
-// success is a decline or cancellation of the last attempt.
-const NOT_FINAL = new Set(['0001', '0999', '2001', '2002', '2003']);
 
 async function status(req: VercelRequest, res: VercelResponse) {
   const notFound = () => res.status(404).json({ error: 'We couldn’t find that order.' });
@@ -114,13 +115,8 @@ async function status(req: VercelRequest, res: VercelResponse) {
       if (won) order = (await confirmOrderPayment(order.invoice_no, 'status').catch((error) => { console.error('Order status: inquiry failed', ref, error); return null; })) ?? order;
     }
     const view: EventOrderView = await viewOf(order);
-    const declined = order.status === 'pending' && !!order.resp_code && order.resp_code !== '0000' && !NOT_FINAL.has(order.resp_code);
     const expired = order.status === 'pending' && !!order.expires_at && Date.now() > Date.parse(order.expires_at) + 60_000;
-    return res.status(200).json({
-      ...view,
-      status: declined ? 'failed' : expired ? 'expired' : view.status,
-      ...(declined && { failureReason: order.resp_code === '0003' ? 'The payment was cancelled.' : order.resp_desc ? `The payment was declined: ${order.resp_desc}.` : 'The payment was declined.' }),
-    } satisfies EventOrderView);
+    return res.status(200).json({ ...view, status: expired ? 'expired' : view.status } satisfies EventOrderView);
   } catch (error) {
     console.error('Order status failed', ref, error);
     return res.status(502).json({ error: 'Could not check your order right now.' });

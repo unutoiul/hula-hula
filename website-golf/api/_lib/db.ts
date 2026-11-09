@@ -4,7 +4,8 @@
 // the same RLS rules as a browser would.
 
 export class DbError extends Error {
-  constructor(readonly status: number, message: string) { super(message); }
+  readonly status: number;
+  constructor(status: number, message: string) { super(message); this.status = status; }
 }
 
 type Role = 'service' | 'anon';

@@ -6,7 +6,7 @@ import { allowMethods } from '../_lib/http.ts';
 // GET /api/cron/reconcile — run daily by Vercel Cron (vercel.json), which
 // sends CRON_SECRET as a bearer token when it's set. It sweeps up what the
 // webhook and the order page didn't finish:
-//   • event orders past their payment window: one last check with 2C2P,
+//   • event orders past their payment window: one last check with Payso,
 //     then marked expired if still unpaid (which frees their places)
 //   • paid orders whose emails failed: try again
 export default async function handler(req: VercelRequest, res: VercelResponse) {

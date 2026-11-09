@@ -4,7 +4,7 @@ import { dayLabel, shortDayLabel, timeLabel } from '../booking/dates';
 import { watchContent } from '../data/contentSync';
 
 // The website's side of events: published events with their packages and
-// places left (/api/events), starting an order that goes on to 2C2P, and
+// places left (/api/events), starting an order that goes on to Payso, and
 // following an order once the guest is back (/api/event-order).
 
 export class EventApiError extends Error {

@@ -89,7 +89,7 @@ export interface PublicEvent {
   packages: PublicPackage[];
 }
 
-/** GET /api/events (list) or /api/events?slug=… (one). `testPayments`: 2C2P is on its sandbox, nothing is charged. */
+/** GET /api/events (list) or /api/events?slug=… (one). `testPayments`: Payso is on a demo account, nothing is charged. */
 export interface EventsResponse { events: PublicEvent[]; testPayments: boolean }
 
 /** POST /api/event-order */
@@ -118,5 +118,4 @@ export interface EventOrderView {
   total: number;
   email: string;
   testPayment: boolean;
-  failureReason?: string;
 }

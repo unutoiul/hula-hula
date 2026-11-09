@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { EventsResponse } from '../src/booking/contract.ts';
 import { loadPublicEvents } from './_lib/events.ts';
 import { allowMethods, queryString } from './_lib/http.ts';
-import { isTestMode } from './_lib/twoc2p.ts';
+import { isTestMode } from './_lib/payso.ts';
 
 // GET /api/events — published events that haven't finished, with each
 // package's places left; /api/events?slug=pro-day — just that one.

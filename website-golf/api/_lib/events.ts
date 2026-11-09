@@ -5,11 +5,11 @@ import { eventConfirmation, eventNotification, type PaidOrder } from './emails.t
 import { emailConfigured, sendTemplate, splitAddresses } from './resend.ts';
 import { contactLinks } from '../../src/booking/config.ts';
 import { loadSite } from './site.ts';
-import { isTestMode, PAID, paymentInquiry } from './twoc2p.ts';
+import { isTestMode, PAID, paymentInquiry } from './payso.ts';
 
 // Events and their orders in Supabase (supabase/events.sql), read and
 // written with the secret key. confirmOrderPayment() is the one path from
-// "this might be paid" to "paid, and both emails sent": 2C2P's notification,
+// "this might be paid" to "paid, and both emails sent": Payso's notification,
 // the confirmation page's polling and the daily cron all call it, possibly at
 // the same time, so every step is a conditional update only one can win.
 
@@ -75,15 +75,15 @@ export async function viewOf(order: OrderRow): Promise<EventOrderView> {
 
 export async function confirmOrderPayment(invoiceNo: string, source: 'webhook' | 'status' | 'cron'): Promise<OrderRow | null> {
   const order = await getOrder(`invoice_no=eq.${invoiceNo}`);
-  if (!order) { console.error('2C2P invoice with no event order', invoiceNo, source); return null; }
+  if (!order) { console.error('Payso reference with no event order', invoiceNo, source); return null; }
   if (order.status === 'paid') return sendOrderEmails(order);
   if (order.status !== 'pending' && order.status !== 'expired') return order;
 
   const inquiry = await paymentInquiry(invoiceNo);
-  if (inquiry.respCode !== PAID) {
-    if (order.status === 'pending' && inquiry.respCode !== order.resp_code) {
-      await updateOrders(`id=eq.${order.id}&status=eq.pending`, { resp_code: inquiry.respCode, resp_desc: inquiry.respDesc ?? null });
-      return { ...order, resp_code: inquiry.respCode, resp_desc: inquiry.respDesc ?? null };
+  if (inquiry.status !== PAID) {
+    if (order.status === 'pending' && inquiry.status && inquiry.status !== order.resp_code) {
+      await updateOrders(`id=eq.${order.id}&status=eq.pending`, { resp_code: inquiry.status, resp_desc: inquiry.statusName ?? null });
+      return { ...order, resp_code: inquiry.status, resp_desc: inquiry.statusName ?? null };
     }
     return order;
   }
@@ -93,8 +93,8 @@ export async function confirmOrderPayment(invoiceNo: string, source: 'webhook' |
   if (order.status === 'expired' || (order.expires_at && Date.now() > Date.parse(order.expires_at))) flags.add('paid_after_expiry');
   if (typeof inquiry.amount === 'number' && Math.round(inquiry.amount * 100) !== order.total * 100) flags.add('amount_mismatch');
   const [paid] = await updateOrders(`id=eq.${order.id}&status=in.(pending,expired)`, {
-    status: 'paid', paid_at: new Date().toISOString(), paid_amount: inquiry.amount ?? order.total, tran_ref: inquiry.tranRef ?? null,
-    channel_code: inquiry.channelCode ?? null, resp_code: inquiry.respCode, resp_desc: inquiry.respDesc ?? null, test_payment: isTestMode(), flags: [...flags],
+    status: 'paid', paid_at: new Date().toISOString(), paid_amount: inquiry.amount ?? order.total, tran_ref: inquiry.referenceNo ?? null,
+    channel_code: inquiry.cardType ?? null, resp_code: inquiry.status, resp_desc: inquiry.statusName ?? null, test_payment: isTestMode(), flags: [...flags],
   });
   if (paid) console.info('Event order paid', paid.ref, source);
   const current = paid ?? await getOrder(`id=eq.${order.id}`);
