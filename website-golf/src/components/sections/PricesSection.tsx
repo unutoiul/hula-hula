@@ -104,7 +104,7 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
         <Sticker rotate={-8} sx={{ flexShrink: 0, width: 100, height: 100, fontSize: 17 }}>Tip your<br />caddie!</Sticker>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: { xs: 2, md: 4 }, flex: 1, textAlign: { xs: 'center', md: 'left' } }}>
           <Note title="Caddie tip">Not included — {money(club.booking.caddieTip)} per caddie is customary, in cash.</Note>
-          {rentalPrices.length > 0 && <Note title="Rental clubs">{rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} a set.</Note>}
+          {rentalPrices.length > 0 && <Note title="Rentals">{rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} a set.</Note>}
           {club.transfer.pickups.length > 0 && <Note title="Free transfer">Pick-ups at {club.transfer.pickups.map(timeLabel).join(' and ')}. Ask when you book.</Note>}
         </Box>
       </Stack></Reveal>

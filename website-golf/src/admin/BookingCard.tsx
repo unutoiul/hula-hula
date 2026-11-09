@@ -6,7 +6,7 @@ import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Alert, Box, Button, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
-import { activityName, findActivity } from '../booking/config';
+import { activityName, findActivity, rentalName } from '../booking/config';
 import { useSite } from '../context/SiteDataContext';
 import { countryName } from '../booking/countries';
 import { durationLabel, timeLabel } from '../booking/dates';
@@ -34,7 +34,7 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
   const option = activity?.options.find((o) => o.id === b.option);
   const name = activityName(site, b.activity);
   const phoneDigits = b.phone.replace(/\D/g, '');
-  const rentals = Object.entries(b.rentals).filter(([, n]) => n > 0).map(([id, n]) => `${n} × ${site.rentals.find((r) => r.id === id)?.label ?? id}`).join(', ');
+  const rentals = Object.entries(b.rentals).filter(([, n]) => n > 0).map(([id, n]) => { const rental = site.rentals.find((r) => r.id === id); return `${n} × ${rental ? rentalName(rental) : id}`; }).join(', ');
   const done = b.status === 'cancelled' || b.status === 'no_show';
 
   const setStatus = async (status: BookingStatus) => {

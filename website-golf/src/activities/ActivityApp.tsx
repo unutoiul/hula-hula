@@ -4,7 +4,7 @@ import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, CircularProgress, Container, Stack, Typography } from '@mui/material';
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { bookHref } from '../booking/BookingFlowContext';
-import { clubRules, findActivity, hasPrices, openingHoursLines, type Activity } from '../booking/config';
+import { clubRules, findActivity, hasPrices, openingHoursLines, rentalsFor, type Activity } from '../booking/config';
 import { durationLabel, timeLabel } from '../booking/dates';
 import { money } from '../booking/pricing';
 import { ThingCard } from '../components/activities/ThingCard';
@@ -74,7 +74,8 @@ function ActivityPage({ activity }: { activity: Activity }) {
   const actions: Action[] = activity.bookOnline
     ? [{ label: `Book a ${activity.slotNoun}`, href: book }, { label: 'Ask us on WhatsApp', href: chat(contact.whatsapp, `Hi Hula Hula Golf Club! A question about ${activity.name}: `), newTab: true }]
     : [{ label: 'Message us to book', href: ask, newTab: true }, { label: 'Email us', href: `mailto:${contact.email}?subject=${encodeURIComponent(activity.name)}` }];
-  const rentalPrices = rentals.map((r) => r.price).sort((a, b) => a - b);
+  const offered = rentalsFor(activity, rentals);
+  const rentalPrices = offered.map((r) => r.price).sort((a, b) => a - b);
   const players = activity.minPlayers === activity.maxPlayers ? `${activity.maxPlayers}` : `${activity.minPlayers}–${activity.maxPlayers}`;
 
   const goodToKnow = [
@@ -82,7 +83,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
     { title: 'What to wear', text: activity.wear },
     ...(activity.noSkillNeeded ? [{ title: 'No golf skill needed', text: 'First-timers are very welcome. We’ll show you how it works.' }] : []),
     ...(activity.caddie ? [{ title: 'Caddie tip', text: `Not included: ${money(club.booking.caddieTip)} per caddie is customary, in cash.` }] : []),
-    ...(activity.rentals && rentalPrices.length ? [{ title: 'Rental clubs', text: `${rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} a set, added when you book.` }] : []),
+    ...(rentalPrices.length ? [{ title: 'Rentals', text: `${rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} a set, added when you book.` }] : []),
     ...(club.transfer.pickups.length ? [{ title: 'Free shuttle', text: `Pick-ups at ${club.transfer.pickups.map(timeLabel).join(' and ')}. Ask when you book.` }] : []),
     ...(activity.bookOnline ? [clubRules(activity.wear, club).find((r) => r.title === 'Payment')!] : []),
   ];
@@ -108,10 +109,10 @@ function ActivityPage({ activity }: { activity: Activity }) {
     kicker: activity.id === 'golf' ? 'The course · 9 or 18 holes' : activity.card.kicker || activity.name, name: activity.id === 'golf' ? 'A round worth coming for.' : activity.name, lead: activity.id === 'golf' ? 'Tropical fairways, mountain views and a warm welcome. Play nine holes, or make a day of it with our 18-hole Golf package. Green fee, caddie and cart included.' : activity.card.detail || activity.tagline,
     about: activity.about || activity.card.detail, images: activity.card.images, icon: activity.icon, actions, aside, goodToKnow,
   }} />
-    {activity.rentals && rentals.length > 0 && <Container maxWidth="xl" sx={{ mt: 6 }}>
-      <Typography variant="h2" sx={{ fontSize: { xs: 32, md: 42 }, mb: 1 }}>Your clubs, sorted.</Typography>
-      <Typography sx={{ color: 'text.secondary', mb: 3 }}>Travel light. Choose a rental set and add it to your booking.</Typography>
-      <RentalSets rentals={rentals} />
+    {offered.length > 0 && <Container maxWidth="xl" sx={{ mt: 6 }}>
+      <Typography variant="h2" sx={{ fontSize: { xs: 32, md: 42 }, mb: 1 }}>Your gear, sorted.</Typography>
+      <Typography sx={{ color: 'text.secondary', mb: 3 }}>Travel light. Choose what you need and add it to your booking.</Typography>
+      <RentalSets rentals={offered} />
     </Container>}
     <CourseGuide id={activity.id} />
   </>;

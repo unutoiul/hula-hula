@@ -1,4 +1,4 @@
-import { clubRules, contactLinks, findActivity, type SiteData } from '../../src/booking/config.ts';
+import { clubRules, contactLinks, findActivity, rentalName, type SiteData } from '../../src/booking/config.ts';
 import type { EventOrderView, Guest, Reservation } from '../../src/booking/contract.ts';
 import { countryName } from '../../src/booking/countries.ts';
 import { dayLabel, durationLabel, timeLabel } from '../../src/booking/dates.ts';
@@ -85,7 +85,7 @@ export function bookingNotification(r: Reservation, guest: Guest, experience: st
   const name = `${guest.firstName} ${guest.lastName}`.trim();
   const whatsapp = whatsappLink(guest.phone);
   const checks = [...(r.testPayment ? ['TEST payment on a Payso demo account — no money was taken.'] : []), ...flags.map((flag) => BOOKING_FLAG_TEXT[flag]).filter(Boolean)];
-  const rentals = site.rentals.filter((rent) => (r.rentals[rent.id] ?? 0) > 0).map((rent) => `${r.rentals[rent.id]} × ${rent.label}`).join(', ');
+  const rentals = site.rentals.filter((rent) => (r.rentals[rent.id] ?? 0) > 0).map((rent) => `${r.rentals[rent.id]} × ${rentalName(rent)}`).join(', ');
   return {
     subject: `New booking: ${r.activityName} ${when} — ${name} (${r.players})`,
     template: TEMPLATES.bookingNotification,

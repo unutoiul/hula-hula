@@ -214,7 +214,7 @@ describe('paying for a tee time', () => {
   let patches: Record<string, unknown>[];
   let paysoBody: Record<string, unknown> | null;
 
-  const world = ({ payso = paysoOk, inquiry = '', row = pending, activities = DEFAULT_SITE.activities }: { payso?: string; inquiry?: string; row?: typeof pending; activities?: typeof DEFAULT_SITE.activities } = {}) => {
+  const world = ({ payso = paysoOk, inquiry = '', row = pending, activities = DEFAULT_SITE.activities, settings = [] }: { payso?: string; inquiry?: string; row?: typeof pending; activities?: typeof DEFAULT_SITE.activities; settings?: unknown[] } = {}) => {
     rpc = null; patches = []; paysoBody = null;
     globalThis.fetch = (async (input: string, init?: RequestInit) => {
       const url = String(input);
@@ -223,7 +223,8 @@ describe('paying for a tee time', () => {
       if (url.includes('ui-payments')) { paysoBody = JSON.parse(String(init!.body)); return new Response(payso); }
       if (url.includes('orderdetailpost')) return new Response(inquiry);
       if (url.includes('/golf_activities')) return Response.json(activities.map((a) => ({ id: a.id, data: a })));
-      if (url.includes('/golf_settings') || url.includes('/golf_blocks') || url.includes('select=start_time')) return Response.json([]);
+      if (url.includes('/golf_settings')) return Response.json(settings);
+      if (url.includes('/golf_blocks') || url.includes('select=start_time')) return Response.json([]);
       if (init?.method === 'PATCH') {
         const patch = JSON.parse(String(init.body)) as Record<string, unknown>;
         patches.push(patch);
@@ -241,8 +242,8 @@ describe('paying for a tee time', () => {
     await handler({ method: 'GET', query: {}, headers: { host: 'golf.test' }, ...request } as VercelRequest, res as unknown as VercelResponse);
     return result;
   };
-  const book = () => call(reservations, { method: 'POST', body: {
-    activity: 'golf', option: option.id, date: day, time, players: 2, rentals: {}, transfer: null, pickupFrom: '', experience: '', hp: '', elapsedMs: 5000,
+  const book = (rentals: Record<string, number> = {}) => call(reservations, { method: 'POST', body: {
+    activity: 'golf', option: option.id, date: day, time, players: 2, rentals, transfer: null, pickupFrom: '', experience: '', hp: '', elapsedMs: 5000,
     guest: { firstName: 'Bo', lastName: 'Chan', email: 'bo@example.com', phone: '+66 89 000 1111', country: 'GB', handicap: '', notes: '' },
   } });
   const quietly = async <T,>(work: () => Promise<T>) => { const error = console.error; console.error = () => {}; try { return await work(); } finally { console.error = error; } };
@@ -264,9 +265,15 @@ describe('paying for a tee time', () => {
     assert.ok(!patches.some((p) => p.status === 'booked'));
   });
 
+  it('charges only for rentals offered on the sport being booked', async () => {
+    world({ settings: [{ key: 'rentals', value: [{ id: 'p-a', label: 'Set A', price: 500, group: 'Premium', activities: ['golf'] }, { id: 'paddle', label: 'Paddle', price: 100, group: 'Gear', activities: ['pickleball'] }] }] });
+    await book({ 'p-a': 1, paddle: 1 });
+    assert.equal(paysoBody!.amount, option.price * 2 + 500);
+  });
+
   it('lets the time go at once when Payso refuses', async () => {
     world({ payso: JSON.stringify({ status: { statusCode: '4A003', message: 'invalid' } }) });
-    const { status } = await quietly(book);
+    const { status } = await quietly(() => book());
     assert.equal(status, 502);
     assert.equal(patches.at(-1)!.status, 'expired');
   });

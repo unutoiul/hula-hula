@@ -1,4 +1,4 @@
-import type { Activity, ActivityOption, Rental } from './config.ts';
+import { rentalName, type Activity, type ActivityOption, type Rental } from './config.ts';
 
 export interface PriceLine { label: string; detail?: string; amount: number }
 
@@ -24,7 +24,7 @@ export function priceLines(activity: Activity, option: ActivityOption, players: 
   const lines: PriceLine[] = [{ label: `${activity.name} · ${option.label}`, detail: `${peopleLabel(activity, players)} × ${money(each)}`, amount: each * players }];
   for (const rental of rentalCatalog) {
     const count = rentals[rental.id] ?? 0;
-    if (count > 0) lines.push({ label: `Rental clubs · ${rental.label}`, detail: `${count} × ${money(rental.price)}`, amount: count * rental.price });
+    if (count > 0) lines.push({ label: `Rental · ${rentalName(rental)}`, detail: `${count} × ${money(rental.price)}`, amount: count * rental.price });
   }
   return lines;
 }

@@ -10,7 +10,7 @@ import { useContact, useSite } from '../../context/SiteDataContext';
 import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
 import { BookingSummary } from '../components/BookingSummary';
-import { EXPERIENCE_LEVELS, pickupFor } from '../config';
+import { EXPERIENCE_LEVELS, pickupFor, rentalName, rentalsFor } from '../config';
 import { fromMinutes, timeLabel, toMinutes } from '../dates';
 import { money } from '../pricing';
 import { RentalSets } from '../../components/activities/RentalCard';
@@ -27,6 +27,7 @@ export function ExtrasStep() {
   useEffect(() => { if (activity.askExperience && !extras.experience) updateExtras({ experience: EXPERIENCE_LEVELS[0] }); }, [activity.id]);
   const pickup = time ? pickupFor(time, club) : null;
   const needsAddress = !!extras.transfer && !extras.pickupFrom.trim();
+  const offered = rentalsFor(activity, rentals);
 
   const goOn = () => {
     setTried(true);
@@ -41,9 +42,9 @@ export function ExtrasStep() {
       <Typography sx={{ color: 'text.secondary', mt: 1, mb: 3 }}>All optional — skip anything you don’t need.</Typography>
 
       <Stack spacing={2.5}>
-        {activity.rentals && rentals.length > 0 && <Card icon={<SportsGolfRounded />} title="Rental clubs" hint="Bringing your own? Skip this. Sets are paid online with your booking.">
-          <RentalSets rentals={rentals} compact control={(r, label) => <GuestStepper label={label} name={`${r.label} sets`} value={extras.rentals[r.id] ?? 0} min={0}
-            max={search.players - rentals.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
+        {offered.length > 0 && <Card icon={<SportsGolfRounded />} title="Rentals" hint="Bringing your own? Skip this. Paid online with your booking.">
+          <RentalSets rentals={offered} compact control={(r, label) => <GuestStepper label={label} name={`${rentalName(r)} sets`} value={extras.rentals[r.id] ?? 0} min={0}
+            max={search.players - offered.filter((o) => o.id !== r.id).reduce((sum, o) => sum + (extras.rentals[o.id] ?? 0), 0)}
             onChange={(count) => updateExtras({ rentals: { ...extras.rentals, [r.id]: count } })} />} />
         </Card>}
 

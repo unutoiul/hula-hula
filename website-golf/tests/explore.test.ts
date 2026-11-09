@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { describe, it } from 'node:test';
-import { DEFAULT_CLUB, groupRentals, normaliseClub, normaliseRentals } from '../src/booking/config.ts';
+import { assignRentalIds, DEFAULT_CLUB, groupRentals, normaliseClub, normaliseRentals, rentalName, rentalsFor } from '../src/booking/config.ts';
 import { activeOffers } from '../src/booking/offers.ts';
 import { courseMapImage, GOLF_HOLES, golfHole } from '../src/data/course.ts';
 import { refineMapLabels } from '../scripts/refine-course-labels.ts';
@@ -48,18 +48,52 @@ describe('course and rental presentation', () => {
     assert.equal(rental.description, 'Newer clubs');
     assert.equal(rental.price, 1000);
   });
-  it('groups each rental set with its Normal and Premium options', () => {
-    const groups = groupRentals([
-      { id: 'a-premium', label: 'Set A Premium', price: 2000 },
-      { id: 'premium', label: 'Set A', price: 1000 },
-      { id: 'standard', label: 'Set B', price: 500 },
-      { id: 'b-premium', label: 'set b premium', price: 900 },
-    ]);
-    assert.deepEqual(groups.map((g) => [g.name, g.rentals.map((r) => r.id)]), [['Set A', ['premium', 'a-premium']], ['Set B', ['standard', 'b-premium']]]);
+  it('keeps a rental’s group and the sports that offer it', () => {
+    const [grouped, plain] = normaliseRentals([{ id: 'a', label: 'Set A', price: 1, group: ' Premium ', activities: ['golf', 7, 'range'] }, { id: 'b', label: 'Set B', price: 1 }]);
+    assert.equal(grouped.group, 'Premium');
+    assert.deepEqual(grouped.activities, ['golf', 'range']);
+    assert.equal(plain.activities, undefined);
   });
-  it('keeps a rental with no set letter on its own, so it never disappears', () => {
+  it('lists each group with its own Set A and Set B, in the order added', () => {
+    const groups = groupRentals([
+      { id: 'p-a', label: 'Set A', price: 2000, group: 'Premium' },
+      { id: 'n-a', label: 'Set A', price: 1000, group: 'Normal' },
+      { id: 'p-b', label: 'Set B', price: 1500, group: 'premium' },
+      { id: 'n-b', label: 'Set B', price: 500, group: 'Normal' },
+    ]);
+    assert.deepEqual(groups.map((g) => [g.name, g.rentals.map((r) => r.id)]), [['Premium', ['p-a', 'p-b']], ['Normal', ['n-a', 'n-b']]]);
+  });
+  it('keeps rentals with no group together, so none disappear', () => {
     const groups = groupRentals([{ id: 'premium-clubs', label: 'Premium Clubs', price: 2000 }, { id: 'premium', label: 'Set A', price: 1000 }]);
-    assert.deepEqual(groups.map((g) => [g.name, g.letter, g.rentals.length]), [['Premium Clubs', '', 1], ['Set A', 'A', 1]]);
+    assert.deepEqual(groups.map((g) => [g.name, g.rentals.length]), [['', 2]]);
+  });
+  it('offers a rental only on the sports ticked for it', () => {
+    const golf = { id: 'golf', rentals: true }, pickleball = { id: 'pickleball', rentals: false };
+    const rentals = [{ id: 'clubs', label: 'Set A', price: 1, activities: ['golf'] }, { id: 'paddle', label: 'Paddle', price: 1, activities: ['pickleball'] }];
+    assert.deepEqual(rentalsFor(golf, rentals).map((r) => r.id), ['clubs']);
+    assert.deepEqual(rentalsFor(pickleball, rentals).map((r) => r.id), ['paddle']);
+  });
+  it('falls back to the activity’s old switch for rentals not yet set up per sport', () => {
+    const rentals = [{ id: 'old', label: 'Set A', price: 1 }];
+    assert.equal(rentalsFor({ id: 'golf', rentals: true }, rentals).length, 1);
+    assert.equal(rentalsFor({ id: 'footgolf', rentals: false }, rentals).length, 0);
+  });
+  it('names a rental with its group, without saying the group twice', () => {
+    assert.equal(rentalName({ label: 'Set A', group: 'Premium' }), 'Premium Set A');
+    assert.equal(rentalName({ label: 'Premium Clubs', group: 'Premium' }), 'Premium Clubs');
+    assert.equal(rentalName({ label: 'Set B' }), 'Set B');
+  });
+  it('gives every group’s Set A its own id and never changes an existing one', () => {
+    const ids = assignRentalIds([
+      { id: 'premium', label: 'Set A', price: 1, group: 'Normal' },
+      { id: '', label: 'Set A', price: 1, group: 'Premium' },
+      { id: '', label: 'Set A', price: 1, group: 'Premium' },
+      { id: '', label: 'A very long rental name indeed', price: 1, group: 'Premium' },
+    ]).map((r) => r.id);
+    assert.equal(ids[0], 'premium');
+    assert.equal(new Set(ids).size, 4);
+    assert.ok(ids.every((id) => id.length > 0 && id.length <= 20));
+    assert.deepEqual(ids.slice(1, 3), ['premium-set-a', 'premium-set-a-2']);
   });
   it('serves only the current vector maps for all 18 selections in both activities', () => {
     const maps = new Set<string>();

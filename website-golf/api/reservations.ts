@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/availability.ts';
-import { contactLinks, EXPERIENCE_LEVELS, findActivity, pickupFor } from '../src/booking/config.ts';
+import { contactLinks, EXPERIENCE_LEVELS, findActivity, pickupFor, rentalsFor } from '../src/booking/config.ts';
 import type { ErrorResponse, Guest, ReservationStarted } from '../src/booking/contract.ts';
 import { isISODate } from '../src/booking/dates.ts';
 import { priceLines, totalOf } from '../src/booking/pricing.ts';
@@ -69,10 +69,10 @@ async function book(req: VercelRequest, res: VercelResponse) {
     return fail(400, 'Please check your name, email, phone and country.', 'invalid');
   }
 
-  // Rental sets only where the activity has them, never more than one each.
+  // Only rentals this activity offers, never more than one each.
   const sentRentals = (body.rentals ?? {}) as Record<string, unknown>;
   const rentals: Record<string, number> = {};
-  if (activity.rentals) for (const r of site.rentals) {
+  for (const r of rentalsFor(activity, site.rentals)) {
     const count = Number(sentRentals[r.id]);
     if (Number.isInteger(count) && count > 0) rentals[r.id] = count;
   }

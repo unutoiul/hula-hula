@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useSite } from '../context/SiteDataContext';
 import { createReservation, ApiError, type Guest, type ReservationStarted } from './api';
 import { isBookableDay } from './availability';
-import { findActivity, onlineActivities, pickupFor, type Activity, type ActivityOption, type SiteData } from './config';
+import { findActivity, onlineActivities, pickupFor, rentalsFor, type Activity, type ActivityOption, type SiteData } from './config';
 import { isISODate, krabiNow } from './dates';
 import { priceLines, totalOf, type PriceLine } from './pricing';
 
@@ -134,10 +134,9 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
   const startOver = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras })), []);
   const forgetGuest = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest })), []);
 
-  // Rentals only for activities that have them, and never more sets than players.
-  const rentals = useMemo(() => activity.rentals
-    ? Object.fromEntries(site.rentals.map((r) => [r.id, Math.min(state.extras.rentals[r.id] ?? 0, state.search.players)]).filter(([, n]) => (n as number) > 0))
-    : {}, [activity, site.rentals, state.extras.rentals, state.search.players]);
+  // Only what this activity offers, and never more sets than players.
+  const rentals = useMemo(() => Object.fromEntries(rentalsFor(activity, site.rentals).map((r) => [r.id, Math.min(state.extras.rentals[r.id] ?? 0, state.search.players)]).filter(([, n]) => (n as number) > 0)),
+    [activity, site.rentals, state.extras.rentals, state.search.players]);
   const lines = useMemo(() => priceLines(activity, option, state.search.players, rentals, site.rentals), [activity, option, state.search.players, rentals, site.rentals]);
 
   const confirm = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }) => {

@@ -1,17 +1,16 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import EditRounded from '@mui/icons-material/EditRounded';
-import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
-import { DEFAULT_ACTIVITIES, normaliseActivity, normaliseRentals, slugify, type Activity, type Rental } from '../booking/config';
+import { assignRentalIds, DEFAULT_ACTIVITIES, normaliseActivity, normaliseRentals, type Activity, type Rental } from '../booking/config';
 import { money } from '../booking/pricing';
 import { notifyContentChanged } from '../data/contentSync';
 import { ActivityEditor } from './ActivityEditor';
-import { ImagePicker } from './ImagePicker';
-import { RentalVisual } from '../components/activities/RentalCard';
+import { RentalGroupsEditor } from './RentalGroupsEditor';
 import { supabase } from './supabase';
-import { PageTitle, Section, toInt } from './ui';
+import { PageTitle, Section } from './ui';
 
 interface Row { activity: Activity; active: boolean; sortOrder: number }
 
@@ -23,7 +22,7 @@ const blank = (): Activity => ({
 });
 
 // /admin/activities — every activity and its prices (show/hide on the
-// website, edit, delete; new ones go last), and the rental club prices.
+// website, edit, delete; new ones go last), and the rental groups.
 // Saving here changes the homepage, the prices and the booking pages within
 // about half a minute.
 export function ActivitiesPage() {
@@ -40,8 +39,11 @@ export function ActivitiesPage() {
       supabase!.from('golf_settings').select('value').eq('key', 'rentals').maybeSingle(),
     ]);
     if (a.error) { setError(a.error.message); return; }
-    setRows((a.data as { id: string; active: boolean; sort_order: number; data: Record<string, unknown> }[]).map((r) => ({ activity: normaliseActivity(r.data, r.id), active: r.active, sortOrder: r.sort_order })));
-    setRentals(normaliseRentals(s.data?.value ?? []));
+    const loaded = (a.data as { id: string; active: boolean; sort_order: number; data: Record<string, unknown> }[]).map((r) => ({ activity: normaliseActivity(r.data, r.id), active: r.active, sortOrder: r.sort_order }));
+    setRows(loaded);
+    // Rentals from before groups existed are offered wherever rentals were switched on.
+    const legacySports = loaded.filter((r) => r.activity.rentals).map((r) => r.activity.id);
+    setRentals(normaliseRentals(s.data?.value ?? []).map((r) => (r.activities ? r : { ...r, activities: legacySports })));
   }, []);
   useEffect(() => { void load(); }, [load]);
 
@@ -75,7 +77,7 @@ export function ActivitiesPage() {
 
   const saveRentals = async () => {
     setSavedRentals(false);
-    const cleaned = rentals.filter((r) => r.label.trim()).map((r, i) => ({ ...r, id: r.id || slugify(r.label) || `r${i + 1}` }));
+    const cleaned = assignRentalIds(rentals.filter((r) => r.label.trim()).map((r) => ({ ...r, label: r.label.trim(), group: r.group?.trim() ?? '' })));
     const failure = await after(await supabase!.from('golf_settings').upsert({ key: 'rentals', value: cleaned }));
     if (!failure) setSavedRentals(true);
   };
@@ -105,24 +107,11 @@ export function ActivitiesPage() {
     </Stack>
 
     <Box sx={{ mt: 3 }}>
-      <Section title="Rental clubs" hint="Offered on golf and range bookings that allow rentals. Prices per set. Name them Set A, Set A Premium, Set B and Set B Premium, and the website shows each set with its Normal and Premium price together.">
-        <Stack spacing={1.25}>
-          {rentals.map((r, i) => <Box key={i} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: '20px' }}>
-            <RentalVisual rental={r} />
-            <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mt: 2 }}>
-            <TextField label="Set" value={r.label} onChange={(e) => setRentals(rentals.map((x, j) => (j === i ? { ...x, label: e.target.value.slice(0, 60) } : x)))} sx={{ flex: 2 }} />
-            <TextField label="Price ฿" type="number" value={r.price} onChange={(e) => setRentals(rentals.map((x, j) => (j === i ? { ...x, price: Math.max(0, toInt(e.target.value)) } : x)))} slotProps={{ htmlInput: { min: 0, inputMode: 'numeric' } }} sx={{ flex: 1 }} />
-            <IconButton aria-label={`Remove ${r.label || 'set'}`} onClick={() => setRentals(rentals.filter((_, j) => j !== i))}><DeleteOutlineRounded /></IconButton>
-            </Stack>
-            <TextField fullWidth label="Short description" value={r.description ?? ''} onChange={(e) => setRentals(rentals.map((x, j) => j === i ? { ...x, description: e.target.value.slice(0, 240) } : x))} sx={{ my: 2 }} />
-            <ImagePicker label="Product photo (optional — otherwise the club icon is shown)" value={r.image ? [r.image] : []} onChange={(images) => setRentals(rentals.map((x, j) => j === i ? { ...x, image: images[0] ?? '' } : x))} />
-          </Box>)}
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Button startIcon={<AddRounded />} onClick={() => setRentals([...rentals, { id: '', label: '', price: 0 }])}>Add a set</Button>
-            <Box sx={{ flex: 1 }} />
-            {savedRentals && <Typography sx={{ fontSize: 13, color: 'success.dark' }}>Saved</Typography>}
-            <Button variant="contained" onClick={() => void saveRentals()}>Save rental prices</Button>
-          </Stack>
+      <Section title="Rentals" hint="Make a group for each kind of rental, like Premium and Normal, and add its sets. Then tap the sports that offer it. Guests see each group as a heading with its sets underneath.">
+        <RentalGroupsEditor rentals={rentals} sports={rows.map((r) => ({ id: r.activity.id, name: r.activity.name }))} onChange={(next) => { setRentals(next); setSavedRentals(false); }} />
+        <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="flex-end" sx={{ mt: 2 }}>
+          {savedRentals && <Typography sx={{ fontSize: 13, color: 'success.dark' }}>Saved</Typography>}
+          <Button variant="contained" onClick={() => void saveRentals()}>Save rentals</Button>
         </Stack>
       </Section>
     </Box>

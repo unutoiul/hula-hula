@@ -1,8 +1,9 @@
 import StarRounded from '@mui/icons-material/StarRounded';
 import { Box, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
-import { groupRentals, isPremiumRental, rentalSetLetter, type Rental, type RentalGroup } from '../../booking/config';
+import { groupRentals, rentalSetLetter, type Rental } from '../../booking/config';
 import { money } from '../../booking/pricing';
+import { fonts } from '../../theme';
 
 const ICON_SX = { display: 'block', height: '88%', width: 'auto', maxWidth: '100%' };
 
@@ -60,14 +61,14 @@ const SET_A: Look = { bg: '#f8edc9', Icon: StandBag, blurb: 'Newer clubs & more 
 const SET_B: Look = { bg: '#dcebc6', Icon: ThreeClubs, blurb: 'A standard set for your round.' };
 const PREMIUM: Look = { ...SET_A, blurb: 'Our best clubs for your round.' };
 
-function lookOf(label: string): Look {
-  const letter = rentalSetLetter(label);
-  if (letter) return letter === 'A' ? SET_A : SET_B;
-  return /premium/i.test(label) ? PREMIUM : SET_B;
+function lookOf(rental: Pick<Rental, 'label' | 'group'>): Look {
+  const letter = rentalSetLetter(rental.label);
+  const look = letter ? (letter === 'A' ? SET_A : SET_B) : /premium/i.test(rental.label) ? PREMIUM : SET_B;
+  return /premium/i.test(rental.group ?? '') ? { ...look, blurb: PREMIUM.blurb } : look;
 }
 
-export function RentalVisual({ rental, height = 148 }: { rental: Pick<Rental, 'label' | 'image'>; height?: number | { xs: number; md: number } }) {
-  const { bg, Icon } = lookOf(rental.label);
+export function RentalVisual({ rental, height = 148 }: { rental: Pick<Rental, 'label' | 'image' | 'group'>; height?: number | { xs: number; md: number } }) {
+  const { bg, Icon } = lookOf(rental);
   return <Box sx={{ bgcolor: bg, borderRadius: '18px', height, display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
     {rental.image ? <Box component="img" src={rental.image} alt={rental.label} loading="lazy" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Icon />}
   </Box>;
@@ -77,37 +78,36 @@ const BESIDE = { xs: '80px minmax(0,1fr)', sm: '96px minmax(0,1fr)' };
 
 type Control = (rental: Rental, label: ReactNode) => ReactNode;
 
-// The set's picture and words, then a row for each of its options. The rows
-// run the full width so a stepper fits beside them on the narrowest phones.
-function RentalSetCard({ group, compact, control }: { group: RentalGroup; compact: boolean; control?: Control }) {
-  const [first] = group.rentals;
-  const tierOf = (rental: Rental) => !group.letter ? 'Per set' : isPremiumRental(rental) ? 'Premium' : 'Normal';
-  const option = (rental: Rental) => <Stack direction={control ? { xs: 'column', sm: 'row' } : 'row'} alignItems={control ? { xs: 'flex-start', sm: 'center' } : 'center'} columnGap={1.25} sx={{ minWidth: 0 }}>
-    <Stack direction="row" alignItems="center" spacing={.4}>
-      {isPremiumRental(rental) && group.letter && <StarRounded aria-hidden sx={{ fontSize: 17, color: '#d9a521' }} />}
-      <Typography component="span" sx={{ fontSize: 15, fontWeight: 700 }}>{tierOf(rental)}</Typography>
-    </Stack>
-    <Typography component="span" sx={{ fontSize: 15, fontWeight: 800, color: 'primary.main', whiteSpace: 'nowrap' }}>{money(rental.price)}</Typography>
+// One set: its picture and words, then its price with room for a stepper
+// beside it, even on the narrowest phones.
+function RentalItem({ rental, compact, control }: { rental: Rental; compact: boolean; control?: Control }) {
+  const price = <Stack direction="row" flexWrap="wrap" alignItems="baseline" columnGap={.75}>
+    <Typography component="span" sx={{ fontSize: 16, fontWeight: 800, color: 'primary.main', whiteSpace: 'nowrap' }}>{money(rental.price)}</Typography>
+    <Typography component="span" sx={{ fontSize: 13, color: 'text.secondary', whiteSpace: 'nowrap' }}>per set</Typography>
   </Stack>;
-  return <Box sx={{ display: 'grid', gridTemplateColumns: compact ? BESIDE : { ...BESIDE, md: 'minmax(0,1fr)' }, alignContent: 'start', columnGap: 2, rowGap: 1.5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', p: 2, minWidth: 0 }}>
-    <RentalVisual rental={{ label: first.label, image: group.rentals.find((r) => r.image)?.image }} height={compact ? 96 : { xs: 96, md: 172 }} />
+  return <Box sx={{ display: 'grid', gridTemplateColumns: compact ? '64px minmax(0,1fr)' : { ...BESIDE, md: 'minmax(0,1fr)' }, alignContent: 'start', columnGap: compact ? 1.5 : 2, rowGap: 1.25, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '20px', p: compact ? 1.5 : 2, minWidth: 0 }}>
+    <RentalVisual rental={rental} height={compact ? 64 : { xs: 96, md: 172 }} />
     <Box sx={{ minWidth: 0, alignSelf: 'center' }}>
-      <Typography sx={{ fontWeight: 700, fontSize: 17 }}>{group.name}</Typography>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .5 }}>{first.description || lookOf(first.label).blurb} Priced per set.</Typography>
+      <Typography sx={{ fontWeight: 700, fontSize: compact ? 16 : 17, lineHeight: 1.25 }}>{rental.label}</Typography>
+      <Typography sx={{ fontSize: 13, lineHeight: 1.4, color: 'text.secondary', mt: .25 }}>{rental.description || lookOf(rental).blurb}</Typography>
     </Box>
-    <Box sx={{ gridColumn: '1 / -1', minWidth: 0 }}>
-      {group.rentals.map((rental) => <Box key={rental.id} sx={{ py: control ? .75 : 1, borderTop: '1px solid', borderColor: 'divider' }}>
-        {control ? control(rental, option(rental)) : option(rental)}
-        {rental !== first && rental.description && <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .25 }}>{rental.description}</Typography>}
-      </Box>)}
+    <Box sx={{ gridColumn: '1 / -1', minWidth: 0, pt: control ? .75 : 1, borderTop: '1px solid', borderColor: 'divider' }}>
+      {control ? control(rental, price) : price}
     </Box>
   </Box>;
 }
 
-/** Each set with its Normal and Premium options. Side by side on large screens, unless `compact`. */
+/** The rentals under their group headings (Premium, Normal…), each group's sets side by side where there's room. */
 export function RentalSets({ rentals, compact = false, control }: { rentals: Rental[]; compact?: boolean; control?: Control }) {
-  const groups = groupRentals(rentals);
-  const cards = groups.map((group) => <RentalSetCard key={group.id} group={group} compact={compact} control={control} />);
-  if (compact) return <Stack spacing={1.5}>{cards}</Stack>;
-  return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: `repeat(${Math.max(1, Math.min(groups.length, 3))}, minmax(0,1fr))` }, gap: { xs: 2, md: 3 } }}>{cards}</Box>;
+  return <Stack spacing={compact ? 2.25 : 4}>
+    {groupRentals(rentals).map((group) => <Box key={group.id} component="section" aria-label={group.name || undefined}>
+      {group.name && <Stack direction="row" alignItems="center" spacing={.5} sx={{ mb: compact ? 1 : 1.5 }}>
+        {/premium/i.test(group.name) && <StarRounded aria-hidden sx={{ fontSize: compact ? 19 : 24, color: '#d9a521' }} />}
+        <Typography component="h3" sx={{ fontFamily: fonts.playful, fontSize: compact ? 20 : 26, lineHeight: 1.2 }}>{group.name}</Typography>
+      </Stack>}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2, minmax(0,1fr))', ...(!compact && { md: `repeat(${Math.max(2, Math.min(group.rentals.length, 3))}, minmax(0,1fr))` }) }, gap: compact ? 1.25 : { xs: 2, md: 3 } }}>
+        {group.rentals.map((rental) => <RentalItem key={rental.id} rental={rental} compact={compact} control={control} />)}
+      </Box>
+    </Box>)}
+  </Stack>;
 }

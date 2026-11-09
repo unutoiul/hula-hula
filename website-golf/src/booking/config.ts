@@ -69,7 +69,13 @@ export interface Activity {
   card: { kicker: string; title: string; detail: string; images: string[] };
 }
 
-export interface Rental { id: string; label: string; price: number; image?: string; description?: string }
+export interface Rental {
+  id: string; label: string; price: number; image?: string; description?: string;
+  /** The heading it's listed under ("Premium", "Normal"). */
+  group?: string;
+  /** The activities that offer it. Without this list, every activity with `rentals` switched on does. */
+  activities?: string[];
+}
 
 export interface OpeningDay { open: string; close: string; closed: boolean }
 
@@ -279,29 +285,49 @@ export function normaliseActivity(raw: Record<string, unknown>, id: string): Act
 
 export function normaliseRentals(raw: unknown): Rental[] {
   if (!Array.isArray(raw)) return DEFAULT_RENTALS;
-  return raw.map((r: Record<string, unknown>, i) => ({ id: str(r?.id, `r${i + 1}`, 20) || `r${i + 1}`, label: str(r?.label, 'Club set', 60) || 'Club set', price: num(r?.price, 0, 0, 100_000), image: str(r?.image, '', 1000), description: str(r?.description, '', 240) }));
+  return raw.map((r: Record<string, unknown>, i) => ({ id: str(r?.id, `r${i + 1}`, 20) || `r${i + 1}`, label: str(r?.label, 'Club set', 60) || 'Club set', price: num(r?.price, 0, 0, 100_000), image: str(r?.image, '', 1000), description: str(r?.description, '', 240), group: str(r?.group, '', 40), ...(Array.isArray(r?.activities) && { activities: (r.activities as unknown[]).filter((id): id is string => typeof id === 'string') }) }));
 }
 
-// Set A and Set B each come as Normal or Premium. That's read from the name a
-// row has in /admin ("Set A", "Set A Premium"), so the rows themselves stay as
-// they are and past bookings, stored against a row's id, still add up.
-export interface RentalGroup { id: string; name: string; letter: string; rentals: Rental[] }
+// Staff sort rentals into groups in /admin, like Premium and Normal, each with
+// its own Set A and Set B. A rental's id never changes, so past bookings,
+// stored against it, still add up.
+export interface RentalGroup { id: string; name: string; rentals: Rental[] }
 
-export const isPremiumRental = (rental: Pick<Rental, 'label'>) => /\bpremium\b/i.test(rental.label);
 export const rentalSetLetter = (label: string) => /\bset\s+([a-z])\b/i.exec(label)?.[1].toUpperCase() ?? '';
 
-/** One group per lettered set, Normal before Premium. A row with no letter stands alone. */
+/** The groups in the order they were added. Rentals with no group share one with no name. */
 export function groupRentals(rentals: Rental[]): RentalGroup[] {
   const groups = new Map<string, RentalGroup>();
   for (const rental of rentals) {
-    const letter = rentalSetLetter(rental.label);
-    const id = letter ? `set-${letter.toLowerCase()}` : rental.id;
-    const group = groups.get(id) ?? { id, name: letter ? `Set ${letter}` : rental.label, letter, rentals: [] };
+    const name = rental.group ?? '';
+    const key = name.trim().toLowerCase();
+    const group = groups.get(key) ?? { id: slugify(name) || 'ungrouped', name, rentals: [] };
     group.rentals.push(rental);
-    groups.set(id, group);
+    groups.set(key, group);
   }
-  for (const group of groups.values()) group.rentals.sort((a, b) => Number(isPremiumRental(a)) - Number(isPremiumRental(b)));
   return [...groups.values()];
+}
+
+/** What can be added to a booking for this activity. */
+export const rentalsFor = (activity: Pick<Activity, 'id' | 'rentals'>, rentals: Rental[]) => rentals.filter((r) => (r.activities ? r.activities.includes(activity.id) : activity.rentals));
+
+/** "Premium Set A": a rental's full name, for receipts and emails. */
+export function rentalName(rental: Pick<Rental, 'label' | 'group'>): string {
+  const group = rental.group?.trim();
+  return group && !rental.label.toLowerCase().includes(group.toLowerCase()) ? `${group} ${rental.label}` : rental.label;
+}
+
+/** Gives new rentals an id from their full name, never repeating one: every group can have its own Set A. */
+export function assignRentalIds(rentals: Rental[]): Rental[] {
+  const taken = new Set(rentals.map((r) => r.id).filter(Boolean));
+  return rentals.map((rental, i) => {
+    if (rental.id) return rental;
+    const base = slugify(rentalName(rental)).slice(0, 17) || `r${i + 1}`;
+    let id = base;
+    for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
+    taken.add(id);
+    return { ...rental, id };
+  });
 }
 
 export function normaliseClub(raw: unknown): ClubSettings {

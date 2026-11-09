@@ -43,7 +43,7 @@ export default function ExplorePages({ path }: { path: string }) {
     {path === '/events' && <><EventsSection events={events} loaded={loaded} /><OffersSection /></>}
     {path === '/prices' && <PricesSection showIntro={false} />}
     {path === '/offers' && <OffersSection />}
-    {path === '/prices' && site.rentals.length > 0 && <Container maxWidth="xl" sx={{ py: SECTION_Y }}><SectionHeading eyebrow="Travel light" title="Rental club sets" description="Add equipment to your Golf or driving-range booking. Prices are per set." /><RentalSets rentals={site.rentals} /></Container>}
+    {path === '/prices' && site.rentals.length > 0 && <Container maxWidth="xl" sx={{ py: SECTION_Y }}><SectionHeading eyebrow="Travel light" title="Rentals" description="Add equipment when you book. Prices are per set." /><RentalSets rentals={site.rentals} /></Container>}
     {path === '/clubhouse' && <ClubhouseSection showIntro={false} />}
     {path === '/gallery' && <GallerySection showIntro={false} />}
     {path === '/visit' && <VisitSection />}

@@ -93,7 +93,6 @@ export function ActivityEditor({ initial, isNew, takenIds, onClose, onSave }: {
           </Box>
           <Stack>
             <Toggle checked={a.caddie} onChange={(v) => set({ caddie: v })} label="A caddie comes with it" hint="Shows the caddie-tip note when booking." />
-            <Toggle checked={a.rentals} onChange={(v) => set({ rentals: v })} label="Rental clubs can be added" />
             <Toggle checked={a.noSkillNeeded} onChange={(v) => set({ noSkillNeeded: v })} label="“No golf skill needed” badge" />
             <Toggle checked={a.askHandicap} onChange={(v) => set({ askHandicap: v })} label="Ask for a handicap" />
             <Toggle checked={a.askExperience} onChange={(v) => set({ askExperience: v })} label="Ask how much golf they’ve played" />
