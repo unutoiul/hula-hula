@@ -12,7 +12,7 @@ import { ClubMark } from '../common/ClubMark';
 import { LineIcon } from '../common/LineIcon';
 import { TropicalBackdrop } from '../common/TropicalBackdrop';
 import { NavLink } from './NavLink';
-import { HomeLogo, SiteDropdown, SiteList, SiteTabs } from './SiteSwitcher';
+import { HomeLogo, SiteList, SiteTabs } from './SiteSwitcher';
 
 type NavGroup = { label: string; href: string; items?: [string, string][] };
 
@@ -25,9 +25,10 @@ const GROUPS: NavGroup[] = [
 ];
 
 // The same header as the resort's (website/src/components/layout/Header.tsx):
-// a contact strip with the Resort | Golf Club tabs and the websites dropdown,
-// then the logo, which goes home, centred between the menu. It's fixed to the
-// top on every page, so a spacer of its full height holds its place in the page.
+// a contact strip with the Resort | Golf Club tabs, then the logo, which goes
+// home (its yellow badge opens the website switcher), centred between the menu.
+// It's fixed to the top on every page, so a spacer of its full height holds its
+// place in the page.
 export function Header() {
   const CONTACT = useContact();
   const { club } = useSite();
@@ -61,16 +62,15 @@ export function Header() {
       {/* Contact strip: always-on details at the very top; folds away on scroll. */}
       <Box sx={{ position: 'relative', overflow: 'hidden', height: scrolled ? 0 : { xs: 34, md: 36 }, transition: 'height .35s ease', bgcolor: 'primary.main', color: 'white' }}>
         <Container maxWidth="xl" sx={{ height: '100%' }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1.5} sx={{ height: '100%' }}>
-            <Stack direction="row" alignItems="center" spacing={{ xs: 0, lg: 1 }} sx={{ minWidth: 0 }}>
+          <Stack direction="row" alignItems="center" justifyContent={{ xs: 'center', md: 'space-between' }} sx={{ height: '100%' }}>
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ display: { xs: 'none', md: 'flex' }, minWidth: 0 }}>
               <Box sx={{ display: { xs: 'none', lg: 'block' } }}><SiteTabs /></Box>
-              <SiteDropdown />
-              <Typography noWrap sx={{ display: { xs: 'none', md: 'block' }, pl: { md: 1.5, lg: 1 }, fontSize: 13, fontWeight: 600, opacity: .9 }}>{club.announcement}</Typography>
+              <Typography noWrap sx={{ fontSize: 13, fontWeight: 600, opacity: .9 }}>{club.announcement}</Typography>
             </Stack>
-            <Stack direction="row" alignItems="center" divider={<Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,.35)' }} />} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ flexShrink: 0, fontSize: { xs: 12, md: 13 }, fontWeight: 600, '& a': { color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', minHeight: 32 }, '& a:hover': { textDecoration: 'underline' }, '& svg': { fontSize: 16 } }}>
-              <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${CONTACT.phone}`}><WhatsApp /><Box component="span" sx={{ '@media (max-width: 389px)': { display: 'none' } }}>{CONTACT.phone}</Box></Link>
+            <Stack direction="row" alignItems="center" divider={<Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,.35)' }} />} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ fontSize: { xs: 12, md: 13 }, fontWeight: 600, '& a': { color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', minHeight: 32 }, '& a:hover': { textDecoration: 'underline' }, '& svg': { fontSize: 16 } }}>
+              <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${CONTACT.phone}`}><WhatsApp />{CONTACT.phone}</Link>
               <Link href={CONTACT.line} target="_blank" rel="noopener noreferrer" aria-label={`Line ${CONTACT.lineId}`} sx={{ display: { xs: 'none !important', sm: 'inline-flex !important' } }}><LineIcon />{CONTACT.lineId}</Link>
-              <Link href={`mailto:${CONTACT.email}`} aria-label={`Email ${CONTACT.email}`}><MailOutlineRounded /><Box component="span" sx={{ display: 'none', '@media (min-width: 1360px)': { display: 'inline' } }}>{CONTACT.email}</Box><Box component="span" sx={{ '@media (min-width: 1360px)': { display: 'none' } }}>Email us</Box></Link>
+              <Link href={`mailto:${CONTACT.email}`} aria-label={`Email ${CONTACT.email}`}><MailOutlineRounded /><Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>{CONTACT.email}</Box><Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Email us</Box></Link>
             </Stack>
           </Stack>
         </Container>

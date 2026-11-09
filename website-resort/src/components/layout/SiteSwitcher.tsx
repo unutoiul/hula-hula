@@ -2,7 +2,6 @@ import BeachAccessRounded from '@mui/icons-material/BeachAccessRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import East from '@mui/icons-material/East';
 import GolfCourseRounded from '@mui/icons-material/GolfCourseRounded';
-import KeyboardArrowDownRounded from '@mui/icons-material/KeyboardArrowDownRounded';
 import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
 import { Box, Popover, Stack, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
@@ -10,10 +9,9 @@ import { fonts } from '../../theme';
 import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 
 // The Hula Hula family: the resort and the golf club are two websites that
-// hand guests to each other. Four ways across: the "Resort | Golf Club" tabs
-// in the top strip (large screens), the dropdown beside them (every screen),
-// the yellow badge on the header logo, and the mobile menu. The logo itself
-// goes home. The golf club's copy of this file is
+// hand guests to each other. Three ways across: the "Resort | Golf Club" tabs
+// in the top strip (large screens), the yellow badge on the header logo, and
+// the mobile menu. The logo itself goes home. The golf club's copy of this file is
 // website-golf/src/components/layout/SiteSwitcher.tsx — keep the two in step.
 // The golf club lives on its Vercel address until it has its own domain.
 
@@ -39,7 +37,7 @@ export function SiteTabs() {
   </Stack>;
 }
 
-/** Both places as cards, the current one marked — in the dropdown's panel and the mobile menu. */
+/** Both places as cards, the current one marked — in the logo badge's panel and the mobile menu. */
 export function SiteList({ onHere }: { onHere?: () => void }) {
   return <Stack spacing={1}>
     {SITES.map(({ id, name, line, url, image }) => {
@@ -65,38 +63,6 @@ export function SiteList({ onHere }: { onHere?: () => void }) {
   </Stack>;
 }
 
-/** The panel of both websites, opened by the strip's dropdown and the logo's badge. */
-function SitesPopover({ anchor, onClose, align }: { anchor: HTMLElement | null; onClose: () => void; align: 'left' | 'center' }) {
-  return <Popover open={!!anchor} anchorEl={anchor} onClose={onClose} anchorOrigin={{ vertical: 'bottom', horizontal: align }} transformOrigin={{ vertical: 'top', horizontal: align }}
-    slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', boxShadow: '0 22px 50px rgba(23,60,44,.18)', width: 380, maxWidth: 'calc(100vw - 32px)' } } }}>
-    <Box sx={{ p: 1.5 }}>
-      <Typography variant="overline" sx={{ display: 'block', px: .5, mb: 1, color: 'text.secondary' }}>The Hula Hula family</Typography>
-      <SiteList onHere={onClose} />
-    </Box>
-  </Popover>;
-}
-
-/**
- * The dropdown beside the tabs: every screen size gets it, and on phones it's
- * the quick way across. Below large screens it says which site you're on,
- * since the tabs that would show that aren't there.
- */
-export function SiteDropdown() {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  return <>
-    <Box component="button" type="button" onClick={(e) => setAnchor(e.currentTarget)} aria-haspopup="dialog" aria-expanded={!!anchor} aria-label={`Our websites: you’re on ${here.name}`} sx={{
-      display: 'inline-flex', alignItems: 'center', gap: .5, flexShrink: 0, height: { xs: 30, lg: 32 }, pl: 1.25, pr: .75, border: 0, borderRadius: 999, cursor: 'pointer',
-      font: 'inherit', fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap', color: 'common.white', bgcolor: anchor ? 'rgba(255,255,255,.28)' : 'rgba(255,255,255,.14)',
-      transition: 'background-color .2s ease', '&:hover': { bgcolor: 'rgba(255,255,255,.22)' }, '&:focus-visible': { outline: '2px solid white', outlineOffset: '-2px' }, '& svg': { fontSize: 15 },
-    }}>
-      <Box component="span" sx={{ display: { xs: 'inline-flex', lg: 'none' }, alignItems: 'center', gap: .6 }}><here.Icon />{here.short}</Box>
-      <Box component="span" sx={{ display: { xs: 'none', lg: 'inline' } }}>Our websites</Box>
-      <KeyboardArrowDownRounded sx={{ fontSize: '18px !important', transition: 'transform .2s ease', transform: anchor ? 'rotate(180deg)' : 'none' }} />
-    </Box>
-    <SitesPopover anchor={anchor} onClose={() => setAnchor(null)} align="left" />
-  </>;
-}
-
 /**
  * The header logo goes home. The little yellow badge on its corner opens the
  * panel of both websites; its tap area is bigger than it looks, for thumbs.
@@ -109,7 +75,7 @@ export function HomeLogo({ size }: { size: MarkSize }) {
     }}>
       <ClubMarkArt size={size} />
     </Box>
-    <Tooltip title="Our websites" placement="bottom" disableHoverListener={!!anchor}>
+    <Tooltip title="Switch website" placement="bottom" disableHoverListener={!!anchor}>
       <Box component="button" type="button" onClick={(e) => setAnchor(e.currentTarget)} aria-haspopup="dialog" aria-expanded={!!anchor} aria-label={`Switch website: you’re on ${here.name}`} sx={{
         position: 'absolute', top: { xs: -2, md: 2 }, right: { xs: -10, md: -12 }, width: { xs: 22, md: 26 }, height: { xs: 22, md: 26 }, p: 0, borderRadius: '50%', cursor: 'pointer',
         display: 'grid', placeItems: 'center', bgcolor: 'secondary.main', color: 'text.primary', border: '2px solid #fffef8', boxShadow: '0 3px 8px rgba(23,60,44,.18)',
@@ -117,6 +83,12 @@ export function HomeLogo({ size }: { size: MarkSize }) {
         '&::before': { content: '""', position: 'absolute', inset: -10, borderRadius: '50%' },
       }}><SwapHorizRounded /></Box>
     </Tooltip>
-    <SitesPopover anchor={anchor} onClose={() => setAnchor(null)} align="center" />
+    <Popover open={!!anchor} anchorEl={anchor} onClose={() => setAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+      slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px', boxShadow: '0 22px 50px rgba(23,60,44,.18)', width: 380, maxWidth: 'calc(100vw - 32px)' } } }}>
+      <Box sx={{ p: 1.5 }}>
+        <Typography variant="overline" sx={{ display: 'block', px: .5, mb: 1, color: 'text.secondary' }}>The Hula Hula family</Typography>
+        <SiteList onHere={() => setAnchor(null)} />
+      </Box>
+    </Popover>
   </Box>;
 }
