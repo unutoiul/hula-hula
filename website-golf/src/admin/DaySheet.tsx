@@ -4,41 +4,57 @@ import BlockRounded from '@mui/icons-material/BlockRounded';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import CloseRounded from '@mui/icons-material/CloseRounded';
-import RefreshRounded from '@mui/icons-material/RefreshRounded';
-import { Alert, Box, Button, Chip, IconButton, LinearProgress, Popover, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, IconButton, LinearProgress, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
 import { activityName, findActivity } from '../booking/config';
 import { useSite } from '../context/SiteDataContext';
 import { addDays, krabiNow, shortDayLabel, timeLabel } from '../booking/dates';
 import { money, plural } from '../booking/pricing';
-import { DayCalendar } from '../components/booking/DayCalendar';
+import { shiftMonth } from '../components/booking/DayCalendar';
 import { fonts } from '../theme';
 import { AddBookingDialog } from './AddBookingDialog';
 import { BlockDialog } from './BlockDialog';
+import { BookingCalendar, type DayTotals } from './BookingCalendar';
 import { BookingCard } from './BookingCard';
 import { hhmm, supabase, type StaffBlock, type StaffBooking } from './supabase';
 
 type Filter = string; // an activity id, or 'all'
 
-// One day at the club: what's coming up, who's here, who needs picking up,
-// and the buttons for the things that happen at the desk — a phone booking,
-// a walk-in, closing a time. Reloads every minute and when the tab comes back.
+const ROWS_PER_REQUEST = 1000; // the most Supabase returns at once
+
+/** Calls `refresh` every minute and whenever the tab comes back. */
+function useAutoRefresh(refresh: () => void) {
+  useEffect(() => {
+    const id = window.setInterval(refresh, 60_000);
+    const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { window.clearInterval(id); document.removeEventListener('visibilitychange', onVisible); };
+  }, [refresh]);
+}
+
+// One day at the club, under a month calendar of what's booked: what's coming
+// up, who's here, who needs picking up, and the buttons for the things that
+// happen at the desk — a phone booking, a walk-in, closing a time. Reloads
+// every minute and when the tab comes back.
 export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
   const site = useSite();
   const today = krabiNow().date;
   const [date, setDate] = useState(today);
+  const [month, setMonth] = useState(today.slice(0, 7));
+  const [monthTotals, setMonthTotals] = useState<{ month: string; days: Map<string, DayTotals> } | null>(null);
   const [bookings, setBookings] = useState<StaffBooking[] | null>(null);
   const [blocks, setBlocks] = useState<StaffBlock[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [showCancelled, setShowCancelled] = useState(false);
-  const [calendarAnchor, setCalendarAnchor] = useState<HTMLElement | null>(null);
   const [adding, setAdding] = useState(false);
   const [blocking, setBlocking] = useState(false);
 
   useEffect(() => { if (jumpTo) setDate(jumpTo.split('#')[0]); }, [jumpTo]);
+  // The calendar follows the day, wherever the day was changed from.
+  useEffect(() => { setMonth(date.slice(0, 7)); }, [date]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,14 +70,31 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
     setBlocks(k.data as StaffBlock[]);
   }, [date]);
 
-  useEffect(() => {
-    setBookings(null);
-    void load();
-    const id = window.setInterval(() => void load(), 60_000);
-    const onVisible = () => { if (document.visibilityState === 'visible') void load(); };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => { window.clearInterval(id); document.removeEventListener('visibilitychange', onVisible); };
-  }, [load]);
+  useEffect(() => { setBookings(null); void load(); }, [load]);
+  useAutoRefresh(load);
+
+  // Each day's numbers for the calendar, counted the same way as the day's own
+  // "Bookings" and "People" (nothing cancelled, or still waiting on payment).
+  const loadMonth = useCallback(async () => {
+    const days = new Map<string, DayTotals>();
+    for (let from = 0; ; from += ROWS_PER_REQUEST) {
+      const { data, error: monthError } = await supabase!.from('golf_bookings').select('play_date,players')
+        .gte('play_date', `${month}-01`).lt('play_date', `${shiftMonth(month, 1)}-01`).not('status', 'in', '(pending,expired,cancelled)')
+        .order('id').range(from, from + ROWS_PER_REQUEST - 1);
+      if (monthError) { setError(monthError.message); return; }
+      for (const row of data as { play_date: string; players: number }[]) {
+        const day = days.get(row.play_date) ?? { bookings: 0, people: 0 };
+        days.set(row.play_date, { bookings: day.bookings + 1, people: day.people + row.players });
+      }
+      if (data.length < ROWS_PER_REQUEST) break;
+    }
+    setMonthTotals({ month, days });
+  }, [month]);
+
+  useEffect(() => { void loadMonth(); }, [loadMonth]);
+  useAutoRefresh(loadMonth);
+
+  const refresh = useCallback(() => { void load(); void loadMonth(); }, [load, loadMonth]);
 
   const active = useMemo(() => (bookings ?? []).filter((b) => b.status !== 'cancelled'), [bookings]);
   const shown = (bookings ?? []).filter((b) => (filter === 'all' || b.activity === filter) && (showCancelled || b.status !== 'cancelled'));
@@ -77,27 +110,25 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
   const timeline = useMemo(() => {
     const rows: { time: string; node: ReactNode }[] = [];
     for (const block of shownBlocks) rows.push({ time: hhmm(block.start_time), node: <BlockRow key={block.id} block={block} onRemoved={load} /> });
-    for (const booking of shown) rows.push({ time: hhmm(booking.start_time), node: <BookingCard key={booking.id} booking={booking} onChanged={load} /> });
+    for (const booking of shown) rows.push({ time: hhmm(booking.start_time), node: <BookingCard key={booking.id} booking={booking} onChanged={refresh} /> });
     return rows.sort((a, b) => a.time.localeCompare(b.time));
-  }, [shown, shownBlocks, load]);
+  }, [shown, shownBlocks, load, refresh]);
 
   return <Box>
-    {/* The day */}
-    <Stack direction="row" alignItems="center" spacing={1}>
-      <IconButton aria-label="Previous day" onClick={() => setDate(addDays(date, -1))} sx={{ border: '1px solid', borderColor: 'divider' }}><ChevronLeft /></IconButton>
-      <Button onClick={(e) => setCalendarAnchor(e.currentTarget)} color="inherit" variant="outlined" sx={{ flex: 1, borderColor: 'divider', fontFamily: fonts.playful, fontSize: 18, fontWeight: 500 }}>
-        {date === today ? 'Today · ' : date === addDays(today, 1) ? 'Tomorrow · ' : ''}{shortDayLabel(date)}
-      </Button>
-      <IconButton aria-label="Next day" onClick={() => setDate(addDays(date, 1))} sx={{ border: '1px solid', borderColor: 'divider' }}><ChevronRight /></IconButton>
-      <IconButton aria-label="Refresh" onClick={() => void load()} sx={{ display: { xs: 'none', sm: 'inline-flex' }, border: '1px solid', borderColor: 'divider' }}><RefreshRounded /></IconButton>
-    </Stack>
-    {date !== today && <Button size="small" onClick={() => setDate(today)} sx={{ mt: .5, minHeight: 0 }}>Back to today</Button>}
-    <Popover open={!!calendarAnchor} anchorEl={calendarAnchor} onClose={() => setCalendarAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} transformOrigin={{ vertical: 'top', horizontal: 'center' }} slotProps={{ paper: { sx: { mt: 1, borderRadius: '24px' } } }}>
-      <DayCalendar value={date} min={addDays(today, -365)} max={addDays(today, 365)} onChange={(d) => { setDate(d); setCalendarAnchor(null); }} />
-    </Popover>
-    <Box sx={{ height: 4, mt: 1.5 }}>{loading && <LinearProgress sx={{ borderRadius: 2 }} />}</Box>
+    <BookingCalendar value={date} today={today} month={month} totals={monthTotals?.month === month ? monthTotals.days : null}
+      onSelect={setDate} onMonthChange={setMonth} onToday={() => { setDate(today); setMonth(today.slice(0, 7)); }} onRefresh={refresh} />
 
-    {error && <Alert severity="error" sx={{ mt: 1 }} action={<Button color="inherit" size="small" onClick={() => void load()}>Retry</Button>}>{error}</Alert>}
+    {/* The day */}
+    <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 2 }}>
+      <IconButton aria-label="Previous day" onClick={() => setDate(addDays(date, -1))} sx={{ border: '1px solid', borderColor: 'divider' }}><ChevronLeft /></IconButton>
+      <Typography component="h2" aria-live="polite" sx={{ flex: 1, textAlign: 'center', fontFamily: fonts.playful, fontSize: { xs: 20, sm: 23 }, lineHeight: 1.2 }}>
+        {date === today ? 'Today · ' : date === addDays(today, 1) ? 'Tomorrow · ' : ''}{shortDayLabel(date)}
+      </Typography>
+      <IconButton aria-label="Next day" onClick={() => setDate(addDays(date, 1))} sx={{ border: '1px solid', borderColor: 'divider' }}><ChevronRight /></IconButton>
+    </Stack>
+    <Box sx={{ height: 4, mt: 1 }}>{loading && <LinearProgress sx={{ borderRadius: 2 }} />}</Box>
+
+    {error && <Alert severity="error" sx={{ mt: 1 }} action={<Button color="inherit" size="small" onClick={refresh}>Retry</Button>}>{error}</Alert>}
 
     {/* The numbers */}
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 1, mt: 1 }}>
@@ -148,7 +179,7 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
       </Stack>
     </Box>
 
-    <AddBookingDialog open={adding} date={date} bookings={active} blocks={blocks} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); void load(); }} />
+    <AddBookingDialog open={adding} date={date} bookings={active} blocks={blocks} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); refresh(); }} />
     <BlockDialog open={blocking} date={date} onClose={() => setBlocking(false)} onSaved={() => { setBlocking(false); void load(); }} />
   </Box>;
 }

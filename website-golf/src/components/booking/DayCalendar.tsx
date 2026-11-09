@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { addDays, monthYearLabel } from '../../booking/dates';
 import { fonts } from '../../theme';
 
-const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+export const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
-const shiftMonth = (month: string, by: number) => {
+export const shiftMonth = (month: string, by: number) => {
   const date = new Date(`${month}-01T00:00:00Z`);
   date.setUTCMonth(date.getUTCMonth() + by);
   return date.toISOString().slice(0, 7);
