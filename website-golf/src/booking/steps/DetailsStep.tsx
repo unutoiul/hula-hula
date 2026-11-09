@@ -2,7 +2,6 @@ import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import West from '@mui/icons-material/West';
 import { Alert, Autocomplete, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, FormHelperText, Link, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { PaymentLogos } from '../../components/common/PaymentMethods';
 import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
 import { BookingSummary } from '../components/BookingSummary';
@@ -110,7 +109,6 @@ export function DetailsStep() {
         </Button>
         {total > 0 && <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>You’ll pay on Payso’s secure page and come straight back here. Your time is held for 20 minutes.</Typography>}
       </Stack>
-      {total > 0 && <PaymentLogos sx={{ mt: 1.75 }} />}
     </Box>
 
     <Box sx={{ position: { md: 'sticky' }, top: { md: STICKY_TOP } }}>

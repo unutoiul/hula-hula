@@ -359,7 +359,7 @@ export function clubRules(wear: string, club: ClubSettings) {
   return [
     { title: 'Arrive early', text: 'Please check in at the clubhouse 20–30 minutes before your start.' },
     { title: 'What to wear', text: wear },
-    { title: 'Payment', text: 'Paid online when you book, on Payso’s secure page, by Visa, Mastercard, JCB, UnionPay, PromptPay QR, TrueMoney and more.' },
+    { title: 'Payment', text: 'Paid online when you book, on Payso’s secure page, by card (Visa, Mastercard, JCB, UnionPay) or PromptPay QR.' },
     { title: 'Changes & cancellation', text: `Free up to ${club.booking.cancellationHours} hours before your start — just WhatsApp or email us and we’ll refund you. Later cancellations and no-shows may not be refunded.` },
     { title: 'Weather', text: 'If a storm stops play, we’ll help you find a new time.' },
   ];

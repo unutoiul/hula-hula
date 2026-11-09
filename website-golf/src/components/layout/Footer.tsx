@@ -2,15 +2,14 @@ import { Box, Container, Link, Stack, Typography } from '@mui/material';
 import { openingHoursLines } from '../../booking/config';
 import { useContact, useSite } from '../../context/SiteDataContext';
 import { ClubMark } from '../common/ClubMark';
-import { AllPaymentMethods } from '../common/PaymentMethods';
 import { RisingSun, SEAM, SectionSeam } from '../common/SectionSeam';
 import { DesignCredit } from './DesignCredit';
 import { MotionToggleLink } from './MotionToggle';
 import { TropicalBackdrop, tropicalSectionSx } from '../common/TropicalBackdrop';
 
 // The same sunny closing block on every page, wave and rising sun included.
-// Just where we are, when we're open, the resort and the ways to pay: phone,
-// Line and email are already in the header's top strip and the contact section.
+// Just where we are, when we're open and the resort: phone, Line and email
+// are already in the header's top strip and the contact section.
 // `from` is the colour of the section above, so the wave flows out of it.
 export function Footer({ from = SEAM.cream, mobileActionSpace = false }: { from?: string; mobileActionSpace?: boolean }) {
   const CONTACT = useContact();
@@ -40,7 +39,6 @@ export function Footer({ from = SEAM.cream, mobileActionSpace = false }: { from?
             {openingHoursLines(club).map((line) => <Box component="span" key={line} sx={{ display: 'block' }}>{line}</Box>)}
           </Typography>
           <Typography variant="overline">Staying over? <Link href={CONTACT.resort} target="_blank" rel="noopener noreferrer" color="inherit">Hula Hula Resort, Ao Nang</Link></Typography>
-          <AllPaymentMethods />
           <Typography component="div" variant="overline" sx={{ '& button': { minHeight: 44 } }}>© {new Date().getFullYear()} Hula Hula Golf Club<MotionToggleLink /></Typography>
           <DesignCredit />
         </Stack>
