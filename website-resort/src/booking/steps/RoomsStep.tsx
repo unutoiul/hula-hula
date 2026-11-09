@@ -25,7 +25,7 @@ import { useContactForm } from '../../context/ContactFormContext';
 import { navigate } from '../../router';
 import { fonts } from '../../theme';
 import { useBookingFlow } from '../BookingFlowContext';
-import { CartSummary } from '../components/CartSummary';
+import { CartSummary, stickyCartSx } from '../components/CartSummary';
 import { dayMonthLabel, guestsLabel, mealsLabel, money, nightsLabel, plural, stayLabel, weekdayLabel } from '../format';
 import { roomContent } from '../roomContent';
 
@@ -75,7 +75,7 @@ export function RoomsStep() {
       </Stack>
     </Box>
 
-    <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+    <Box sx={stickyCartSx}>
       <CartSummary action={continueButton} editable />
     </Box>
 

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useBookingSearch } from '../../context/BookingSearchContext';
 import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
-import { CartSummary } from '../components/CartSummary';
+import { CartSummary, stickyCartSx } from '../components/CartSummary';
 import { COUNTRIES } from '../countries';
 import { money } from '../format';
 
@@ -103,7 +103,7 @@ export function DetailsStep() {
       </Stack>
     </Box>
 
-    <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+    <Box sx={stickyCartSx}>
       <CartSummary showFit={false} />
     </Box>
 
