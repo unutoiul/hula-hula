@@ -1,5 +1,5 @@
 import SearchRounded from '@mui/icons-material/SearchRounded';
-import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, InputAdornment, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Alert, Box, Button, Card, CardActionArea, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { activityName } from '../booking/config';
 import { useSite } from '../context/SiteDataContext';
@@ -42,15 +42,17 @@ export function SearchDialog({ open, onClose, onPick }: { open: boolean; onClose
       <Stack spacing={1} sx={{ mt: 2 }}>
         {query.trim().length >= 2 && results === null && <Box sx={{ textAlign: 'center', py: 3 }}><CircularProgress size={24} /></Box>}
         {results?.length === 0 && <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 3 }}>No bookings match “{query.trim()}”.</Typography>}
-        {results?.map((b) => <Box key={b.id} component="button" type="button" onClick={() => onPick(b.play_date)} sx={{ display: 'block', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit', p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: '14px', bgcolor: 'background.paper', cursor: 'pointer', '&:hover': { borderColor: 'primary.main' } }}>
-          <Stack direction="row" justifyContent="space-between" spacing={1}>
-            <Typography sx={{ fontWeight: 700 }}>{b.first_name} {b.last_name}</Typography>
-            {b.status !== 'booked' && <Chip size="small" label={b.status.replace('_', ' ')} />}
-          </Stack>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{shortDayLabel(b.play_date)} · {timeLabel(hhmm(b.start_time))} · {activityName(site, b.activity)} · {plural(b.players, 'person', 'people')} · {b.ref}</Typography>
-        </Box>)}
+        {results?.map((b) => <Card key={b.id} variant="outlined" sx={{ borderRadius: '14px', flexShrink: 0 }}>
+          <CardActionArea onClick={() => onPick(b.play_date)} sx={{ p: 1.5 }}>
+            <Stack direction="row" justifyContent="space-between" spacing={1}>
+              <Typography sx={{ fontWeight: 700 }}>{b.first_name} {b.last_name}</Typography>
+              {b.status !== 'booked' && <Chip size="small" label={b.status.replace('_', ' ')} />}
+            </Stack>
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{shortDayLabel(b.play_date)} · {timeLabel(hhmm(b.start_time))} · {activityName(site, b.activity)} · {plural(b.players, 'person', 'people')} · {b.ref}</Typography>
+          </CardActionArea>
+        </Card>)}
       </Stack>
     </DialogContent>
-    <Box sx={{ px: 3, py: 1.5, textAlign: 'right' }}><Button onClick={onClose}>Close</Button></Box>
+    <DialogActions sx={{ px: 3, py: 1.5 }}><Button onClick={onClose}>Close</Button></DialogActions>
   </Dialog>;
 }

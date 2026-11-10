@@ -1,7 +1,7 @@
 import AddPhotoAlternateRounded from '@mui/icons-material/AddPhotoAlternateRounded';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import CloudUploadRounded from '@mui/icons-material/CloudUploadRounded';
-import { Alert, Box, Button, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, Stack, Tab, Tabs, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Alert, Box, Button, ButtonBase, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, Stack, Tab, Tabs, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useState, type ChangeEvent } from 'react';
 import { ClubPhoto } from '../components/common/ClubPhoto';
 import { photoAssets } from '../data/photos';
@@ -66,9 +66,9 @@ export function ImagePicker({ value, onChange, max = 1, label = 'Photo', fit = '
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ px: 2 }}><Tab label="Club photos" /><Tab label="Upload" /></Tabs>
       <DialogContent dividers>
         {tab === 0 ? <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 1.25 }}>
-          {LIBRARY.map((src) => <Box key={src} component="button" type="button" onClick={() => add(src)} aria-label="Use this photo" sx={{ p: 0, border: '2px solid', borderColor: value.includes(src) ? 'primary.main' : 'transparent', borderRadius: '12px', overflow: 'hidden', aspectRatio: '4 / 3', cursor: 'pointer', '&:hover': { borderColor: 'primary.main' } }}>
+          {LIBRARY.map((src) => <ButtonBase key={src} onClick={() => add(src)} aria-label="Use this photo" sx={{ display: 'block', width: '100%', border: '2px solid', borderColor: value.includes(src) ? 'primary.main' : 'transparent', borderRadius: '12px', overflow: 'hidden', aspectRatio: '4 / 3', cursor: 'pointer', '&:hover': { borderColor: 'primary.main' } }}>
             <ClubPhoto image={src} alt="" sizes="(max-width: 600px) 45vw, 220px" />
-          </Box>)}
+          </ButtonBase>)}
         </Box>
           : <Stack alignItems="center" spacing={2} sx={{ py: 5, textAlign: 'center' }}>
             <CloudUploadRounded sx={{ fontSize: 48, color: 'primary.main' }} />

@@ -4,7 +4,7 @@ import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
 import MailOutlineRounded from '@mui/icons-material/MailOutlineRounded';
 import PaymentsRounded from '@mui/icons-material/PaymentsRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
-import { Alert, Box, Button, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardActionArea, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
 import { activityName, findActivity, isPrivateTransfer, rentalName } from '../booking/config';
@@ -50,30 +50,31 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
     if (updateError) setError(updateError.message); else onChanged();
   };
 
-  return <Box sx={{ borderRadius: '18px', border: '1px solid', borderColor: b.status === 'checked_in' ? 'success.main' : 'divider', bgcolor: b.status === 'checked_in' ? 'success.light' : 'background.paper', opacity: done ? .65 : 1, overflow: 'hidden' }}>
-    <Box component="button" type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, border: 0, bgcolor: 'transparent', color: 'inherit', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
-      <Box aria-hidden sx={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: b.status === 'checked_in' ? 'success.main' : 'primary.light', color: b.status === 'checked_in' ? 'white' : 'primary.main', '& svg': { fontSize: 21 } }}>
+  const hasTags = b.status !== 'booked' || settled || !!b.transfer || privateTransfer || b.source !== 'online';
+
+  // On a phone the tags drop under the name, so the name keeps the full width.
+  return <Card variant="outlined" sx={{ borderRadius: '18px', borderColor: b.status === 'checked_in' ? 'success.main' : 'divider', bgcolor: b.status === 'checked_in' ? 'success.light' : 'background.paper', opacity: done ? .65 : 1 }}>
+    <CardActionArea aria-expanded={open} onClick={() => setOpen((o) => !o)} sx={{ display: 'grid', alignItems: 'center', columnGap: 1.5, rowGap: .5, p: 1.5, gridTemplateColumns: { xs: 'auto minmax(0, 1fr) auto', sm: 'auto minmax(0, 1fr) auto auto' }, gridTemplateAreas: { xs: '"icon main expand" ". tags tags"', sm: '"icon main tags expand"' } }}>
+      <Box aria-hidden sx={{ gridArea: 'icon', width: 40, height: 40, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: b.status === 'checked_in' ? 'success.main' : 'primary.light', color: b.status === 'checked_in' ? 'white' : 'primary.main', '& svg': { fontSize: 21 } }}>
         {b.status === 'checked_in' ? <CheckCircleRounded /> : <ActivityIcon icon={activity?.icon} />}
       </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Box sx={{ gridArea: 'main', minWidth: 0 }}>
         <Typography noWrap sx={{ fontWeight: 700, textDecoration: b.status === 'cancelled' ? 'line-through' : 'none' }}>{b.first_name} {b.last_name}</Typography>
         <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{name}{option ? ` · ${option.label}` : ''} · {plural(b.players, 'person', 'people')} · {b.paid_at && balance > 0 ? `${money(balance)} to pay` : money(b.total)}</Typography>
       </Box>
-      <Stack alignItems="flex-end" spacing={.5} sx={{ flexShrink: 0 }}>
+      {hasTags && <Stack direction="row" flexWrap="wrap" useFlexGap gap={.5} sx={{ gridArea: 'tags', justifyContent: { sm: 'flex-end' } }}>
         {b.status !== 'booked' && <Chip size="small" color={STATUS[b.status].color} label={STATUS[b.status].label} />}
-        <Stack direction="row" spacing={.5}>
-          {settled && <Chip size="small" variant="outlined" color="success" label={b.test_payment ? 'Test' : balance > 0 ? 'Deposit' : 'Paid'} />}
-          {b.transfer && <Chip size="small" variant="outlined" label="Pick-up" />}
-          {privateTransfer && <Chip size="small" variant="outlined" color="primary" label="Private car" />}
-          {b.source !== 'online' && <Chip size="small" variant="outlined" label={SOURCE[b.source]} />}
-        </Stack>
-      </Stack>
-      <ExpandMoreRounded sx={{ color: 'text.secondary', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }} />
-    </Box>
+        {settled && <Chip size="small" variant="outlined" color="success" label={b.test_payment ? 'Test' : balance > 0 ? 'Deposit' : 'Paid'} />}
+        {b.transfer && <Chip size="small" variant="outlined" label="Pick-up" />}
+        {privateTransfer && <Chip size="small" variant="outlined" color="primary" label="Private car" />}
+        {b.source !== 'online' && <Chip size="small" variant="outlined" label={SOURCE[b.source]} />}
+      </Stack>}
+      <ExpandMoreRounded sx={{ gridArea: 'expand', color: 'text.secondary', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }} />
+    </CardActionArea>
 
     <Collapse in={open} unmountOnExit>
       <Box sx={{ px: 1.5, pb: 1.75, borderTop: '1px dashed', borderColor: 'divider', pt: 1.5 }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 2, rowGap: .5, fontSize: 14 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', columnGap: 2, rowGap: .5, fontSize: 14 }}>
           <Detail label="Ref">{b.ref} · {SOURCE[b.source]}</Detail>
           <Detail label="Time">{timeLabel(hhmm(b.start_time))} · about {durationLabel(b.minutes)}</Detail>
           {b.phone && <Detail label="Phone">{b.phone}</Detail>}
@@ -121,7 +122,7 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
         <Button color="error" variant="contained" disabled={busy} onClick={() => void setStatus('cancelled')}>Cancel booking</Button>
       </DialogActions>
     </Dialog>
-  </Box>;
+  </Card>;
 }
 
 function Detail({ label, children }: { label: string; children: ReactNode }) {

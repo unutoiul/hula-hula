@@ -4,7 +4,7 @@ import SearchRounded from '@mui/icons-material/SearchRounded';
 import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRounded from '@mui/icons-material/VisibilityRounded';
 import West from '@mui/icons-material/West';
-import { Alert, Box, Button, CircularProgress, Container, IconButton, InputAdornment, Link, Stack, Tab, Tabs, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, AppBar, Box, Button, Card, CircularProgress, IconButton, InputAdornment, Link, Stack, Tab, Tabs, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
 import type { Session } from '@supabase/supabase-js';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { linkClick, navigate, useLocation } from '../router';
@@ -16,6 +16,7 @@ import { SettingsPage } from './SettingsPage';
 import { DaySheet } from './DaySheet';
 import { SearchDialog } from './SearchDialog';
 import { supabase } from './supabase';
+import { AdminContainer } from './ui';
 
 // /admin — the golf club's staff app, made for a phone at the front desk,
 // one page per job:
@@ -76,9 +77,9 @@ export default function AdminApp() {
   const eventId = /^\/admin\/events\/([0-9a-f-]{36})$/.exec(pathname)?.[1];
 
   return <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: { xs: 12, md: 6 } }}>
-    <Box component="header" sx={{ position: 'sticky', top: 0, zIndex: 10, bgcolor: 'rgba(255,253,243,.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid', borderColor: 'divider' }}>
-      <Container maxWidth={page.path === '/admin/activities' ? 'lg' : 'md'} sx={{ px: { xs: 1.5, sm: 3 } }}>
-        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ minHeight: 56 }}>
+    <AppBar position="sticky" color="inherit" elevation={0} sx={{ bgcolor: 'rgba(255,253,243,.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid', borderColor: 'divider' }}>
+      <AdminContainer>
+        <Toolbar disableGutters sx={{ minHeight: { xs: 56 }, gap: 1.5 }}>
           <Box component="img" src="/logo/hula-hula-golf.png" alt="" sx={{ height: 38, width: 'auto' }} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography sx={{ fontWeight: 700, lineHeight: 1.2 }}>Golf club admin</Typography>
@@ -86,20 +87,21 @@ export default function AdminApp() {
           </Box>
           {page.path === '/admin' && <Tooltip title="Find a booking"><IconButton aria-label="Find a booking" onClick={() => setSearchOpen(true)} sx={{ border: '1px solid', borderColor: 'divider' }}><SearchRounded /></IconButton></Tooltip>}
           <Tooltip title="Sign out"><IconButton aria-label="Sign out" onClick={() => void supabase!.auth.signOut()} sx={{ border: '1px solid', borderColor: 'divider' }}><LogoutRounded /></IconButton></Tooltip>
-        </Stack>
+        </Toolbar>
+        {/* Scrolls edge to edge on a phone; the first tab's text lines up with the page. */}
         <Tabs value={page.path} onChange={(_, path: string) => navigate(path)} variant="scrollable" scrollButtons={false} aria-label="Admin pages"
-          sx={{ minHeight: 44, mx: { xs: -1.5, sm: 0 }, '& .MuiTab-root': { minHeight: 44, textTransform: 'none', fontWeight: 700, fontSize: 14, px: { xs: 1.5, sm: 2 } } }}>
+          sx={{ minHeight: 44, mx: -2, px: { xs: .5, sm: 0 }, '& .MuiTab-root': { minHeight: 44, textTransform: 'none', fontWeight: 700, fontSize: 14, px: { xs: 1.5, sm: 2 } } }}>
           {PAGES.map((p) => <Tab key={p.path} value={p.path} label={p.label} />)}
         </Tabs>
-      </Container>
-    </Box>
-    <Container maxWidth={page.path === '/admin/activities' ? 'lg' : 'md'} sx={{ px: { xs: 1.5, sm: 3 }, pt: { xs: 2.5, md: 4 } }}>
+      </AdminContainer>
+    </AppBar>
+    <AdminContainer component="main" sx={{ pt: { xs: 2.5, md: 4 } }}>
       {page.path === '/admin/events' ? (eventId ? <EventEditor key={eventId} id={eventId} /> : <EventsPage />)
         : page.path === '/admin/offers' ? <OffersPage />
         : page.path === '/admin/activities' ? <ActivitiesPage />
         : page.path === '/admin/settings' ? <SettingsPage />
         : <DaySheet jumpTo={jumpTo} />}
-    </Container>
+    </AdminContainer>
     <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} onPick={(date) => { setJumpTo(`${date}#${Date.now()}`); setSearchOpen(false); }} />
   </Box>;
 }
@@ -107,13 +109,13 @@ export default function AdminApp() {
 function CentredCard({ children }: { children: ReactNode }) {
   return <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', bgcolor: 'background.default', p: 2 }}>
     <Box sx={{ width: '100%', maxWidth: 420 }}>
-      <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', borderRadius: '24px', p: { xs: 3, sm: 4 }, boxShadow: '0 16px 36px rgba(23,60,44,.07)' }}>
+      <Card variant="outlined" sx={{ borderTop: '5px solid #50830d', borderRadius: '24px', p: { xs: 3, sm: 4 }, boxShadow: '0 16px 36px rgba(23,60,44,.07)' }}>
         <Stack alignItems="center" spacing={1} sx={{ mb: 3 }}>
           <Box component="img" src="/logo/hula-hula-golf.png" alt="Hula Hula Golf Club" sx={{ height: 72, width: 'auto' }} />
           <Typography variant="h3" sx={{ fontSize: 26 }}>Staff tee sheet</Typography>
         </Stack>
         {children}
-      </Box>
+      </Card>
       <Stack alignItems="center" sx={{ mt: 2.5 }}>
         <Link href="/" onClick={linkClick('/')} underline="hover" sx={{ display: 'inline-flex', alignItems: 'center', gap: .75, fontSize: 13, fontWeight: 700, color: 'text.secondary' }}><West sx={{ fontSize: 16 }} />Back to the website</Link>
       </Stack>

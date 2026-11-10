@@ -4,7 +4,7 @@ import EditRounded from '@mui/icons-material/EditRounded';
 import MoreVertRounded from '@mui/icons-material/MoreVertRounded';
 import SaveRounded from '@mui/icons-material/SaveRounded';
 import SearchRounded from '@mui/icons-material/SearchRounded';
-import { Box, Button, Chip, CircularProgress, IconButton, InputAdornment, Menu, MenuItem, Stack, Switch, Tab, Tabs, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Card, Chip, CircularProgress, IconButton, InputAdornment, Menu, MenuItem, Stack, Switch, Tab, Tabs, TextField, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
 import { rentalsFor, type Activity, type Rental } from '../booking/config';
@@ -52,7 +52,7 @@ export function ActivitiesManager({ rows, rentals, savedEquipment, saving, saved
           </TextField>
         </Stack>
         <Stack spacing={1.25}>
-          {visible.map(row => <Box component="article" key={row.activity.id} sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1.2fr) minmax(0,1fr) auto' }, gap: { xs: 2, md: 2.5 }, alignItems: 'center', p: { xs: 2, md: 2.25 }, borderRadius: '18px', border: '1px solid', borderColor: 'divider', bgcolor: row.active ? 'background.paper' : '#f3f4ed' }}>
+          {visible.map(row => <Card component="article" variant="outlined" key={row.activity.id} sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1.2fr) minmax(0,1fr) auto' }, gap: { xs: 2, md: 2.5 }, alignItems: 'center', p: { xs: 2, md: 2.25 }, borderRadius: '18px', bgcolor: row.active ? 'background.paper' : '#f3f4ed' }}>
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
               <Box aria-hidden sx={{ width: 44, height: 44, flexShrink: 0, borderRadius: '14px', display: 'grid', placeItems: 'center', bgcolor: 'success.light', color: 'success.dark' }}><ActivityIcon icon={row.activity.icon} /></Box>
               <Box sx={{ minWidth: 0 }}>
@@ -75,7 +75,7 @@ export function ActivitiesManager({ rows, rentals, savedEquipment, saving, saved
                 <Tooltip title="More actions"><IconButton size="small" aria-label={`More actions for ${row.activity.name}`} onClick={event => setMenu({ anchor: event.currentTarget, activity: row.activity })}><MoreVertRounded fontSize="small" /></IconButton></Tooltip>
               </Stack>
             </Stack>
-          </Box>)}
+          </Card>)}
           {visible.length === 0 && <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 5 }}>No activities match these filters.</Typography>}
         </Stack>
       </Section>

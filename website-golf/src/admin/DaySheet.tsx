@@ -5,7 +5,7 @@ import BlockRounded from '@mui/icons-material/BlockRounded';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import CloseRounded from '@mui/icons-material/CloseRounded';
-import { Alert, Box, Button, Chip, IconButton, LinearProgress, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, Chip, Grid, IconButton, LinearProgress, Link, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
 import { activityName, findActivity, isPrivateTransfer } from '../booking/config';
@@ -19,6 +19,7 @@ import { BlockDialog } from './BlockDialog';
 import { BookingCalendar, type DayTotals } from './BookingCalendar';
 import { BookingCard } from './BookingCard';
 import { hhmm, supabase, type StaffBlock, type StaffBooking } from './supabase';
+import { AdminContainer, EmptyState } from './ui';
 
 type Filter = string; // an activity id, or 'all'
 
@@ -116,12 +117,16 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
     return rows.sort((a, b) => a.time.localeCompare(b.time));
   }, [shown, shownBlocks, load, refresh]);
 
-  return <Box>
-    <BookingCalendar value={date} today={today} month={month} totals={monthTotals?.month === month ? monthTotals.days : null}
-      onSelect={setDate} onMonthChange={setMonth} onToday={() => { setDate(today); setMonth(today.slice(0, 7)); }} onRefresh={refresh} />
+  // On a wide screen the calendar stays in view beside the day.
+  return <Grid container spacing={{ xs: 2, lg: 3 }} sx={{ alignItems: 'flex-start' }}>
+    <Grid size={{ xs: 12, lg: 5 }} sx={{ position: { lg: 'sticky' }, top: { lg: 124 } }}>
+      <BookingCalendar value={date} today={today} month={month} totals={monthTotals?.month === month ? monthTotals.days : null}
+        onSelect={setDate} onMonthChange={setMonth} onToday={() => { setDate(today); setMonth(today.slice(0, 7)); }} onRefresh={refresh} />
+    </Grid>
 
+    <Grid size={{ xs: 12, lg: 7 }}>
     {/* The day */}
-    <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 2 }}>
+    <Stack direction="row" alignItems="center" spacing={1}>
       <IconButton aria-label="Previous day" onClick={() => setDate(addDays(date, -1))} sx={{ border: '1px solid', borderColor: 'divider' }}><ChevronLeft /></IconButton>
       <Typography component="h2" aria-live="polite" sx={{ flex: 1, textAlign: 'center', fontFamily: fonts.playful, fontSize: { xs: 20, sm: 23 }, lineHeight: 1.2 }}>
         {date === today ? 'Today · ' : date === addDays(today, 1) ? 'Tomorrow · ' : ''}{shortDayLabel(date)}
@@ -133,28 +138,28 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
     {error && <Alert severity="error" sx={{ mt: 1 }} action={<Button color="inherit" size="small" onClick={refresh}>Retry</Button>}>{error}</Alert>}
 
     {/* The numbers */}
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 1, mt: 1 }}>
+    <Grid container spacing={1} sx={{ mt: 1 }}>
       <Stat label="Bookings" value={String(active.length)} />
       <Stat label="People" value={String(active.reduce((sum, b) => sum + b.players, 0))} />
       <Stat label="Arrived" value={`${active.filter((b) => b.status === 'checked_in').length}/${active.filter((b) => b.status !== 'no_show').length}`} />
-      <Stat label="Due" value={money(active.filter((b) => b.status !== 'no_show').reduce((sum, b) => sum + balanceDue(b), 0))} small />
-    </Box>
+      <Stat label="Due" value={money(active.filter((b) => b.status !== 'no_show').reduce((sum, b) => sum + balanceDue(b), 0))} />
+    </Grid>
 
     {/* For the driver */}
-    {pickups.length > 0 && <Box sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'secondary.light', border: '1px solid', borderColor: 'secondary.main' }}>
+    {pickups.length > 0 && <Card variant="outlined" sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'secondary.light', borderColor: 'secondary.main' }}>
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: .75 }}><AirportShuttleRounded sx={{ fontSize: 20 }} /><Typography sx={{ fontWeight: 700 }}>Shuttle pick-ups</Typography></Stack>
       {pickups.map(([time, list]) => <Box key={time} sx={{ mt: .75 }}>
         <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{timeLabel(time)} · {plural(list.reduce((sum, b) => sum + b.players, 0), 'person', 'people')}</Typography>
-        {list.map((b) => <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary' }}>{b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} · <Box component="a" href={`tel:${b.phone.replace(/[^\d+]/g, '')}`} sx={{ color: 'primary.main' }}>{b.phone}</Box></Typography>)}
+        {list.map((b) => <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary' }}>{b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} · <Link href={`tel:${b.phone.replace(/[^\d+]/g, '')}`}>{b.phone}</Link></Typography>)}
       </Box>)}
-    </Box>}
-    {privateTransfers.length > 0 && <Box sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'primary.light', border: '1px solid', borderColor: 'primary.main' }}>
+    </Card>}
+    {privateTransfers.length > 0 && <Card variant="outlined" sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'primary.light', borderColor: 'primary.main' }}>
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: .75 }}><DirectionsCarRounded sx={{ fontSize: 20 }} /><Typography sx={{ fontWeight: 700 }}>Private transfers to arrange</Typography></Stack>
-      {privateTransfers.map((b) => <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary', mt: .5 }}>{timeLabel(hhmm(b.start_time))} start · {b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} · <Box component="a" href={`tel:${b.phone.replace(/[^\d+]/g, '')}`} sx={{ color: 'primary.main' }}>{b.phone}</Box></Typography>)}
-    </Box>}
+      {privateTransfers.map((b) => <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary', mt: .5 }}>{timeLabel(hhmm(b.start_time))} start · {b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} · <Link href={`tel:${b.phone.replace(/[^\d+]/g, '')}`}>{b.phone}</Link></Typography>)}
+    </Card>}
 
-    {/* What to show */}
-    <Stack direction="row" spacing={1} sx={{ mt: 2, overflowX: 'auto', pb: .5, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+    {/* What to show: a row to swipe on a phone, wrapping where there's room. */}
+    <Stack direction="row" useFlexGap gap={1} sx={{ mt: 2, flexWrap: { xs: 'nowrap', sm: 'wrap' }, overflowX: { xs: 'auto', sm: 'visible' }, pb: .5, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
       {/* Every live activity, plus any removed one that still has bookings on this day. */}
       {['all', ...new Set([...site.activities.map((a) => a.id), ...active.map((b) => b.activity)])].map((id) => {
         const count = id === 'all' ? active.length : active.filter((b) => b.activity === id).length;
@@ -166,10 +171,7 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
     {/* The timeline */}
     <Stack spacing={1.25} sx={{ mt: 2 }}>
       {bookings === null && !error && <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 6 }}>Loading the tee sheet…</Typography>}
-      {bookings !== null && timeline.length === 0 && <Box sx={{ textAlign: 'center', py: 6, px: 2, border: '1px dashed', borderColor: 'divider', borderRadius: '20px' }}>
-        <Typography variant="h3" sx={{ fontSize: 22 }}>Nothing booked{filter === 'all' ? '' : ` for ${activityName(site, filter)}`} yet</Typography>
-        <Typography sx={{ color: 'text.secondary', mt: .75 }}>Online bookings appear here by themselves. Add phone and walk-in bookings with the button below.</Typography>
-      </Box>}
+      {bookings !== null && timeline.length === 0 && <EmptyState title={`Nothing booked${filter === 'all' ? '' : ` for ${activityName(site, filter)}`} yet`}>Online bookings appear here by themselves. Add phone and walk-in bookings with the button below.</EmptyState>}
       {timeline.map((row, i) => <Box key={i}>
         {(i === 0 || timeline[i - 1].time !== row.time) && <Typography sx={{ fontFamily: fonts.playful, fontSize: 17, color: 'primary.main', mt: i ? 1 : 0, mb: .75 }}>{timeLabel(row.time)}</Typography>}
         {row.node}
@@ -178,23 +180,28 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
     </Stack>
 
     {/* The desk's two buttons — pinned to the bottom of a phone. */}
-    <Box sx={{ position: { xs: 'fixed', md: 'static' }, left: 0, right: 0, bottom: 0, zIndex: 10, mt: { md: 3 }, px: { xs: 1.5, md: 0 }, py: { xs: 1.25, md: 0 }, bgcolor: { xs: 'background.paper', md: 'transparent' }, borderTop: { xs: '1px solid', md: 0 }, borderColor: 'divider', boxShadow: { xs: '0 -8px 24px rgba(23,60,44,.10)', md: 'none' } }}>
-      <Stack direction="row" spacing={1.25} sx={{ maxWidth: 'md', mx: 'auto' }}>
-        <Button fullWidth variant="contained" startIcon={<AddRounded />} onClick={() => setAdding(true)}>Add booking</Button>
-        <Button fullWidth variant="outlined" startIcon={<BlockRounded />} onClick={() => setBlocking(true)}>Block time</Button>
-      </Stack>
+    <Box sx={{ position: { xs: 'fixed', md: 'static' }, left: 0, right: 0, bottom: 0, zIndex: 10, mt: { md: 3 }, pt: { xs: 1.25, md: 0 }, pb: { xs: 'calc(10px + env(safe-area-inset-bottom))', md: 0 }, bgcolor: { xs: 'background.paper', md: 'transparent' }, borderTop: { xs: '1px solid', md: 0 }, borderColor: 'divider', boxShadow: { xs: '0 -8px 24px rgba(23,60,44,.10)', md: 'none' } }}>
+      <AdminContainer sx={{ px: { md: 0 } }}>
+        <Stack direction="row" spacing={1.25}>
+          <Button fullWidth variant="contained" startIcon={<AddRounded />} onClick={() => setAdding(true)}>Add booking</Button>
+          <Button fullWidth variant="outlined" startIcon={<BlockRounded />} onClick={() => setBlocking(true)}>Block time</Button>
+        </Stack>
+      </AdminContainer>
     </Box>
 
     <AddBookingDialog open={adding} date={date} bookings={active} blocks={blocks} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); refresh(); }} />
     <BlockDialog open={blocking} date={date} onClose={() => setBlocking(false)} onSaved={() => { setBlocking(false); void load(); }} />
-  </Box>;
+    </Grid>
+  </Grid>;
 }
 
-function Stat({ label, value, small = false }: { label: string; value: string; small?: boolean }) {
-  return <Box sx={{ p: { xs: 1.25, sm: 1.75 }, borderRadius: '16px', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', minWidth: 0 }}>
-    <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'text.secondary' }}>{label}</Typography>
-    <Typography noWrap sx={{ fontFamily: fonts.playful, fontSize: small ? { xs: 16, sm: 22 } : { xs: 22, sm: 26 }, lineHeight: 1.2, mt: .25 }}>{value}</Typography>
-  </Box>;
+function Stat({ label, value }: { label: string; value: string }) {
+  return <Grid size={{ xs: 6, sm: 3 }}>
+    <Card variant="outlined" sx={{ p: { xs: 1.25, sm: 1.75 }, borderRadius: '16px' }}>
+      <Typography noWrap sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'text.secondary' }}>{label}</Typography>
+      <Typography noWrap sx={{ fontFamily: fonts.playful, fontSize: { xs: 22, sm: 26 }, lineHeight: 1.2, mt: .25 }}>{value}</Typography>
+    </Card>
+  </Grid>;
 }
 
 function BlockRow({ block, onRemoved }: { block: StaffBlock; onRemoved: () => void }) {

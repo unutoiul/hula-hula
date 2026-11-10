@@ -1,12 +1,12 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import OpenInNewRounded from '@mui/icons-material/OpenInNewRounded';
-import { Alert, Box, Button, Chip, CircularProgress, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, FormControlLabel, Grid, Stack, Switch, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { normaliseClub, type ClubOffer } from '../booking/config';
 import { offerStatus, offerValidation } from '../booking/offers';
 import { notifyContentChanged } from '../data/contentSync';
 import { supabase } from './supabase';
-import { PageTitle, Section } from './ui';
+import { EmptyState, PageTitle, Section } from './ui';
 import { ImagePicker } from './ImagePicker';
 
 // /admin/offers — the promotions on Home, Events & offers and All offers.
@@ -55,27 +55,22 @@ export function OffersPage() {
         const state = offerStatus(offer);
         return <Section key={offer.id} title={offer.title || 'Untitled offer'}
           action={<Chip size="small" label={labels[state]} color={state === 'live' ? 'success' : state === 'invalid' ? 'error' : state === 'scheduled' ? 'info' : 'default'} />}>
-          <Stack spacing={2}>
-            <FormControlLabel control={<Switch checked={offer.active} onChange={e => change({ active: e.target.checked })} />} label="Publish this offer" />
-            <TextField label="Offer title" required value={offer.title} onChange={e => change({ title: e.target.value.slice(0, 100) })} />
-            <TextField label="Price / headline" value={offer.priceLabel} onChange={e => change({ priceLabel: e.target.value.slice(0, 80) })} />
-            <TextField label="Description and conditions" multiline minRows={3} value={offer.description} onChange={e => change({ description: e.target.value.slice(0, 600) })} />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField label="Starts (optional)" type="date" value={offer.startsOn} onChange={e => change({ startsOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-              <TextField label="Ends (optional)" type="date" value={offer.endsOn} onChange={e => change({ endsOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-            </Stack>
-            {offerValidation(offer) && <Alert severity="warning">{offerValidation(offer)}</Alert>}
-            <TextField label="Guest’s WhatsApp enquiry" value={offer.message} onChange={e => change({ message: e.target.value.slice(0, 600) })} />
-            <ImagePicker label="Offer photo" value={offer.image ? [offer.image] : []} onChange={images => change({ image: images[0] ?? '' })} />
-            <Button color="error" onClick={() => set(offers.filter((_, i) => i !== index))}>Remove offer</Button>
-          </Stack>
+          <Grid container spacing={2}>
+            <Grid size={12}><FormControlLabel control={<Switch checked={offer.active} onChange={e => change({ active: e.target.checked })} />} label="Publish this offer" /></Grid>
+            <Grid size={{ xs: 12, md: 7 }}><TextField fullWidth label="Offer title" required value={offer.title} onChange={e => change({ title: e.target.value.slice(0, 100) })} /></Grid>
+            <Grid size={{ xs: 12, md: 5 }}><TextField fullWidth label="Price / headline" value={offer.priceLabel} onChange={e => change({ priceLabel: e.target.value.slice(0, 80) })} /></Grid>
+            <Grid size={12}><TextField fullWidth label="Description and conditions" multiline minRows={3} value={offer.description} onChange={e => change({ description: e.target.value.slice(0, 600) })} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth label="Starts (optional)" type="date" value={offer.startsOn} onChange={e => change({ startsOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}><TextField fullWidth label="Ends (optional)" type="date" value={offer.endsOn} onChange={e => change({ endsOn: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
+            <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Guest’s WhatsApp enquiry" value={offer.message} onChange={e => change({ message: e.target.value.slice(0, 600) })} /></Grid>
+            {offerValidation(offer) && <Grid size={12}><Alert severity="warning">{offerValidation(offer)}</Alert></Grid>}
+            <Grid size={12}><ImagePicker label="Offer photo" value={offer.image ? [offer.image] : []} onChange={images => change({ image: images[0] ?? '' })} /></Grid>
+            <Grid size={12}><Button color="error" onClick={() => set(offers.filter((_, i) => i !== index))}>Remove offer</Button></Grid>
+          </Grid>
         </Section>;
       })}
-      {offers.length === 0 && <Box sx={{ textAlign: 'center', py: 5, px: 2, border: '1px dashed', borderColor: 'divider', borderRadius: '20px' }}>
-        <Typography variant="h3" sx={{ fontSize: 22 }}>No offers</Typography>
-        <Typography sx={{ color: 'text.secondary', mt: .75 }}>Add one when you are ready; the homepage hides this section while none are live.</Typography>
-      </Box>}
-      <Button disabled={offers.length >= 12} startIcon={<AddRounded />} onClick={() => set([...offers, { id: crypto.randomUUID(), title: 'New offer', description: '', priceLabel: '', image: '', active: false, startsOn: '', endsOn: '', message: '' }])}>Add an offer</Button>
+      {offers.length === 0 && <EmptyState title="No offers">Add one when you are ready; the homepage hides this section while none are live.</EmptyState>}
+      <Button sx={{ alignSelf: 'flex-start' }} disabled={offers.length >= 12} startIcon={<AddRounded />} onClick={() => set([...offers, { id: crypto.randomUUID(), title: 'New offer', description: '', priceLabel: '', image: '', active: false, startsOn: '', endsOn: '', message: '' }])}>Add an offer</Button>
       {status && <Alert severity={status.ok ? 'success' : 'error'}>{status.text}</Alert>}
       <Stack direction="row" justifyContent="flex-end">{saveButton}</Stack>
     </Stack>

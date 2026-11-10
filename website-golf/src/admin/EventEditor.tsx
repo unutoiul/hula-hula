@@ -6,7 +6,7 @@ import OpenInNewRounded from '@mui/icons-material/OpenInNewRounded';
 import PointOfSaleRounded from '@mui/icons-material/PointOfSaleRounded';
 import West from '@mui/icons-material/West';
 import WhatsApp from '@mui/icons-material/WhatsApp';
-import { Alert, Box, Button, Chip, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton, MenuItem, Stack, Switch, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Alert, Box, Button, Card, CardActionArea, Chip, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton, LinearProgress, MenuItem, Stack, Switch, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { slugify } from '../booking/config';
 import { shortDayLabel } from '../booking/dates';
@@ -57,11 +57,15 @@ export function EventEditor({ id }: { id: string }) {
   if (!event) return error ? <Alert severity="error">{error}</Alert> : <Box sx={{ textAlign: 'center', py: 6 }}><CircularProgress /></Box>;
   return <Box>
     <Button href="/admin/events" onClick={linkClick('/admin/events')} startIcon={<West />} size="small" sx={{ mb: 1, minHeight: 0 }}>All events</Button>
-    <Stack spacing={2.5}>
-      <Details event={event} hasOrders={orders.length > 0} onSaved={load} />
-      <Packages event={event} packages={packages} orders={orders} onChanged={load} />
-      <Orders packages={packages} orders={orders} onChanged={load} />
-    </Stack>
+    <Grid container spacing={2.5} sx={{ alignItems: 'flex-start' }}>
+      <Grid size={{ xs: 12, lg: 7 }}><Details event={event} hasOrders={orders.length > 0} onSaved={load} /></Grid>
+      <Grid size={{ xs: 12, lg: 5 }}>
+        <Stack spacing={2.5}>
+          <Packages event={event} packages={packages} orders={orders} onChanged={load} />
+          <Orders packages={packages} orders={orders} onChanged={load} />
+        </Stack>
+      </Grid>
+    </Grid>
   </Box>;
 }
 
@@ -114,12 +118,12 @@ function Details({ event, hasOrders, onSaved }: { event: StaffEvent; hasOrders: 
       <TextField label="Title" required value={form.title} onChange={(e) => set({ title: e.target.value.slice(0, 120) })} placeholder="Pro Day with Cedric" />
       <TextField label="One-line pitch" value={form.tagline} onChange={(e) => set({ tagline: e.target.value.slice(0, 200) })} placeholder="A morning clinic, nine holes with a pro, and lunch on the balcony." />
       <TextField label="Web address" value={form.slug} onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 60) })} helperText={`hulahula-golf.vercel.app/events/${slugify(form.slug || form.title) || '…'}`} />
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-        <TextField label="Day" type="date" required value={form.starts_on} onChange={(e) => set({ starts_on: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-        <TextField label="Last day (optional)" type="date" value={form.ends_on} onChange={(e) => set({ ends_on: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-        <TextField label="Starts" type="time" value={form.start_time} onChange={(e) => set({ start_time: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-        <TextField label="Ends" type="time" value={form.end_time} onChange={(e) => set({ end_time: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} />
-      </Box>
+      <Grid container spacing={1.5}>
+        <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Day" type="date" required value={form.starts_on} onChange={(e) => set({ starts_on: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
+        <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Last day (optional)" type="date" value={form.ends_on} onChange={(e) => set({ ends_on: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
+        <Grid size={6}><TextField fullWidth label="Starts" type="time" value={form.start_time} onChange={(e) => set({ start_time: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
+        <Grid size={6}><TextField fullWidth label="Ends" type="time" value={form.end_time} onChange={(e) => set({ end_time: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
+      </Grid>
       <ImagePicker value={form.cover_image ? [form.cover_image] : []} onChange={(images) => set({ cover_image: images[0] ?? null })} label="Cover photo" />
       <TextField label="About the day" multiline minRows={5} value={form.description} onChange={(e) => set({ description: e.target.value.slice(0, 5000) })} helperText="Leave an empty line between paragraphs." />
       <TextField label="Highlights (one per line)" multiline minRows={3} value={form.highlights} onChange={(e) => set({ highlights: e.target.value })} placeholder={'Swing clinic with Cedric\n9 holes with the pro\nLunch & drinks on the balcony'} />
@@ -149,14 +153,14 @@ function Packages({ event, packages, orders, onChanged }: { event: StaffEvent; p
     <Stack spacing={1.25}>
       {packages.map((pk) => {
         const taken = takenPlaces(orders, pk.id);
-        return <Box key={pk.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: '16px', border: '1px solid', borderColor: 'divider', opacity: pk.active ? 1 : .6 }}>
+        return <Card key={pk.id} variant="outlined" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: '16px', flexShrink: 0, opacity: pk.active ? 1 : .6 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography noWrap sx={{ fontWeight: 700 }}>{pk.name}</Typography>
             <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{money(pk.price)} · {taken} of {pk.capacity} sold{pk.active ? '' : ' · hidden'}</Typography>
-            <Box sx={{ mt: .75, height: 6, borderRadius: 3, bgcolor: 'rgba(23,60,44,.08)', overflow: 'hidden' }}><Box sx={{ height: '100%', width: `${Math.min(100, (taken / Math.max(1, pk.capacity)) * 100)}%`, bgcolor: taken >= pk.capacity ? 'warning.main' : 'success.main' }} /></Box>
+            <LinearProgress variant="determinate" value={Math.min(100, (taken / Math.max(1, pk.capacity)) * 100)} color={taken >= pk.capacity ? 'warning' : 'success'} aria-label={`${taken} of ${pk.capacity} sold`} sx={{ mt: .75, height: 6, borderRadius: 3, bgcolor: 'rgba(23,60,44,.08)' }} />
           </Box>
           <IconButton aria-label={`Edit ${pk.name}`} onClick={() => setEditing(pk)} sx={{ border: '1px solid', borderColor: 'divider' }}><EditRounded /></IconButton>
-        </Box>;
+        </Card>;
       })}
       {packages.length === 0 && <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>No packages yet. Add one so guests can book — e.g. “Clinic + 9 holes”, “Spectator & lunch”.</Typography>}
     </Stack>
@@ -190,7 +194,7 @@ function PackageDialog({ pack, sold, hasOrders, onClose, onSaved }: { pack: Staf
     <DialogContent dividers>
       <Stack spacing={2}>
         <TextField label="Name" required value={form.name} onChange={(e) => set({ name: e.target.value.slice(0, 80) })} placeholder="Clinic + 9 holes with Cedric" />
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)' }, gap: 1.5 }}>
           <TextField label="Price ฿" type="number" value={form.price} onChange={(e) => set({ price: Math.max(0, toInt(e.target.value)) })} slotProps={{ htmlInput: { min: 0, inputMode: 'numeric' } }} />
           <TextField label="Places in total" type="number" value={form.capacity} onChange={(e) => set({ capacity: Math.max(0, toInt(e.target.value)) })} helperText={pack.id ? `${sold} sold` : ' '} slotProps={{ htmlInput: { min: 0, inputMode: 'numeric' } }} />
           <TextField label="Most per order" type="number" value={form.max_per_order} onChange={(e) => set({ max_per_order: Math.min(50, Math.max(1, toInt(e.target.value, 4))) })} slotProps={{ htmlInput: { min: 1, max: 50, inputMode: 'numeric' } }} />
@@ -247,8 +251,8 @@ function OrderRow({ order: o, onChanged }: { order: StaffOrder; onChanged: () =>
     notifyContentChanged('events');
     await onChanged();
   };
-  return <Box sx={{ borderRadius: '16px', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', overflow: 'hidden' }}>
-    <Box component="button" type="button" aria-expanded={open} onClick={() => setOpen((x) => !x)} sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, border: 0, bgcolor: 'transparent', font: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
+  return <Card variant="outlined" sx={{ borderRadius: '16px', flexShrink: 0 }}>
+    <CardActionArea aria-expanded={open} onClick={() => setOpen((x) => !x)} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5 }}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography noWrap sx={{ fontWeight: 700 }}>{o.first_name} {o.last_name}</Typography>
         <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{o.package_name} × {o.quantity} · {money(o.total)} · {o.ref}</Typography>
@@ -260,7 +264,7 @@ function OrderRow({ order: o, onChanged }: { order: StaffOrder; onChanged: () =>
           {o.source === 'desk' && <Chip size="small" variant="outlined" label="Desk" />}
         </Stack>
       </Stack>
-    </Box>
+    </CardActionArea>
     <Collapse in={open} unmountOnExit>
       <Box sx={{ px: 1.5, pb: 1.5, pt: 1, borderTop: '1px dashed', borderColor: 'divider' }}>
         <Typography sx={{ fontSize: 14 }}>{o.phone}{o.email ? ` · ${o.email}` : ''}</Typography>
@@ -279,7 +283,7 @@ function OrderRow({ order: o, onChanged }: { order: StaffOrder; onChanged: () =>
         {o.status === 'paid' && o.source === 'online' && <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>Refunds are made in the Payso control panel; mark it here once done. Cancelling frees the places.</Typography>}
       </Box>
     </Collapse>
-  </Box>;
+  </Card>;
 }
 
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
