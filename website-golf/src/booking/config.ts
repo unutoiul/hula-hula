@@ -37,7 +37,7 @@ export interface Activity {
    * still put bookings on the tee sheet.
    */
   bookOnline: boolean;
-  /** What's paid online to book, per booking; the rest is paid at the club. 0 means the full price online. */
+  /** What's paid online to book, for each person in the group; the rest is paid at the club. 0 means the full price online. */
   deposit: number;
   includes: string[];
   options: ActivityOption[];
@@ -113,7 +113,7 @@ export interface SiteData { activities: Activity[]; rentals: Rental[]; club: Clu
 
 const p = (name: string) => `/images/golf/${name}-1600.webp`;
 
-/** Every activity's deposit until staff set their own in /admin. */
+/** Every activity's deposit per person until staff set their own in /admin. */
 export const DEFAULT_DEPOSIT = 500;
 
 export const DEFAULT_ACTIVITIES: Activity[] = [
@@ -435,15 +435,15 @@ export const EXPERIENCE_LEVELS = ['Never held a club', 'Played a few times', 'I 
 
 /**
  * The rules every booking is made under — on the details step, in its conditions dialog and on the confirmation.
- * `deposit`: the amount paid online when the rest is paid at the club; 0 when it's all paid online.
+ * `depositTerms`: how the deposit reads in a sentence ("A ฿2,000 deposit (4 players × ฿500)") when the rest is paid at the club; empty when it's all paid online.
  */
-export function clubRules(wear: string, club: ClubSettings, deposit = 0) {
+export function clubRules(wear: string, club: ClubSettings, depositTerms = '') {
   const paying = 'on Payso’s secure page, by card (Visa, Mastercard, JCB, UnionPay) or PromptPay QR';
   return [
     { title: 'Arrive early', text: 'Please check in at the clubhouse 20–30 minutes before your start.' },
     { title: 'What to wear', text: wear },
-    { title: 'Payment', text: deposit > 0 ? `A ฿${deposit.toLocaleString('en-US')} deposit is paid online when you book, ${paying}. The rest is paid at the club.` : `Paid online when you book, ${paying}.` },
-    { title: 'Changes & cancellation', text: `Free up to ${club.booking.cancellationHours} hours before your start — just WhatsApp or email us and we’ll ${deposit > 0 ? 'refund your deposit' : 'refund you'}. Later cancellations and no-shows ${deposit > 0 ? 'may lose the deposit' : 'may not be refunded'}.` },
+    { title: 'Payment', text: depositTerms ? `${depositTerms} is paid online when you book, ${paying}. The rest is paid at the club.` : `Paid online when you book, ${paying}.` },
+    { title: 'Changes & cancellation', text: `Free up to ${club.booking.cancellationHours} hours before your start — just WhatsApp or email us and we’ll ${depositTerms ? 'refund your deposit' : 'refund you'}. Later cancellations and no-shows ${depositTerms ? 'may lose the deposit' : 'may not be refunded'}.` },
     { title: 'Weather', text: 'If a storm stops play, we’ll help you find a new time.' },
   ];
 }

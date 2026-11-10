@@ -2,7 +2,7 @@ import { clubRules, contactLinks, findActivity, rentalName, type SiteData } from
 import type { EventOrderView, Guest, Reservation } from '../../src/booking/contract.ts';
 import { countryName } from '../../src/booking/countries.ts';
 import { dayLabel, durationLabel, timeLabel } from '../../src/booking/dates.ts';
-import { money, plural, type PriceLine } from '../../src/booking/pricing.ts';
+import { bookingDepositTerms, depositDetail, money, plural, type PriceLine } from '../../src/booking/pricing.ts';
 import { clip, escape, whatsappLink } from './escape.ts';
 
 // What goes into the four Resend templates in emails/ (published with
@@ -47,10 +47,10 @@ const BOOKING_FLAG_TEXT: Record<string, string> = {
   amount_mismatch: 'Payso reports a different amount from the one the guest was asked to pay. Check the payment in the Payso control panel.',
 };
 
-function bookingPaidLabel(r: Reservation) {
+function bookingPaidLabel(r: Reservation, depositBreakdown: string) {
   if (r.total === 0) return 'Nothing to pay';
   const paid = r.balance > 0 ? 'Deposit paid' : 'Paid';
-  return r.testPayment ? `${paid} (test — nothing was charged)` : `${paid} online`;
+  return r.testPayment ? `${paid} (test — nothing was charged)` : `${paid} online${depositBreakdown ? ` · ${depositBreakdown}` : ''}`;
 }
 
 /** How the guest is getting to the club, for the confirmation; undefined when they're making their own way. */
@@ -62,17 +62,18 @@ function pickupLine(r: Reservation) {
 function summary(r: Reservation, site: SiteData) {
   const activity = findActivity(site, r.activity);
   const people = plural(r.players, activity?.peopleNoun ?? 'player', activity?.peopleNoun === 'person' ? 'people' : 'players');
+  const depositBreakdown = activity && r.balance > 0 ? depositDetail(activity, r.players, r.deposit) : '';
   return {
-    wear: activity?.wear ?? '', people, when: `${timeLabel(r.time)} · ${dayLabel(r.date)}`,
-    vars: { BOOKING_REF: escape(r.ref), TEE_TIME: timeLabel(r.time), TEE_DAY: dayLabel(r.date), ACTIVITY: escape(`${r.activityName} · ${r.optionLabel}`), GROUP: escape(`${people} · about ${durationLabel(r.minutes)}`), LINES_HTML: linesHtml(r.lines), TOTAL: escape(money(r.total)), PAID_LABEL: bookingPaidLabel(r), PAID_AMOUNT: escape(money(r.deposit)),
+    wear: activity?.wear ?? '', people, depositBreakdown, when: `${timeLabel(r.time)} · ${dayLabel(r.date)}`,
+    vars: { BOOKING_REF: escape(r.ref), TEE_TIME: timeLabel(r.time), TEE_DAY: dayLabel(r.date), ACTIVITY: escape(`${r.activityName} · ${r.optionLabel}`), GROUP: escape(`${people} · about ${durationLabel(r.minutes)}`), LINES_HTML: linesHtml(r.lines), TOTAL: escape(money(r.total)), PAID_LABEL: escape(bookingPaidLabel(r, depositBreakdown)), PAID_AMOUNT: escape(money(r.deposit)),
       BALANCE: r.balance > 0 ? escape(money(r.balance)) : undefined, BALANCE_DISPLAY: r.balance > 0 ? 'table-cell' : undefined },
   };
 }
 
 export function bookingConfirmation(r: Reservation, guest: Guest, siteUrl: string, site: SiteData): TemplateMessage {
-  const { wear, when, vars } = summary(r, site);
+  const { wear, when, vars, depositBreakdown } = summary(r, site);
   const { contact, vars: club } = clubDetails(site, siteUrl);
-  const rules = clubRules(wear, site.club, r.balance > 0 ? r.deposit : 0).filter((rule) => rule.text);
+  const rules = clubRules(wear, site.club, r.balance > 0 ? bookingDepositTerms(r.deposit, depositBreakdown) : '').filter((rule) => rule.text);
   const pickup = pickupLine(r);
   return {
     subject: `Booked: ${r.activityName} ${when} — ${r.ref}`,

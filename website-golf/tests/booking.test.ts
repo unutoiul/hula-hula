@@ -7,7 +7,7 @@ import { describe, it } from 'node:test';
 import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/availability.ts';
 import { clubRules, DEFAULT_CLUB, DEFAULT_SITE, findActivity, isPrivateTransfer, normaliseActivity, normaliseClub, onlineActivities, openingHoursLines, pickupFor, slugify } from '../src/booking/config.ts';
 import { addDays, fromMinutes, isISODate, krabiNow, timeLabel, toMinutes } from '../src/booking/dates.ts';
-import { balanceDue, depositFor, money, onlineAmount, paymentNote, priceLines, totalOf } from '../src/booking/pricing.ts';
+import { balanceDue, bookingDepositTerms, depositDetail, depositFor, money, onlineAmount, paymentNote, perPersonDepositTerms, priceLines, totalOf } from '../src/booking/pricing.ts';
 
 const golf = findActivity(DEFAULT_SITE, 'golf')!;
 const range = findActivity(DEFAULT_SITE, 'range')!;
@@ -64,20 +64,29 @@ describe('the deposit', () => {
     assert.equal(normaliseActivity({ deposit: 1000 }, 'golf').deposit, 1000);
     assert.equal(normaliseActivity({ deposit: 0 }, 'golf').deposit, 0);
   });
-  it('is what gets paid online, never more than the booking costs', () => {
-    assert.equal(depositFor({ deposit: 500 }, 3200), 500);
-    assert.equal(depositFor({ deposit: 500 }, 250), 250);
-    assert.equal(depositFor({ deposit: 500 }, 0), 0);
-    assert.equal(depositFor({ deposit: 0 }, 3200), 3200);
+  it('is paid online for each person, never more than the booking costs', () => {
+    assert.equal(depositFor({ deposit: 500 }, 1, 3200), 500);
+    assert.equal(depositFor({ deposit: 500 }, 4, 9600), 2000);
+    assert.equal(depositFor({ deposit: 500 }, 4, 1500), 1500);
+    assert.equal(depositFor({ deposit: 500 }, 2, 0), 0);
+    assert.equal(depositFor({ deposit: 0 }, 4, 9600), 9600);
+  });
+  it('shows how a group’s deposit adds up', () => {
+    assert.equal(depositDetail({ deposit: 500, peopleNoun: 'player' }, 4, 2000), '4 players × ฿500');
+    assert.equal(depositDetail({ deposit: 500, peopleNoun: 'person' }, 1, 500), '1 person × ฿500');
+    assert.equal(depositDetail({ deposit: 500, peopleNoun: 'player' }, 4, 1500), '', 'capped at the price');
+    assert.equal(depositDetail({ deposit: 0, peopleNoun: 'player' }, 4, 9600), '');
   });
   it('is explained in the guest-facing wording', () => {
-    assert.equal(paymentNote({ deposit: 500 }), '฿500 deposit online when you book, the rest at the club');
-    assert.equal(paymentNote({ deposit: 0 }), 'paid online when you book');
-    const payment = (deposit?: number) => clubRules('', DEFAULT_CLUB, deposit).find((rule) => rule.title === 'Payment')!.text;
-    assert.match(payment(1500), /^A ฿1,500 deposit is paid online.*The rest is paid at the club\.$/);
+    assert.equal(paymentNote({ deposit: 500, peopleNoun: 'player' }), '฿500 deposit per player online when you book, the rest at the club');
+    assert.equal(paymentNote({ deposit: 0, peopleNoun: 'player' }), 'paid online when you book');
+    assert.equal(perPersonDepositTerms({ deposit: 0, peopleNoun: 'player' }), '');
+    const payment = (terms?: string) => clubRules('', DEFAULT_CLUB, terms).find((rule) => rule.title === 'Payment')!.text;
+    assert.match(payment(bookingDepositTerms(2000, '4 players × ฿500')), /^A ฿2,000 deposit \(4 players × ฿500\) is paid online.*The rest is paid at the club\.$/);
+    assert.match(payment(perPersonDepositTerms({ deposit: 500, peopleNoun: 'person' })), /^A ฿500 deposit per person is paid online/);
     assert.match(payment(), /^Paid online when you book/);
-    const cancelling = (deposit?: number) => clubRules('', DEFAULT_CLUB, deposit).find((rule) => rule.title === 'Changes & cancellation')!.text;
-    assert.match(cancelling(500), /refund your deposit\. Later cancellations and no-shows may lose the deposit\.$/);
+    const cancelling = (terms?: string) => clubRules('', DEFAULT_CLUB, terms).find((rule) => rule.title === 'Changes & cancellation')!.text;
+    assert.match(cancelling('A ฿500 deposit per player'), /refund your deposit\. Later cancellations and no-shows may lose the deposit\.$/);
     assert.match(cancelling(), /refund you\. Later cancellations and no-shows may not be refunded\.$/);
   });
   it('leaves the right amount to collect on a saved booking', () => {

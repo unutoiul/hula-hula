@@ -6,7 +6,7 @@ import { fonts } from '../../theme';
 import { ActivityIcon } from '../activityIcons';
 import { useBookingFlow, useHoldSecondsLeft } from '../BookingFlowContext';
 import { durationLabel, shortDayLabel, timeLabel } from '../dates';
-import { money, peopleLabel } from '../pricing';
+import { depositDetail, money, peopleLabel } from '../pricing';
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
@@ -73,6 +73,7 @@ export function BookingSummary({ action }: { action?: ReactNode }) {
             <Box>
               <Typography variant="overline" sx={{ display: 'block', fontSize: 10, lineHeight: 1.6, color: 'success.dark' }}>Pay now</Typography>
               <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Deposit to book</Typography>
+              <Typography sx={{ fontSize: 12, color: 'success.dark' }}>{depositDetail(activity, search.players, deposit)}</Typography>
             </Box>
             <Typography sx={{ fontFamily: fonts.playful, fontWeight: 500, fontSize: 30, lineHeight: 1, color: 'success.dark', whiteSpace: 'nowrap' }}>{money(deposit)}</Typography>
           </Stack>

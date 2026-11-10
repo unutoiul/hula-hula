@@ -31,8 +31,19 @@ export function priceLines(activity: Activity, option: ActivityOption, players: 
 
 export const totalOf = (lines: PriceLine[]) => lines.reduce((sum, line) => sum + line.amount, 0);
 
-/** What's paid online to book: the activity's deposit, never more than the booking costs. With no deposit set, the full price. */
-export const depositFor = (activity: Pick<Activity, 'deposit'>, total: number) => (activity.deposit > 0 ? Math.min(activity.deposit, total) : total);
+/** What's paid online to book: the activity's deposit for each person in the group, never more than the booking costs. With no deposit set, the full price. */
+export const depositFor = (activity: Pick<Activity, 'deposit'>, players: number, total: number) => (activity.deposit > 0 ? Math.min(activity.deposit * players, total) : total);
+
+/** "4 players × ฿500": how a group's deposit adds up, or empty for one that wasn't worked out that way. */
+export const depositDetail = (activity: Pick<Activity, 'deposit' | 'peopleNoun'>, players: number, deposit: number) => (activity.deposit > 0 && deposit === activity.deposit * players ? `${peopleLabel(activity, players)} × ${money(activity.deposit)}` : '');
+
+/** How a booking's deposit reads in its conditions: "A ฿2,000 deposit (4 players × ฿500)". */
+export const bookingDepositTerms = (deposit: number, detail: string) => `A ${money(deposit)} deposit${detail ? ` (${detail})` : ''}`;
+
+const depositEach = (activity: Pick<Activity, 'deposit' | 'peopleNoun'>) => `${money(activity.deposit)} deposit per ${activity.peopleNoun}`;
+
+/** How the deposit reads in the conditions before the group is known: "A ฿500 deposit per player", or empty with no deposit. */
+export const perPersonDepositTerms = (activity: Pick<Activity, 'deposit' | 'peopleNoun'>) => (activity.deposit > 0 ? `A ${depositEach(activity)}` : '');
 
 /** The money columns of a saved booking (supabase/deposits.sql). */
 interface SavedBooking { total: number; deposit: number; paid_at: string | null; paid_amount: number | null; balance_paid_at: string | null }
@@ -43,5 +54,5 @@ export const onlineAmount = (b: SavedBooking) => (b.paid_at ? Number(b.paid_amou
 /** What's left to collect at the club. */
 export const balanceDue = (b: SavedBooking) => (b.balance_paid_at ? 0 : Math.max(0, b.total - onlineAmount(b)));
 
-/** "฿500 deposit online when you book, the rest at the club", for the pages that explain how paying works. */
-export const paymentNote = (activity: Pick<Activity, 'deposit'>) => (activity.deposit > 0 ? `${money(activity.deposit)} deposit online when you book, the rest at the club` : 'paid online when you book');
+/** "฿500 deposit per player online when you book, the rest at the club", for the pages that explain how paying works. */
+export const paymentNote = (activity: Pick<Activity, 'deposit' | 'peopleNoun'>) => (activity.deposit > 0 ? `${depositEach(activity)} online when you book, the rest at the club` : 'paid online when you book');

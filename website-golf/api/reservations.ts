@@ -93,7 +93,7 @@ async function book(req: VercelRequest, res: VercelResponse) {
 
     const lines = priceLines(activity, option, players, rentals, site.rentals);
     const total = totalOf(lines);
-    const deposit = depositFor(activity, total);
+    const deposit = depositFor(activity, players, total);
     const needsPayment = deposit > 0;
     if (needsPayment && !paymentConfigured()) return fail(503, 'Online payment isn’t switched on yet — please WhatsApp us and we’ll book you in.', 'unavailable');
 

@@ -63,7 +63,7 @@ export function ActivitiesManager({ rows, rentals, savedEquipment, saving, saved
             </Stack>
             <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ minWidth: 0 }}>
               {row.activity.options.map(option => <Chip key={option.id} size="small" label={`${option.label} · ${money(option.price)}`} sx={{ bgcolor: '#f4f5ed', borderRadius: '8px', fontSize: 12, height: 28 }} />)}
-              {row.activity.bookOnline && <Chip size="small" label={row.activity.deposit > 0 ? `${money(row.activity.deposit)} deposit` : 'Full price online'} sx={{ bgcolor: 'success.light', color: 'success.dark', borderRadius: '8px', fontSize: 12, fontWeight: 600, height: 28 }} />}
+              {row.activity.bookOnline && <Chip size="small" label={row.activity.deposit > 0 ? `${money(row.activity.deposit)} deposit per person` : 'Full price online'} sx={{ bgcolor: 'success.light', color: 'success.dark', borderRadius: '8px', fontSize: 12, fontWeight: 600, height: 28 }} />}
             </Stack>
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ borderTop: { xs: '1px solid', md: 'none' }, borderColor: 'divider', pt: { xs: 1, md: 0 } }}>
               <Stack direction="row" alignItems="center" spacing={.25}>

@@ -158,7 +158,7 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
 
   const total = totalOf(lines);
   const value: BookingFlow = {
-    ...state, extras: { ...state.extras, rentals }, activity, option, lines, total, deposit: depositFor(activity, total), holdExpired,
+    ...state, extras: { ...state.extras, rentals }, activity, option, lines, total, deposit: depositFor(activity, state.search.players, total), holdExpired,
     setSearch, selectTime, releaseTime, updateExtras, updateGuest, confirm, startOver, forgetGuest,
   };
   return <BookingFlowContext.Provider value={value}>{children}</BookingFlowContext.Provider>;

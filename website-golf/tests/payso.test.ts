@@ -257,8 +257,8 @@ describe('paying for a tee time', () => {
     const held = Date.parse(String(rpc!.p_booking.expires_at)) - Date.now();
     assert.ok(held > 19 * 60_000 && held <= 20 * 60_000);
     assert.equal(rpc!.p_booking.total, option.price * 2);
-    assert.equal(paysoBody!.amount, 500);
-    assert.equal(rpc!.p_booking.deposit, 500);
+    assert.equal(paysoBody!.amount, 1000, '฿500 for each of the 2 players');
+    assert.equal(rpc!.p_booking.deposit, 1000);
     assert.equal(patches[0].paid_amount, undefined);
     assert.equal(paysoBody!.referenceNo, INVOICE);
     assert.equal(paysoBody!.returnUrl, `http://golf.test/api/payment/payso-return?booking=${BOOKING}&key=${body.key}`);

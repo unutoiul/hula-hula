@@ -8,7 +8,7 @@ import { BookingSummary } from '../components/BookingSummary';
 import { clubRules } from '../config';
 import { useSite } from '../../context/SiteDataContext';
 import { COUNTRIES, guessCountry } from '../countries';
-import { money } from '../pricing';
+import { bookingDepositTerms, depositDetail, money } from '../pricing';
 import { STICKY_TOP } from '../../layoutConstants';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -17,7 +17,7 @@ const PHONE = /^[+()\d\s.-]{6,30}$/;
 // Step 3: who's coming, the club's conditions, and on to payment. The booking
 // is made in the lead player's name; the confirmation goes to their email.
 export function DetailsStep() {
-  const { activity, guest, updateGuest, confirm, total, deposit, time } = useBookingFlow();
+  const { activity, search, guest, updateGuest, confirm, total, deposit, time } = useBookingFlow();
   const [tried, setTried] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +60,7 @@ export function DetailsStep() {
 
   const { club } = useSite();
   const isDeposit = deposit < total;
-  const rules = clubRules(activity.wear, club, isDeposit ? deposit : 0);
+  const rules = clubRules(activity.wear, club, isDeposit ? bookingDepositTerms(deposit, depositDetail(activity, search.players, deposit)) : '');
 
   return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' }, gap: { xs: 3, md: 4 }, alignItems: 'start' }}>
     <Box component="form" noValidate onSubmit={submit} sx={{ minWidth: 0 }}>

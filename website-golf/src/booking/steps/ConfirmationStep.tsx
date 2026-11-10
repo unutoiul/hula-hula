@@ -15,7 +15,7 @@ import { useBookingFlow } from '../BookingFlowContext';
 import { downloadIcs, googleCalendarUrl } from '../calendar';
 import { clubRules, findActivity } from '../config';
 import { dayLabel, durationLabel, timeLabel } from '../dates';
-import { money, peopleLabel } from '../pricing';
+import { bookingDepositTerms, depositDetail, money, peopleLabel } from '../pricing';
 import { CARD_PEEK, PineappleGolfer } from '../../components/common/PineappleGolfer';
 
 const POLL_FOR_MS = 2 * 60_000;
@@ -92,6 +92,7 @@ export function ConfirmationStep() {
   </>);
 
   const activity = findActivity(site, reservation.activity);
+  const depositBreakdown = activity && reservation.balance > 0 ? depositDetail(activity, reservation.players, reservation.deposit) : '';
   const calendarItem = { uid: reservation.ref, title: `${reservation.activityName} · ${reservation.optionLabel}`, date: reservation.date, time: reservation.time, minutes: reservation.minutes, note: `Booking ${reservation.ref}. Please arrive 20–30 minutes early.` };
   const whatsappText = encodeURIComponent(`Hi Hula Hula Golf Club! About my booking ${reservation.ref} on ${dayLabel(reservation.date)} at ${timeLabel(reservation.time)}: `);
 
@@ -123,6 +124,7 @@ export function ConfirmationStep() {
       <Divider sx={{ my: 2 }} />
       {reservation.balance > 0 && <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: .75 }}><Typography sx={{ fontSize: 15 }}>Total</Typography><Typography sx={{ fontSize: 15 }}>{money(reservation.total)}</Typography></Stack>}
       <Stack direction="row" justifyContent="space-between" alignItems="baseline"><Typography sx={{ fontWeight: 700 }}>{reservation.total === 0 ? 'Nothing to pay' : reservation.testPayment ? 'Test payment — nothing charged' : reservation.balance > 0 ? 'Deposit paid online' : 'Paid online'}</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 26 }}>{money(reservation.balance > 0 ? reservation.deposit : reservation.total)}</Typography></Stack>
+      {depositBreakdown && <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{depositBreakdown}</Typography>}
       {reservation.balance > 0 && <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mt: .5 }}><Typography sx={{ fontWeight: 700 }}>To pay at the club</Typography><Typography sx={{ fontSize: 17, fontWeight: 700 }}>{money(reservation.balance)}</Typography></Stack>}
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3.5 }}>
@@ -134,7 +136,7 @@ export function ConfirmationStep() {
     <Box sx={{ mt: 3, p: { xs: 3, md: 4 }, borderRadius: '28px', bgcolor: 'success.light' }}>
       <Typography variant="h3" sx={{ fontSize: { xs: 24, md: 28 } }}>Before you come</Typography>
       <Stack spacing={1.25} sx={{ mt: 2 }}>
-        {clubRules(activity?.wear ?? '', site.club, reservation.balance > 0 ? reservation.deposit : 0).map((rule) => <Stack key={rule.title} direction="row" spacing={1.25} alignItems="flex-start">
+        {clubRules(activity?.wear ?? '', site.club, reservation.balance > 0 ? bookingDepositTerms(reservation.deposit, depositBreakdown) : '').map((rule) => <Stack key={rule.title} direction="row" spacing={1.25} alignItems="flex-start">
           <CheckCircleRounded sx={{ fontSize: 18, color: 'success.main', mt: '2px' }} />
           <Typography sx={{ fontSize: 14 }}><strong>{rule.title}.</strong> {rule.text}</Typography>
         </Stack>)}

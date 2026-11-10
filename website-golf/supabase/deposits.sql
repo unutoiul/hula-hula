@@ -4,7 +4,8 @@
 -- adds to what's there, and the current website keeps working with it.
 --
 -- A website booking now pays a deposit online and the rest at the club:
---   deposit         → what the guest was asked to pay online when they booked
+--   deposit         → what the group was asked to pay online when they booked:
+--                     the activity's per-person deposit × the number of people
 --                     (the full price if the activity takes no deposit; 0 for
 --                     phone and walk-in bookings, and when there's nothing to pay)
 --   paid_amount     → what Payso reports was actually paid
@@ -21,7 +22,7 @@ update public.golf_bookings set deposit = total where invoice_no is not null;
 
 alter table public.golf_bookings add constraint golf_bookings_deposit_check check (deposit between 0 and total);
 
--- Each activity's deposit is staff's to change in /admin → Activities & prices.
+-- Each activity's deposit per person is staff's to change in /admin → Activities & prices.
 update public.golf_activities set data = data || '{"deposit": 500}'::jsonb where not (data ? 'deposit');
 
 -- The same as in tee-payments.sql, and it also saves the deposit. Only the
