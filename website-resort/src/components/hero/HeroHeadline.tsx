@@ -25,7 +25,9 @@ const word: Variants = {
 };
 const letter: Variants = {
   enter: { y: '0.4em', opacity: 0, rotate: 8, filter: 'blur(8px)' },
-  center: { y: 0, opacity: 1, rotate: 0, filter: 'blur(0px)', transition: { type: 'spring', stiffness: 220, damping: 20 } },
+  // The blur gets its own tween because the spring overshoots past its target,
+  // and a negative value like blur(-0.1px) is invalid CSS.
+  center: { y: 0, opacity: 1, rotate: 0, filter: 'blur(0px)', transition: { type: 'spring', stiffness: 220, damping: 20, filter: { type: 'tween', duration: 0.4, ease: 'easeOut' } } },
   exit: { y: '-0.3em', opacity: 0, filter: 'blur(6px)', transition: { duration: 0.22, ease: 'easeIn' } },
 };
 
