@@ -44,24 +44,36 @@ const flagVars = (flags: string[]) => ({
 
 const BOOKING_FLAG_TEXT: Record<string, string> = {
   paid_after_expiry: 'Paid after the hold on this time ran out. Check the tee sheet isn’t overbooked; if it is, refund the guest in the Payso control panel and let them know.',
-  amount_mismatch: 'Payso reports a different amount from the booking total. Check the payment in the Payso control panel.',
+  amount_mismatch: 'Payso reports a different amount from the one the guest was asked to pay. Check the payment in the Payso control panel.',
 };
 
-const bookingPaidLabel = (r: Reservation) => (r.total === 0 ? 'Nothing to pay' : r.testPayment ? 'Paid (test — nothing was charged)' : 'Paid online');
+function bookingPaidLabel(r: Reservation) {
+  if (r.total === 0) return 'Nothing to pay';
+  const paid = r.balance > 0 ? 'Deposit paid' : 'Paid';
+  return r.testPayment ? `${paid} (test — nothing was charged)` : `${paid} online`;
+}
+
+/** How the guest is getting to the club, for the confirmation; undefined when they're making their own way. */
+function pickupLine(r: Reservation) {
+  if (r.privateTransfer) return `Private transfer from ${r.pickupFrom} — we’ll confirm the price and pick-up time on WhatsApp.`;
+  return r.transfer ? `Free shuttle pick-up at ${timeLabel(r.transfer)} from ${r.pickupFrom} — we’ll confirm the spot on WhatsApp.` : undefined;
+}
 
 function summary(r: Reservation, site: SiteData) {
   const activity = findActivity(site, r.activity);
   const people = plural(r.players, activity?.peopleNoun ?? 'player', activity?.peopleNoun === 'person' ? 'people' : 'players');
   return {
     wear: activity?.wear ?? '', people, when: `${timeLabel(r.time)} · ${dayLabel(r.date)}`,
-    vars: { BOOKING_REF: escape(r.ref), TEE_TIME: timeLabel(r.time), TEE_DAY: dayLabel(r.date), ACTIVITY: escape(`${r.activityName} · ${r.optionLabel}`), GROUP: escape(`${people} · about ${durationLabel(r.minutes)}`), LINES_HTML: linesHtml(r.lines), TOTAL: escape(money(r.total)), PAID_LABEL: bookingPaidLabel(r) },
+    vars: { BOOKING_REF: escape(r.ref), TEE_TIME: timeLabel(r.time), TEE_DAY: dayLabel(r.date), ACTIVITY: escape(`${r.activityName} · ${r.optionLabel}`), GROUP: escape(`${people} · about ${durationLabel(r.minutes)}`), LINES_HTML: linesHtml(r.lines), TOTAL: escape(money(r.total)), PAID_LABEL: bookingPaidLabel(r), PAID_AMOUNT: escape(money(r.deposit)),
+      BALANCE: r.balance > 0 ? escape(money(r.balance)) : undefined, BALANCE_DISPLAY: r.balance > 0 ? 'table-cell' : undefined },
   };
 }
 
 export function bookingConfirmation(r: Reservation, guest: Guest, siteUrl: string, site: SiteData): TemplateMessage {
   const { wear, when, vars } = summary(r, site);
   const { contact, vars: club } = clubDetails(site, siteUrl);
-  const rules = clubRules(wear, site.club).filter((rule) => rule.text);
+  const rules = clubRules(wear, site.club, r.balance > 0 ? r.deposit : 0).filter((rule) => rule.text);
+  const pickup = pickupLine(r);
   return {
     subject: `Booked: ${r.activityName} ${when} — ${r.ref}`,
     template: TEMPLATES.bookingConfirmation,
@@ -69,8 +81,8 @@ export function bookingConfirmation(r: Reservation, guest: Guest, siteUrl: strin
       ...vars, ...club,
       PREVIEW: escape(`You’re on the tee sheet — ${when} · booking ${r.ref}`),
       GUEST_FIRST_NAME: guest.firstName ? escape(guest.firstName) : undefined,
-      PICKUP_LINE: r.transfer ? escape(`Free shuttle pick-up at ${timeLabel(r.transfer)} from ${r.pickupFrom} — we’ll confirm the spot on WhatsApp.`) : undefined,
-      PICKUP_DISPLAY: r.transfer ? 'block' : undefined,
+      PICKUP_LINE: pickup ? escape(pickup) : undefined,
+      PICKUP_DISPLAY: pickup ? 'block' : undefined,
       RULES_HTML: clip(rules.map((rule) => `<strong style="color:#173c2c;">${escape(rule.title)}.</strong> ${escape(rule.text)}`).join('<br>')),
       WHATSAPP_URL: escape(`${contact.whatsapp}?text=${encodeURIComponent(`Hi! About my booking ${r.ref}: `)}`),
       CLUB_PHONE: escape(contact.phone),
@@ -99,7 +111,7 @@ export function bookingNotification(r: Reservation, guest: Guest, experience: st
       HANDICAP: guest.handicap ? escape(guest.handicap) : undefined,
       EXPERIENCE: experience ? escape(experience) : undefined,
       RENTALS: rentals ? escape(rentals) : undefined,
-      SHUTTLE: r.transfer ? escape(`${timeLabel(r.transfer)} pick-up from ${r.pickupFrom}`) : undefined,
+      SHUTTLE: r.privateTransfer ? escape(`Private transfer from ${r.pickupFrom}. Please agree the price and pick-up time with the guest.`) : r.transfer ? escape(`Free shuttle: ${timeLabel(r.transfer)} pick-up from ${r.pickupFrom}`) : undefined,
       NOTES: guest.notes ? clip(escape(guest.notes).replace(/\n/g, '<br>')) : undefined,
       WHATSAPP_URL: whatsapp,
       WHATSAPP_DISPLAY: whatsapp ? 'inline-block' : undefined,

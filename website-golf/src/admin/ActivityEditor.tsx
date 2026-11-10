@@ -67,6 +67,8 @@ export function ActivityEditor({ initial, isNew, takenIds, onClose, onSave }: {
           <Button startIcon={<AddRounded />} onClick={() => set({ options: [...a.options, { id: `o${Date.now().toString(36)}`, label: '', price: a.options[0]?.price ?? 0, minutes: 60, lastStart: a.options[0]?.lastStart ?? '16:00' }] })} sx={{ alignSelf: 'flex-start' }}>Add an option</Button>
           <TextField label="Price for one person on their own (optional)" type="number" value={a.soloPrice ?? ''} onChange={(e) => set({ soloPrice: e.target.value ? Math.max(0, toInt(e.target.value)) : undefined })}
             helperText="Leave empty unless one person pays a different price (like a private lesson)." slotProps={{ htmlInput: { min: 0, inputMode: 'numeric' } }} sx={{ maxWidth: 420 }} />
+          <TextField label="Deposit to book online ฿" type="number" value={a.deposit} onChange={(e) => set({ deposit: Math.max(0, toInt(e.target.value)) })}
+            helperText="Per booking. Guests pay this online and the rest at the club. Set it to 0 to take the full price online." slotProps={{ htmlInput: { min: 0, inputMode: 'numeric' } }} sx={{ maxWidth: 420 }} />
         </Group>
 
         <Group title="When it runs & group size">

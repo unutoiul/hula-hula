@@ -6,7 +6,7 @@ import { useEffect, useMemo, type ReactNode } from 'react';
 import { bookHref } from '../booking/BookingFlowContext';
 import { clubRules, findActivity, hasPrices, openingHoursLines, rentalsFor, type Activity } from '../booking/config';
 import { durationLabel, timeLabel } from '../booking/dates';
-import { money } from '../booking/pricing';
+import { money, paymentNote } from '../booking/pricing';
 import { ThingCard } from '../components/activities/ThingCard';
 import { ClubPhoto } from '../components/common/ClubPhoto';
 import { PaymentLogos } from '../components/common/PaymentMethods';
@@ -85,7 +85,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
     ...(activity.caddie ? [{ title: 'Caddie tip', text: `Not included: ${money(club.booking.caddieTip)} per caddie is customary, in cash.` }] : []),
     ...(rentalPrices.length ? [{ title: 'Equipment', text: rentalPrices.every(price => price === 0) ? 'Equipment is included with your booking at no extra charge.' : `${rentalPrices.length > 1 ? `${money(rentalPrices[0])} – ${money(rentalPrices.at(-1)!)}` : money(rentalPrices[0])} per item, added when you book.` }] : []),
     ...(club.transfer.pickups.length ? [{ title: 'Free shuttle', text: `Pick-ups at ${club.transfer.pickups.map(timeLabel).join(' and ')}. Ask when you book.` }] : []),
-    ...(activity.bookOnline ? [clubRules(activity.wear, club).find((r) => r.title === 'Payment')!] : []),
+    ...(activity.bookOnline ? [clubRules(activity.wear, club, activity.deposit).find((r) => r.title === 'Payment')!] : []),
   ];
 
   const aside = <>
@@ -101,7 +101,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
       </Stack>
     </>}
     <ActionButton action={actions[0]} fullWidth sx={{ mt: 3 }} />
-    {priced && <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.25, textAlign: 'center' }}>In Thai baht{activity.bookOnline ? ', paid online when you book' : ''}.</Typography>}
+    {priced && <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.25, textAlign: 'center' }}>In Thai baht{activity.bookOnline ? `, ${paymentNote(activity)}` : ''}.</Typography>}
     {priced && activity.bookOnline && <PaymentLogos size={26} sx={{ mt: 1.25, justifyContent: 'center' }} />}
   </>;
 

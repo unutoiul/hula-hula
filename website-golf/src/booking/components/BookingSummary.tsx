@@ -1,5 +1,5 @@
 import TimerOutlined from '@mui/icons-material/TimerOutlined';
-import { Box, Chip, Divider, Stack, Typography } from '@mui/material';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 import { PaymentLogos } from '../../components/common/PaymentMethods';
 import { fonts } from '../../theme';
@@ -10,12 +10,20 @@ import { money, peopleLabel } from '../pricing';
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
+function Fact({ label, muted, children }: { label: string; muted?: boolean; children: ReactNode }) {
+  return <Box sx={{ minWidth: 0 }}>
+    <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', fontSize: 10, lineHeight: 1.6 }}>{label}</Typography>
+    <Typography sx={{ fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap', color: muted ? 'text.secondary' : 'text.primary' }}>{children}</Typography>
+  </Box>;
+}
+
 // The running summary beside every step: what, when, for how many, the hold
-// on the picked time, and the price — paid online at the end.
+// on the picked time, the price, and what's paid now against what's left for
+// the club.
 export function BookingSummary({ action }: { action?: ReactNode }) {
-  const { activity, option, search, time, lines, total, extras } = useBookingFlow();
+  const { activity, option, search, time, lines, total, deposit, extras } = useBookingFlow();
   const secondsLeft = useHoldSecondsLeft();
-  const people = peopleLabel(activity, search.players);
+  const balance = total - deposit;
 
   return <Box sx={{ border: '1px solid', borderColor: 'divider', borderTop: '5px solid #50830d', bgcolor: 'background.paper', borderRadius: '24px', p: { xs: 2.5, md: 3 }, boxShadow: '0 16px 36px rgba(23,60,44,.07)' }}>
     <Typography variant="overline" sx={{ color: 'text.secondary' }}>Your booking</Typography>
@@ -27,10 +35,10 @@ export function BookingSummary({ action }: { action?: ReactNode }) {
       </Box>
     </Stack>
 
-    <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-      <Box><Typography variant="overline" sx={{ color: 'text.secondary', fontSize: 10 }}>Day</Typography><Typography sx={{ fontWeight: 700, fontSize: 14 }}>{shortDayLabel(search.date)}</Typography></Box>
-      <Box><Typography variant="overline" sx={{ color: 'text.secondary', fontSize: 10 }}>{activity.slotNoun === 'tee time' ? 'Tee time' : 'Start'}</Typography><Typography sx={{ fontWeight: 700, fontSize: 14, color: time ? 'text.primary' : 'text.secondary' }}>{time ? timeLabel(time) : 'Pick a time'}</Typography></Box>
-      <Box sx={{ gridColumn: '1 / -1' }}><Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{people}{extras.transfer ? ` · free pick-up at ${timeLabel(extras.transfer)}` : ''}</Typography></Box>
+    <Box sx={{ mt: 2.25, display: 'grid', gridTemplateColumns: 'repeat(3, auto)', justifyContent: 'space-between', columnGap: 1.5 }}>
+      <Fact label="Day">{shortDayLabel(search.date)}</Fact>
+      <Fact label={activity.slotNoun === 'tee time' ? 'Tee time' : 'Start'} muted={!time}>{time ? timeLabel(time) : 'Pick a time'}</Fact>
+      <Fact label="Group">{peopleLabel(activity, search.players)}</Fact>
     </Box>
 
     {secondsLeft !== null && <Stack direction="row" spacing={1} alignItems="center" role="timer" aria-live="off" sx={{ mt: 2, px: 1.5, py: 1, borderRadius: '12px', bgcolor: secondsLeft < 120 ? 'secondary.light' : 'primary.light', color: secondsLeft < 120 ? 'secondary.dark' : 'primary.dark' }}>
@@ -47,15 +55,45 @@ export function BookingSummary({ action }: { action?: ReactNode }) {
         </Box>
         <Typography sx={{ fontSize: 14, whiteSpace: 'nowrap' }}>{money(line.amount)}</Typography>
       </Stack>)}
-      {extras.transfer && <Stack direction="row" justifyContent="space-between"><Typography sx={{ fontSize: 14, fontWeight: 700 }}>Shuttle pick-up</Typography><Typography sx={{ fontSize: 14, color: 'success.dark', fontWeight: 700 }}>Free</Typography></Stack>}
+      {extras.transfer && <Stack direction="row" justifyContent="space-between" spacing={2}>
+        <Box><Typography sx={{ fontSize: 14, fontWeight: 700 }}>Shuttle pick-up</Typography><Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{timeLabel(extras.transfer)}</Typography></Box>
+        <Typography sx={{ fontSize: 14, color: 'success.dark', fontWeight: 700 }}>Free</Typography>
+      </Stack>}
+      {extras.privateTransfer && <Stack direction="row" justifyContent="space-between" spacing={2}><Typography sx={{ fontSize: 14, fontWeight: 700 }}>Private transfer</Typography><Typography sx={{ fontSize: 13, color: 'text.secondary', whiteSpace: 'nowrap' }}>Price by WhatsApp</Typography></Stack>}
     </Stack>
-    <Divider sx={{ my: 2 }} />
-    <Stack direction="row" justifyContent="space-between" alignItems="baseline"><Typography sx={{ fontWeight: 700 }}>Total</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 24 }}>{money(total)}</Typography></Stack>
-    <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: .25 }}>{total > 0 ? 'Paid online when you book.' : 'Nothing to pay.'}</Typography>
-    {total > 0 && <PaymentLogos size={26} sx={{ mt: 1 }} />}
-    <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ mt: 1.5 }}>
-      {activity.includes.map((item) => <Chip key={item} label={item} size="small" sx={{ bgcolor: 'success.light', color: 'success.dark', fontWeight: 600, fontSize: 11 }} />)}
-    </Stack>
+
+    {balance > 0
+      ? <>
+        <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mt: 1.75, pt: 1.75, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Total</Typography>
+          <Typography sx={{ fontSize: 15, fontWeight: 700 }}>{money(total)}</Typography>
+        </Stack>
+        <Box sx={{ mt: 1.5, borderRadius: '16px', overflow: 'hidden', border: '1px solid', borderColor: 'success.main' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ px: 1.75, py: 1.5, bgcolor: 'success.light' }}>
+            <Box>
+              <Typography variant="overline" sx={{ display: 'block', fontSize: 10, lineHeight: 1.6, color: 'success.dark' }}>Pay now</Typography>
+              <Typography sx={{ fontSize: 14, fontWeight: 700 }}>Deposit to book</Typography>
+            </Box>
+            <Typography sx={{ fontFamily: fonts.playful, fontWeight: 500, fontSize: 30, lineHeight: 1, color: 'success.dark', whiteSpace: 'nowrap' }}>{money(deposit)}</Typography>
+          </Stack>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ px: 1.75, py: 1.25, borderTop: '1px dashed', borderColor: 'success.main' }}>
+            <Box>
+              <Typography variant="overline" sx={{ display: 'block', fontSize: 10, lineHeight: 1.6, color: 'text.secondary' }}>At the club</Typography>
+              <Typography sx={{ fontSize: 13 }}>Pay the rest on the day</Typography>
+            </Box>
+            <Typography sx={{ fontSize: 17, fontWeight: 700, whiteSpace: 'nowrap' }}>{money(balance)}</Typography>
+          </Stack>
+        </Box>
+      </>
+      : <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: 1.75, pt: 1.75, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Box>
+          <Typography sx={{ fontWeight: 700 }}>Total</Typography>
+          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{total > 0 ? 'Paid online when you book' : 'Nothing to pay'}</Typography>
+        </Box>
+        <Typography sx={{ fontFamily: fonts.playful, fontWeight: 500, fontSize: 30, lineHeight: 1, whiteSpace: 'nowrap' }}>{money(total)}</Typography>
+      </Stack>}
+
     {action && <Box sx={{ mt: 2.5 }}>{action}</Box>}
+    {deposit > 0 && <PaymentLogos size={22} sx={{ mt: 1.5, justifyContent: 'center' }} />}
   </Box>;
 }

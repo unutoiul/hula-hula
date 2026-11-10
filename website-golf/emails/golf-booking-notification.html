@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Resend template "golf-booking-notification": goes to the club's inbox when a
-  guest books and pays for a tee time on the website (api/_lib/teeTimes.ts).
+  guest books a tee time on the website and pays its deposit (api/_lib/teeTimes.ts).
   The booking is already on the tee sheet in /admin; this is the heads-up, and
   the guest is the reply-to so a plain "Reply" answers them. Edit here, then
   `npm run email:publish`. Same rules as golf-booking-confirmation.html.
@@ -52,7 +52,9 @@
         <tr><td style="padding:18px 28px 0;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{{{LINES_HTML}}}</table>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;border-top:2px solid #173c2c;">
-            <tr><td style="padding:10px 0 3px;color:#50830d;">{{{PAID_LABEL}}}</td><td align="right" style="padding:10px 0 3px;color:#50830d;"><strong>{{{TOTAL}}}</strong></td></tr>
+            <tr><td style="padding:10px 0 3px;">Total</td><td align="right" style="padding:10px 0 3px;"><strong>{{{TOTAL}}}</strong></td></tr>
+            <tr><td style="padding:3px 0;color:#50830d;">{{{PAID_LABEL}}}</td><td align="right" style="padding:3px 0;color:#50830d;"><strong>{{{PAID_AMOUNT}}}</strong></td></tr>
+            <tr><td style="display:{{{BALANCE_DISPLAY}}};padding:3px 0;"><strong>To collect at the club</strong></td><td align="right" style="display:{{{BALANCE_DISPLAY}}};padding:3px 0;"><strong>{{{BALANCE}}}</strong></td></tr>
           </table>
         </td></tr>
 
@@ -87,7 +89,7 @@
               <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{RENTALS}}}</td>
             </tr>
             <tr>
-              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Shuttle</td>
+              <td style="padding:10px 0;border-top:1px solid #d6e1ce;width:132px;vertical-align:top;font:700 11px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#4b6457;">Transport</td>
               <td style="padding:10px 0;border-top:1px solid #d6e1ce;vertical-align:top;font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;">{{{SHUTTLE}}}</td>
             </tr>
             <tr>

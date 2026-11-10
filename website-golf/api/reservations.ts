@@ -3,7 +3,7 @@ import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/avail
 import { contactLinks, EXPERIENCE_LEVELS, findActivity, pickupFor, rentalsFor } from '../src/booking/config.ts';
 import type { ErrorResponse, Guest, ReservationStarted } from '../src/booking/contract.ts';
 import { isISODate } from '../src/booking/dates.ts';
-import { priceLines, totalOf } from '../src/booking/pricing.ts';
+import { depositFor, priceLines, totalOf } from '../src/booking/pricing.ts';
 import { normaliseRentalSelection, rentalSelectionError } from '../src/booking/rentals.ts';
 import { DbError, rest } from './_lib/db.ts';
 import { allowMethods, queryString, readJsonBody, siteUrl } from './_lib/http.ts';
@@ -23,8 +23,8 @@ const INQUIRY_EVERY_MS = 5_000;
 //          here against the club's current settings and priced here (never
 //          trusted from the page), then saved through golf_book(), which takes
 //          the last place atomically and holds it for HOLD_MINUTES while the
-//          guest pays on Payso's page. Something with nothing to pay is booked
-//          straight away.
+//          guest pays the activity's deposit on Payso's page; the rest is paid
+//          at the club. Something with nothing to pay is booked straight away.
 //   GET ?ref&key — the booking for /book/confirmation. While it's pending this
 //          asks Payso directly (at most every few seconds), so a confirmation
 //          never depends on Payso's notification arriving.
@@ -78,9 +78,11 @@ async function book(req: VercelRequest, res: VercelResponse) {
   if (rentalError) return fail(400, rentalError, 'invalid');
   const rentals = normaliseRentalSelection(offered, players, sentRentals as Record<string, number>);
 
-  const transfer = text(body.transfer, 5) || null;
+  const privateTransfer = body.privateTransfer === true;
+  const transfer = privateTransfer ? null : text(body.transfer, 5) || null;
   const pickupFrom = text(body.pickupFrom, 160);
-  if (transfer && (transfer !== pickupFor(time, site.club) || !pickupFrom)) return fail(400, 'Please check the shuttle pick-up.', 'invalid');
+  if (transfer && transfer !== pickupFor(time, site.club)) return fail(400, 'Please check the shuttle pick-up.', 'invalid');
+  if ((transfer || privateTransfer) && !pickupFrom) return fail(400, 'Please tell us where to pick you up.', 'invalid');
   const experience = activity.askExperience && EXPERIENCE_LEVELS.includes(text(body.experience, 60)) ? text(body.experience, 60) : '';
 
   try {
@@ -91,7 +93,8 @@ async function book(req: VercelRequest, res: VercelResponse) {
 
     const lines = priceLines(activity, option, players, rentals, site.rentals);
     const total = totalOf(lines);
-    const needsPayment = total > 0;
+    const deposit = depositFor(activity, total);
+    const needsPayment = deposit > 0;
     if (needsPayment && !paymentConfigured()) return fail(503, 'Online payment isn’t switched on yet — please WhatsApp us and we’ll book you in.', 'unavailable');
 
     const ref = await rest<string>('/rpc/golf_book', {
@@ -99,9 +102,9 @@ async function book(req: VercelRequest, res: VercelResponse) {
       body: {
         p_booking: {
           activity: activity.id, option: option.id, play_date: date, start_time: time, minutes: option.minutes, players, rentals,
-          transfer, pickup_from: transfer ? pickupFrom : '', experience, first_name: guest.firstName, last_name: guest.lastName,
+          transfer, pickup_from: transfer || privateTransfer ? pickupFrom : '', experience, first_name: guest.firstName, last_name: guest.lastName,
           email: guest.email, phone: guest.phone, country: guest.country, handicap: guest.handicap, notes: guest.notes, lines, total, source: 'online',
-          ...(needsPayment && { status: 'pending', expires_at: new Date(Date.now() + HOLD_MINUTES * 60_000).toISOString() }),
+          ...(needsPayment && { status: 'pending', expires_at: new Date(Date.now() + HOLD_MINUTES * 60_000).toISOString(), deposit }),
         },
         p_capacity: activity.capacity, p_units: activity.units, p_private: activity.privateGroup, p_force: false,
       },
@@ -122,8 +125,8 @@ async function book(req: VercelRequest, res: VercelResponse) {
     try {
       const { redirectUrl, transactionId } = await createPayment({
         referenceNo: invoiceNo,
-        description: `Hula Hula Golf ${ref} - ${activity.name} ${option.label} x${players} - ${date} ${time}`,
-        amount: total,
+        description: `Hula Hula Golf ${ref} - ${deposit < total ? 'Deposit - ' : ''}${activity.name} ${option.label} x${players} - ${date} ${time}`,
+        amount: deposit,
         email: customerEmailFor(guest.email, contactLinks(site.club.contact).email),
         returnUrl: `${origin}/api/payment/payso-return?booking=${ref}&key=${key}`,
         postbackUrl: `${origin}/api/payment/payso-postback?refno=${invoiceNo}`,

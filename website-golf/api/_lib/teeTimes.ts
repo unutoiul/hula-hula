@@ -1,13 +1,13 @@
-import { contactLinks, findActivity, type SiteData } from '../../src/booking/config.ts';
+import { contactLinks, findActivity, isPrivateTransfer, type SiteData } from '../../src/booking/config.ts';
 import type { Guest, Reservation, ReservationView } from '../../src/booking/contract.ts';
-import type { PriceLine } from '../../src/booking/pricing.ts';
+import { balanceDue, onlineAmount, type PriceLine } from '../../src/booking/pricing.ts';
 import { rest } from './db.ts';
 import { bookingConfirmation, bookingNotification } from './emails.ts';
 import { PAID, paidFields, paymentInquiry } from './payso.ts';
 import { emailConfigured, sendTemplate, splitAddresses } from './resend.ts';
 import { loadSite } from './site.ts';
 
-// Tee time bookings in Supabase (supabase/tee-payments.sql). Like the event
+// Tee time bookings in Supabase (supabase/tee-payments.sql, deposits.sql). Like the event
 // orders in events.ts, confirmBookingPayment() is the one path from "this might
 // be paid" to "booked, and both emails sent": Payso's notification, the
 // confirmation page's polling and the daily cron can all call it at once, so
@@ -18,7 +18,7 @@ export interface BookingRow {
   activity: string; option: string; play_date: string; start_time: string; minutes: number; players: number;
   rentals: Record<string, number>; transfer: string | null; pickup_from: string; experience: string;
   first_name: string; last_name: string; email: string; phone: string; country: string; handicap: string; notes: string;
-  lines: PriceLine[]; total: number; status: string; test_payment: boolean; flags: string[]; expires_at: string | null; paid_at: string | null;
+  lines: PriceLine[]; total: number; deposit: number; paid_amount: number | null; balance_paid_at: string | null; status: string; test_payment: boolean; flags: string[]; expires_at: string | null; paid_at: string | null;
   resp_code: string | null; emailed_at: string | null; emails_claimed_at: string | null;
 }
 
@@ -31,7 +31,8 @@ function reservationOf(b: BookingRow, site: SiteData): Reservation {
   return {
     ref: b.ref, activity: b.activity, activityName: activity?.name ?? b.activity, optionLabel: activity?.options.find((o) => o.id === b.option)?.label ?? b.option,
     date: b.play_date, time: b.start_time.slice(0, 5), minutes: b.minutes, players: b.players, rentals: b.rentals,
-    transfer: b.transfer ? b.transfer.slice(0, 5) : null, pickupFrom: b.pickup_from, lines: b.lines, total: b.total, email: b.email, emailed: !!b.emailed_at, testPayment: b.test_payment,
+    transfer: b.transfer ? b.transfer.slice(0, 5) : null, privateTransfer: isPrivateTransfer(b), pickupFrom: b.pickup_from, lines: b.lines, total: b.total,
+    deposit: onlineAmount(b), balance: balanceDue(b), email: b.email, emailed: !!b.emailed_at, testPayment: b.test_payment,
   };
 }
 

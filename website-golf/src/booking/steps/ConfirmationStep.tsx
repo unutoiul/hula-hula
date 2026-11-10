@@ -1,6 +1,7 @@
 import AirportShuttleRounded from '@mui/icons-material/AirportShuttleRounded';
 import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
 import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
+import DirectionsCarRounded from '@mui/icons-material/DirectionsCarRounded';
 import EventRounded from '@mui/icons-material/EventRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Alert, Box, Button, CircularProgress, Divider, Stack, Typography } from '@mui/material';
@@ -109,6 +110,7 @@ export function ConfirmationStep() {
           <Typography sx={{ fontFamily: fonts.playful, fontSize: { xs: 24, md: 28 }, lineHeight: 1.15, color: 'primary.dark' }}>{timeLabel(reservation.time)} · {dayLabel(reservation.date)}</Typography>
           <Typography sx={{ mt: .5 }}>{reservation.activityName} · {reservation.optionLabel} · {peopleLabel(activity ?? { peopleNoun: 'player' }, reservation.players)} · about {durationLabel(reservation.minutes)}</Typography>
           {reservation.transfer && <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1, color: 'primary.dark' }}><AirportShuttleRounded sx={{ fontSize: 18 }} /><Typography sx={{ fontSize: 14 }}>Free pick-up at {timeLabel(reservation.transfer)} from {reservation.pickupFrom} — we’ll confirm the spot on WhatsApp.</Typography></Stack>}
+          {reservation.privateTransfer && <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1, color: 'primary.dark' }}><DirectionsCarRounded sx={{ fontSize: 18 }} /><Typography sx={{ fontSize: 14 }}>Private transfer from {reservation.pickupFrom} — we’ll confirm the price and pick-up time on WhatsApp.</Typography></Stack>}
         </Box>
       </Box>
 
@@ -119,7 +121,9 @@ export function ConfirmationStep() {
         </Stack>)}
       </Stack>
       <Divider sx={{ my: 2 }} />
-      <Stack direction="row" justifyContent="space-between" alignItems="baseline"><Typography sx={{ fontWeight: 700 }}>{reservation.total === 0 ? 'Nothing to pay' : reservation.testPayment ? 'Test payment — nothing charged' : 'Paid online'}</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 26 }}>{money(reservation.total)}</Typography></Stack>
+      {reservation.balance > 0 && <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: .75 }}><Typography sx={{ fontSize: 15 }}>Total</Typography><Typography sx={{ fontSize: 15 }}>{money(reservation.total)}</Typography></Stack>}
+      <Stack direction="row" justifyContent="space-between" alignItems="baseline"><Typography sx={{ fontWeight: 700 }}>{reservation.total === 0 ? 'Nothing to pay' : reservation.testPayment ? 'Test payment — nothing charged' : reservation.balance > 0 ? 'Deposit paid online' : 'Paid online'}</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 26 }}>{money(reservation.balance > 0 ? reservation.deposit : reservation.total)}</Typography></Stack>
+      {reservation.balance > 0 && <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mt: .5 }}><Typography sx={{ fontWeight: 700 }}>To pay at the club</Typography><Typography sx={{ fontSize: 17, fontWeight: 700 }}>{money(reservation.balance)}</Typography></Stack>}
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3.5 }}>
         <Button variant="contained" startIcon={<CalendarMonthRounded />} href={googleCalendarUrl(calendarItem, CONTACT)} target="_blank" rel="noopener noreferrer">Add to Google Calendar</Button>
@@ -130,7 +134,7 @@ export function ConfirmationStep() {
     <Box sx={{ mt: 3, p: { xs: 3, md: 4 }, borderRadius: '28px', bgcolor: 'success.light' }}>
       <Typography variant="h3" sx={{ fontSize: { xs: 24, md: 28 } }}>Before you come</Typography>
       <Stack spacing={1.25} sx={{ mt: 2 }}>
-        {clubRules(activity?.wear ?? '', site.club).map((rule) => <Stack key={rule.title} direction="row" spacing={1.25} alignItems="flex-start">
+        {clubRules(activity?.wear ?? '', site.club, reservation.balance > 0 ? reservation.deposit : 0).map((rule) => <Stack key={rule.title} direction="row" spacing={1.25} alignItems="flex-start">
           <CheckCircleRounded sx={{ fontSize: 18, color: 'success.main', mt: '2px' }} />
           <Typography sx={{ fontSize: 14 }}><strong>{rule.title}.</strong> {rule.text}</Typography>
         </Stack>)}

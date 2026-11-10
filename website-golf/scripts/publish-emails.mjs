@@ -33,6 +33,9 @@ const TEE_TIME = [
   { key: 'LINES_HTML', type: 'string' },
   { key: 'TOTAL', type: 'string' },
   { key: 'PAID_LABEL', type: 'string', fallback_value: 'Paid online' },
+  { key: 'PAID_AMOUNT', type: 'string', fallback_value: '' },
+  { key: 'BALANCE', type: 'string', fallback_value: '' },
+  { key: 'BALANCE_DISPLAY', type: 'string', fallback_value: HIDDEN },
 ];
 const ORDER = [
   { key: 'ORDER_REF', type: 'string' },

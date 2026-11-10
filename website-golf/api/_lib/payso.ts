@@ -84,13 +84,15 @@ export interface InquiryResult {
 }
 
 /** What a confirmed payment writes on its event order or tee time, flagging anything staff should check. */
-export function paidFields(row: { total: number; flags: string[]; status: string; expires_at: string | null }, inquiry: InquiryResult) {
+export function paidFields(row: { total: number; deposit?: number; flags: string[]; status: string; expires_at: string | null }, inquiry: InquiryResult) {
   const flags = new Set(row.flags);
+  // What the guest was asked to pay: a tee time's deposit, or an event order's whole total.
+  const expected = row.deposit ?? row.total;
   // Paid after its hold ran out: the place may have gone to someone else meanwhile.
   if (row.status === 'expired' || (row.expires_at && Date.now() > Date.parse(row.expires_at))) flags.add('paid_after_expiry');
-  if (typeof inquiry.amount === 'number' && Math.round(inquiry.amount * 100) !== row.total * 100) flags.add('amount_mismatch');
+  if (typeof inquiry.amount === 'number' && Math.round(inquiry.amount * 100) !== Math.round(expected * 100)) flags.add('amount_mismatch');
   return {
-    paid_at: new Date().toISOString(), paid_amount: inquiry.amount ?? row.total, tran_ref: inquiry.referenceNo ?? null, channel_code: inquiry.cardType ?? null,
+    paid_at: new Date().toISOString(), paid_amount: inquiry.amount ?? expected, tran_ref: inquiry.referenceNo ?? null, channel_code: inquiry.cardType ?? null,
     resp_code: inquiry.status, resp_desc: inquiry.statusName ?? null, test_payment: isTestMode(), flags: [...flags],
   };
 }

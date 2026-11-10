@@ -207,7 +207,7 @@ describe('paying for a tee time', () => {
   const pending = {
     id: 'b1', ref: BOOKING, invoice_no: INVOICE, access_key_hash: sha256Hex(key), activity: 'golf', option: option.id, play_date: day, start_time: `${time}:00`, minutes: option.minutes, players: 2,
     rentals: {}, transfer: null, pickup_from: '', experience: '', first_name: 'Bo', last_name: 'Chan', email: 'bo@example.com', phone: '+66 89 000 1111', country: 'GB', handicap: '', notes: '',
-    lines: [], total: 3000, status: 'pending', test_payment: false, flags: [], expires_at: new Date(Date.now() + 600_000).toISOString(), paid_at: null, resp_code: null, emailed_at: null, emails_claimed_at: null,
+    lines: [], total: 3000, deposit: 3000, paid_amount: null, balance_paid_at: null, status: 'pending', test_payment: false, flags: [], expires_at: new Date(Date.now() + 600_000).toISOString(), paid_at: null, resp_code: null, emailed_at: null, emails_claimed_at: null,
   };
   const paysoOk = JSON.stringify({ status: { statusCode: '2A002', message: 'ok' }, transactionId: 'T9', redirectUrl: 'https://pay.test/T9' });
   let rpc: { p_booking: Record<string, unknown> } | null;
@@ -256,7 +256,10 @@ describe('paying for a tee time', () => {
     assert.equal(rpc!.p_booking.status, 'pending');
     const held = Date.parse(String(rpc!.p_booking.expires_at)) - Date.now();
     assert.ok(held > 19 * 60_000 && held <= 20 * 60_000);
-    assert.equal(paysoBody!.amount, option.price * 2);
+    assert.equal(rpc!.p_booking.total, option.price * 2);
+    assert.equal(paysoBody!.amount, 500);
+    assert.equal(rpc!.p_booking.deposit, 500);
+    assert.equal(patches[0].paid_amount, undefined);
     assert.equal(paysoBody!.referenceNo, INVOICE);
     assert.equal(paysoBody!.returnUrl, `http://golf.test/api/payment/payso-return?booking=${BOOKING}&key=${body.key}`);
     assert.equal(patches[0].invoice_no, INVOICE);
@@ -273,7 +276,7 @@ describe('paying for a tee time', () => {
     assert.equal(paysoBody, null);
     const allowed = await book({ 'p-a': 1 });
     assert.equal(allowed.status, 200);
-    assert.equal(paysoBody!.amount, option.price * 2 + 500);
+    assert.equal(rpc!.p_booking.total, option.price * 2 + 500);
   });
 
   it('charges independent equipment types together using their database allowances', async () => {
@@ -283,8 +286,43 @@ describe('paying for a tee time', () => {
     ] }] });
     const result = await book({ racket: 2, ball: 6 });
     assert.equal(result.status, 200);
-    assert.equal(paysoBody!.amount, option.price * 2 + 200 + 120);
+    assert.equal(rpc!.p_booking.total, option.price * 2 + 200 + 120);
     assert.deepEqual(rpc!.p_booking.rentals, { racket: 2, ball: 6 });
+  });
+
+  it('takes the full price online when an activity has no deposit', async () => {
+    world({ activities: DEFAULT_SITE.activities.map((a) => (a.id === 'golf' ? { ...a, deposit: 0 } : a)) });
+    assert.equal((await book()).status, 200);
+    assert.equal(paysoBody!.amount, option.price * 2);
+    assert.equal(rpc!.p_booking.deposit, option.price * 2);
+  });
+
+  it('never asks for more than the booking costs', async () => {
+    world({ activities: DEFAULT_SITE.activities.map((a) => (a.id === 'golf' ? { ...a, deposit: 99_999 } : a)) });
+    assert.equal((await book()).status, 200);
+    assert.equal(paysoBody!.amount, option.price * 2);
+  });
+
+  it('flags a payment that differs from the deposit, not from the total', async () => {
+    world({ row: { ...pending, deposit: 500 }, inquiry: JSON.stringify(paidRow({ ReferenceNo: INVOICE, Total: '500.00' })) });
+    await call(postback, { query: { refno: INVOICE } });
+    assert.deepEqual(patches[0].flags, []);
+    assert.equal(patches[0].paid_amount, 500);
+    world({ row: { ...pending, deposit: 500 }, inquiry: JSON.stringify(paidRow({ ReferenceNo: INVOICE, Total: '3000.00' })) });
+    await call(postback, { query: { refno: INVOICE } });
+    assert.deepEqual(patches[0].flags, ['amount_mismatch']);
+  });
+
+  it('saves a private transfer as a pick-up address with no shuttle time', async () => {
+    world();
+    const request = (extra: Record<string, unknown>) => call(reservations, { method: 'POST', body: {
+      activity: 'golf', option: option.id, date: day, time, players: 2, rentals: {}, experience: '', hp: '', elapsedMs: 5000,
+      guest: { firstName: 'Bo', lastName: 'Chan', email: 'bo@example.com', phone: '+66 89 000 1111', country: 'GB', handicap: '', notes: '' }, ...extra,
+    } });
+    assert.equal((await request({ privateTransfer: true, transfer: null, pickupFrom: '' })).status, 400);
+    assert.equal((await request({ privateTransfer: true, transfer: null, pickupFrom: 'Railay Beach' })).status, 200);
+    assert.equal(rpc!.p_booking.transfer, null);
+    assert.equal(rpc!.p_booking.pickup_from, 'Railay Beach');
   });
 
   it('lets the time go at once when Payso refuses', async () => {

@@ -4,7 +4,7 @@ import { createReservation, ApiError, type Guest, type ReservationStarted } from
 import { isBookableDay } from './availability';
 import { findActivity, onlineActivities, pickupFor, rentalsFor, type Activity, type ActivityOption, type SiteData } from './config';
 import { isISODate, krabiNow } from './dates';
-import { priceLines, totalOf, type PriceLine } from './pricing';
+import { depositFor, priceLines, totalOf, type PriceLine } from './pricing';
 import { normaliseRentalSelection } from './rentals';
 
 // The booking in progress, shared by every step: what's being booked and when,
@@ -14,7 +14,7 @@ import { normaliseRentalSelection } from './rentals';
 // in /admin (useSite).
 
 export interface Search { activity: string; option: string; date: string; players: number }
-export interface Extras { rentals: Record<string, number>; transfer: string | null; pickupFrom: string; experience: string }
+export interface Extras { rentals: Record<string, number>; transfer: string | null; privateTransfer: boolean; pickupFrom: string; experience: string }
 export type GuestForm = Guest & { acceptedPolicies: boolean };
 
 interface FlowState {
@@ -26,7 +26,7 @@ interface FlowState {
 }
 
 const STORE = 'hhg-booking';
-const emptyExtras: Extras = { rentals: {}, transfer: null, pickupFrom: '', experience: '' };
+const emptyExtras: Extras = { rentals: {}, transfer: null, privateTransfer: false, pickupFrom: '', experience: '' };
 const emptyGuest: GuestForm = { firstName: '', lastName: '', email: '', phone: '', country: '', handicap: '', notes: '', acceptedPolicies: false };
 
 /** A search from a link (/book?activity=footgolf&option=18&date=…&players=3), with anything unknown dropped. */
@@ -72,6 +72,8 @@ interface BookingFlow extends FlowState {
   option: ActivityOption;
   lines: PriceLine[];
   total: number;
+  /** What's paid online to book; the rest of the total is paid at the club. */
+  deposit: number;
   /** Set when a held time ran out, until the guest picks another. */
   holdExpired: boolean;
   setSearch: (change: Partial<Search>) => void;
@@ -145,8 +147,8 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
     try {
       const { acceptedPolicies: _accepted, ...guest } = state.guest;
       return await createReservation({
-        ...state.search, time: state.time, rentals, transfer: state.extras.transfer,
-        pickupFrom: state.extras.transfer ? state.extras.pickupFrom.trim() : '', experience: state.extras.experience,
+        ...state.search, time: state.time, rentals, transfer: state.extras.transfer, privateTransfer: !!state.extras.privateTransfer,
+        pickupFrom: state.extras.transfer || state.extras.privateTransfer ? state.extras.pickupFrom.trim() : '', experience: state.extras.experience,
         guest, hp, elapsedMs,
       });
     } catch (error) {
@@ -154,8 +156,9 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
     }
   }, [state, rentals]);
 
+  const total = totalOf(lines);
   const value: BookingFlow = {
-    ...state, extras: { ...state.extras, rentals }, activity, option, lines, total: totalOf(lines), holdExpired,
+    ...state, extras: { ...state.extras, rentals }, activity, option, lines, total, deposit: depositFor(activity, total), holdExpired,
     setSearch, selectTime, releaseTime, updateExtras, updateGuest, confirm, startOver, forgetGuest,
   };
   return <BookingFlowContext.Provider value={value}>{children}</BookingFlowContext.Provider>;

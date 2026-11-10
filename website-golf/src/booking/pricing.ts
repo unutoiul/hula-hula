@@ -30,3 +30,18 @@ export function priceLines(activity: Activity, option: ActivityOption, players: 
 }
 
 export const totalOf = (lines: PriceLine[]) => lines.reduce((sum, line) => sum + line.amount, 0);
+
+/** What's paid online to book: the activity's deposit, never more than the booking costs. With no deposit set, the full price. */
+export const depositFor = (activity: Pick<Activity, 'deposit'>, total: number) => (activity.deposit > 0 ? Math.min(activity.deposit, total) : total);
+
+/** The money columns of a saved booking (supabase/deposits.sql). */
+interface SavedBooking { total: number; deposit: number; paid_at: string | null; paid_amount: number | null; balance_paid_at: string | null }
+
+/** What a saved booking pays online: what Payso reported once it's paid, the deposit asked for until then. */
+export const onlineAmount = (b: SavedBooking) => (b.paid_at ? Number(b.paid_amount ?? b.deposit) : b.deposit);
+
+/** What's left to collect at the club. */
+export const balanceDue = (b: SavedBooking) => (b.balance_paid_at ? 0 : Math.max(0, b.total - onlineAmount(b)));
+
+/** "฿500 deposit online when you book, the rest at the club", for the pages that explain how paying works. */
+export const paymentNote = (activity: Pick<Activity, 'deposit'>) => (activity.deposit > 0 ? `${money(activity.deposit)} deposit online when you book, the rest at the club` : 'paid online when you book');

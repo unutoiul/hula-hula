@@ -1,5 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import AirportShuttleRounded from '@mui/icons-material/AirportShuttleRounded';
+import DirectionsCarRounded from '@mui/icons-material/DirectionsCarRounded';
 import BlockRounded from '@mui/icons-material/BlockRounded';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
@@ -7,10 +8,10 @@ import CloseRounded from '@mui/icons-material/CloseRounded';
 import { Alert, Box, Button, Chip, IconButton, LinearProgress, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
-import { activityName, findActivity } from '../booking/config';
+import { activityName, findActivity, isPrivateTransfer } from '../booking/config';
 import { useSite } from '../context/SiteDataContext';
 import { addDays, krabiNow, shortDayLabel, timeLabel } from '../booking/dates';
-import { money, plural } from '../booking/pricing';
+import { balanceDue, money, plural } from '../booking/pricing';
 import { shiftMonth } from '../components/booking/DayCalendar';
 import { fonts } from '../theme';
 import { AddBookingDialog } from './AddBookingDialog';
@@ -105,6 +106,7 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
     for (const b of active) if (b.transfer) byTime.set(hhmm(b.transfer), [...(byTime.get(hhmm(b.transfer)) ?? []), b]);
     return [...byTime.entries()].sort(([a], [b]) => a.localeCompare(b));
   }, [active]);
+  const privateTransfers = useMemo(() => active.filter(isPrivateTransfer), [active]);
 
   // The day as one timeline: each start time with its bookings, blocked times slotted in.
   const timeline = useMemo(() => {
@@ -135,7 +137,7 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
       <Stat label="Bookings" value={String(active.length)} />
       <Stat label="People" value={String(active.reduce((sum, b) => sum + b.players, 0))} />
       <Stat label="Arrived" value={`${active.filter((b) => b.status === 'checked_in').length}/${active.filter((b) => b.status !== 'no_show').length}`} />
-      <Stat label="Due" value={money(active.filter((b) => b.status !== 'no_show' && !b.paid_at).reduce((sum, b) => sum + b.total, 0))} small />
+      <Stat label="Due" value={money(active.filter((b) => b.status !== 'no_show').reduce((sum, b) => sum + balanceDue(b), 0))} small />
     </Box>
 
     {/* For the driver */}
@@ -145,6 +147,10 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
         <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{timeLabel(time)} · {plural(list.reduce((sum, b) => sum + b.players, 0), 'person', 'people')}</Typography>
         {list.map((b) => <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary' }}>{b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} · <Box component="a" href={`tel:${b.phone.replace(/[^\d+]/g, '')}`} sx={{ color: 'primary.main' }}>{b.phone}</Box></Typography>)}
       </Box>)}
+    </Box>}
+    {privateTransfers.length > 0 && <Box sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'primary.light', border: '1px solid', borderColor: 'primary.main' }}>
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: .75 }}><DirectionsCarRounded sx={{ fontSize: 20 }} /><Typography sx={{ fontWeight: 700 }}>Private transfers to arrange</Typography></Stack>
+      {privateTransfers.map((b) => <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary', mt: .5 }}>{timeLabel(hhmm(b.start_time))} start · {b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} · <Box component="a" href={`tel:${b.phone.replace(/[^\d+]/g, '')}`} sx={{ color: 'primary.main' }}>{b.phone}</Box></Typography>)}
     </Box>}
 
     {/* What to show */}

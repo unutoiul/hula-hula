@@ -2,15 +2,16 @@ import CallRounded from '@mui/icons-material/CallRounded';
 import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
 import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
 import MailOutlineRounded from '@mui/icons-material/MailOutlineRounded';
+import PaymentsRounded from '@mui/icons-material/PaymentsRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Alert, Box, Button, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { useState, type ReactNode } from 'react';
 import { ActivityIcon } from '../booking/activityIcons';
-import { activityName, findActivity, rentalName } from '../booking/config';
+import { activityName, findActivity, isPrivateTransfer, rentalName } from '../booking/config';
 import { useSite } from '../context/SiteDataContext';
 import { countryName } from '../booking/countries';
 import { durationLabel, timeLabel } from '../booking/dates';
-import { money, plural } from '../booking/pricing';
+import { balanceDue, money, onlineAmount, plural } from '../booking/pricing';
 import { hhmm, supabase, type BookingStatus, type StaffBooking } from './supabase';
 
 const STATUS: Record<BookingStatus, { label: string; color: 'default' | 'success' | 'warning' | 'error' }> = {
@@ -36,10 +37,15 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
   const phoneDigits = b.phone.replace(/\D/g, '');
   const rentals = Object.entries(b.rentals).filter(([, n]) => n > 0).map(([id, n]) => { const rental = site.rentals.find((r) => r.id === id); return `${n} × ${rental ? rentalName(rental) : id}`; }).join(', ');
   const done = b.status === 'cancelled' || b.status === 'no_show';
+  const balance = balanceDue(b);
+  const online = onlineAmount(b);
+  const settled = !!b.paid_at || !!b.balance_paid_at;
+  const privateTransfer = isPrivateTransfer(b);
 
-  const setStatus = async (status: BookingStatus) => {
+  const setStatus = (status: BookingStatus) => save({ status });
+  const save = async (patch: Partial<Pick<StaffBooking, 'status' | 'balance_paid_at'>>) => {
     setBusy(true); setError(null);
-    const { error: updateError } = await supabase!.from('golf_bookings').update({ status }).eq('id', b.id);
+    const { error: updateError } = await supabase!.from('golf_bookings').update(patch).eq('id', b.id);
     setBusy(false); setConfirmCancel(false);
     if (updateError) setError(updateError.message); else onChanged();
   };
@@ -51,13 +57,14 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography noWrap sx={{ fontWeight: 700, textDecoration: b.status === 'cancelled' ? 'line-through' : 'none' }}>{b.first_name} {b.last_name}</Typography>
-        <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{name}{option ? ` · ${option.label}` : ''} · {plural(b.players, 'person', 'people')} · {money(b.total)}</Typography>
+        <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{name}{option ? ` · ${option.label}` : ''} · {plural(b.players, 'person', 'people')} · {b.paid_at && balance > 0 ? `${money(balance)} to pay` : money(b.total)}</Typography>
       </Box>
       <Stack alignItems="flex-end" spacing={.5} sx={{ flexShrink: 0 }}>
         {b.status !== 'booked' && <Chip size="small" color={STATUS[b.status].color} label={STATUS[b.status].label} />}
         <Stack direction="row" spacing={.5}>
-          {b.paid_at && <Chip size="small" variant="outlined" color="success" label={b.test_payment ? 'Test' : 'Paid'} />}
+          {settled && <Chip size="small" variant="outlined" color="success" label={b.test_payment ? 'Test' : balance > 0 ? 'Deposit' : 'Paid'} />}
           {b.transfer && <Chip size="small" variant="outlined" label="Pick-up" />}
+          {privateTransfer && <Chip size="small" variant="outlined" color="primary" label="Private car" />}
           {b.source !== 'online' && <Chip size="small" variant="outlined" label={SOURCE[b.source]} />}
         </Stack>
       </Stack>
@@ -76,8 +83,12 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
           {b.experience && <Detail label="Experience">{b.experience}</Detail>}
           {rentals && <Detail label="Rentals">{rentals}</Detail>}
           {b.transfer && <Detail label="Pick-up">{timeLabel(hhmm(b.transfer))} from {b.pickup_from}</Detail>}
+          {privateTransfer && <Detail label="Private transfer">From {b.pickup_from}. Agree the price and pick-up time with the guest.</Detail>}
           {b.notes && <Detail label="Notes"><Box component="span" sx={{ whiteSpace: 'pre-line' }}>{b.notes}</Box></Detail>}
-          <Detail label={b.paid_at ? 'Paid online' : 'To pay'}>{b.lines.map((l) => `${l.label} ${money(l.amount)}`).join(' + ')}{b.lines.length > 1 ? ` = ${money(b.total)}` : ''}</Detail>
+          <Detail label={settled ? 'Price' : 'To pay'}>{b.lines.map((l) => `${l.label} ${money(l.amount)}`).join(' + ')}{b.lines.length > 1 ? ` = ${money(b.total)}` : ''}</Detail>
+          {b.paid_at && <Detail label={online < b.total ? 'Deposit paid' : 'Paid online'}>{money(online)}</Detail>}
+          {b.paid_at && balance > 0 && <Detail label="To pay at club"><strong>{money(balance)}</strong></Detail>}
+          {b.balance_paid_at && <Detail label="Paid at club">{money(b.total - online)}</Detail>}
           {b.tran_ref && <Detail label="Payso">{b.tran_ref}</Detail>}
         </Box>
         {b.flags.includes('paid_after_expiry') && <Alert severity="warning" sx={{ mt: 1.5 }}>Paid after the hold ran out — check this time isn’t overbooked.</Alert>}
@@ -90,8 +101,10 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
 
         {error && <Alert severity="error" sx={{ mt: 1.5 }}>{error}</Alert>}
         <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ mt: 1.75 }}>
+          {b.status === 'booked' && <Button variant="contained" color="success" disabled={busy} onClick={() => void setStatus('checked_in')} startIcon={<CheckCircleRounded />} sx={{ flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>They’ve arrived</Button>}
+          {balance > 0 && !done && <Button variant="outlined" color="success" disabled={busy} onClick={() => void save({ balance_paid_at: new Date().toISOString() })} startIcon={<PaymentsRounded />} sx={{ flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>{money(balance)} paid at the club</Button>}
+          {b.balance_paid_at && !done && <Button size="small" variant="outlined" disabled={busy} onClick={() => void save({ balance_paid_at: null })}>Undo · not paid yet</Button>}
           {b.status === 'booked' && <>
-            <Button variant="contained" color="success" disabled={busy} onClick={() => void setStatus('checked_in')} startIcon={<CheckCircleRounded />} sx={{ flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>They’ve arrived</Button>
             <Button size="small" variant="outlined" color="warning" disabled={busy} onClick={() => void setStatus('no_show')}>No-show</Button>
             <Button size="small" variant="outlined" color="error" disabled={busy} onClick={() => setConfirmCancel(true)}>Cancel booking</Button>
           </>}
@@ -102,7 +115,7 @@ export function BookingCard({ booking: b, onChanged }: { booking: StaffBooking; 
 
     <Dialog open={confirmCancel} onClose={() => setConfirmCancel(false)}>
       <DialogTitle>Cancel {b.first_name}’s booking?</DialogTitle>
-      <DialogContent><Typography>{name} at {timeLabel(hhmm(b.start_time))} for {plural(b.players, 'person', 'people')}. The time opens up again on the website straight away. Let them know — this doesn’t email them.{b.paid_at ? ' They paid online, so any refund is made in the Payso control panel.' : ''}</Typography></DialogContent>
+      <DialogContent><Typography>{name} at {timeLabel(hhmm(b.start_time))} for {plural(b.players, 'person', 'people')}. The time opens up again on the website straight away. Let them know — this doesn’t email them.{b.paid_at ? ` They paid ${online < b.total ? `a ${money(online)} deposit` : money(online)} online, so any refund is made in the Payso control panel.` : ''}</Typography></DialogContent>
       <DialogActions>
         <Button onClick={() => setConfirmCancel(false)}>Keep it</Button>
         <Button color="error" variant="contained" disabled={busy} onClick={() => void setStatus('cancelled')}>Cancel booking</Button>

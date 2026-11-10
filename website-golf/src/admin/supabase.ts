@@ -39,6 +39,12 @@ export interface StaffBooking {
   status: BookingStatus;
   /** Set when it was paid online through Payso. */
   paid_at: string | null;
+  /** What Payso reports was paid. */
+  paid_amount: number | null;
+  /** What the guest was asked to pay online when they booked; 0 for phone and walk-in bookings. */
+  deposit: number;
+  /** Set when staff took what was left at the club. */
+  balance_paid_at: string | null;
   tran_ref: string | null;
   test_payment: boolean;
   flags: string[];

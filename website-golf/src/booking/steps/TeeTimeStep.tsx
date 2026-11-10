@@ -16,7 +16,7 @@ import { onlineActivities } from '../config';
 import { BookingSummary } from '../components/BookingSummary';
 import { DateStrip } from '../components/DateStrip';
 import { addDays, durationLabel, fromMinutes, shortDayLabel, timeLabel, toMinutes } from '../dates';
-import { fromPrice, money, peopleLabel, plural, pricePerPerson } from '../pricing';
+import { fromPrice, money, paymentNote, peopleLabel, plural, pricePerPerson } from '../pricing';
 import { STICKY_TOP } from '../../layoutConstants';
 
 type Sheet = { status: 'loading' | 'ready'; slots: Slot[] } | { status: 'error'; slots: Slot[]; error: string };
@@ -26,7 +26,7 @@ type Sheet = { status: 'loading' | 'ready'; slots: Slot[] } | { status: 'error';
 // a few minutes while the rest of the booking is filled in.
 export function TeeTimeStep() {
   const CONTACT = useContact();
-  const { activity, option, search, setSearch, time, selectTime, holdExpired, total } = useBookingFlow();
+  const { activity, option, search, setSearch, time, selectTime, holdExpired, total, deposit } = useBookingFlow();
   const [sheet, setSheet] = useState<Sheet>({ status: 'loading', slots: [] });
   const [dayPart, setDayPart] = useState<DayPart | 'all'>('all');
   const [attempt, setAttempt] = useState(0);
@@ -132,7 +132,7 @@ export function TeeTimeStep() {
           </>}
         </Box>
         <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 2 }}>
-          Prices per {activity.peopleNoun} in Thai baht, paid online when you book. Includes {activity.includes.join(', ').toLowerCase()}. Times are Krabi time.
+          Prices per {activity.peopleNoun} in Thai baht, {paymentNote(activity)}. Includes {activity.includes.join(', ').toLowerCase()}. Times are Krabi time.
         </Typography>
       </Panel>
     </Box>
@@ -146,7 +146,7 @@ export function TeeTimeStep() {
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
         <Box>
           <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{shortDayLabel(search.date)} · {timeLabel(time)}</Typography>
-          <Typography sx={{ fontFamily: fonts.playful, fontSize: 20 }}>{money(total)}</Typography>
+          <Typography sx={{ fontFamily: fonts.playful, fontSize: 20 }}>{deposit < total ? `${money(deposit)} deposit` : money(total)}</Typography>
         </Box>
         <Button variant="contained" onClick={goOn} endIcon={<East />}>Continue</Button>
       </Stack>

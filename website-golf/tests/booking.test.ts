@@ -5,9 +5,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/availability.ts';
-import { DEFAULT_CLUB, DEFAULT_SITE, findActivity, normaliseActivity, normaliseClub, onlineActivities, openingHoursLines, pickupFor, slugify } from '../src/booking/config.ts';
+import { clubRules, DEFAULT_CLUB, DEFAULT_SITE, findActivity, isPrivateTransfer, normaliseActivity, normaliseClub, onlineActivities, openingHoursLines, pickupFor, slugify } from '../src/booking/config.ts';
 import { addDays, fromMinutes, isISODate, krabiNow, timeLabel, toMinutes } from '../src/booking/dates.ts';
-import { money, priceLines, totalOf } from '../src/booking/pricing.ts';
+import { balanceDue, depositFor, money, onlineAmount, paymentNote, priceLines, totalOf } from '../src/booking/pricing.ts';
 
 const golf = findActivity(DEFAULT_SITE, 'golf')!;
 const range = findActivity(DEFAULT_SITE, 'range')!;
@@ -52,6 +52,56 @@ describe('dates and times (Krabi time)', () => {
     assert.ok(isISODate('2026-02-28'));
     assert.ok(!isISODate('2026-02-30'));
     assert.ok(!isISODate('tomorrow'));
+  });
+});
+
+describe('the deposit', () => {
+  it('is ฿500 for every activity until staff change it', () => {
+    for (const activity of DEFAULT_SITE.activities) assert.equal(activity.deposit, 500, activity.id);
+    assert.equal(normaliseActivity({ name: 'Saved before deposits' }, 'golf').deposit, 500);
+  });
+  it('keeps what staff set, including no deposit', () => {
+    assert.equal(normaliseActivity({ deposit: 1000 }, 'golf').deposit, 1000);
+    assert.equal(normaliseActivity({ deposit: 0 }, 'golf').deposit, 0);
+  });
+  it('is what gets paid online, never more than the booking costs', () => {
+    assert.equal(depositFor({ deposit: 500 }, 3200), 500);
+    assert.equal(depositFor({ deposit: 500 }, 250), 250);
+    assert.equal(depositFor({ deposit: 500 }, 0), 0);
+    assert.equal(depositFor({ deposit: 0 }, 3200), 3200);
+  });
+  it('is explained in the guest-facing wording', () => {
+    assert.equal(paymentNote({ deposit: 500 }), '฿500 deposit online when you book, the rest at the club');
+    assert.equal(paymentNote({ deposit: 0 }), 'paid online when you book');
+    const payment = (deposit?: number) => clubRules('', DEFAULT_CLUB, deposit).find((rule) => rule.title === 'Payment')!.text;
+    assert.match(payment(1500), /^A ฿1,500 deposit is paid online.*The rest is paid at the club\.$/);
+    assert.match(payment(), /^Paid online when you book/);
+    const cancelling = (deposit?: number) => clubRules('', DEFAULT_CLUB, deposit).find((rule) => rule.title === 'Changes & cancellation')!.text;
+    assert.match(cancelling(500), /refund your deposit\. Later cancellations and no-shows may lose the deposit\.$/);
+    assert.match(cancelling(), /refund you\. Later cancellations and no-shows may not be refunded\.$/);
+  });
+  it('leaves the right amount to collect on a saved booking', () => {
+    const held = { total: 3200, deposit: 500, paid_at: null, paid_amount: null, balance_paid_at: null };
+    const paid = { ...held, paid_at: '2026-11-10T10:00:00Z', paid_amount: 500 };
+    assert.equal(onlineAmount(held), 500);
+    assert.equal(balanceDue(held), 2700);
+    assert.equal(onlineAmount(paid), 500);
+    assert.equal(balanceDue(paid), 2700);
+    assert.equal(balanceDue({ ...paid, balance_paid_at: '2026-11-16T03:00:00Z' }), 0);
+    assert.equal(balanceDue({ ...paid, paid_amount: 1000 }), 2200, 'what Payso reports beats what was asked for');
+    assert.equal(balanceDue({ ...held, deposit: 3200, paid_at: paid.paid_at, paid_amount: 3200 }), 0, 'paid in full online');
+    const desk = { ...held, deposit: 0 };
+    assert.equal(onlineAmount(desk), 0, 'phone and walk-in bookings pay nothing online');
+    assert.equal(balanceDue(desk), 3200);
+    assert.equal(balanceDue({ ...desk, balance_paid_at: '2026-11-16T03:00:00Z' }), 0);
+  });
+});
+
+describe('getting to the club', () => {
+  it('tells a private transfer from the shuttle and from making their own way', () => {
+    assert.equal(isPrivateTransfer({ transfer: null, pickup_from: 'Railay Beach' }), true);
+    assert.equal(isPrivateTransfer({ transfer: '08:00:00', pickup_from: 'Ao Nang' }), false);
+    assert.equal(isPrivateTransfer({ transfer: null, pickup_from: '' }), false);
   });
 });
 

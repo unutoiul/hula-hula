@@ -17,7 +17,7 @@ const PHONE = /^[+()\d\s.-]{6,30}$/;
 // Step 3: who's coming, the club's conditions, and on to payment. The booking
 // is made in the lead player's name; the confirmation goes to their email.
 export function DetailsStep() {
-  const { activity, guest, updateGuest, confirm, total, time } = useBookingFlow();
+  const { activity, guest, updateGuest, confirm, total, deposit, time } = useBookingFlow();
   const [tried, setTried] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +59,8 @@ export function DetailsStep() {
   };
 
   const { club } = useSite();
-  const rules = clubRules(activity.wear, club);
+  const isDeposit = deposit < total;
+  const rules = clubRules(activity.wear, club, isDeposit ? deposit : 0);
 
   return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' }, gap: { xs: 3, md: 4 }, alignItems: 'start' }}>
     <Box component="form" noValidate onSubmit={submit} sx={{ minWidth: 0 }}>
@@ -105,7 +106,7 @@ export function DetailsStep() {
       {error && <Alert severity="error" sx={{ mt: 2 }} action={taken ? <Button color="inherit" size="small" onClick={() => navigate('/book')}>Pick a time</Button> : undefined}>{error}</Alert>}
       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} spacing={2} sx={{ mt: 3 }}>
         <Button type="submit" variant="contained" size="large" disabled={sending || !time}>
-          {sending ? (total > 0 ? 'Taking you to secure payment…' : 'Booking your time…') : total > 0 ? `Pay ${money(total)} securely` : 'Confirm booking'}
+          {sending ? (total > 0 ? 'Taking you to secure payment…' : 'Booking your time…') : total > 0 ? `Pay ${money(deposit)} ${isDeposit ? 'deposit ' : ''}securely` : 'Confirm booking'}
         </Button>
         {total > 0 && <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>You’ll pay on Payso’s secure page and come straight back here. Your time is held for 20 minutes.</Typography>}
       </Stack>

@@ -37,6 +37,8 @@ export interface Activity {
    * still put bookings on the tee sheet.
    */
   bookOnline: boolean;
+  /** What's paid online to book, per booking; the rest is paid at the club. 0 means the full price online. */
+  deposit: number;
   includes: string[];
   options: ActivityOption[];
   /** Optional: what one person on their own pays (a lesson for one costs more each). */
@@ -111,9 +113,12 @@ export interface SiteData { activities: Activity[]; rentals: Rental[]; club: Clu
 
 const p = (name: string) => `/images/golf/${name}-1600.webp`;
 
+/** Every activity's deposit until staff set their own in /admin. */
+export const DEFAULT_DEPOSIT = 500;
+
 export const DEFAULT_ACTIVITIES: Activity[] = [
   {
-    id: 'golf', name: 'Golf', icon: 'golf', tagline: '9-hole, par 36 course', bookOnline: true,
+    id: 'golf', name: 'Golf', icon: 'golf', tagline: '9-hole, par 36 course', bookOnline: true, deposit: DEFAULT_DEPOSIT,
     about: 'Nine holes, par 36 and 3,011 yards: a course for every level that still asks for strategy. Narrow fairways, water hazards and greens averaging 9 feet keep you thinking, and Phanom Bencha mountain watches over the lot.\n\nEvery round comes with a caddie and a golf cart, so all you need to bring is your swing. No clubs? Rent a set at the clubhouse.',
     includes: ['Green fee', 'Caddie', 'Golf cart'],
     options: [{ id: '9', label: '9 holes', price: 1600, minutes: 135, lastStart: '15:30' }, { id: '18', label: '18 holes', price: 2400, minutes: 270, lastStart: '13:00' }],
@@ -124,7 +129,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'Golf · 9 holes', title: 'Tee off in the tropics', detail: 'Narrow fairways, water to carry and quick greens, with Phanom Bencha mountain on the horizon. Green fee, caddie and cart included.', images: [p('fairwaySign'), p('golfSwing'), p('sunnyFairway')] },
   },
   {
-    id: 'fling-golf', name: 'Fling Golf', icon: 'flag', tagline: 'Golf with one stick and a throw', bookOnline: false,
+    id: 'fling-golf', name: 'Fling Golf', icon: 'flag', tagline: 'Golf with one stick and a throw', bookOnline: false, deposit: DEFAULT_DEPOSIT,
     about: 'Fling Golf is played on the golf course with a single Flingstick: a lacrosse-style stick you use to scoop, carry and fling a golf ball down the fairway. One stick does every shot, from the tee to the green.\n\nIt’s quick to learn and great fun in a group, whether you play golf or not. Message us to book a round and we’ll get you set up.',
     includes: [],
     options: [{ id: '9', label: '9 holes', price: 0, minutes: 90, lastStart: '16:00' }],
@@ -135,7 +140,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'Fling Golf · 9 holes', title: 'One stick. Every shot.', detail: 'Scoop, swing and fling a golf ball down our fairways with a lacrosse-style Flingstick. Easy to learn, huge fun in a group.', images: [p('sunnyFairway'), p('pondFairway')] },
   },
   {
-    id: 'footgolf', name: 'FootGolf', icon: 'football', tagline: '18 holes of football-meets-golf', bookOnline: true,
+    id: 'footgolf', name: 'FootGolf', icon: 'football', tagline: '18 holes of football-meets-golf', bookOnline: true, deposit: DEFAULT_DEPOSIT,
     about: 'Golf rules, football feet. Kick a football into a series of oversized holes on our real golf course: the fewest kicks wins. Our 18-hole FootGolf course welcomes all ages and abilities, with no golf experience needed.\n\nOur friendly caddies guide you around the course and help keep the balls safe from water hazards. Bring friends, enjoy the fairways and make a game of it.',
     includes: ['Course fee', 'Caddie', 'Golf cart', 'Football'],
     options: [{ id: '18', label: '18 holes', price: 1600, minutes: 150, lastStart: '15:30' }],
@@ -146,7 +151,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'FootGolf · 18 holes', title: 'Golf rules. Football feet.', detail: '18 holes on real fairways, oversized cups and a caddie to show the way. All ages, all abilities, plenty of laughs.', images: [p('footgolfGroup'), p('footgolfKick'), p('footgolfFairway')] },
   },
   {
-    id: 'puttgolf', name: 'Putt-Golf', icon: 'flag', tagline: 'Mini-golf on real greens', bookOnline: true,
+    id: 'puttgolf', name: 'Putt-Golf', icon: 'flag', tagline: 'Mini-golf on real greens', bookOnline: true, deposit: DEFAULT_DEPOSIT,
     about: 'Putt-Golf is mini-golf with a twist. Ride a golf cart from green to green on our real course while your caddie sets fun starting points and guides you through every hole.\n\nA relaxed, playful way to enjoy golf: perfect for families, first-timers and a casual day out.',
     includes: ['Course fee', 'Caddie', 'Golf cart', 'Putters & balls'],
     options: [{ id: '1h', label: '1 hour', price: 1050, minutes: 60, lastStart: '16:30' }],
@@ -157,7 +162,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'Putt-Golf · 1 hour', title: 'Mini-golf on real greens', detail: 'Ride a cart from green to green while your caddie sets fun starting points. Perfect for families and first-timers.', images: [p('puttingGreen'), p('pondFairway')] },
   },
   {
-    id: 'range', name: 'Driving range', icon: 'range', tagline: 'Private bays for up to five', bookOnline: true,
+    id: 'range', name: 'Driving range', icon: 'range', tagline: 'Private bays for up to five', bookOnline: true, deposit: DEFAULT_DEPOSIT,
     about: 'The most comfortable driving range you’ve ever hit from. Each bay is a private, cosy room with a sofa, a launch monitor to track every swing, and food and drinks brought right to you, with room for up to five friends.\n\nPriced per person by the hour, with our chipping and putting course included for free.',
     includes: ['Private bay with sofa', 'Launch monitor', 'Chipping & putting course'],
     options: [
@@ -172,7 +177,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'Driving range · by the hour', title: 'Your own private bay', detail: 'Cosy bays for up to five, each with a sofa, a launch monitor and food and drinks brought to you. Chipping and putting course included.', images: [p('rangeBays')] },
   },
   {
-    id: 'pickleball', name: 'Pickleball', icon: 'racket', tagline: 'The paddle game everyone’s playing', bookOnline: false,
+    id: 'pickleball', name: 'Pickleball', icon: 'racket', tagline: 'The paddle game everyone’s playing', bookOnline: false, deposit: DEFAULT_DEPOSIT,
     about: 'Pickleball mixes tennis, badminton and table tennis: a small court, solid paddles and a light plastic ball. The rules take a minute to learn, the rallies go on and on, and it’s as much fun for first-timers as for the competitive types.\n\nMessage us to book a court, for singles or doubles.',
     includes: [],
     options: [{ id: '1h', label: '1 hour', price: 0, minutes: 60, lastStart: '17:00' }],
@@ -183,7 +188,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     card: { kicker: 'Pickleball · by the hour', title: 'Paddles up!', detail: 'A little court, a light ball and long, laughing rallies. Easy to pick up, hard to put down.', images: [] },
   },
   {
-    id: 'lesson', name: 'Golf lesson', icon: 'lesson', tagline: 'Half-day lesson for beginners', bookOnline: true,
+    id: 'lesson', name: 'Golf lesson', icon: 'lesson', tagline: 'Half-day lesson for beginners', bookOnline: true, deposit: DEFAULT_DEPOSIT,
     about: 'Never held a club? Perfect. Our half-day lesson for beginners is all about a fun, relaxed first taste of golf (not too serious), so you hit your very first shots with confidence.\n\nThree and a half hours with coaching, range time and all the equipment, on your own or with up to two friends.',
     includes: ['Coaching', 'Driving range', 'All equipment'],
     options: [{ id: 'half', label: 'Half day', price: 2100, minutes: 210, lastStart: '14:00' }],
@@ -271,6 +276,7 @@ export function normaliseActivity(raw: Record<string, unknown>, id: string): Act
     tagline: str(raw.tagline, '', 120),
     about: str(raw.about, '', 1500),
     bookOnline: bool(raw.bookOnline, true),
+    deposit: num(raw.deposit, DEFAULT_DEPOSIT, 0, 1_000_000),
     includes: list(raw.includes),
     options: options.length ? options : [{ id: 'o1', label: '1 hour', price: 0, minutes: 60, lastStart: '16:00' }],
     soloPrice: typeof raw.soloPrice === 'number' && raw.soloPrice > 0 ? num(raw.soloPrice, 0, 0, 1_000_000) : undefined,
@@ -421,16 +427,23 @@ export function pickupFor(time: string, club: ClubSettings): string | null {
   return usable.at(-1) ?? null;
 }
 
+/** A private transfer is a pick-up address with no shuttle time: the club arranges the car and agrees the price with the guest. */
+export const isPrivateTransfer = (booking: { transfer: string | null; pickup_from: string }) => !booking.transfer && !!booking.pickup_from;
+
 /** Lessons: asked on the extras step so the coach can plan the session. */
 export const EXPERIENCE_LEVELS = ['Never held a club', 'Played a few times', 'I play now and then'];
 
-/** The rules every booking is made under — on the details step, in its conditions dialog and on the confirmation. */
-export function clubRules(wear: string, club: ClubSettings) {
+/**
+ * The rules every booking is made under — on the details step, in its conditions dialog and on the confirmation.
+ * `deposit`: the amount paid online when the rest is paid at the club; 0 when it's all paid online.
+ */
+export function clubRules(wear: string, club: ClubSettings, deposit = 0) {
+  const paying = 'on Payso’s secure page, by card (Visa, Mastercard, JCB, UnionPay) or PromptPay QR';
   return [
     { title: 'Arrive early', text: 'Please check in at the clubhouse 20–30 minutes before your start.' },
     { title: 'What to wear', text: wear },
-    { title: 'Payment', text: 'Paid online when you book, on Payso’s secure page, by card (Visa, Mastercard, JCB, UnionPay) or PromptPay QR.' },
-    { title: 'Changes & cancellation', text: `Free up to ${club.booking.cancellationHours} hours before your start — just WhatsApp or email us and we’ll refund you. Later cancellations and no-shows may not be refunded.` },
+    { title: 'Payment', text: deposit > 0 ? `A ฿${deposit.toLocaleString('en-US')} deposit is paid online when you book, ${paying}. The rest is paid at the club.` : `Paid online when you book, ${paying}.` },
+    { title: 'Changes & cancellation', text: `Free up to ${club.booking.cancellationHours} hours before your start — just WhatsApp or email us and we’ll ${deposit > 0 ? 'refund your deposit' : 'refund you'}. Later cancellations and no-shows ${deposit > 0 ? 'may lose the deposit' : 'may not be refunded'}.` },
     { title: 'Weather', text: 'If a storm stops play, we’ll help you find a new time.' },
   ];
 }

@@ -1,14 +1,15 @@
 <!doctype html>
 <!--
   Resend template "golf-booking-confirmation": the guest's confirmation of a
-  tee time booked and paid on the website (api/_lib/teeTimes.ts). Payso takes
-  the payment first. Replies go to the club's email.
+  tee time booked on the website (api/_lib/teeTimes.ts). Payso takes the
+  deposit, or the full price if there's none, first. Replies go to the club's email.
   Edit here, then `npm run email:publish`.
   The same look as the resort's emails (website/emails/): one centred 600px
   table, inline styles, web-safe fonts, PNG images, double-quoted attributes.
   Every variable is escaped by api/_lib/emails.ts, because Resend inserts
-  them as they are. PICKUP_DISPLAY shows the shuttle line ("none;mso-hide:all"
-  hides it).
+  them as they are. PICKUP_DISPLAY shows the shuttle or private transfer line,
+  and BALANCE_DISPLAY the amount left to pay at the club ("none;mso-hide:all"
+  hides them).
 -->
 <html lang="en">
 <head>
@@ -48,7 +49,9 @@
         <tr><td style="padding:18px 28px 0;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{{{LINES_HTML}}}</table>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;border-top:2px solid #173c2c;">
-            <tr><td style="padding:10px 0 3px;color:#50830d;">{{{PAID_LABEL}}}</td><td align="right" style="padding:10px 0 3px;color:#50830d;"><strong>{{{TOTAL}}}</strong></td></tr>
+            <tr><td style="padding:10px 0 3px;">Total</td><td align="right" style="padding:10px 0 3px;"><strong>{{{TOTAL}}}</strong></td></tr>
+            <tr><td style="padding:3px 0;color:#50830d;">{{{PAID_LABEL}}}</td><td align="right" style="padding:3px 0;color:#50830d;"><strong>{{{PAID_AMOUNT}}}</strong></td></tr>
+            <tr><td style="display:{{{BALANCE_DISPLAY}}};padding:3px 0;"><strong>To pay at the club</strong></td><td align="right" style="display:{{{BALANCE_DISPLAY}}};padding:3px 0;"><strong>{{{BALANCE}}}</strong></td></tr>
           </table>
           <div style="padding:8px 0 0;font:400 12px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#4b6457;">Prices in Thai baht.</div>
         </td></tr>

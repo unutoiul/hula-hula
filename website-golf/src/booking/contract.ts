@@ -24,6 +24,8 @@ export interface ReservationRequest {
   rentals: Record<string, number>;
   /** Free shuttle pick-up time ("08:00"), or null when the guest makes their own way. */
   transfer: string | null;
+  /** The club arranges a private car from `pickupFrom`; the price is agreed with the guest afterwards. */
+  privateTransfer: boolean;
   pickupFrom: string;
   /** How much golf they've played, for activities that ask (lessons). */
   experience: string;
@@ -45,9 +47,14 @@ export interface Reservation {
   players: number;
   rentals: Record<string, number>;
   transfer: string | null;
+  privateTransfer: boolean;
   pickupFrom: string;
   lines: PriceLine[];
   total: number;
+  /** What's paid online: the deposit, or the whole price when there's no balance. */
+  deposit: number;
+  /** Left to pay at the club. */
+  balance: number;
   email: string;
   /** Whether the confirmation email went out. */
   emailed: boolean;
