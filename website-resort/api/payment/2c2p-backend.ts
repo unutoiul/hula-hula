@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.warn('Ignored a 2C2P notification that failed verification', String(error));
     return res.status(400).json({ error: 'Invalid notification' });
   }
-  if (!invoiceNo) return res.status(400).json({ error: 'Invalid notification' });
+  if (typeof invoiceNo !== 'string' || !invoiceNo) return res.status(400).json({ error: 'Invalid notification' });
 
   try {
     await confirmPayment(invoiceNo, 'webhook');

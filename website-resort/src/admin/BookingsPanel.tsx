@@ -74,7 +74,7 @@ export function BookingsPanel() {
         <InfoButton label="About bookings">
           <p>Every booking made on the website, with the guest’s details. Each paid one also arrives as an “ACTION: enter in SiteMinder” email; once it’s in SiteMinder, open it here and press “Entered in SiteMinder”.</p>
           <p>“Unfinished” are guests who started booking but didn’t pay; they’re deleted after 30 days. Archive bookings you’re done with to keep the list short — nothing is deleted.</p>
-          <p>Refunds are made in the 2C2P portal.</p>
+          <p>Voids and refunds are made in the 2C2P portal. Open a booking and press “Check 2C2P status” to sync its payment. Reversed payments appear under “Needs attention” for review.</p>
         </InfoButton>
       </Stack>
       <Stack direction="row" alignItems="center" spacing={.5}>
@@ -153,7 +153,7 @@ function Summary({ rows, filters, onPick }: { rows: DeskBooking[]; filters: Filt
   const paidThisMonth = rows.filter((b) => isPaid(b) && b.paid_at && new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(b.paid_at)).startsWith(month));
   const takings = paidThisMonth.reduce((sum, b) => sum + (b.paid_amount ?? b.deposit_amount), 0);
   const tiles = [
-    { label: 'To enter in SiteMinder', value: String(rows.filter(needsAction).length), note: 'Paid, waiting for reservations', tone: rows.some(needsAction) ? 'warning' : 'ok', pick: { view: 'action', stay: 'any', sort: 'booked' } },
+    { label: 'Needs attention', value: String(rows.filter(needsAction).length), note: 'SiteMinder entry or payment review', tone: rows.some(needsAction) ? 'warning' : 'ok', pick: { view: 'action', stay: 'any', sort: 'booked' } },
     { label: 'Arriving in 7 days', value: String(live.filter((b) => b.check_in >= today && b.check_in <= addDays(today, 7)).length), note: `Today: ${live.filter((b) => b.check_in === today).length}`, tone: 'ok', pick: { view: 'paid', stay: 'week', sort: 'arrival' } },
     { label: 'Staying now', value: String(live.filter((b) => b.check_in <= today && b.check_out > today).length), note: 'Website guests in house', tone: 'ok', pick: { view: 'paid', stay: 'inHouse', sort: 'arrival' } },
     { label: 'Paid online this month', value: money(takings, rows[0]?.currency ?? 'THB'), note: `${plural(paidThisMonth.length, 'booking')}${paidThisMonth.some(isTest) ? ' · incl. test payments' : ''}`, tone: 'ok', pick: { view: 'paid', stay: 'any', sort: 'booked' } },

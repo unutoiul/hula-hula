@@ -5,6 +5,7 @@
 
 import { countryName } from '../booking/countries';
 import { dayLabel, money } from '../booking/format';
+import { isReversedPayment, paymentStatus } from '../../shared/paymentStatus';
 
 export interface DeskItem {
   roomTypeName: string;
@@ -49,6 +50,7 @@ export interface DeskBooking {
   resp_code: string | null;
   resp_desc: string | null;
   paid_at: string | null;
+  last_inquiry_at: string | null;
   delivery_method: 'email' | 'siteconnect' | null;
   delivery_attempts: number;
   delivery_error: string | null;
@@ -68,7 +70,8 @@ export interface DeskBooking {
 type Tone = 'success' | 'warning' | 'error' | 'default' | 'info';
 export interface Badge { label: string; tone: Tone }
 
-export const isPaid = (b: DeskBooking) => b.status === 'paid' || b.status === 'delivered';
+export const isReversed = (b: DeskBooking) => isReversedPayment(b.resp_code);
+export const isPaid = (b: DeskBooking) => !isReversed(b) && (b.status === 'paid' || b.status === 'delivered');
 export const isTest = (b: DeskBooking) => b.flags.includes('test_payment');
 export const guestName = (b: DeskBooking) => [b.guest_first_name, b.guest_last_name].filter(Boolean).join(' ') || (b.pii_wiped_at ? 'Details deleted' : 'No name');
 export const roomCount = (b: DeskBooking) => b.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -77,6 +80,8 @@ export const nightCount = (b: DeskBooking) => Math.round((Date.parse(`${b.check_
 export const savingsOf = (b: DeskBooking) => b.items.reduce((sum, item) => sum + (item.offer?.savings ?? 0) * item.quantity, 0);
 
 export function paymentBadge(b: DeskBooking, now = Date.now()): Badge {
+  if (isReversed(b)) return { label: paymentStatus(b.resp_code) === 'voided' ? 'Voided' : 'Refunded', tone: 'warning' };
+  if (isPaid(b) && b.resp_code === '4110') return { label: 'Settled', tone: 'success' };
   if (isPaid(b)) return { label: b.balance_amount > 0 ? 'Deposit paid' : 'Paid', tone: 'success' };
   if (b.status === 'pending' && Date.parse(b.expires_at) > now) return { label: 'Paying now', tone: 'info' };
   if (b.status === 'failed') return { label: 'Payment page error', tone: 'error' };
@@ -84,6 +89,7 @@ export function paymentBadge(b: DeskBooking, now = Date.now()): Badge {
 }
 
 export function siteMinderBadge(b: DeskBooking): Badge | null {
+  if (isReversed(b)) return { label: b.keyed_at ? 'Review in SiteMinder' : 'Review reservation', tone: 'warning' };
   if (!isPaid(b)) return null;
   if (b.keyed_at) return { label: 'In SiteMinder', tone: 'success' };
   if (b.delivery_method === 'siteconnect' && b.siteminder_res_id) return { label: 'Sent to SiteMinder', tone: 'success' };
@@ -92,7 +98,7 @@ export function siteMinderBadge(b: DeskBooking): Badge | null {
 }
 
 /** Paid, but nobody has put it in SiteMinder yet — the desk's to-do list. */
-export const needsAction = (b: DeskBooking) => isPaid(b) && !b.keyed_at && !b.archived_at;
+export const needsAction = (b: DeskBooking) => !b.archived_at && (isReversed(b) || (isPaid(b) && !b.keyed_at));
 
 export const FLAG_LABELS: Record<string, string> = {
   paid_after_expiry: 'Paid after the 15-minute room hold ran out — check the room is still free before entering it.',
@@ -109,7 +115,7 @@ export const channelName = (code: string | null) => (code ? CHANNELS[code.toUppe
 
 export type View = 'action' | 'paid' | 'unfinished' | 'all' | 'archived';
 export const VIEWS: { value: View; label: string; hint: string }[] = [
-  { value: 'action', label: 'To enter', hint: 'Paid bookings not yet entered in SiteMinder' },
+  { value: 'action', label: 'Needs attention', hint: 'Bookings to enter in SiteMinder and reversed payments to review' },
   { value: 'paid', label: 'Paid', hint: 'Every paid booking' },
   { value: 'unfinished', label: 'Unfinished', hint: 'Guests who started booking but didn’t pay — kept for 30 days' },
   { value: 'all', label: 'All', hint: 'Everything except archived bookings' },
@@ -146,7 +152,7 @@ export function inView(b: DeskBooking, view: View): boolean {
   if (b.archived_at) return false;
   if (view === 'action') return needsAction(b);
   if (view === 'paid') return isPaid(b);
-  if (view === 'unfinished') return !isPaid(b);
+  if (view === 'unfinished') return !isPaid(b) && !isReversed(b);
   return true;
 }
 
@@ -201,7 +207,9 @@ export function siteMinderText(b: DeskBooking): string {
     `Stay: ${dayLabel(b.check_in)} → ${dayLabel(b.check_out)} (${nightCount(b)} nights)`,
     `Guests: ${adults} adults${children ? `, ${children} children` : ''}`,
     ...b.items.map((item) => `Room: ${item.quantity} × ${item.roomTypeName} — ${item.rateName} (${item.adults} adults${item.children ? `, ${item.children} children` : ''} each)${item.offer ? ` · offer “${item.offer.title}”${item.offer.percent ? ` −${item.offer.percent}%` : ''}${item.offer.perks.length ? `, perks: ${item.offer.perks.join(', ')}` : ''}` : ''}`),
-    `Total: ${money(b.total_amount, b.currency)} · paid ${money(b.paid_amount ?? b.deposit_amount, b.currency)} online${b.balance_amount > 0 ? ` · ${money(b.balance_amount, b.currency)} to pay at the hotel` : ''}`,
+    isReversed(b)
+      ? `Total: ${money(b.total_amount, b.currency)} · payment ${paymentBadge(b).label.toLowerCase()} in 2C2P — review the portal amount and reservation before confirming a balance`
+      : `Total: ${money(b.total_amount, b.currency)} · paid ${money(b.paid_amount ?? b.deposit_amount, b.currency)} online${b.balance_amount > 0 ? ` · ${money(b.balance_amount, b.currency)} to pay at the hotel` : ''}`,
     b.tran_ref && `2C2P transaction: ${b.tran_ref} (invoice ${b.invoice_no})`,
     b.arrival_time && `Arrival time: ${b.arrival_time}`,
     b.special_requests && `Special requests: ${b.special_requests}`,

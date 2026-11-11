@@ -2,11 +2,12 @@ import { timingSafeEqual } from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { BookingStatusResponse, PublicBookingStatus } from '../../shared/bookingContract.js';
 import { type BookingRow, getByRef, updateWhere } from '../_lib/bookings.js';
-import { confirmPayment, deliver } from '../_lib/finalize.js';
+import { confirmPayment } from '../_lib/finalize.js';
 import { allowMethods, queryString } from '../_lib/http.js';
 import { ACCESS_KEY_PATTERN, REF_PATTERN, sha256Hex } from '../_lib/ids.js';
 import { nightsBetween } from '../_lib/search.js';
 import { isTestMode } from '../_lib/twoc2p.js';
+import { isReversedPayment, isSuccessfulPayment, paymentStatus } from '../../shared/paymentStatus.js';
 
 const INQUIRY_EVERY_MS = 5_000;
 
@@ -28,11 +29,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let row = await getByRef(ref);
     if (!row || !sameHash(sha256Hex(key), row.access_key_hash)) return notFound();
 
-    if (row.status === 'pending') {
-      const [won] = await updateWhere(`id=eq.${row.id}&status=eq.pending&or=(last_inquiry_at.is.null,last_inquiry_at.lt.${new Date(Date.now() - INQUIRY_EVERY_MS).toISOString()})`, { last_inquiry_at: new Date().toISOString() });
+    if (['pending', 'paid', 'delivered'].includes(row.status) && !isReversedPayment(row.resp_code)) {
+      const [won] = await updateWhere(`id=eq.${row.id}&status=eq.${row.status}&or=(last_inquiry_at.is.null,last_inquiry_at.lt.${new Date(Date.now() - INQUIRY_EVERY_MS).toISOString()})`, { last_inquiry_at: new Date().toISOString() });
       if (won) row = (await confirmPayment(row.invoice_no, 'status').catch((error) => { console.error('Status check: inquiry failed', ref, error); return null; })) ?? row;
-    } else if (row.status === 'paid') {
-      row = await deliver(row);
     }
     return res.status(200).json(toPublic(row));
   } catch (error) {
@@ -60,9 +59,11 @@ function declineReason(code: string, description: string | null): string {
 }
 
 function toPublic(row: BookingRow): BookingStatusResponse {
-  const declined = row.status === 'pending' && !!row.resp_code && row.resp_code !== '0000' && !NOT_FINAL.has(row.resp_code);
+  const reversed = isReversedPayment(row.resp_code);
+  const declined = !reversed && row.status === 'pending' && !!row.resp_code && !isSuccessfulPayment(row.resp_code) && !NOT_FINAL.has(row.resp_code);
   const test = row.flags.includes('test_payment') || (row.status === 'pending' && isTestMode());
-  const status: PublicBookingStatus = row.status === 'paid' || row.status === 'delivered' ? 'confirmed'
+  const status: PublicBookingStatus = reversed ? paymentStatus(row.resp_code) as 'voided' | 'refunded'
+    : row.status === 'paid' || row.status === 'delivered' ? 'confirmed'
     : row.status === 'failed' || declined ? 'failed'
     : row.status === 'expired' || Date.now() > Date.parse(row.expires_at) + 60_000 ? 'expired'
     : 'pending';
@@ -75,7 +76,9 @@ function toPublic(row: BookingRow): BookingStatusResponse {
     currency: row.currency,
     total: row.total_amount,
     deposit: row.deposit_amount,
-    balance: Math.round((row.total_amount - (test ? 0 : row.paid_amount ?? row.deposit_amount)) * 100) / 100,
+    // The PGW inquiry does not specify how much was refunded. Staff reconcile
+    // partial refunds and the reservation; do not invent a remaining balance.
+    balance: reversed ? null : Math.round((row.total_amount - (test ? 0 : row.paid_amount ?? row.deposit_amount)) * 100) / 100,
     paidAmount: test ? 0 : row.paid_amount,
     testPayment: test,
     lines: row.items.map((item) => ({

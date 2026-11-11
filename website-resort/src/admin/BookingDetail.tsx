@@ -16,7 +16,7 @@ import { useState, type ReactNode } from 'react';
 import { countryName } from '../booking/countries';
 import { dayLabel, guestsLabel, mealsLabel, money, nightsLabel, plural } from '../booking/format';
 import {
-  type Badge, channelName, type DeskBooking, FLAG_LABELS, guestCount, guestName, isPaid, isTest, nightCount, paymentBadge, savingsOf,
+  type Badge, channelName, type DeskBooking, FLAG_LABELS, guestCount, guestName, isPaid, isReversed, isTest, nightCount, paymentBadge, savingsOf,
   siteMinderBadge, siteMinderText, stampLabel,
 } from './bookingModel';
 import { InfoButton } from './InfoButton';
@@ -55,6 +55,7 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
   const [menu, setMenu] = useState<HTMLElement | null>(null);
   const [keying, setKeying] = useState(false);
   const paid = isPaid(b);
+  const reversed = isReversed(b);
   const sm = siteMinderBadge(b);
   const phoneDigits = b.guest_phone?.replace(/[^\d]/g, '') ?? '';
 
@@ -68,6 +69,26 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
   const setArchived = (archived: boolean) => act(() => supabase!.rpc('admin_set_archived', { p_ref: b.ref, p_archived: archived }), archived ? 'Archived' : 'Moved back from the archive');
   const copy = async (text: string, done: string) => {
     try { await navigator.clipboard.writeText(text); setToast(done); } catch { setError('Couldn’t copy — select the text and copy it instead.'); }
+  };
+  const refreshPayment = async () => {
+    setBusy(true); setError(null);
+    try {
+      const { data, error: sessionError } = await supabase!.auth.getSession();
+      if (sessionError || !data.session) throw new Error('Please sign in again.');
+      const response = await fetch('/api/booking/refresh-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` },
+        body: JSON.stringify({ ref: b.ref }),
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({})) as { error?: string };
+        throw new Error(result.error || 'Could not check 2C2P right now.');
+      }
+      await onChanged();
+      setToast('Payment status checked with 2C2P');
+    } catch (problem) {
+      setError(problem instanceof Error ? problem.message : 'Could not check 2C2P right now.');
+    } finally { setBusy(false); }
   };
 
   return <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -142,22 +163,25 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
         </Section>
 
         <Section title="Payment" info={<p>Payments go through 2C2P. To refund or void one, find the 2C2P transaction number below in the 2C2P merchant portal.</p>}>
+          {reversed && <Alert severity="warning" sx={{ mb: 2 }}>2C2P reports this payment as {paymentBadge(b).label.toLowerCase()}. Check the amount in the portal and review the reservation in SiteMinder. The payment change does not cancel the stay automatically.</Alert>}
           <Rows rows={[
             ['Status', <StatusChip key="s" badge={paymentBadge(b)} />],
-            ['Paid online', paid ? money(b.paid_amount ?? b.deposit_amount, b.currency) : `${money(b.deposit_amount, b.currency)} due — not paid`],
+            [reversed ? 'Original payment' : 'Paid online', reversed ? (b.paid_amount === null ? 'Check the 2C2P portal' : money(b.paid_amount, b.currency)) : paid ? money(b.paid_amount ?? b.deposit_amount, b.currency) : `${money(b.deposit_amount, b.currency)} due — not paid`],
             ['Total for the stay', money(b.total_amount, b.currency)],
-            ['To pay at the hotel', b.balance_amount > 0 ? money(b.balance_amount, b.currency) : paid ? 'Nothing — paid in full' : null],
+            ['To pay at the hotel', reversed ? 'Confirm with reservations after reviewing the reversal' : b.balance_amount > 0 ? money(b.balance_amount, b.currency) : paid ? 'Nothing — paid in full' : null],
             ['Offer savings', savingsOf(b) > 0 ? money(savingsOf(b), b.currency) : null],
             ['Paid with', channelName(b.channel_code)],
             ['Paid at', b.paid_at && stampLabel(b.paid_at)],
             ['2C2P transaction', b.tran_ref],
             ['Approval code', b.approval_code],
             ['Invoice number', b.invoice_no],
+            ['Payment last checked', b.last_inquiry_at && stampLabel(b.last_inquiry_at)],
             ['2C2P reply', !paid && b.resp_code ? `${b.resp_code}${b.resp_desc ? ` · ${b.resp_desc}` : ''}` : null],
           ]} />
+          <Button variant="outlined" size="small" disabled={busy} onClick={() => void refreshPayment()} sx={{ mt: 2 }}>{busy ? 'Checking…' : 'Check 2C2P status'}</Button>
         </Section>
 
-        {paid && <Section title="SiteMinder" info={<p>SiteMinder doesn’t accept bookings from the website yet, so each paid booking is emailed to reservations to enter by hand. Press “Entered in SiteMinder” once it’s in — until then the website keeps the room off sale so it isn’t sold twice.</p>}>
+        {(paid || reversed) && <Section title="SiteMinder" info={<p>SiteMinder doesn’t accept bookings from the website yet, so each paid booking is emailed to reservations to enter by hand. Press “Entered in SiteMinder” once it’s in — until then the website keeps the room off sale so it isn’t sold twice.</p>}>
           <Rows rows={[
             ['Status', sm && <StatusChip key="s" badge={sm} />],
             ['Emailed to reservations', b.delivered_at && stampLabel(b.delivered_at)],
@@ -236,7 +260,7 @@ function Timeline({ b }: { b: DeskBooking }) {
     [b.keyed_at, 'Entered in SiteMinder', b.keyed_by],
     [b.archived_at, 'Archived', b.archived_by],
   ] as [string | null, string, string | null][]).filter((e): e is [string, string, string | null] => !!e[0]).sort((x, y) => x[0].localeCompare(y[0]));
-  if (!isPaid(b) && b.status !== 'pending') events.push([b.expires_at, b.status === 'failed' ? 'The payment page couldn’t be opened' : 'Room hold ran out without payment', null]);
+  if (!isPaid(b) && !isReversed(b) && b.status !== 'pending') events.push([b.expires_at, b.status === 'failed' ? 'The payment page couldn’t be opened' : 'Room hold ran out without payment', null]);
   return <Box component="ol" sx={{ m: 0, p: 0, listStyle: 'none' }}>
     {events.map(([at, label, detail], i) => <Box component="li" key={`${label}${at}`} sx={{ display: 'grid', gridTemplateColumns: '18px minmax(0, 1fr)', columnGap: 1.25 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

@@ -8,6 +8,9 @@ import { rest } from './db.js';
 // so when the webhook, the confirmation page's polling and the nightly cron
 // race on the same booking, exactly one of them wins each step.
 
+// Booking workflow, not the current financial state. A historical paid or
+// delivered booking can subsequently have resp_code 4047 (void) or 4120
+// (refund). Keep the reservation and original payment for staff to reconcile.
 export type BookingStatus = 'pending' | 'paid' | 'delivered' | 'failed' | 'expired';
 
 /** One line of the booking: `quantity` identical rooms at the same rate and occupancy. */

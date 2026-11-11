@@ -89,6 +89,13 @@ export function ConfirmationStep() {
 
   // Declined (or cancelled) at 2C2P: say why, and let the guest try again with
   // the same rooms and details — a fresh payment, since the last one failed.
+  if (status.status === 'voided' || status.status === 'refunded') return <Box sx={card}>
+    <Typography variant="h1" sx={{ fontSize: { xs: 28, md: 36 } }}>Your payment was {status.status}</Typography>
+    <Alert severity="info" sx={{ mt: 2 }}>The payment provider reports this payment as {status.status}. Please contact reservations to confirm your stay and any remaining amount. Booking {status.ref}.</Alert>
+    <Typography sx={{ color: 'text.secondary', mt: 2 }}>For a refund, your bank or payment provider can confirm when the funds will reach you.</Typography>
+    <Button variant="contained" href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" sx={{ mt: 3 }}>Contact reservations</Button>
+  </Box>;
+
   if (status.status === 'failed') return <Box sx={card}>
     <Typography variant="h1" sx={{ fontSize: { xs: 28, md: 36 } }}>Your payment didn’t go through</Typography>
     <Alert severity="warning" sx={{ mt: 2 }}>{status.failureReason ?? 'The payment wasn’t completed.'} Nothing was charged.</Alert>
@@ -130,7 +137,7 @@ export function ConfirmationStep() {
     <Stack spacing={.75}>
       <Stack direction="row" justifyContent="space-between"><Typography>Total for your stay</Typography><Typography>{money(status.total, status.currency)}</Typography></Stack>
       <Stack direction="row" justifyContent="space-between" sx={{ color: 'success.dark', fontWeight: 700 }}><Typography sx={{ fontWeight: 700 }}>Paid today</Typography><Typography sx={{ fontWeight: 700 }}>{money(paid, status.currency)}</Typography></Stack>
-      {status.balance > 0 && <Stack direction="row" justifyContent="space-between"><Typography>To pay at the hotel</Typography><Typography>{money(status.balance, status.currency)}</Typography></Stack>}
+      {status.balance !== null && status.balance > 0 && <Stack direction="row" justifyContent="space-between"><Typography>To pay at the hotel</Typography><Typography>{money(status.balance, status.currency)}</Typography></Stack>}
     </Stack>
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 4 }}>
       <Button href="/" onClick={linkClick('/')} variant="contained">Back to the resort</Button>

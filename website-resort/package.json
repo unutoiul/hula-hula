@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
     "test:unit": "node --test tests/booking.test.ts",
+    "test:payments": "node --import tsx --test tests/payment-status.test.ts",
     "preview": "vite preview",
     "email:publish": "node --env-file-if-exists=.env.local scripts/publish-contact-email.mjs"
   },
@@ -30,6 +31,7 @@
     "@types/react-dom": "^19.2.4",
     "@vercel/node": "^13.0.1",
     "@vitejs/plugin-react": "^5.0.2",
+    "tsx": "4.21.0",
     "typescript": "^7.0.2",
     "vite": "^7.1.3"
   }

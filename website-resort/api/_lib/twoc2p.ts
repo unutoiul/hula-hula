@@ -1,4 +1,5 @@
 import { signHS256, verifyHS256 } from './jwt.js';
+import { paymentStatus } from '../../shared/paymentStatus.js';
 
 // 2C2P's Payment Gateway API (https://developer.2c2p.com): every request and
 // response body is { payload: <JWT signed with the merchant secret> }.
@@ -10,7 +11,7 @@ import { signHS256, verifyHS256 } from './jwt.js';
 
 const HOSTS = { sandbox: 'https://sandbox-pgw.2c2p.com', production: 'https://pgw.2c2p.com' } as const;
 
-/** respCode for a completed, successful payment. Everything else is "not paid (yet)". */
+/** Successful API operation. Payment inquiries also have lifecycle codes (see paymentStatus). */
 export const PAID = '0000';
 
 export class TwoC2PError extends Error {
@@ -18,6 +19,7 @@ export class TwoC2PError extends Error {
 }
 
 export interface InquiryResult {
+  merchantID?: string;
   respCode: string;
   respDesc?: string;
   invoiceNo?: string;
@@ -50,11 +52,14 @@ async function call<T extends { respCode?: string }>(endpoint: string, payload: 
     method: 'POST',
     headers: { 'Content-Type': 'application/*+json', Accept: 'text/plain' },
     body: JSON.stringify({ payload: signHS256(payload, secret) }),
+    signal: AbortSignal.timeout(15_000),
   });
   const text = await response.text();
+  if (!response.ok) throw new TwoC2PError(String(response.status), `2C2P ${endpoint} returned ${response.status}`);
   let body: { payload?: string; respCode?: string; respDesc?: string };
   try { body = JSON.parse(text); } catch { throw new TwoC2PError(String(response.status), `2C2P ${endpoint} returned ${response.status}`); }
   // Errors come back unsigned ({ respCode, respDesc }); answers come signed.
+  if (!body.payload && paymentStatus(body.respCode)) throw new TwoC2PError('SIGNATURE', 'Unsigned 2C2P transaction result');
   return (body.payload ? verifyHS256<T>(body.payload, secret) : body) as T;
 }
 
@@ -103,8 +108,15 @@ export function cardholderName(name: string): string | undefined {
   return CARDHOLDER_NAME.test(trimmed) ? trimmed : undefined;
 }
 
-export function paymentInquiry(invoiceNo: string): Promise<InquiryResult> {
-  return call<InquiryResult>('paymentInquiry', { merchantID: config().merchantID, invoiceNo, locale: 'en' });
+export async function paymentInquiry(invoiceNo: string): Promise<InquiryResult> {
+  const { merchantID } = config();
+  const result = await call<InquiryResult>('paymentInquiry', { merchantID, invoiceNo, locale: 'en' });
+  if ((result.invoiceNo && result.invoiceNo !== invoiceNo)
+    || (result.merchantID && result.merchantID !== merchantID)
+    || (paymentStatus(result.respCode) && result.invoiceNo !== invoiceNo)) {
+    throw new TwoC2PError('MISMATCH', '2C2P inquiry did not match the requested transaction');
+  }
+  return result;
 }
 
 /** The server-to-server notification 2C2P posts to backendReturnUrl. Throws unless it carries our signature. */
