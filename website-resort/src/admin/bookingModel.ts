@@ -51,7 +51,7 @@ export interface DeskBooking {
   resp_desc: string | null;
   paid_at: string | null;
   last_inquiry_at: string | null;
-  delivery_method: 'email' | 'siteconnect' | null;
+  delivery_method: 'email' | null;
   delivery_attempts: number;
   delivery_error: string | null;
   delivered_at: string | null;
@@ -92,7 +92,6 @@ export function siteMinderBadge(b: DeskBooking): Badge | null {
   if (isReversed(b)) return { label: b.keyed_at ? 'Review in SiteMinder' : 'Review reservation', tone: 'warning' };
   if (!isPaid(b)) return null;
   if (b.keyed_at) return { label: 'In SiteMinder', tone: 'success' };
-  if (b.delivery_method === 'siteconnect' && b.siteminder_res_id) return { label: 'Sent to SiteMinder', tone: 'success' };
   if (b.status === 'paid') return { label: b.delivery_error ? 'Email to reservations failing' : 'Sending to reservations', tone: 'error' };
   return { label: 'To enter in SiteMinder', tone: 'warning' };
 }
@@ -108,10 +107,6 @@ export const FLAG_LABELS: Record<string, string> = {
   test_payment: 'Test payment: nothing was charged.',
 };
 
-/** Which provider took the payment, from what it left behind: Stripe's ids start "pi_" and its channels read "Stripe · …". */
-export const paymentProviderOf = (b: Pick<DeskBooking, 'tran_ref' | 'channel_code' | 'resp_desc'>) =>
-  (b.tran_ref?.startsWith('pi_') || b.channel_code?.startsWith('Stripe') || b.resp_desc?.includes('Stripe') ? 'Stripe' : '2C2P');
-export const paymentPortal = (provider: string) => (provider === 'Stripe' ? 'the Stripe Dashboard' : 'the 2C2P merchant portal');
 
 const CHANNELS: Record<string, string> = { VI: 'Visa', MA: 'Mastercard', JC: 'JCB', AM: 'American Express', UP: 'UnionPay', DI: 'Diners Club', PPQR: 'PromptPay QR', QR: 'QR payment', TRUEMONEY: 'TrueMoney', SHPPAY: 'ShopeePay' };
 export const channelName = (code: string | null) => (code ? CHANNELS[code.toUpperCase()] ?? code : null);
@@ -213,9 +208,9 @@ export function siteMinderText(b: DeskBooking): string {
     `Guests: ${adults} adults${children ? `, ${children} children` : ''}`,
     ...b.items.map((item) => `Room: ${item.quantity} × ${item.roomTypeName} — ${item.rateName} (${item.adults} adults${item.children ? `, ${item.children} children` : ''} each)${item.offer ? ` · offer “${item.offer.title}”${item.offer.percent ? ` −${item.offer.percent}%` : ''}${item.offer.perks.length ? `, perks: ${item.offer.perks.join(', ')}` : ''}` : ''}`),
     isReversed(b)
-      ? `Total: ${money(b.total_amount, b.currency)} · payment ${paymentBadge(b).label.toLowerCase()} in ${paymentProviderOf(b)} — review the portal amount and reservation before confirming a balance`
+      ? `Total: ${money(b.total_amount, b.currency)} · payment ${paymentBadge(b).label.toLowerCase()} — review the payment amount and reservation before confirming a balance`
       : `Total: ${money(b.total_amount, b.currency)} · paid ${money(b.paid_amount ?? b.deposit_amount, b.currency)} online${b.balance_amount > 0 ? ` · ${money(b.balance_amount, b.currency)} to pay at the hotel` : ''}`,
-    b.tran_ref && `${paymentProviderOf(b)} transaction: ${b.tran_ref} (invoice ${b.invoice_no})`,
+    b.tran_ref && `Payment reference: ${b.tran_ref} (invoice ${b.invoice_no})`,
     b.arrival_time && `Arrival time: ${b.arrival_time}`,
     b.special_requests && `Special requests: ${b.special_requests}`,
   ].filter(Boolean).join('\n');

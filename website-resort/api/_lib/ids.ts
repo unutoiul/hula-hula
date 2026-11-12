@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 
-// The guest-facing booking reference ("HH7K3M9Q"), the 2C2P invoice number
+// The guest-facing booking reference ("HH7K3M9Q"), the booking invoice number
 // derived from it, and the secret that lets only the booking's own browser
 // read its status.
 
@@ -11,10 +11,8 @@ export const ACCESS_KEY_PATTERN = /^[\w-]{43}$/;
 
 export const newRef = () => `HH${Array.from({ length: 6 }, () => CROCKFORD[randomInt(CROCKFORD.length)]).join('')}`;
 
-// Letters and digits only, and at most 20 of them: QR payments (PromptPay)
-// refuse anything longer.
+// Keep invoice numbers stable and distinct from guest-facing references.
 export const invoiceNoFor = (ref: string) => `WEB${ref}`;
-export const isWebsiteInvoice = (invoiceNo: string) => invoiceNo.startsWith('WEB') && REF_PATTERN.test(invoiceNo.slice(3));
 
 export const newAccessKey = () => randomBytes(32).toString('base64url');
 

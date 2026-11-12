@@ -130,6 +130,6 @@ export interface BookingStatusResponse {
   expiresAt: string;
   /** When status is "failed": why, in words a guest understands. */
   failureReason?: string;
-  /** Paid on 2C2P's sandbox or with Stripe test keys: nothing was charged, everything is paid at the hotel. */
+  /** Paid with Stripe test keys: nothing was charged, everything is paid at the hotel. */
   testPayment?: boolean;
 }

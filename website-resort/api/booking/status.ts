@@ -6,7 +6,7 @@ import { confirmPayment } from '../_lib/finalize.js';
 import { allowMethods, queryString } from '../_lib/http.js';
 import { ACCESS_KEY_PATTERN, REF_PATTERN, sha256Hex } from '../_lib/ids.js';
 import { nightsBetween } from '../_lib/search.js';
-import { isTestPayment } from '../_lib/payments.js';
+import { canInquire, isTestPayment } from '../_lib/payments.js';
 import { isReversedPayment, isSuccessfulPayment, paymentStatus } from '../../shared/paymentStatus.js';
 
 const INQUIRY_EVERY_MS = 5_000;
@@ -14,7 +14,7 @@ const INQUIRY_EVERY_MS = 5_000;
 // GET /api/booking/status?ref&key — what /book/confirmation polls after the
 // guest pays. Only the browser that started the booking has its key, and the
 // answer never includes personal details. While a booking is still pending it
-// asks the payment provider (2C2P or Stripe) directly, at most every few
+// asks Stripe directly, at most every few
 // seconds, so a confirmation never depends on its notification arriving — or
 // reaching us at all.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let row = await getByRef(ref);
     if (!row || !sameHash(sha256Hex(key), row.access_key_hash)) return notFound();
 
-    if (['pending', 'paid', 'delivered'].includes(row.status) && !isReversedPayment(row.resp_code)) {
+    if (canInquire(row) && ['pending', 'paid', 'delivered'].includes(row.status) && !isReversedPayment(row.resp_code)) {
       const [won] = await updateWhere(`id=eq.${row.id}&status=eq.${row.status}&or=(last_inquiry_at.is.null,last_inquiry_at.lt.${new Date(Date.now() - INQUIRY_EVERY_MS).toISOString()})`, { last_inquiry_at: new Date().toISOString() });
       if (won) row = (await confirmPayment(row.invoice_no, 'status').catch((error) => { console.error('Status check: inquiry failed', ref, error); return null; })) ?? row;
     }
@@ -47,10 +47,8 @@ function sameHash(a: string, b: string) {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
-// 2C2P answers that mean "nothing final yet" — still being paid, or no
-// attempt so far. Any other non-success answer is a decline or cancellation
-// of the last attempt. The booking itself stays pending (the guest may try
-// again until the hold runs out); only what the guest is shown changes.
+// Waiting codes keep an unpaid booking pending. Historical outcomes remain
+// readable from saved records without making requests to a retired provider.
 const NOT_FINAL = new Set(['0001', '0999', '2001', '2002', '2003']);
 
 function declineReason(code: string, description: string | null): string {
@@ -77,7 +75,7 @@ function toPublic(row: BookingRow): BookingStatusResponse {
     currency: row.currency,
     total: row.total_amount,
     deposit: row.deposit_amount,
-    // The PGW inquiry does not specify how much was refunded. Staff reconcile
+    // The payment status does not specify the outstanding balance. Staff reconcile
     // partial refunds and the reservation; do not invent a remaining balance.
     balance: reversed ? null : Math.round((row.total_amount - (test ? 0 : row.paid_amount ?? row.deposit_amount)) * 100) / 100,
     paidAmount: test ? 0 : row.paid_amount,

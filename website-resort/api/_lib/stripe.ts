@@ -1,4 +1,4 @@
-import type { InquiryResult } from './twoc2p.js';
+import type { PaymentInquiry } from './paymentResult.js';
 
 // Stripe Checkout (https://docs.stripe.com/api/checkout/sessions), embedded:
 // Stripe's payment form shows inside our own payment step (ui_mode
@@ -6,10 +6,8 @@ import type { InquiryResult } from './twoc2p.js';
 // they've paid. Plain fetch with form-encoded bodies, like the rest of api/.
 // All new website bookings use this checkout (see payments.ts).
 //
-// Stripe's answers are translated into the reply codes the booking code
-// already understands from 2C2P (shared/paymentStatus.ts): 0000 paid, 4120
-// refunded, and 2001 "nothing final yet". So confirmPayment(), the guest's
-// status page and the booking desk work the same for both providers.
+// Stripe's answers use the booking database's status codes:
+// 0000 paid, 4120 refunded, and 2001 waiting for payment.
 
 const API = 'https://api.stripe.com/v1';
 
@@ -136,8 +134,8 @@ function channelOf(charge: StripeCharge | null): string | undefined {
   return `Stripe · ${details.type === 'promptpay' ? 'PromptPay' : details.type}`;
 }
 
-/** A Checkout session (with payment_intent.latest_charge expanded) as a 2C2P-style inquiry answer. */
-export function inquiryFromSession(session: StripeCheckoutSession, invoiceNo: string): InquiryResult {
+/** A Checkout session with payment_intent.latest_charge expanded, ready to reconcile. */
+export function inquiryFromSession(session: StripeCheckoutSession, invoiceNo: string): PaymentInquiry {
   if (session.metadata?.invoice_no !== invoiceNo) throw new StripeError(409, 'Stripe session does not belong to this booking');
   const intent = session.payment_intent && typeof session.payment_intent === 'object' ? session.payment_intent : null;
   const charge = intent?.latest_charge && typeof intent.latest_charge === 'object' ? intent.latest_charge : null;
@@ -161,7 +159,7 @@ export function inquiryFromSession(session: StripeCheckoutSession, invoiceNo: st
 }
 
 /** Stripe's own answer to "was this booking paid?", by its Checkout session. */
-export async function stripeInquiry(sessionId: string, invoiceNo: string): Promise<InquiryResult> {
+export async function stripeInquiry(sessionId: string, invoiceNo: string): Promise<PaymentInquiry> {
   const session = await call<StripeCheckoutSession>('GET', `/checkout/sessions/${encodeURIComponent(sessionId)}?expand%5B%5D=payment_intent.latest_charge`);
   return inquiryFromSession(session, invoiceNo);
 }

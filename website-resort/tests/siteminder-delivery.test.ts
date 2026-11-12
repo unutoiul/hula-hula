@@ -21,9 +21,8 @@ const booking = {
   approval_code: null, promo_code: null,
 } as BookingRow;
 
-function configure(t: TestContext, mode?: string) {
+function configure(t: TestContext) {
   const settings = {
-    RESERVATION_DELIVERY: mode,
     RESEND_API_KEY: 'fake-key-never-sent',
     BOOKING_ADMIN_TO: 'reservations@example.invalid',
     BOOKING_ADMIN_BCC: '',
@@ -61,19 +60,6 @@ it('the default handoff requests manual SiteMinder entry by email; no reservatio
   assert.equal(new Headers(requests[0].init?.headers).get('Idempotency-Key'), `booking-${booking.ref}-team`);
 });
 
-it('an obsolete siteconnect setting is ignored and delivery remains a manual-entry email', async t => {
-  configure(t, 'siteconnect');
-  const warning = t.mock.method(console, 'warn', () => {});
-  const endpoints: string[] = [];
-  t.mock.method(globalThis, 'fetch', async (url: string) => {
-    endpoints.push(url);
-    return new Response('{}', { status: 200 });
-  });
-  assert.deepEqual(await deliverReservation(booking), { method: 'email' });
-  assert.deepEqual(endpoints, ['https://api.resend.com/emails']);
-  assert.equal(warning.mock.callCount(), 0);
-});
-
 it('satisfies a legacy published template that still requires an invoice number', async t => {
   configure(t);
   t.mock.method(globalThis, 'fetch', async (_url: string, init?: RequestInit) => {
@@ -87,7 +73,7 @@ it('satisfies a legacy published template that still requires an invoice number'
 });
 
 it('a failed email handoff rejects instead of reporting successful delivery', async t => {
-  configure(t, 'email');
+  configure(t);
   t.mock.method(globalThis, 'fetch', async () => new Response('Simulated failure', { status: 503 }));
   await assert.rejects(deliverReservation(booking), /Resend refused the booking notification \(503\)/);
 });

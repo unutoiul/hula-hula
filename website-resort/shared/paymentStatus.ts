@@ -1,5 +1,5 @@
-// PGW paymentInquiry response codes, shared by the server and booking desk.
-// https://developer.2c2p.com/docs/response-code-payment
+// Stored payment outcomes, shared by the server and booking desk.
+// Historical settled and voided records retain their original status codes.
 export type PaymentStatus = 'approved' | 'settled' | 'voided' | 'refunded';
 
 export function paymentStatus(code: string | null | undefined): PaymentStatus | null {

@@ -16,8 +16,8 @@ import { useState, type ReactNode } from 'react';
 import { countryName } from '../booking/countries';
 import { dayLabel, guestsLabel, mealsLabel, money, nightsLabel, plural } from '../booking/format';
 import {
-  type Badge, channelName, type DeskBooking, FLAG_LABELS, guestCount, guestName, isPaid, isReversed, isTest, nightCount, paymentBadge, paymentPortal,
-  paymentProviderOf, savingsOf, siteMinderBadge, siteMinderText, stampLabel,
+  type Badge, channelName, type DeskBooking, FLAG_LABELS, guestCount, guestName, isPaid, isReversed, isTest, nightCount, paymentBadge,
+  savingsOf, siteMinderBadge, siteMinderText, stampLabel,
 } from './bookingModel';
 import { InfoButton } from './InfoButton';
 import { supabase } from './supabase';
@@ -57,8 +57,8 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
   const paid = isPaid(b);
   const reversed = isReversed(b);
   const sm = siteMinderBadge(b);
-  const provider = paymentProviderOf(b);
-  const portal = paymentPortal(provider);
+  const provider = 'Stripe';
+  const portal = 'the Stripe Dashboard';
   const phoneDigits = b.guest_phone?.replace(/[^\d]/g, '') ?? '';
 
   const act = async (work: () => PromiseLike<{ error: { message: string } | null }>, done?: string) => {
@@ -165,7 +165,7 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
         </Section>
 
         <Section title="Payment" info={<p>This payment went through {provider}. To refund or void it, find the {provider} transaction number below in {portal}.</p>}>
-          {reversed && <Alert severity="warning" sx={{ mb: 2 }}>{provider} reports this payment as {paymentBadge(b).label.toLowerCase()}. Check the amount in the portal and review the reservation in SiteMinder. The payment change does not cancel the stay automatically.</Alert>}
+          {reversed && <Alert severity="warning" sx={{ mb: 2 }}>This payment is marked as {paymentBadge(b).label.toLowerCase()}. Review the payment and reservation in SiteMinder. The payment change does not cancel the stay automatically.</Alert>}
           <Rows rows={[
             ['Status', <StatusChip key="s" badge={paymentBadge(b)} />],
             [reversed ? 'Original payment' : 'Paid online', reversed ? (b.paid_amount === null ? `Check ${portal}` : money(b.paid_amount, b.currency)) : paid ? money(b.paid_amount ?? b.deposit_amount, b.currency) : `${money(b.deposit_amount, b.currency)} due — not paid`],
@@ -174,7 +174,7 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
             ['Offer savings', savingsOf(b) > 0 ? money(savingsOf(b), b.currency) : null],
             ['Paid with', channelName(b.channel_code)],
             ['Paid at', b.paid_at && stampLabel(b.paid_at)],
-            [`${provider} transaction`, b.tran_ref],
+            ['Payment reference', b.tran_ref],
             ['Approval code', b.approval_code],
             ['Invoice number', b.invoice_no],
             ['Payment last checked', b.last_inquiry_at && stampLabel(b.last_inquiry_at)],
@@ -258,7 +258,7 @@ function Timeline({ b }: { b: DeskBooking }) {
     [b.created_at, 'Booking started on the website', null],
     [b.paid_at, `Paid ${money(b.paid_amount ?? b.deposit_amount, b.currency)}`, channelName(b.channel_code)],
     [b.guest_emailed_at, 'Confirmation emailed to the guest', b.guest_email],
-    [b.delivered_at, b.delivery_method === 'siteconnect' ? 'Sent to SiteMinder' : 'Emailed to reservations', b.delivery_method === 'siteconnect' ? b.siteminder_res_id : null],
+    [b.delivered_at, 'Emailed to reservations', null],
     [b.keyed_at, 'Entered in SiteMinder', b.keyed_by],
     [b.archived_at, 'Archived', b.archived_by],
   ] as [string | null, string, string | null][]).filter((e): e is [string, string, string | null] => !!e[0]).sort((x, y) => x[0].localeCompare(y[0]));

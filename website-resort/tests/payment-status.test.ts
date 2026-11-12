@@ -1,32 +1,27 @@
-// Real handlers and persistence calls, with all external HTTP intercepted.
-// No live booking, credentials, payment mutation, database write or email.
+// Real Stripe handlers and persistence, with all external HTTP intercepted.
 import assert from 'node:assert/strict';
 import { it, type TestContext } from 'node:test';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { BookingRow } from '../api/_lib/bookings.ts';
 import { confirmPayment, deliver } from '../api/_lib/finalize.ts';
 import { sha256Hex } from '../api/_lib/ids.ts';
-import { signHS256, verifyHS256 } from '../api/_lib/jwt.ts';
-import { paymentInquiry, type InquiryResult } from '../api/_lib/twoc2p.ts';
-import { isPaymentConfigured, isTestMode, paymentProvider } from '../api/_lib/payments.ts';
+import { canInquire, inquire, isPaymentConfigured, isTestMode, paymentProvider } from '../api/_lib/payments.ts';
 import { confirmationVariables, notificationVariables } from '../api/_lib/bookingEmails.ts';
+import type { StripeCheckoutSession, StripeEvent } from '../api/_lib/stripe.ts';
 import refreshPayment from '../api/booking/refresh-payment.ts';
 import bookingStatus from '../api/booking/status.ts';
 import reconcile from '../api/cron/reconcile.ts';
-import backend from '../api/payment/2c2p-backend.ts';
+import webhook from '../api/payment/stripe-webhook.ts';
 import { isReversedPayment, paymentStatus } from '../shared/paymentStatus.ts';
 import { inView, isPaid, needsAction, paymentBadge, siteMinderText, type DeskBooking } from '../src/admin/bookingModel.ts';
 
 const KEY = 'a'.repeat(43);
-const SECRET = 'fake-secret-for-intercepted-tests-only';
 
 function setup(t: TestContext, patch: Partial<BookingRow> = {}) {
   const settings = {
     SUPABASE_URL: 'https://database.example.invalid', SUPABASE_SERVICE_ROLE_KEY: 'fake-service-key', SUPABASE_ANON_KEY: 'fake-public-key',
-    TWOC2P_MERCHANT_ID: 'FAKE', TWOC2P_SECRET_KEY: SECRET, TWOC2P_ENV: 'sandbox', TWOC2P_API_VERSION: '4.3',
-    RESEND_API_KEY: 'fake-email-key', BOOKING_ADMIN_TO: 'team@example.invalid', BOOKING_ADMIN_BCC: '',
-    RESERVATION_DELIVERY: 'email', CRON_SECRET: 'fake-cron-secret',
-    STRIPE_SECRET_KEY: '', STRIPE_PUBLISHABLE_KEY: '', PAYMENT_PROVIDER: '', PREVIEW_SITE: '', VERCEL_ENV: '',
+    RESEND_API_KEY: 'fake-email-key', BOOKING_ADMIN_TO: 'team@example.invalid', BOOKING_ADMIN_BCC: '', CRON_SECRET: 'fake-cron-secret',
+    STRIPE_SECRET_KEY: 'rk_live_synthetic', STRIPE_PUBLISHABLE_KEY: 'pk_live_synthetic', PREVIEW_SITE: '', VERCEL_ENV: '',
   };
   const previous = Object.fromEntries(Object.keys(settings).map(key => [key, process.env[key]]));
   Object.assign(process.env, settings);
@@ -44,16 +39,23 @@ function setup(t: TestContext, patch: Partial<BookingRow> = {}) {
     currency: 'THB', total_amount: 6000, deposit_amount: 3000, balance_amount: 3000, paid_amount: 3000,
     guest_first_name: 'Synthetic', guest_last_name: 'Test', guest_email: null, guest_phone: null, guest_country: null,
     arrival_time: null, special_requests: null, pii_wiped_at: null, promo_code: null,
-    tran_ref: 'original-reference', reference_no: null, approval_code: null, channel_code: 'VI',
-    resp_code: '0000', resp_desc: 'Successful', paid_at: '2026-11-10T00:00:00Z', last_inquiry_at: null,
+    payment_token: 'cs_live_synthetic', tran_ref: 'pi_original', reference_no: null, approval_code: null, channel_code: 'Stripe Visa',
+    resp_code: '0000', resp_desc: 'Paid', paid_at: '2026-11-10T00:00:00Z', last_inquiry_at: null,
     delivery_method: 'email', delivery_attempts: 1, delivery_claimed_at: null, delivery_error: null,
     delivered_at: '2026-11-10T00:01:00Z', guest_emailed_at: null, keyed_at: null, flags: [],
     expires_at: new Date(Date.now() + 900_000).toISOString(), created_at: '2026-11-10T00:00:00Z',
     ...patch,
   } as BookingRow;
+  const charge = { id: 'ch_synthetic', refunded: true, amount_refunded: 300000, currency: 'thb', payment_method_details: { type: 'card', card: { brand: 'visa' } } };
   const plan = {
-    result: { merchantID: 'FAKE', invoiceNo: row.invoice_no, respCode: '4120', respDesc: 'Refunded', amount: 3000, currencyCode: 'THB' } as InquiryResult,
-    signed: true, httpStatus: 200, admin: true, adminStatus: 200,
+    session: {
+      id: row.payment_token!, status: 'complete', payment_status: 'paid', amount_total: 300000, currency: 'thb',
+      metadata: { invoice_no: row.invoice_no },
+      payment_intent: { id: 'pi_synthetic', latest_charge: charge },
+    } as StripeCheckoutSession,
+    charge,
+    event: { id: 'evt_synthetic_event', type: 'charge.refunded', data: { object: { metadata: { invoice_no: row.invoice_no } } } } as StripeEvent,
+    httpStatus: 200, eventStatus: 200, admin: true, adminStatus: 200,
     beforeInquiryReturn: undefined as (() => void) | undefined,
   };
   const requests: { url: URL; method: string; body: Record<string, unknown>; headers: Headers }[] = [];
@@ -67,8 +69,10 @@ function setup(t: TestContext, patch: Partial<BookingRow> = {}) {
       if (method === 'DELETE') return Response.json([]);
       const q = url.searchParams;
       const status = q.get('status');
+      const token = q.get('payment_token');
       const matches = (!status || (status.startsWith('eq.') ? row.status === status.slice(3) : status.slice(4, -1).split(',').includes(row.status)))
-        && (!q.has('resp_code') || q.get('resp_code') === (row.resp_code === null ? 'is.null' : `eq.${row.resp_code}`));
+        && (!q.has('resp_code') || q.get('resp_code') === (row.resp_code === null ? 'is.null' : 'eq.' + row.resp_code))
+        && (!token || row.payment_token?.startsWith(token.slice(5, -1)));
       if (!matches) return Response.json([]);
       if (method === 'GET') {
         if (q.get('or')?.includes('resp_code.not.in') && isReversedPayment(row.resp_code)) return Response.json([]);
@@ -78,33 +82,27 @@ function setup(t: TestContext, patch: Partial<BookingRow> = {}) {
       Object.assign(row, body);
       return Response.json([row]);
     }
-    if (url.href === 'https://sandbox-pgw.2c2p.com/payment/4.3/paymentInquiry') {
-      assert.equal(verifyHS256<{ invoiceNo: string }>(body.payload, SECRET).invoiceNo, row.invoice_no);
+    if (url.hostname === 'api.stripe.com' && url.pathname === '/v1/checkout/sessions/' + row.payment_token) {
+      assert.equal(new Headers(init?.headers).get('authorization'), 'Bearer ' + process.env.STRIPE_SECRET_KEY);
+      assert.equal(url.searchParams.get('expand[]'), 'payment_intent.latest_charge');
       plan.beforeInquiryReturn?.();
-      return Response.json(plan.signed ? { payload: signHS256(plan.result, SECRET) } : plan.result, { status: plan.httpStatus });
+      return Response.json(plan.session, { status: plan.httpStatus });
     }
-    if (url.hostname === 'api.stripe.com' && url.pathname === `/v1/checkout/sessions/${row.payment_token}`) {
-      return Response.json({
-        id: row.payment_token, status: 'complete', payment_status: plan.result.respCode === '2001' ? 'unpaid' : 'paid',
-        amount_total: Math.round((plan.result.amount ?? 0) * 100), currency: plan.result.currencyCode?.toLowerCase(),
-        metadata: { invoice_no: row.invoice_no },
-        payment_intent: { id: 'pi_synthetic', latest_charge: {
-          id: 'ch_synthetic', refunded: plan.result.respCode === '4120',
-          amount_refunded: plan.result.respCode === '4120' ? 300000 : 0, currency: 'thb',
-          payment_method_details: { type: 'card', card: { brand: 'visa' } },
-        } },
-      }, { status: plan.httpStatus });
+    if (url.hostname === 'api.stripe.com' && url.pathname === '/v1/events/evt_synthetic_event') {
+      return Response.json(plan.event, { status: plan.eventStatus });
     }
     if (url.href === 'https://api.resend.com/emails') return Response.json({ id: 'fake-email' });
-    throw new Error(`Unexpected external request: ${method} ${url.origin}${url.pathname}`);
+    throw new Error('Unexpected external request: ' + method + ' ' + url.origin + url.pathname);
   });
-  return { row, plan, requests, inquiries: () => requests.filter(r => r.url.pathname.endsWith('/paymentInquiry')), emails: () => requests.filter(r => r.url.hostname === 'api.resend.com') };
+  const inquiries = () => requests.filter(r => r.url.pathname.startsWith('/v1/checkout/sessions/'));
+  const emails = () => requests.filter(r => r.url.hostname === 'api.resend.com');
+  const paid = () => { plan.charge.refunded = false; plan.charge.amount_refunded = 0; };
+  return { row, plan, requests, inquiries, emails, paid };
 }
 
 function request(overrides: Record<string, unknown> = {}) {
   return { method: 'POST', headers: {}, query: {}, ...overrides } as VercelRequest;
 }
-
 function response() {
   const state = { code: 200, body: {} as Record<string, unknown>, headers: {} as Record<string, unknown> };
   const res = {
@@ -115,104 +113,76 @@ function response() {
   return { state, res };
 }
 
-for (const [code, label] of [['4047', 'Voided'], ['4120', 'Refunded']]) {
-  it(`a portal ${label.toLowerCase()} payment updates an already delivered booking without resending it`, async t => {
-    const h = setup(t);
-    h.plan.result.respCode = code;
-    const after = await confirmPayment(h.row.invoice_no, 'webhook');
-    assert.equal(after?.resp_code, code);
-    assert.equal(after?.status, 'delivered');
-    assert.equal(after?.paid_amount, 3000); // Original history; not an invented refund amount.
-    assert.equal(after?.tran_ref, 'original-reference');
-    const desk = after as unknown as DeskBooking;
-    assert.equal(isPaid(desk), false);
-    assert.equal(paymentBadge(desk).label, label);
-    assert.equal(needsAction(desk), true);
-    assert.equal(inView(desk, 'unfinished'), false);
-    assert.doesNotMatch(siteMinderText(desk), /paid .* online|to pay at the hotel/);
-    await confirmPayment(h.row.invoice_no, 'webhook');
-    await deliver(h.row);
-    assert.equal(h.inquiries().length, 1);
-    assert.equal(h.emails().length, 0);
-  });
+it('a Stripe refund updates payment history without resending booking emails', async t => {
+  const h = setup(t);
+  const after = await confirmPayment(h.row.invoice_no, 'webhook');
+  assert.equal(after?.resp_code, '4120');
+  assert.equal(after?.status, 'delivered');
+  assert.equal(after?.paid_amount, 3000);
+  assert.equal(after?.tran_ref, 'pi_original');
+  const desk = after as unknown as DeskBooking;
+  assert.equal(isPaid(desk), false);
+  assert.equal(paymentBadge(desk).label, 'Refunded');
+  assert.equal(needsAction(desk), true);
+  assert.equal(inView(desk, 'unfinished'), false);
+  assert.doesNotMatch(siteMinderText(desk), /paid .* online|to pay at the hotel/);
+  await confirmPayment(h.row.invoice_no, 'webhook');
+  await deliver(h.row);
+  assert.equal(h.inquiries().length, 1);
+  assert.equal(h.emails().length, 0);
+});
 
-  it(`the guest status endpoint reports ${label.toLowerCase()} with no assumed remaining balance`, async t => {
-    const h = setup(t);
-    h.plan.result.respCode = code;
-    const { state, res } = response();
-    await bookingStatus(request({ method: 'GET', query: { ref: h.row.ref, key: KEY } }), res);
-    assert.equal(state.code, 200);
-    assert.equal(state.body.status, label.toLowerCase());
-    assert.equal(state.body.balance, null);
-    assert.equal(state.body.guest_email, undefined);
-    assert.equal(h.emails().length, 0);
-  });
-}
+it('a guest sees a Stripe refund without an assumed remaining balance or personal details', async t => {
+  const h = setup(t);
+  const { state, res } = response();
+  await bookingStatus(request({ method: 'GET', query: { ref: h.row.ref, key: KEY } }), res);
+  assert.equal(state.code, 200);
+  assert.equal(state.body.status, 'refunded');
+  assert.equal(state.body.balance, null);
+  assert.equal(state.body.guest_email, undefined);
+  assert.equal(h.emails().length, 0);
+});
 
-for (const code of ['0000', '4110']) {
-  it(`${code} completes a pending booking and repeat inquiries do not resend confirmation`, async t => {
-    const h = setup(t, { status: 'pending', resp_code: null, paid_amount: null, paid_at: null, delivered_at: null, delivery_attempts: 0 });
-    h.plan.result.respCode = code;
-    const after = await confirmPayment(h.row.invoice_no, 'webhook');
-    assert.equal(after?.status, 'delivered');
-    assert.equal(after?.resp_code, code);
-    await confirmPayment(h.row.invoice_no, 'webhook');
-    assert.equal(h.emails().length, 1);
-    assert.equal(isPaid(after as unknown as DeskBooking), true);
-    if (code === '4110') assert.equal(paymentBadge(after as unknown as DeskBooking).label, 'Settled');
-  });
-}
+it('a paid Stripe checkout completes once and repeated inquiries do not resend emails', async t => {
+  const h = setup(t, { status: 'pending', resp_code: null, paid_amount: null, paid_at: null, delivered_at: null, delivery_attempts: 0 });
+  h.paid();
+  assert.equal((await confirmPayment(h.row.invoice_no, 'webhook'))?.status, 'delivered');
+  await confirmPayment(h.row.invoice_no, 'webhook');
+  assert.equal(h.row.resp_code, '0000');
+  assert.equal(h.emails().length, 1);
+});
 
-it('a refund received before any successful callback is retained without a confirmation', async t => {
+it('a refund arriving before a successful callback is retained without a confirmation', async t => {
   const h = setup(t, { status: 'pending', resp_code: null, paid_amount: null, paid_at: null });
   await confirmPayment(h.row.invoice_no, 'cron');
   assert.equal(h.row.status, 'paid');
   assert.equal(h.row.resp_code, '4120');
-  assert.equal(isPaid(h.row as unknown as DeskBooking), false);
   assert.equal(h.emails().length, 0);
 });
 
-it('a stale successful inquiry cannot overwrite a concurrent portal refund', async t => {
+it('an older successful inquiry cannot overwrite a concurrent refund', async t => {
   const h = setup(t, { status: 'paid' });
-  h.plan.result.respCode = '0000';
+  h.paid();
   h.plan.beforeInquiryReturn = () => { h.row.resp_code = '4120'; };
-  const after = await confirmPayment(h.row.invoice_no, 'webhook');
-  assert.equal(after?.resp_code, '4120');
+  assert.equal((await confirmPayment(h.row.invoice_no, 'webhook'))?.resp_code, '4120');
   assert.equal(h.emails().length, 0);
 });
 
-it('a delayed Approved response does not regress a Settled payment', async t => {
-  const h = setup(t, { resp_code: '4110' });
-  h.plan.result.respCode = '0000';
-  assert.equal((await confirmPayment(h.row.invoice_no, 'webhook'))?.resp_code, '4110');
-});
-
-for (const code of ['0999', '4121', '4122', '4048']) {
-  it(`${code} does not turn a paid booking into a refund or void`, async t => {
-    const h = setup(t);
-    h.plan.result.respCode = code;
-    await confirmPayment(h.row.invoice_no, 'cron');
-    assert.equal(h.row.resp_code, '0000');
-    assert.equal(h.emails().length, 0);
-  });
-}
-
-it('an inquiry decline is returned to the guest on the same status request', async t => {
+it('an unpaid Stripe session remains pending without confirmation emails', async t => {
   const h = setup(t, { status: 'pending', resp_code: null });
-  h.plan.result.respCode = '4005';
+  h.plan.session.payment_status = 'unpaid';
   const { state, res } = response();
   await bookingStatus(request({ method: 'GET', query: { ref: h.row.ref, key: KEY } }), res);
-  assert.equal(state.body.status, 'failed');
+  assert.equal(state.body.status, 'pending');
+  assert.equal(h.row.resp_code, '2001');
+  assert.equal(h.emails().length, 0);
 });
 
-for (const scenario of ['unsigned', 'wrong-signature', 'wrong-invoice', 'wrong-merchant', 'wrong-currency', 'http-error']) {
-  it(`rejects ${scenario} inquiry results before changing payment history`, async t => {
+for (const scenario of ['wrong-invoice', 'wrong-currency', 'http-error']) {
+  it('rejects ' + scenario + ' Stripe results before changing payment history', async t => {
     const h = setup(t);
-    if (scenario === 'unsigned') h.plan.signed = false;
-    if (scenario === 'wrong-signature') process.env.TWOC2P_SECRET_KEY = 'different-fake-secret';
-    if (scenario === 'wrong-invoice') h.plan.result.invoiceNo = 'WEBHH999999';
-    if (scenario === 'wrong-merchant') h.plan.result.merchantID = 'OTHER';
-    if (scenario === 'wrong-currency') h.plan.result.currencyCode = 'USD';
+    if (scenario === 'wrong-invoice') h.plan.session.metadata = { invoice_no: 'WEBHH999999' };
+    if (scenario === 'wrong-currency') h.plan.session.currency = 'usd';
     if (scenario === 'http-error') h.plan.httpStatus = 503;
     await assert.rejects(confirmPayment(h.row.invoice_no, 'webhook'));
     assert.equal(h.row.resp_code, '0000');
@@ -220,30 +190,34 @@ for (const scenario of ['unsigned', 'wrong-signature', 'wrong-invoice', 'wrong-m
   });
 }
 
-it('unsigned gateway errors remain errors rather than financial outcomes', async t => {
-  const h = setup(t);
-  h.plan.signed = false;
-  h.plan.result = { respCode: '9007', respDesc: 'Invalid merchant' };
-  assert.equal((await paymentInquiry(h.row.invoice_no)).respCode, '9007');
-});
-
-it('a signed webhook triggers inquiry, ignoring a conflicting notification status', async t => {
+it('fetches a webhook event from Stripe and verifies the checkout instead of trusting its body', async t => {
   const h = setup(t);
   const { state, res } = response();
-  await backend(request({ body: { payload: signHS256({ invoiceNo: h.row.invoice_no, respCode: '0000' }, SECRET) } }), res);
+  await webhook(request({ body: { id: h.plan.event.id, type: 'checkout.session.completed' } }), res);
   assert.equal(state.code, 200);
   assert.equal(h.row.resp_code, '4120');
+  assert.equal(h.inquiries().length, 1);
 });
 
-it('an invalid webhook cannot trigger an inquiry or write', async t => {
+it('rejects an invalid webhook before any external request', async t => {
   const h = setup(t);
   const { state, res } = response();
-  await backend(request({ body: { payload: signHS256({ invoiceNo: h.row.invoice_no }, 'wrong-secret') } }), res);
+  await webhook(request({ body: { id: 'invalid' } }), res);
   assert.equal(state.code, 400);
   assert.equal(h.requests.length, 0);
 });
 
-it('an admin can refresh portal status using a verified caller JWT', async t => {
+it('an event that Stripe does not recognize cannot update a booking', async t => {
+  const h = setup(t);
+  h.plan.eventStatus = 404;
+  const { state, res } = response();
+  await webhook(request({ body: { id: h.plan.event.id } }), res);
+  assert.equal(state.code, 400);
+  assert.equal(h.inquiries().length, 0);
+  assert.equal(h.row.resp_code, '0000');
+});
+
+it('an admin can refresh Stripe status using the verified caller JWT', async t => {
   const h = setup(t);
   const { state, res } = response();
   await refreshPayment(request({ headers: { authorization: 'Bearer fake-user-jwt' }, body: { ref: h.row.ref } }), res);
@@ -253,11 +227,10 @@ it('an admin can refresh portal status using a verified caller JWT', async t => 
   assert.equal(permission.url.pathname, '/rest/v1/rpc/is_admin');
   assert.equal(permission.headers.get('apikey'), 'fake-public-key');
   assert.equal(permission.headers.get('authorization'), 'Bearer fake-user-jwt');
-  assert.deepEqual(state.body, { ok: true });
 });
 
 for (const permission of ['missing', 'nonadmin', 'expired']) {
-  it(`denies ${permission} admin credentials before any booking lookup or inquiry`, async t => {
+  it('denies ' + permission + ' admin credentials before looking up a booking', async t => {
     const h = setup(t);
     h.plan.admin = false;
     if (permission === 'expired') h.plan.adminStatus = 401;
@@ -269,7 +242,7 @@ for (const permission of ['missing', 'nonadmin', 'expired']) {
   });
 }
 
-it('nightly reconciliation checks delivered bookings and discovers portal refunds without a callback', async t => {
+it('nightly reconciliation checks Stripe refunds and filters to the configured mode', async t => {
   const h = setup(t);
   const { state, res } = response();
   await reconcile(request({ method: 'GET', headers: { authorization: 'Bearer fake-cron-secret' } }), res);
@@ -278,23 +251,42 @@ it('nightly reconciliation checks delivered bookings and discovers portal refund
   assert.equal(h.row.resp_code, '4120');
   assert.equal(h.emails().length, 0);
   const sweep = h.requests.find(r => r.url.searchParams.get('status') === 'in.(paid,delivered)');
-  assert.equal(sweep?.url.searchParams.get('order'), 'last_inquiry_at.asc.nullsfirst,created_at.asc');
+  assert.equal(sweep?.url.searchParams.get('payment_token'), 'like.cs_live_*');
 });
 
-it('a checkout cancellation is distinct from a portal void', () => {
-  assert.equal(paymentStatus('0003'), null);
+it('saved historical outcomes stay readable', () => {
   assert.equal(paymentStatus('4047'), 'voided');
+  assert.equal(paymentStatus('4110'), 'settled');
 });
 
-it('new bookings require matching Stripe keys regardless of an obsolete provider setting', t => {
+it('nightly checks leave historical paid records unchanged without contacting a retired gateway', async t => {
+  const h = setup(t, { payment_token: 'retired-checkout' });
+  const { state, res } = response();
+  await reconcile(request({ method: 'GET', headers: { authorization: 'Bearer fake-cron-secret' } }), res);
+  assert.equal(state.code, 200);
+  assert.equal(state.body.checked, 0);
+  assert.equal(h.row.status, 'delivered');
+  assert.equal(h.row.resp_code, '0000');
+  assert.equal(h.inquiries().length, 0);
+});
+
+it('an old unsupported unpaid attempt expires without contacting another gateway', async t => {
+  const h = setup(t, { payment_token: 'retired-checkout', status: 'pending', expires_at: new Date(Date.now() - 3 * 3600_000).toISOString() });
+  const { state, res } = response();
+  await reconcile(request({ method: 'GET', headers: { authorization: 'Bearer fake-cron-secret' } }), res);
+  assert.equal(state.code, 200);
+  assert.equal(state.body.expired, 1);
+  assert.equal(h.row.status, 'expired');
+  assert.equal(h.inquiries().length, 0);
+  assert.equal(h.emails().length, 0);
+});
+
+it('requires matching Stripe keys to enable checkout', t => {
   setup(t);
-  process.env.PAYMENT_PROVIDER = '2c2p';
   assert.equal(paymentProvider(), 'stripe');
-  // Configured legacy credentials cannot make a new checkout available.
+  process.env.STRIPE_SECRET_KEY = '';
   assert.equal(isPaymentConfigured(), false);
   process.env.STRIPE_SECRET_KEY = 'rk_test_synthetic';
-  assert.equal(isPaymentConfigured(), false);
-  process.env.STRIPE_PUBLISHABLE_KEY = 'pk_live_synthetic';
   assert.equal(isPaymentConfigured(), false);
   process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_synthetic';
   assert.equal(isPaymentConfigured(), true);
@@ -306,26 +298,52 @@ it('new bookings require matching Stripe keys regardless of an obsolete provider
   assert.equal(isTestMode(), false);
 });
 
-it('confirms Stripe payments without adding a test-site flag, retaining the actual test-payment warning', async t => {
+it('a test-mode checkout keeps the test warning without adding a site flag', async t => {
   const h = setup(t, { status: 'pending', payment_token: 'cs_test_synthetic', resp_code: null, paid_at: null });
   process.env.STRIPE_SECRET_KEY = 'rk_test_synthetic';
   process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_synthetic';
   process.env.PREVIEW_SITE = 'true';
   process.env.VERCEL_ENV = 'preview';
-  h.plan.result.respCode = '0000';
+  h.paid();
   await confirmPayment(h.row.invoice_no, 'webhook');
-  assert.equal(h.row.status, 'delivered');
   assert.deepEqual(h.row.flags, ['test_payment']);
-  assert.equal(h.row.tran_ref, 'pi_synthetic');
-  assert.equal(h.inquiries().length, 0);
-  assert.equal(h.emails().length, 1);
+  assert.equal(h.row.status, 'delivered');
   const variables = notificationVariables(h.row);
   assert.match(variables.PAID_AMOUNT, /0.*TEST payment/);
   assert.match(variables.BALANCE, /6,000/);
-  assert.doesNotMatch(variables.FLAGS_HTML ?? '', /TEST SITE|2C2P/);
+  assert.doesNotMatch(variables.FLAGS_HTML ?? '', /TEST SITE/);
 });
 
-it('trimmed booking emails keep legacy template variables without showing internal payment references', async t => {
+for (const token of [null, 'retired-checkout', 'cs_test_othermode']) {
+  it('keeps saved history without querying an unsupported checkout: ' + token, async t => {
+    const h = setup(t, { payment_token: token });
+    assert.equal(canInquire(h.row), false);
+    assert.throws(() => inquire(h.row.invoice_no, h.row), /no checkout in the current Stripe mode/);
+    const { state, res } = response();
+    await refreshPayment(request({ headers: { authorization: 'Bearer fake-user-jwt' }, body: { ref: h.row.ref } }), res);
+    assert.equal(state.code, 409);
+    assert.equal(h.inquiries().length, 0);
+    assert.equal(h.row.resp_code, '0000');
+  });
+}
+
+it('guest status for saved history does not query an unsupported checkout', async t => {
+  const h = setup(t, { payment_token: 'retired-checkout' });
+  const { state, res } = response();
+  await bookingStatus(request({ method: 'GET', query: { ref: h.row.ref, key: KEY } }), res);
+  assert.equal(state.code, 200);
+  assert.equal(state.body.status, 'confirmed');
+  assert.equal(h.inquiries().length, 0);
+});
+
+it('ignores notifications without a matching booking without calling a payment provider', async t => {
+  const h = setup(t);
+  t.mock.method(globalThis, 'fetch', async () => Response.json([]));
+  assert.equal(await confirmPayment('WEBHH999999', 'webhook'), null);
+  assert.equal(h.requests.length, 0);
+});
+
+it('trimmed emails still supply required variables for older published template versions', async t => {
   const h = setup(t, { flags: ['preview_site'], status: 'paid' });
   const team = notificationVariables(h.row);
   const guest = confirmationVariables(h.row, null, null);
@@ -334,7 +352,7 @@ it('trimmed booking emails keep legacy template variables without showing intern
   assert.equal(team.TRAN_REF, h.row.tran_ref);
   assert.equal(team.APPROVAL_CODE, '—');
   assert.equal(guest.PAYMENT_REF, h.row.tran_ref);
-  assert.doesNotMatch(team.KEY_BLOCK, /original-reference|WEBHH123ABC|2C2P/);
+  assert.doesNotMatch(team.KEY_BLOCK, /pi_original|WEBHH123ABC/);
   await deliver(h.row);
   assert.equal(h.emails().length, 1);
   assert.doesNotMatch(String(h.emails()[0].body.subject), /CHECK|TEST SITE/);

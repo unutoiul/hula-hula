@@ -19,7 +19,7 @@ interface BookingSearchState extends DateRange {
   siteMinderUrl: string;
 }
 
-/** Set VITE_ONSITE_BOOKING=true once 2C2P and Supabase are configured. */
+/** Set VITE_ONSITE_BOOKING=true once Stripe and Supabase are configured. */
 export const ONSITE_BOOKING = import.meta.env.VITE_ONSITE_BOOKING === 'true';
 
 const BookingSearchContext = createContext<BookingSearchState | null>(null);

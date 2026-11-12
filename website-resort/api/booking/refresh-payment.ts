@@ -3,6 +3,7 @@ import { getByRef } from '../_lib/bookings.js';
 import { confirmPayment } from '../_lib/finalize.js';
 import { allowMethods, readJsonBody } from '../_lib/http.js';
 import { REF_PATTERN } from '../_lib/ids.js';
+import { canInquire } from '../_lib/payments.js';
 
 // Staff can check a portal change immediately without waiting for a webhook
 // or nightly reconciliation. Authorization uses the caller's JWT and the same
@@ -30,6 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const booking = await getByRef(ref);
     if (!booking) return res.status(404).json({ error: 'Booking not found.' });
+    if (!canInquire(booking)) return res.status(409).json({ error: 'This booking has no checkout in the current Stripe mode. Its saved payment details are unchanged.' });
     const updated = await confirmPayment(booking.invoice_no, 'admin');
     if (!updated) return res.status(404).json({ error: 'Booking not found.' });
     return res.status(200).json({ ok: true });

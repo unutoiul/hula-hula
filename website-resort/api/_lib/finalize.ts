@@ -1,20 +1,18 @@
 import { type BookingRow, getByInvoice, updateWhere } from './bookings.js';
 import { CONFIRMATION_TEMPLATE, confirmationVariables, formatDay } from './bookingEmails.js';
 import { bookingAdminBcc, bookingAdminTo, bookingFrom, deliverReservation } from './deliver.js';
-import { isWebsiteInvoice } from './ids.js';
 import { formatMoney, toSatang } from './money.js';
 import { sendTemplate, sendText } from './resend.js';
 import { getCatalog } from './siteminder.js';
-import { inquire, isTestPayment, providerLabel } from './payments.js';
-import { PAID } from './twoc2p.js';
+import { inquire, isTestPayment } from './payments.js';
+import { STRIPE_CODES } from './stripe.js';
 import { isReversedPayment, isSuccessfulPayment } from '../../shared/paymentStatus.js';
 
 // The single path for payment confirmation and subsequent portal changes.
 // Called by the provider's notification, the guest's status page, staff and
 // the cron; they may overlap, so every step is a conditional update that only
 // one of them can win, and the emails carry idempotency keys. It always asks
-// the provider itself (2C2P, or Stripe for a booking paid there): a
-// notification or a browser redirect only says "go and look".
+// Stripe itself: a notification or browser redirect only says "go and look".
 
 const DELIVERY_STALE_MS = 5 * 60_000;
 export const MAX_DELIVERY_ATTEMPTS = 5;
@@ -28,24 +26,13 @@ const samePayment = (row: BookingRow) => `id=eq.${row.id}&resp_code=${row.resp_c
 
 export async function confirmPayment(invoiceNo: string, source: ConfirmSource): Promise<BookingRow | null> {
   const row = await getByInvoice(invoiceNo);
-  if (row && isReversedPayment(row.resp_code) && source !== 'admin') return row;
+  if (!row) return null;
+  if (isReversedPayment(row.resp_code) && source !== 'admin') return row;
 
   const inquiry = await inquire(invoiceNo, row);
-  if (!row) {
-    // Only invoices this site issued: the same merchant account also takes
-    // QuickPay links and test payments made from the 2C2P portal, which never
-    // had a booking here.
-    if (isSuccessfulPayment(inquiry.respCode) && !isWebsiteInvoice(invoiceNo)) {
-      console.info('Paid invoice from outside the website ignored', invoiceNo, source);
-    } else if (isSuccessfulPayment(inquiry.respCode)) {
-      console.error('Paid invoice with no booking on file', invoiceNo, source);
-      await alertTeam(`Payment with no booking: ${invoiceNo}`, `2C2P reports a successful payment for invoice ${invoiceNo} (${inquiry.amount ?? '?'} ${inquiry.currencyCode ?? ''}, reference ${inquiry.tranRef ?? inquiry.referenceNo ?? 'unknown'}), but the website has no booking for it. Please check the 2C2P portal.`);
-    }
-    return null;
-  }
 
   const checkedAt = new Date().toISOString();
-  if (inquiry.currencyCode && inquiry.currencyCode !== row.currency) throw new Error(`${providerLabel(row)} inquiry currency does not match the booking`);
+  if (inquiry.currencyCode && inquiry.currencyCode !== row.currency) throw new Error('Stripe inquiry currency does not match the booking');
   if (isReversedPayment(row.resp_code)) {
     const [updated] = await updateWhere(samePayment(row), { last_inquiry_at: checkedAt });
     return updated ?? await getByInvoice(invoiceNo);
@@ -87,7 +74,7 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
     const [updated] = await updateWhere(samePayment(row), {
       last_inquiry_at: checkedAt,
       // A delayed Approved result must not regress a recorded settlement.
-      ...(!(row.resp_code === '4110' && inquiry.respCode === PAID) && { resp_code: inquiry.respCode, resp_desc: inquiry.respDesc ?? null }),
+      ...(!(row.resp_code === '4110' && inquiry.respCode === STRIPE_CODES.paid) && { resp_code: inquiry.respCode, resp_desc: inquiry.respDesc ?? null }),
     });
     const current = updated ?? await getByInvoice(invoiceNo);
     return current?.status === 'paid' ? deliver(current) : current;
@@ -148,7 +135,7 @@ export async function deliver(row: BookingRow): Promise<BookingRow> {
     console.error('Booking hand-off failed', claimed.ref, error);
     await updateWhere(`id=eq.${claimed.id}`, { delivery_claimed_at: null, delivery_error: String(error).slice(0, 500) }).catch(() => {});
     if (claimed.delivery_attempts >= MAX_DELIVERY_ATTEMPTS) {
-      await alertTeam(`Booking ${claimed.ref} could not be handed off`, `Booking ${claimed.ref} (${formatDay(claimed.check_in)} – ${formatDay(claimed.check_out)}) is paid (${formatMoney(claimed.paid_amount ?? claimed.deposit_amount, claimed.currency)}, ${providerLabel(claimed)} ${claimed.tran_ref ?? claimed.invoice_no}) but its notification email keeps failing: ${String(error).slice(0, 300)}. The guest's details are still stored; open the Bookings tab in /admin or check the server logs.`);
+      await alertTeam(`Booking ${claimed.ref} could not be handed off`, `Booking ${claimed.ref} (${formatDay(claimed.check_in)} – ${formatDay(claimed.check_out)}) is paid (${formatMoney(claimed.paid_amount ?? claimed.deposit_amount, claimed.currency)}, payment reference ${claimed.tran_ref ?? claimed.invoice_no}) but its notification email keeps failing: ${String(error).slice(0, 300)}. The guest's details are still stored; open the Bookings tab in /admin or check the server logs.`);
     }
     return claimed;
   }
