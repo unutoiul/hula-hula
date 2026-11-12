@@ -56,11 +56,12 @@ it('the default handoff requests manual SiteMinder entry by email; no reservatio
   assert.match(payload.subject, /ACTION: enter in SiteMinder/);
   assert.deepEqual(payload.to, ['reservations@example.invalid']);
   assert.equal(payload.template.variables.BOOKING_REF, booking.ref);
+  assert.equal(payload.template.variables.INVOICE_NO, booking.invoice_no);
   assert.match(payload.template.variables.KEY_BLOCK, /Synthetic Test/);
   assert.equal(new Headers(requests[0].init?.headers).get('Idempotency-Key'), `booking-${booking.ref}-team`);
 });
 
-it('setting siteconnect does not enable a push: the current implementation still emails staff', async t => {
+it('an obsolete siteconnect setting is ignored and delivery remains a manual-entry email', async t => {
   configure(t, 'siteconnect');
   const warning = t.mock.method(console, 'warn', () => {});
   const endpoints: string[] = [];
@@ -70,7 +71,19 @@ it('setting siteconnect does not enable a push: the current implementation still
   });
   assert.deepEqual(await deliverReservation(booking), { method: 'email' });
   assert.deepEqual(endpoints, ['https://api.resend.com/emails']);
-  assert.equal(warning.mock.callCount(), 1);
+  assert.equal(warning.mock.callCount(), 0);
+});
+
+it('satisfies a legacy published template that still requires an invoice number', async t => {
+  configure(t);
+  t.mock.method(globalThis, 'fetch', async (_url: string, init?: RequestInit) => {
+    const payload = JSON.parse(String(init?.body));
+    if (!payload.template.variables.INVOICE_NO) {
+      return Response.json({ message: 'Missing required variable "INVOICE_NO"', name: 'validation_error', statusCode: 422 }, { status: 422 });
+    }
+    return Response.json({ id: 'synthetic-email' });
+  });
+  assert.deepEqual(await deliverReservation(booking), { method: 'email' });
 });
 
 it('a failed email handoff rejects instead of reporting successful delivery', async t => {

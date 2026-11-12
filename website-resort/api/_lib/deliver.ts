@@ -3,14 +3,11 @@ import { NOTIFICATION_TEMPLATE, notificationVariables } from './bookingEmails.js
 import { formatMoney } from './money.js';
 import { sendTemplate, splitAddresses } from './resend.js';
 
-// Handing a paid booking to the resort — the one place that changes when
-// SiteMinder's SiteConnect API is approved. Until then, SiteMinder's Direct
-// Booking API can't create reservations, so the booking goes to the
-// reservations inbox as an "ACTION: enter in SiteMinder" email, laid out in
-// the order it's keyed in. RESERVATION_DELIVERY=siteconnect|both will add the
-// automatic push here (Phase 2); for now anything but "email" falls back to it.
+// Reservations enters each paid website booking in SiteMinder manually.
+// This function only emails the booking details to the reservations inbox;
+// it does not create or update a reservation in SiteMinder.
 
-export interface DeliveryResult { method: 'email' | 'siteconnect'; externalId?: string }
+export interface DeliveryResult { method: 'email' }
 
 // Mail is sent from hulahularesort.com (the domain verified in Resend) and
 // goes to, and is answered at, the reservations inbox on hulahulaholiday.com.
@@ -19,8 +16,6 @@ export const bookingAdminTo = () => splitAddresses(process.env.BOOKING_ADMIN_TO 
 export const bookingAdminBcc = () => splitAddresses(process.env.BOOKING_ADMIN_BCC ?? process.env.CONTACT_BCC ?? 'contact@bluetrendy.com');
 
 export async function deliverReservation(row: BookingRow): Promise<DeliveryResult> {
-  const mode = process.env.RESERVATION_DELIVERY || 'email';
-  if (mode !== 'email') console.warn(`RESERVATION_DELIVERY=${mode} isn’t built yet — sending the email handoff instead`);
   const rooms = row.items.reduce((sum, item) => sum + item.quantity, 0);
   const result = await sendTemplate({
     from: bookingFrom(),

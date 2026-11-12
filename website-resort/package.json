@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
     "test:unit": "node --test tests/booking.test.ts",
-    "test:payments": "node --import tsx --test tests/payment-status.test.ts",
+    "test:payments": "node --import tsx --test tests/payment-status.test.ts tests/siteminder-delivery.test.ts",
     "preview": "vite preview",
     "email:publish": "node --env-file-if-exists=.env.local scripts/publish-contact-email.mjs"
   },

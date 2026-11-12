@@ -121,6 +121,11 @@ export function notificationVariables(row: BookingRow) {
     BALANCE: escape(formatMoney(balance, row.currency)),
     PAID_AT: row.paid_at ? stampFmt.format(new Date(row.paid_at)) : undefined,
     PAYMENT_CHANNEL: row.channel_code ? escape(row.channel_code) : undefined,
+    // Keep legacy fields in the payload for published templates or explicit
+    // template IDs that still require them. The trimmed email need not show them.
+    INVOICE_NO: escape(row.invoice_no),
+    TRAN_REF: row.tran_ref ? escape(row.tran_ref) : '—',
+    APPROVAL_CODE: row.approval_code ? escape(row.approval_code) : '—',
     PROMO_CODE: row.promo_code ? escape(row.promo_code) : undefined,
     FLAGS_HTML: flags.length ? flags.map((flag) => `• ${escape(FLAG_TEXT[flag])}`).join('<br>') : undefined,
     FLAGS_DISPLAY: flags.length ? 'block' : undefined,
@@ -152,6 +157,7 @@ export function confirmationVariables(row: BookingRow, checkInTime: string | nul
     BALANCE: escape(formatMoney(balance, row.currency)),
     BALANCE_DISPLAY: balance > 0.005 ? 'table-row' : undefined,
     CANCELLATION: escape(cancellation),
+    PAYMENT_REF: escape(row.tran_ref ?? row.invoice_no),
     PROMO_LINE: row.promo_code ? escape(`Promo code ${row.promo_code} applied`) : undefined,
     PROMO_DISPLAY: row.promo_code ? 'block' : undefined,
     SITE_URL: escape(siteUrlForEmail()),

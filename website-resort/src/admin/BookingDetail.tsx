@@ -135,7 +135,7 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
       <Stack spacing={2}>
         {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
         {b.flags.filter((flag) => flag !== 'test_payment' && flag !== 'preview_site').map((flag) => <Alert key={flag} severity="warning">{FLAG_LABELS[flag] ?? flag}</Alert>)}
-        {b.status === 'paid' && b.delivery_error && <Alert severity="error">The “enter in SiteMinder” email to reservations keeps failing ({b.delivery_error.slice(0, 160)}). The website retries every night — everything you need is on this page meanwhile.</Alert>}
+        {b.status === 'paid' && b.delivery_error && <Alert severity="error">The booking email could not be sent to reservations. Enter this booking in SiteMinder manually using the details below. The website will retry the email tonight.</Alert>}
 
         <Section title="Guest">
           <Rows rows={[
@@ -183,7 +183,7 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
           <Button variant="outlined" size="small" disabled={busy} onClick={() => void refreshPayment()} sx={{ mt: 2 }}>{busy ? 'Checking…' : `Check ${provider} status`}</Button>
         </Section>
 
-        {(paid || reversed) && <Section title="SiteMinder" info={<p>SiteMinder doesn’t accept bookings from the website yet, so each paid booking is emailed to reservations to enter by hand. Press “Entered in SiteMinder” once it’s in — until then the website keeps the room off sale so it isn’t sold twice.</p>}>
+        {(paid || reversed) && <Section title="SiteMinder" info={<p>Enter each paid website booking in SiteMinder manually. The website emails the booking details to reservations; it does not create a SiteMinder reservation. Press “Entered in SiteMinder” after adding it — until then the website keeps the room off sale so it isn’t sold twice.</p>}>
           <Rows rows={[
             ['Status', sm && <StatusChip key="s" badge={sm} />],
             ['Emailed to reservations', b.delivered_at && stampLabel(b.delivered_at)],

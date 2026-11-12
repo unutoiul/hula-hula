@@ -45,7 +45,7 @@ try {
     quotes: quotes.length,
     availableQuotes: quotes.filter(quote => quote.availability > 0).length,
     bookingEngineConfigured: Boolean(catalog.property.bookingEngineUrl),
-    reservationDelivery: process.env.RESERVATION_DELIVERY || 'email (default)',
+    reservationDelivery: 'email for manual SiteMinder entry',
     requests,
     writes: 0,
   }, null, 2));

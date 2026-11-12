@@ -325,13 +325,15 @@ it('confirms Stripe payments without adding a test-site flag, retaining the actu
   assert.doesNotMatch(variables.FLAGS_HTML ?? '', /TEST SITE|2C2P/);
 });
 
-it('trimmed booking emails ignore old site flags and omit internal payment references', async t => {
+it('trimmed booking emails keep legacy template variables without showing internal payment references', async t => {
   const h = setup(t, { flags: ['preview_site'], status: 'paid' });
   const team = notificationVariables(h.row);
   const guest = confirmationVariables(h.row, null, null);
   assert.equal(team.FLAGS_HTML, undefined);
-  for (const key of ['INVOICE_NO', 'TRAN_REF', 'APPROVAL_CODE']) assert.equal(key in team, false);
-  assert.equal('PAYMENT_REF' in guest, false);
+  assert.equal(team.INVOICE_NO, h.row.invoice_no);
+  assert.equal(team.TRAN_REF, h.row.tran_ref);
+  assert.equal(team.APPROVAL_CODE, '—');
+  assert.equal(guest.PAYMENT_REF, h.row.tran_ref);
   assert.doesNotMatch(team.KEY_BLOCK, /original-reference|WEBHH123ABC|2C2P/);
   await deliver(h.row);
   assert.equal(h.emails().length, 1);

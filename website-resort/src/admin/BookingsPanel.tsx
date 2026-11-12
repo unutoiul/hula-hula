@@ -72,7 +72,7 @@ export function BookingsPanel() {
       <Stack direction="row" alignItems="center" spacing={.5}>
         <Typography sx={{ fontWeight: 700 }}>Reservations</Typography>
         <InfoButton label="About bookings">
-          <p>Every booking made on the website, with the guest’s details. Each paid one also arrives as an “ACTION: enter in SiteMinder” email; once it’s in SiteMinder, open it here and press “Entered in SiteMinder”.</p>
+          <p>Every booking made on the website, with the guest’s details. Reservations must add each paid booking to SiteMinder manually using the emailed booking details, then open it here and press “Entered in SiteMinder”.</p>
           <p>“Unfinished” are guests who started booking but didn’t pay; they’re deleted after 30 days. Archive bookings you’re done with to keep the list short — nothing is deleted.</p>
           <p>Voids and refunds are made in the payment provider’s portal: the 2C2P merchant portal, or the Stripe Dashboard for Stripe payments. Open a booking and press “Check 2C2P status” (or “Check Stripe status”) to sync its payment. Reversed payments appear under “Needs attention” for review.</p>
         </InfoButton>
