@@ -8,6 +8,8 @@ import { confirmPayment, deliver } from '../api/_lib/finalize.ts';
 import { sha256Hex } from '../api/_lib/ids.ts';
 import { signHS256, verifyHS256 } from '../api/_lib/jwt.ts';
 import { paymentInquiry, type InquiryResult } from '../api/_lib/twoc2p.ts';
+import { isPaymentConfigured, isTestMode, paymentProvider } from '../api/_lib/payments.ts';
+import { confirmationVariables, notificationVariables } from '../api/_lib/bookingEmails.ts';
 import refreshPayment from '../api/booking/refresh-payment.ts';
 import bookingStatus from '../api/booking/status.ts';
 import reconcile from '../api/cron/reconcile.ts';
@@ -24,6 +26,7 @@ function setup(t: TestContext, patch: Partial<BookingRow> = {}) {
     TWOC2P_MERCHANT_ID: 'FAKE', TWOC2P_SECRET_KEY: SECRET, TWOC2P_ENV: 'sandbox', TWOC2P_API_VERSION: '4.3',
     RESEND_API_KEY: 'fake-email-key', BOOKING_ADMIN_TO: 'team@example.invalid', BOOKING_ADMIN_BCC: '',
     RESERVATION_DELIVERY: 'email', CRON_SECRET: 'fake-cron-secret',
+    STRIPE_SECRET_KEY: '', STRIPE_PUBLISHABLE_KEY: '', PAYMENT_PROVIDER: '', PREVIEW_SITE: '', VERCEL_ENV: '',
   };
   const previous = Object.fromEntries(Object.keys(settings).map(key => [key, process.env[key]]));
   Object.assign(process.env, settings);
@@ -79,6 +82,18 @@ function setup(t: TestContext, patch: Partial<BookingRow> = {}) {
       assert.equal(verifyHS256<{ invoiceNo: string }>(body.payload, SECRET).invoiceNo, row.invoice_no);
       plan.beforeInquiryReturn?.();
       return Response.json(plan.signed ? { payload: signHS256(plan.result, SECRET) } : plan.result, { status: plan.httpStatus });
+    }
+    if (url.hostname === 'api.stripe.com' && url.pathname === `/v1/checkout/sessions/${row.payment_token}`) {
+      return Response.json({
+        id: row.payment_token, status: 'complete', payment_status: plan.result.respCode === '2001' ? 'unpaid' : 'paid',
+        amount_total: Math.round((plan.result.amount ?? 0) * 100), currency: plan.result.currencyCode?.toLowerCase(),
+        metadata: { invoice_no: row.invoice_no },
+        payment_intent: { id: 'pi_synthetic', latest_charge: {
+          id: 'ch_synthetic', refunded: plan.result.respCode === '4120',
+          amount_refunded: plan.result.respCode === '4120' ? 300000 : 0, currency: 'thb',
+          payment_method_details: { type: 'card', card: { brand: 'visa' } },
+        } },
+      }, { status: plan.httpStatus });
     }
     if (url.href === 'https://api.resend.com/emails') return Response.json({ id: 'fake-email' });
     throw new Error(`Unexpected external request: ${method} ${url.origin}${url.pathname}`);
@@ -269,4 +284,56 @@ it('nightly reconciliation checks delivered bookings and discovers portal refund
 it('a checkout cancellation is distinct from a portal void', () => {
   assert.equal(paymentStatus('0003'), null);
   assert.equal(paymentStatus('4047'), 'voided');
+});
+
+it('new bookings require matching Stripe keys regardless of an obsolete provider setting', t => {
+  setup(t);
+  process.env.PAYMENT_PROVIDER = '2c2p';
+  assert.equal(paymentProvider(), 'stripe');
+  // Configured legacy credentials cannot make a new checkout available.
+  assert.equal(isPaymentConfigured(), false);
+  process.env.STRIPE_SECRET_KEY = 'rk_test_synthetic';
+  assert.equal(isPaymentConfigured(), false);
+  process.env.STRIPE_PUBLISHABLE_KEY = 'pk_live_synthetic';
+  assert.equal(isPaymentConfigured(), false);
+  process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_synthetic';
+  assert.equal(isPaymentConfigured(), true);
+  assert.equal(isTestMode(), true);
+  process.env.STRIPE_SECRET_KEY = 'rk_live_synthetic';
+  assert.equal(isPaymentConfigured(), false);
+  process.env.STRIPE_PUBLISHABLE_KEY = 'pk_live_synthetic';
+  assert.equal(isPaymentConfigured(), true);
+  assert.equal(isTestMode(), false);
+});
+
+it('confirms Stripe payments without adding a test-site flag, retaining the actual test-payment warning', async t => {
+  const h = setup(t, { status: 'pending', payment_token: 'cs_test_synthetic', resp_code: null, paid_at: null });
+  process.env.STRIPE_SECRET_KEY = 'rk_test_synthetic';
+  process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_synthetic';
+  process.env.PREVIEW_SITE = 'true';
+  process.env.VERCEL_ENV = 'preview';
+  h.plan.result.respCode = '0000';
+  await confirmPayment(h.row.invoice_no, 'webhook');
+  assert.equal(h.row.status, 'delivered');
+  assert.deepEqual(h.row.flags, ['test_payment']);
+  assert.equal(h.row.tran_ref, 'pi_synthetic');
+  assert.equal(h.inquiries().length, 0);
+  assert.equal(h.emails().length, 1);
+  const variables = notificationVariables(h.row);
+  assert.match(variables.PAID_AMOUNT, /0.*TEST payment/);
+  assert.match(variables.BALANCE, /6,000/);
+  assert.doesNotMatch(variables.FLAGS_HTML ?? '', /TEST SITE|2C2P/);
+});
+
+it('trimmed booking emails ignore old site flags and omit internal payment references', async t => {
+  const h = setup(t, { flags: ['preview_site'], status: 'paid' });
+  const team = notificationVariables(h.row);
+  const guest = confirmationVariables(h.row, null, null);
+  assert.equal(team.FLAGS_HTML, undefined);
+  for (const key of ['INVOICE_NO', 'TRAN_REF', 'APPROVAL_CODE']) assert.equal(key in team, false);
+  assert.equal('PAYMENT_REF' in guest, false);
+  assert.doesNotMatch(team.KEY_BLOCK, /original-reference|WEBHH123ABC|2C2P/);
+  await deliver(h.row);
+  assert.equal(h.emails().length, 1);
+  assert.doesNotMatch(String(h.emails()[0].body.subject), /CHECK|TEST SITE/);
 });

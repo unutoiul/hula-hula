@@ -134,7 +134,7 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
     <Box sx={{ flex: 1, overflowY: 'auto', px: { xs: 2, sm: 3 }, py: 2.5 }}>
       <Stack spacing={2}>
         {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
-        {b.flags.filter((flag) => flag !== 'test_payment').map((flag) => <Alert key={flag} severity="warning">{FLAG_LABELS[flag] ?? flag}</Alert>)}
+        {b.flags.filter((flag) => flag !== 'test_payment' && flag !== 'preview_site').map((flag) => <Alert key={flag} severity="warning">{FLAG_LABELS[flag] ?? flag}</Alert>)}
         {b.status === 'paid' && b.delivery_error && <Alert severity="error">The “enter in SiteMinder” email to reservations keeps failing ({b.delivery_error.slice(0, 160)}). The website retries every night — everything you need is on this page meanwhile.</Alert>}
 
         <Section title="Guest">

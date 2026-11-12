@@ -4,7 +4,7 @@ import type { InquiryResult } from './twoc2p.js';
 // Stripe's payment form shows inside our own payment step (ui_mode
 // "embedded_page"), and Stripe sends the guest to their confirmation when
 // they've paid. Plain fetch with form-encoded bodies, like the rest of api/.
-// Used for new bookings only when PAYMENT_PROVIDER=stripe (see payments.ts).
+// All new website bookings use this checkout (see payments.ts).
 //
 // Stripe's answers are translated into the reply codes the booking code
 // already understands from 2C2P (shared/paymentStatus.ts): 0000 paid, 4120

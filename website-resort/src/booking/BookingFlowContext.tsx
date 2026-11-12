@@ -8,9 +8,9 @@ import { guessCountry } from './countries';
 
 // Everything the booking pages share: the live room list for the current
 // search, the rooms picked (the cart), the guest's details and the payment
-// session started on 2C2P. Only once a payment has started is any of it kept
-// in this tab's sessionStorage — just so the round trip through 2C2P's page
-// and the bank's check doesn't lose the booking. Before that, a reload starts
+// session started on Stripe. Only once a payment has started is any of it kept
+// in this tab's sessionStorage so a reload or bank check keeps the booking.
+// Before that, a reload starts
 // with nothing picked; and it's forgotten once confirmed or two hours later.
 
 export interface CartLine { roomTypeUuid: string; roomRateUuid: string; quantity: number }
@@ -22,12 +22,12 @@ export interface GuestForm {
 
 export interface PaymentSession {
   ref: string; accessKey: string; currency: string;
-  /** 2C2P's page to pay on; null with Stripe, whose form shows on the payment step. */
-  webPaymentUrl: string | null;
+  /** Retained in session storage for compatibility with earlier clients. */
+  webPaymentUrl: null;
   stripe?: StripeCheckout;
   total: number; deposit: number; balance: number; expiresAt: string;
   email: string; signature: string; testPayment?: boolean;
-  /** Missing on a payment saved before Stripe existed: that was 2C2P. */
+  /** Missing in older saved sessions. */
   provider?: PaymentProvider;
 }
 
@@ -52,8 +52,8 @@ interface BookingFlow {
   guest: GuestForm;
   updateGuest: (patch: Partial<GuestForm>) => void;
   payment: PaymentSession | null;
-  /** Holds the rooms and starts a payment: gives back 2C2P's payment page (null with Stripe, whose form is on the payment step), or why it couldn't. */
-  startPayment: (extras: { hp: string; elapsedMs: number }) => Promise<{ webPaymentUrl: string | null } | { error: string }>;
+  /** Holds the rooms and starts Stripe's embedded payment form. */
+  startPayment: (extras: { hp: string; elapsedMs: number }) => Promise<{ ok: true } | { error: string }>;
   /** After a declined payment: drop the old payment so the next try starts a fresh one. */
   resetPayment: () => void;
   /** Empty the room selection (and drop any payment started for it). */
@@ -205,7 +205,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
 
   const updateGuest = useCallback((patch: Partial<GuestForm>) => setGuest((current) => ({ ...current, ...patch })), []);
 
-  const startPayment = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }): Promise<{ webPaymentUrl: string | null } | { error: string }> => {
+  const startPayment = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }): Promise<{ ok: true } | { error: string }> => {
     if (!plan || expanded.length === 0) return { error: 'Please choose rooms that fit everyone first.' };
     const rooms = expanded.map(({ rate }, index) => ({ roomRateUuid: rate.roomRateUuid, adults: plan[index].adults, children: plan[index].children }));
     const details = {
@@ -215,7 +215,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     // Going back and forth without changing anything keeps the same payment
     // (and the same hold on the rooms) instead of starting a second one.
     const signature = JSON.stringify({ searchKey, rooms, details });
-    if (payment?.signature === signature && Date.parse(payment.expiresAt) - Date.now() > 3 * 60_000) return { webPaymentUrl: payment.webPaymentUrl };
+    if (payment?.stripe && payment.signature === signature && Date.parse(payment.expiresAt) - Date.now() > 3 * 60_000) return { ok: true };
 
     const response = await createBooking({
       checkIn: searchParams.get('checkIn')!, checkOut: searchParams.get('checkOut')!, promo: promoCode || undefined,
@@ -232,10 +232,9 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
       email: details.email, signature, testPayment: response.testPayment, provider: response.paymentProvider,
     };
     setPayment(session);
-    // Saved right now, not after the next render: the guest is about to leave
-    // for 2C2P's page and must find the booking here when they come back.
+    // Save before navigating so a reload or bank check keeps the booking.
     writeStored({ searchKey: cartKey, cart: lines, guest, payment: session });
-    return { webPaymentUrl: response.webPaymentUrl };
+    return { ok: true };
   }, [plan, expanded, guest, searchKey, searchParams, promoCode, payment, cartKey, lines]);
 
   const resetPayment = useCallback(() => setPayment(null), []);

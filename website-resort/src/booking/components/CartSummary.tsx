@@ -41,7 +41,7 @@ function NightlyPrices({ nightly, quantity, currency }: { nightly: RateOffer['ni
 // `editable` lets the guest take rooms out (✕ per room, or Clear all).
 export function CartSummary({ action, showFit = true, editable = false }: { action?: ReactNode; showFit?: boolean; editable?: boolean }) {
   const { checkIn, checkOut, adults, children } = useBookingSearch();
-  const { cart, totals, plan, setQuantity, clearCart, availability } = useBookingFlow();
+  const { cart, totals, plan, setQuantity, clearCart } = useBookingFlow();
   // From the dates on screen, so the summary never lags behind a search still loading.
   const nights = Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000);
   // At least one adult per room — the same rule the booking itself follows.
@@ -103,6 +103,6 @@ export function CartSummary({ action, showFit = true, editable = false }: { acti
       </Alert>}
     </>}
     {action && <Box sx={{ mt: 2.5, '& > .MuiButton-root': { borderRadius: '12px', minHeight: 50 } }}>{action}</Box>}
-    {action && cart.length > 0 && <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 2.5, pt: 2.5 }}><PaymentMethods compact provider={availability.data?.paymentProvider ?? '2c2p'} /></Box>}
+    {action && cart.length > 0 && <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 2.5, pt: 2.5 }}><PaymentMethods compact /></Box>}
   </Box>;
 }

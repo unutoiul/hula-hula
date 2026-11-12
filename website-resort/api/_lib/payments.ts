@@ -1,18 +1,16 @@
 import type { PaymentProvider } from '../../shared/bookingContract.js';
 import type { BookingRow } from './bookings.js';
 import { isStripeConfigured, isStripeTestMode, stripeInquiry, stripePublishableKey } from './stripe.js';
-import { type InquiryResult, isConfigured as isTwoC2PConfigured, isTestMode as isTwoC2PTestMode, paymentInquiry } from './twoc2p.js';
+import { type InquiryResult, isTestMode as isTwoC2PTestMode, paymentInquiry } from './twoc2p.js';
 
-// Which payment provider takes new website bookings: 2C2P (the default) or
-// Stripe Checkout (PAYMENT_PROVIDER=stripe). A booking keeps the provider it
-// started with, because its payment_token is either a Stripe Checkout session
-// ("cs_…") or a 2C2P payment token, so every later check asks the right one.
+// New website bookings always use Stripe. Keep inquiries for existing 2C2P
+// bookings working: they share the database and can still be refunded or settled.
 
-export const paymentProvider = (): PaymentProvider => (process.env.PAYMENT_PROVIDER === 'stripe' ? 'stripe' : '2c2p');
+export const paymentProvider = (): PaymentProvider => 'stripe';
 /** Stripe needs both keys: the secret one here, the publishable one for its form in the browser. */
-export const isPaymentConfigured = () => (paymentProvider() === 'stripe' ? isStripeConfigured() && !!stripePublishableKey() : isTwoC2PConfigured());
-/** No real money moves for new bookings: 2C2P's sandbox, or Stripe test keys. */
-export const isTestMode = () => (paymentProvider() === 'stripe' ? isStripeTestMode() : isTwoC2PTestMode());
+export const isPaymentConfigured = () => isStripeConfigured() && stripePublishableKey().startsWith(isStripeTestMode() ? 'pk_test_' : 'pk_live_');
+/** No real money moves for new bookings using Stripe test keys. */
+export const isTestMode = () => isStripeTestMode();
 
 type WithToken = Pick<BookingRow, 'payment_token'> | null;
 export const isStripeBooking = (row: WithToken) => !!row?.payment_token?.startsWith('cs_');

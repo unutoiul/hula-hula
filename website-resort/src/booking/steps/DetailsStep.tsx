@@ -8,7 +8,7 @@ import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
 import { CartSummary, stickyCartSx } from '../components/CartSummary';
 import { COUNTRIES } from '../countries';
-import { money, providerName, testPaymentNote } from '../format';
+import { money, testPaymentNote } from '../format';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
@@ -48,12 +48,7 @@ export function DetailsStep() {
     setSending(true);
     const result = await startPayment({ hp, elapsedMs: Math.round(performance.now() - startedAt.current) });
     if ('error' in result) { setSending(false); setError(result.error); return; }
-    // Stripe: on to our payment step, where Stripe's own form is shown.
-    if (!result.webPaymentUrl) { navigate('/book/payment'); return; }
-    // 2C2P: on to 2C2P's own payment page (the bank's 3-D Secure check only
-    // works there, not with 2C2P's form embedded in ours); it sends the guest
-    // back to /book/confirmation. The button stays busy until the page changes.
-    window.location.assign(result.webPaymentUrl);
+    navigate('/book/payment');
   };
 
   const policies = availability.data?.policies;
@@ -94,7 +89,7 @@ export function DetailsStep() {
         {shown('acceptedPolicies') && <FormHelperText id="booking-policy-error" error sx={{ ml: 4 }}>{errors.acceptedPolicies}</FormHelperText>}
       </Box>
 
-      {availability.data?.testPayments && <Alert severity="info" sx={{ mt: 2 }}>{testPaymentNote(availability.data.paymentProvider)}</Alert>}
+      {availability.data?.testPayments && <Alert severity="info" sx={{ mt: 2 }}>{testPaymentNote()}</Alert>}
       {/* If our booking can't go ahead (e.g. the payment provider is down), the
           guest can still book the same dates on SiteMinder's own engine. */}
       {error && <Alert severity="error" sx={{ mt: 2 }}>
@@ -103,9 +98,7 @@ export function DetailsStep() {
       <Box aria-busy={sending} sx={{ mt: 3, p: { xs: 2.5, sm: 3 }, border: '1px solid', borderColor: 'divider', borderRadius: '20px', bgcolor: 'background.paper', boxShadow: '0 8px 28px rgba(23,60,44,.04)' }}>
         <Typography sx={{ fontSize: 18, fontWeight: 700 }}>Ready for your getaway?</Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .5, mb: 2.5, lineHeight: 1.65 }}>
-          {availability.data?.paymentProvider === 'stripe'
-            ? 'Continue to Stripe’s secure payment form to complete your booking.'
-            : `Complete your payment on ${providerName(availability.data?.paymentProvider)}’s secure checkout page, then return for your confirmation.`}
+          Continue to Stripe’s secure payment form to complete your booking.
         </Typography>
         <Button type="submit" variant="contained" size="large" fullWidth disabled={sending || !plan}
           startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <LockRounded sx={{ fontSize: 19 }} />}
@@ -113,8 +106,8 @@ export function DetailsStep() {
           <Box component="span" role="status" sx={{ flex: 1, whiteSpace: 'nowrap', textAlign: sending ? 'center' : 'left' }}>{sending ? 'Opening checkout…' : <>Continue<Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}> to payment</Box></>}</Box>
           {!sending && <Box component="span" sx={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', fontSize: 16 }}>{money(totals.dueNow, totals.currency)}</Box>}
         </Button>
-        <Typography sx={{ fontSize: 12, color: 'text.secondary', lineHeight: 1.6, mt: 1.25, textAlign: 'center' }}>Your card details go directly to {providerName(availability.data?.paymentProvider)}.</Typography>
-        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 2.5, pt: 2.5 }}><PaymentMethods provider={availability.data?.paymentProvider ?? '2c2p'} /></Box>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary', lineHeight: 1.6, mt: 1.25, textAlign: 'center' }}>Your card details go directly to Stripe.</Typography>
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 2.5, pt: 2.5 }}><PaymentMethods /></Box>
       </Box>
     </Box>
 

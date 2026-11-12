@@ -10,7 +10,7 @@
 // leaves them out when the guest didn't give that detail.
 import { readFile } from 'node:fs/promises';
 
-const SITE_URL = { key: 'SITE_URL', type: 'string', ...(process.env.SITE_URL && { fallback_value: process.env.SITE_URL }) };
+const SITE_URL = { key: 'SITE_URL', type: 'string', fallback_value: process.env.SITE_URL || 'https://hulahularesort.com' };
 
 const TEMPLATES = [
   {
@@ -71,9 +71,6 @@ const TEMPLATES = [
       { key: 'BALANCE', type: 'string' },
       { key: 'PAID_AT', type: 'string', fallback_value: '—' },
       { key: 'PAYMENT_CHANNEL', type: 'string', fallback_value: '—' },
-      { key: 'INVOICE_NO', type: 'string' },
-      { key: 'TRAN_REF', type: 'string', fallback_value: '—' },
-      { key: 'APPROVAL_CODE', type: 'string', fallback_value: '—' },
       { key: 'PROMO_CODE', type: 'string', fallback_value: 'None' },
       { key: 'FLAGS_HTML', type: 'string', fallback_value: '' },
       { key: 'FLAGS_DISPLAY', type: 'string', fallback_value: 'none;mso-hide:all' },
@@ -104,7 +101,6 @@ const TEMPLATES = [
       { key: 'BALANCE', type: 'string' },
       { key: 'BALANCE_DISPLAY', type: 'string', fallback_value: 'none;mso-hide:all' },
       { key: 'CANCELLATION', type: 'string' },
-      { key: 'PAYMENT_REF', type: 'string' },
       { key: 'PROMO_LINE', type: 'string', fallback_value: '' },
       { key: 'PROMO_DISPLAY', type: 'string', fallback_value: 'none;mso-hide:all' },
       SITE_URL,
@@ -126,6 +122,23 @@ for (const template of TEMPLATES) {
   }
 }
 
+// Validate or export the exact upload payload without calling Resend. A
+// filtered publish avoids changing unrelated contact templates.
+const requested = process.argv.find((arg) => arg.startsWith('--only='))?.slice(7).split(',');
+const selected = requested ? TEMPLATES.filter(({ alias }) => requested.includes(alias)) : TEMPLATES;
+if (requested?.some((alias) => !TEMPLATES.some((template) => template.alias === alias))) {
+  console.error('Unknown template alias in --only.');
+  process.exit(1);
+}
+if (process.argv.includes('--json')) {
+  console.log(JSON.stringify(selected.map(({ alias, name, subject, html, variables }) => ({ alias, name, subject, html, variables }))));
+  process.exit(0);
+}
+if (process.argv.includes('--check')) {
+  console.log(`Validated ${selected.length} template(s): ${selected.map(({ alias }) => alias).join(', ')}.`);
+  process.exit(0);
+}
+
 const apiKey = process.env.RESEND_API_KEY;
 if (!apiKey) {
   console.error('Templates look good. Set RESEND_API_KEY (e.g. in .env.local) to upload them.');
@@ -141,7 +154,7 @@ async function resend(method, path, body) {
   return { status: response.status, ok: response.ok, data: await response.json().catch(() => ({})) };
 }
 
-for (const { alias, name, subject, html, variables } of TEMPLATES) {
+for (const { alias, name, subject, html, variables } of selected) {
   const template = { name, alias, subject, html, variables };
   let saved = await resend('PATCH', `/templates/${alias}`, template);
   const created = saved.status === 404;

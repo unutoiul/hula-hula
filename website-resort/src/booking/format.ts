@@ -1,15 +1,9 @@
-import type { PaymentProvider } from '../../shared/bookingContract';
-
 // Formatting for the booking pages. Dates from the API are plain
 // "YYYY-MM-DD" stay dates — read as local calendar days, never shifted by a
 // time zone.
 
-export const providerName = (provider: PaymentProvider = '2c2p') => (provider === 'stripe' ? 'Stripe' : '2C2P');
-
-/** What a guest needs to know while payments are in test mode, with the provider's own test card. */
-export const testPaymentNote = (provider: PaymentProvider = '2c2p') => (provider === 'stripe'
-  ? 'Test mode: payments go through Stripe’s test mode, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4242 4242 4242 4242 with any future expiry date and any CVC.'
-  : 'Test mode: payments go through 2C2P’s test system, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4111 1111 1111 1111, expiry 12/28, CVV 123, and code 123456 at the bank check.');
+/** What a guest needs to know when Stripe test keys are configured. */
+export const testPaymentNote = () => 'Test mode: payments go through Stripe’s test mode, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4242 4242 4242 4242 with any future expiry date and any CVC.';
 
 export function money(amount: number, currency = 'THB'): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: Number.isInteger(amount) ? 0 : 2 }).format(amount);

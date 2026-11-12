@@ -105,8 +105,7 @@ export const FLAG_LABELS: Record<string, string> = {
   amount_mismatch: 'The amount charged differs from the deposit — compare with the payment portal.',
   guest_email_failed: 'The guest’s confirmation email didn’t send — forward it or email them.',
   details_deleted: 'The guest’s details were deleted before this booking was kept — find the payer in the payment portal.',
-  test_payment: 'Test payment (2C2P’s test system or Stripe test mode): nothing was charged.',
-  preview_site: 'Made on the Stripe test site (a copy of the website), not the live site — check with the web team before entering it in SiteMinder.',
+  test_payment: 'Test payment: nothing was charged.',
 };
 
 /** Which provider took the payment, from what it left behind: Stripe's ids start "pi_" and its channels read "Stripe · …". */

@@ -11,8 +11,8 @@ import { dayLabel, guestsLabel, money, nightsLabel, plural } from '../format';
 
 const POLL_FOR_MS = 2 * 60_000;
 
-// Step 4: after paying. Asks the server until 2C2P has confirmed the payment
-// (the server checks with 2C2P itself), then shows the booking and clears what
+// Step 4: after paying. Asks the server until Stripe has confirmed the payment
+// (the server checks with Stripe itself), then shows the booking and clears what
 // this browser kept about it.
 export function ConfirmationStep() {
   const { query } = useLocation();
@@ -23,7 +23,7 @@ export function ConfirmationStep() {
   const [problem, setProblem] = useState<'missing' | 'slow' | null>(null);
   const forgotten = useRef(false);
 
-  // A key in the address (from 2C2P's redirect) moves into this tab's storage
+  // A key in the address (from Stripe's redirect) moves into this tab's storage
   // and out of the address bar.
   useEffect(() => {
     const key = query.get('key');
@@ -87,7 +87,7 @@ export function ConfirmationStep() {
       </>}
   </Box>;
 
-  // Declined (or cancelled) at 2C2P: say why, and let the guest try again with
+  // Declined (or cancelled) at Stripe: say why, and let the guest try again with
   // the same rooms and details — a fresh payment, since the last one failed.
   if (status.status === 'voided' || status.status === 'refunded') return <Box sx={card}>
     <Typography variant="h1" sx={{ fontSize: { xs: 28, md: 36 } }}>Your payment was {status.status}</Typography>

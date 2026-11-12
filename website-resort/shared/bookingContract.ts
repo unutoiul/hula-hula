@@ -5,8 +5,8 @@
 
 export type DepositType = 'full-amount' | 'first-night' | 'fixed-amount' | 'percentage' | null;
 
-/** Who takes the online payment: 2C2P, or Stripe Checkout (PAYMENT_PROVIDER=stripe). */
-export type PaymentProvider = 'stripe' | '2c2p';
+/** All new website bookings use Stripe Checkout. */
+export type PaymentProvider = 'stripe';
 
 /** Stripe's embedded form for one booking: its session's client secret and the account's publishable key. */
 export interface StripeCheckout { clientSecret: string; publishableKey: string }
@@ -66,7 +66,7 @@ export interface AvailabilityResponse {
   roomTypes: RoomTypeOffer[];
   policies: { terms: string | null; checkInTime: string | null; checkOutTime: string | null };
   maxRooms: number;
-  /** Payments run on 2C2P's sandbox or Stripe test keys: nothing is charged, the guest pays at the hotel. */
+  /** Stripe test keys are configured: nothing is charged, the guest pays at the hotel. */
   testPayments: boolean;
   paymentProvider: PaymentProvider;
 }
@@ -102,10 +102,10 @@ export type CreateBookingErrorCode = 'INVALID' | 'SOLD_OUT' | 'SITEMINDER_UNAVAI
 export type CreateBookingResponse =
   | {
     ok: true; ref: string; accessKey: string; currency: string; total: number; deposit: number; balance: number; expiresAt: string; testPayment: boolean; paymentProvider: PaymentProvider;
-    /** 2C2P's payment page to send the guest to; null with Stripe, whose form shows on our payment step. */
-    webPaymentUrl: string | null;
-    /** With Stripe: what the payment step mounts Stripe's embedded form with. */
-    stripe?: StripeCheckout;
+    /** Kept for older API clients; Stripe's form shows on our payment step. */
+    webPaymentUrl: null;
+    /** What the payment step mounts Stripe's embedded form with. */
+    stripe: StripeCheckout;
   }
   | { ok: false; code: CreateBookingErrorCode; message: string };
 

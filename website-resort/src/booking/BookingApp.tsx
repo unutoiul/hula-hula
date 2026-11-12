@@ -13,7 +13,7 @@ import { RoomsStep } from './steps/RoomsStep';
 
 // /book, /book/details, /book/payment, /book/confirmation — the on-site
 // booking flow, laid out like SiteMinder's own engine: pick rooms and rates,
-// add the guest's details, pay through 2C2P without leaving the page, and get
+// add the guest's details, pay through Stripe without leaving the page, and get
 // a confirmation. Loaded only when someone heads here (React.lazy in App).
 
 const STEPS = [
