@@ -146,7 +146,7 @@ describe('Stripe Checkout', async () => {
   const { isReversedPayment, isSuccessfulPayment } = await import('../shared/paymentStatus.ts');
   const card = (card: Record<string, unknown>) => ({ type: 'card', card });
   const session = (over: Record<string, unknown> = {}, charge: Record<string, unknown> = {}) => ({
-    id: 'cs_test_1', url: null, status: 'complete' as const, payment_status: 'paid' as const, amount_total: 1100050, currency: 'thb',
+    id: 'cs_test_1', client_secret: null, status: 'complete' as const, payment_status: 'paid' as const, amount_total: 1100050, currency: 'thb',
     metadata: { ref: 'HH7K3M9Q', invoice_no: 'WEBHH7K3M9Q' },
     payment_intent: { id: 'pi_1', latest_charge: { id: 'ch_1', amount_refunded: 0, refunded: false, currency: 'thb', payment_method_details: card({ brand: 'visa', wallet: null }), ...charge } },
     ...over,

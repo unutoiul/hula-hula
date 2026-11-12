@@ -1,6 +1,6 @@
 import type { PaymentProvider } from '../../shared/bookingContract.js';
 import type { BookingRow } from './bookings.js';
-import { isStripeConfigured, isStripeTestMode, stripeInquiry } from './stripe.js';
+import { isStripeConfigured, isStripeTestMode, stripeInquiry, stripePublishableKey } from './stripe.js';
 import { type InquiryResult, isConfigured as isTwoC2PConfigured, isTestMode as isTwoC2PTestMode, paymentInquiry } from './twoc2p.js';
 
 // Which payment provider takes new website bookings: 2C2P (the default) or
@@ -9,7 +9,8 @@ import { type InquiryResult, isConfigured as isTwoC2PConfigured, isTestMode as i
 // ("cs_…") or a 2C2P payment token, so every later check asks the right one.
 
 export const paymentProvider = (): PaymentProvider => (process.env.PAYMENT_PROVIDER === 'stripe' ? 'stripe' : '2c2p');
-export const isPaymentConfigured = () => (paymentProvider() === 'stripe' ? isStripeConfigured() : isTwoC2PConfigured());
+/** Stripe needs both keys: the secret one here, the publishable one for its form in the browser. */
+export const isPaymentConfigured = () => (paymentProvider() === 'stripe' ? isStripeConfigured() && !!stripePublishableKey() : isTwoC2PConfigured());
 /** No real money moves for new bookings: 2C2P's sandbox, or Stripe test keys. */
 export const isTestMode = () => (paymentProvider() === 'stripe' ? isStripeTestMode() : isTwoC2PTestMode());
 

@@ -1,5 +1,6 @@
 import { Box, Container, Stack, Typography } from '@mui/material';
 import { CONTACT } from '../../data/content';
+import { PaymentMethods } from '../booking/PaymentMethods';
 import { ClubMark } from '../common/ClubMark';
 import { DesignCredit } from './DesignCredit';
 import { MotionToggleLink } from './MotionToggle';
@@ -22,7 +23,10 @@ export function Footer() {
         <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
           <a href={CONTACT.tel}>{CONTACT.phone}</a> · <a href={CONTACT.landlineTel}>{CONTACT.landline}</a><br /><Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>{CONTACT.email}</Box>
         </Typography>
-          <Typography variant="overline">© {new Date().getFullYear()} Hula Hula Resort<MotionToggleLink /></Typography>
+        <Box sx={{ pt: 2.5, pb: .5, borderTop: '1px solid rgba(23,60,44,.16)', width: '100%', maxWidth: 380 }}>
+          <PaymentMethods centered />
+        </Box>
+        <Typography variant="overline">© {new Date().getFullYear()} Hula Hula Resort<MotionToggleLink /></Typography>
         <DesignCredit />
       </Stack>
     </Container>

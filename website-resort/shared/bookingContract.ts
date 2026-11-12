@@ -8,6 +8,9 @@ export type DepositType = 'full-amount' | 'first-night' | 'fixed-amount' | 'perc
 /** Who takes the online payment: 2C2P, or Stripe Checkout (PAYMENT_PROVIDER=stripe). */
 export type PaymentProvider = 'stripe' | '2c2p';
 
+/** Stripe's embedded form for one booking: its session's client secret and the account's publishable key. */
+export interface StripeCheckout { clientSecret: string; publishableKey: string }
+
 /** How many people one room can take. `children` 0 means the room isn't set up
  * for children separately, so a child simply takes an adult's place. */
 export interface RoomCapacity { guests: number; adults: number; children: number }
@@ -97,7 +100,13 @@ export interface CreateBookingRequest {
 export type CreateBookingErrorCode = 'INVALID' | 'SOLD_OUT' | 'SITEMINDER_UNAVAILABLE' | 'PAYMENT_UNAVAILABLE' | 'NOT_CONFIGURED';
 
 export type CreateBookingResponse =
-  | { ok: true; ref: string; accessKey: string; webPaymentUrl: string; currency: string; total: number; deposit: number; balance: number; expiresAt: string; testPayment: boolean; paymentProvider: PaymentProvider }
+  | {
+    ok: true; ref: string; accessKey: string; currency: string; total: number; deposit: number; balance: number; expiresAt: string; testPayment: boolean; paymentProvider: PaymentProvider;
+    /** 2C2P's payment page to send the guest to; null with Stripe, whose form shows on our payment step. */
+    webPaymentUrl: string | null;
+    /** With Stripe: what the payment step mounts Stripe's embedded form with. */
+    stripe?: StripeCheckout;
+  }
   | { ok: false; code: CreateBookingErrorCode; message: string };
 
 /** What the guest's browser may see. `confirmed` = paid and handed to the

@@ -1,7 +1,8 @@
 import LockRounded from '@mui/icons-material/LockRounded';
 import West from '@mui/icons-material/West';
-import { Alert, Autocomplete, Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, FormHelperText, Link, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Autocomplete, Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, FormHelperText, Link, MenuItem, TextField, Typography } from '@mui/material';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { PaymentMethods } from '../../components/booking/PaymentMethods';
 import { useBookingSearch } from '../../context/BookingSearchContext';
 import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
@@ -40,16 +41,18 @@ export function DetailsStep() {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    if (sending) return;
     setTriedSubmit(true);
     setError(null);
     if (Object.values(errors).some(Boolean) || !plan) return;
     setSending(true);
     const result = await startPayment({ hp, elapsedMs: Math.round(performance.now() - startedAt.current) });
     if ('error' in result) { setSending(false); setError(result.error); return; }
-    // On to the provider's own payment page (2C2P's or Stripe's; the bank's
-    // 3-D Secure check only works there, not with a form embedded in ours); it
-    // sends the guest back to /book/confirmation. The button stays busy until
-    // the page changes.
+    // Stripe: on to our payment step, where Stripe's own form is shown.
+    if (!result.webPaymentUrl) { navigate('/book/payment'); return; }
+    // 2C2P: on to 2C2P's own payment page (the bank's 3-D Secure check only
+    // works there, not with 2C2P's form embedded in ours); it sends the guest
+    // back to /book/confirmation. The button stays busy until the page changes.
     window.location.assign(result.webPaymentUrl);
   };
 
@@ -83,11 +86,12 @@ export function DetailsStep() {
         </Box>
       </Box>
 
-      <Box sx={{ mt: 3 }}>
+      <Box sx={{ mt: 3, p: { xs: 2.5, sm: 3 }, border: '1px solid', borderColor: shown('acceptedPolicies') ? 'error.main' : 'divider', borderRadius: '20px', bgcolor: 'background.paper' }}>
         {cancellations.map((text) => <Typography key={text} sx={{ fontSize: 14, color: 'text.secondary', mb: 1 }}><strong>Cancellation:</strong> {text}</Typography>)}
-        <FormControlLabel control={<Checkbox checked={guest.acceptedPolicies} onChange={(e) => updateGuest({ acceptedPolicies: e.target.checked })} />}
-          label={<Typography sx={{ fontSize: 14 }}>I accept the <Link component="button" type="button" onClick={(e) => { e.preventDefault(); setPolicyOpen(true); }}>booking conditions</Link> and the cancellation terms above.</Typography>} />
-        {shown('acceptedPolicies') && <FormHelperText error>{errors.acceptedPolicies}</FormHelperText>}
+        <FormControlLabel sx={{ m: 0, alignItems: 'flex-start', gap: .25, '& .MuiCheckbox-root': { p: 1, mt: -.8, ml: -1 }, '& .MuiFormControlLabel-label': { minWidth: 0 } }}
+          control={<Checkbox checked={guest.acceptedPolicies} onChange={(e) => updateGuest({ acceptedPolicies: e.target.checked })} slotProps={{ input: { 'aria-describedby': shown('acceptedPolicies') ? 'booking-policy-error' : undefined } }} />}
+          label={<Typography sx={{ fontSize: 13.5, lineHeight: 1.7 }}>I accept the <Link component="button" type="button" onClick={(e) => { e.preventDefault(); setPolicyOpen(true); }} sx={{ fontSize: 'inherit', verticalAlign: 'baseline' }}>booking conditions</Link> and the cancellation terms above.</Typography>} />
+        {shown('acceptedPolicies') && <FormHelperText id="booking-policy-error" error sx={{ ml: 4 }}>{errors.acceptedPolicies}</FormHelperText>}
       </Box>
 
       {availability.data?.testPayments && <Alert severity="info" sx={{ mt: 2 }}>{testPaymentNote(availability.data.paymentProvider)}</Alert>}
@@ -96,12 +100,22 @@ export function DetailsStep() {
       {error && <Alert severity="error" sx={{ mt: 2 }}>
         {error} <Link href={siteMinderUrl} target="_blank" rel="noopener" sx={{ fontWeight: 700 }}>Or book the same dates on our partner booking page</Link>.
       </Alert>}
-      <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} spacing={2} sx={{ mt: 3 }}>
-        <Button type="submit" variant="contained" size="large" disabled={sending || !plan} startIcon={<LockRounded />}>
-          {sending ? 'Taking you to secure payment…' : `Continue to secure payment · ${money(totals.dueNow, totals.currency)}`}
+      <Box aria-busy={sending} sx={{ mt: 3, p: { xs: 2.5, sm: 3 }, border: '1px solid', borderColor: 'divider', borderRadius: '20px', bgcolor: 'background.paper', boxShadow: '0 8px 28px rgba(23,60,44,.04)' }}>
+        <Typography sx={{ fontSize: 18, fontWeight: 700 }}>Ready for your getaway?</Typography>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .5, mb: 2.5, lineHeight: 1.65 }}>
+          {availability.data?.paymentProvider === 'stripe'
+            ? 'Continue to Stripe’s secure payment form to complete your booking.'
+            : `Complete your payment on ${providerName(availability.data?.paymentProvider)}’s secure checkout page, then return for your confirmation.`}
+        </Typography>
+        <Button type="submit" variant="contained" size="large" fullWidth disabled={sending || !plan}
+          startIcon={sending ? <CircularProgress size={18} color="inherit" /> : <LockRounded sx={{ fontSize: 19 }} />}
+          sx={{ minHeight: 56, borderRadius: '12px', px: { xs: 2, sm: 2.5 }, gap: 1, fontSize: 14, '& .MuiButton-startIcon': { mr: .25 }, ...(sending ? { '&.Mui-disabled': { bgcolor: 'primary.main', color: '#fff', opacity: .8 } } : {}) }}>
+          <Box component="span" role="status" sx={{ flex: 1, whiteSpace: 'nowrap', textAlign: sending ? 'center' : 'left' }}>{sending ? 'Opening checkout…' : <>Continue<Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}> to payment</Box></>}</Box>
+          {!sending && <Box component="span" sx={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', fontSize: 16 }}>{money(totals.dueNow, totals.currency)}</Box>}
         </Button>
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>You’ll pay on {providerName(availability.data?.paymentProvider)}’s secure page and come straight back here. Your card details never touch our website.</Typography>
-      </Stack>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary', lineHeight: 1.6, mt: 1.25, textAlign: 'center' }}>Your card details go directly to {providerName(availability.data?.paymentProvider)}.</Typography>
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 2.5, pt: 2.5 }}><PaymentMethods provider={availability.data?.paymentProvider ?? '2c2p'} /></Box>
+      </Box>
     </Box>
 
     <Box sx={stickyCartSx}>

@@ -12,7 +12,7 @@ import { maxRoomsPerBooking, type PricedRate, priceQuotes } from '../_lib/rooms.
 import { MAX_ADULTS, MAX_CHILDREN, parseStay } from '../_lib/search.js';
 import { getCatalog, getQuotes, SiteMinderError } from '../_lib/siteminder.js';
 import { isPaymentConfigured, isTestMode, paymentProvider } from '../_lib/payments.js';
-import { createCheckoutSession } from '../_lib/stripe.js';
+import { createCheckoutSession, stripePublishableKey } from '../_lib/stripe.js';
 import { createPaymentToken } from '../_lib/twoc2p.js';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -134,17 +134,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const roomCount = rooms.length;
   const description = `Hula Hula Resort · ${roomCount} room${roomCount === 1 ? '' : 's'} · ${shortDate.format(new Date(`${stay.checkIn}T00:00:00Z`))} – ${shortDate.format(new Date(`${stay.checkOut}T00:00:00Z`))} · ${booking.ref}`;
   try {
-    const { webPaymentUrl, paymentToken } = provider === 'stripe'
-      // Stripe's page sends the guest straight to their confirmation, which
-      // checks with Stripe itself; leaving the page goes back to the payment
-      // step. It closes a minute after the hold, so Stripe's 30-minute
-      // minimum is met even with a little clock drift.
+    const { webPaymentUrl, paymentToken, stripe } = provider === 'stripe'
+      // Stripe's form is shown inside our payment step; once the guest has
+      // paid, Stripe sends them to their confirmation, which checks with
+      // Stripe itself. The form closes a minute after the hold, so Stripe's
+      // 30-minute minimum is met even with a little clock drift.
       ? await createCheckoutSession({
         invoiceNo: booking.invoice_no, ref: booking.ref, description,
         amount: fromSatang(depositSatang), currencyCode: currency, expiresAt: new Date(expiresAt.getTime() + 60_000),
-        successUrl: `${site}/book/confirmation?ref=${booking.ref}&key=${accessKey}`, cancelUrl: `${site}/book/payment`,
+        returnUrl: `${site}/book/confirmation?ref=${booking.ref}&key=${accessKey}`,
         email: guest.email,
-      }).then(({ id, url }) => ({ webPaymentUrl: url, paymentToken: id }))
+      }).then(({ id, clientSecret }) => ({ webPaymentUrl: null, paymentToken: id, stripe: { clientSecret, publishableKey: stripePublishableKey() } }))
       : await createPaymentToken({
         invoiceNo: booking.invoice_no,
         description,
@@ -155,13 +155,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         backendReturnUrl: withPreviewBypass(`${site}/api/payment/2c2p-backend`),
         ref: booking.ref,
         guest: { name: `${guest.firstName} ${guest.lastName}`, email: guest.email, country: guest.country },
-      });
+      }).then((token) => ({ ...token, stripe: undefined }));
     await updateWhere(`id=eq.${booking.id}`, { payment_token: paymentToken });
     console.info('Booking pending payment', booking.ref, booking.invoice_no, provider);
     return res.status(200).json({
       ok: true, ref: booking.ref, accessKey, webPaymentUrl, currency,
       total: fromSatang(totalSatang), deposit: fromSatang(depositSatang), balance: fromSatang(totalSatang - depositSatang),
-      expiresAt: expiresAt.toISOString(), testPayment: isTestMode(), paymentProvider: provider,
+      expiresAt: expiresAt.toISOString(), testPayment: isTestMode(), paymentProvider: provider, ...(stripe && { stripe }),
     } satisfies CreateBookingResponse);
   } catch (error) {
     console.error(`Booking: ${provider} payment page failed`, booking.ref, error);

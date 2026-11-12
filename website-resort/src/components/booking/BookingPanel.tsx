@@ -3,6 +3,7 @@ import { useBookingSearch } from '../../context/BookingSearchContext';
 import { fonts } from '../../theme';
 import { CheckAvailabilityButton } from './CheckAvailabilityButton';
 import { GuestStepper } from './GuestStepper';
+import { PaymentMethods } from './PaymentMethods';
 import { RangeCalendar } from './RangeCalendar';
 
 const panelDateFmt = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -58,5 +59,6 @@ export function BookingPanel() {
         <Box sx={{ mt: 3 }}><CheckAvailabilityButton /></Box>
       </Box>
     </Box>
+    <Box sx={{ mt: 2.5 }}><PaymentMethods centered compact /></Box>
   </>;
 }

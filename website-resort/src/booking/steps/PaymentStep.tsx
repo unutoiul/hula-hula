@@ -3,18 +3,18 @@ import TimerOutlined from '@mui/icons-material/TimerOutlined';
 import West from '@mui/icons-material/West';
 import { Alert, Box, Button, Chip, Divider, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { PaymentMethods } from '../../components/booking/PaymentMethods';
 import { navigate } from '../../router';
-import { fonts } from '../../theme';
 import { useBookingFlow } from '../BookingFlowContext';
+import { StripeEmbeddedCheckout } from '../components/StripeEmbeddedCheckout';
 import { money, providerName, testPaymentNote } from '../format';
 
-// Step 3: pay. The guest pays on the provider's own secure page (2C2P's, or
-// Stripe's) — the bank's 3-D Secure check fails when a payment form is
-// embedded in another site, since the browser blocks the provider's cookies
-// there — and the provider sends them back to /book/confirmation. "Continue to
-// secure payment" on the details step goes straight there; this page is where
-// a guest lands if they come back before paying (Stripe's "back" link leads
-// here), with the same amount (worked out by the server) and the hold timer.
+// Step 3: pay, with the amount (worked out by the server) and the hold timer.
+// With Stripe, its own embedded form is right here and Stripe moves the guest
+// on to /book/confirmation once paid. With 2C2P the guest pays on 2C2P's own
+// page — its bank 3-D Secure check fails when 2C2P's form is embedded in
+// another site — so "Continue to secure payment" goes straight there, and this
+// page is only where a guest lands if they come back before paying.
 export function PaymentStep() {
   const { payment, totals } = useBookingFlow();
   const remaining = useCountdown(payment?.expiresAt);
@@ -29,7 +29,7 @@ export function PaymentStep() {
       <Button onClick={() => navigate('/book/details')} startIcon={<West />} size="small" sx={{ mb: 1, minHeight: 0 }}>Edit details</Button>
       <Typography variant="h1" sx={{ fontSize: { xs: 34, md: 46 }, lineHeight: 1.1 }}>Secure payment</Typography>
       <Typography sx={{ color: 'text.secondary', mt: 1, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <LockRounded sx={{ fontSize: 18 }} /> Paid through {name} — card details go straight to them, never to us.
+        <LockRounded sx={{ fontSize: 18, flexShrink: 0 }} /> Secure checkout with {name}. Your card details stay protected.
       </Typography>
 
       {payment.testPayment && <Alert severity="info" sx={{ mb: 2 }}>{testPaymentNote(provider)} A real card won’t work here.</Alert>}
@@ -39,20 +39,24 @@ export function PaymentStep() {
         : <Box sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 16px 36px rgba(23,60,44,.07)' }}>
           <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1.25} sx={{ px: { xs: 2.5, sm: 3 }, py: 2, bgcolor: 'success.light', borderBottom: '1px solid', borderColor: 'divider' }}>
             <Box>
-              <Typography sx={{ fontFamily: fonts.playful, fontSize: 20, lineHeight: 1.2 }}>Pay {money(payment.deposit, payment.currency)} now</Typography>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .25 }}>{provider === 'stripe' ? 'Card, Apple Pay or PromptPay QR' : 'Card, PromptPay QR or mobile banking'}</Typography>
+              <Typography sx={{ fontSize: 20, fontWeight: 700, lineHeight: 1.3, fontVariantNumeric: 'tabular-nums' }}>Pay {money(payment.deposit, payment.currency)} now</Typography>
+              <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: .5 }}>Choose an available payment method below</Typography>
             </Box>
             {remaining !== null && <Chip role="timer" icon={<TimerOutlined />} size="small"
               label={`Rooms held ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`}
               sx={{ alignSelf: { xs: 'flex-start', sm: 'center' }, fontWeight: 700, fontVariantNumeric: 'tabular-nums', bgcolor: remaining < 120 ? 'secondary.main' : 'background.paper', border: '1px solid', borderColor: 'divider' }} />}
           </Stack>
-          <Box sx={{ p: { xs: 2.5, sm: 3 } }}>
-            <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-              You’ll finish paying on {name}’s secure payment page, where your bank may ask you to confirm with a code. Afterwards you come straight back here to your confirmation.
-            </Typography>
-            <Button variant="contained" size="large" startIcon={<LockRounded />} onClick={() => window.location.assign(payment.webPaymentUrl)} sx={{ mt: 2.5 }}>
-              Pay {money(payment.deposit, payment.currency)} securely
-            </Button>
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
+            {payment.stripe
+              ? <StripeEmbeddedCheckout checkout={payment.stripe} />
+              : <>
+                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+                  You’ll finish paying on {name}’s secure payment page, where your bank may ask you to confirm with a code. Afterwards you come straight back here to your confirmation.
+                </Typography>
+                {payment.webPaymentUrl && <Button variant="contained" size="large" startIcon={<LockRounded />} onClick={() => window.location.assign(payment.webPaymentUrl!)} sx={{ mt: 2.5 }}>
+                  Pay {money(payment.deposit, payment.currency)} securely
+                </Button>}
+              </>}
           </Box>
         </Box>}
     </Box>
@@ -65,8 +69,9 @@ export function PaymentStep() {
           {payment.balance > 0 && <Stack direction="row" justifyContent="space-between"><Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Pay at the hotel</Typography><Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{money(payment.balance, payment.currency)}</Typography></Stack>}
         </Stack>
         <Divider sx={{ my: 2 }} />
-        <Stack direction="row" justifyContent="space-between" alignItems="baseline"><Typography sx={{ fontWeight: 700 }}>Pay now</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 26 }}>{money(payment.deposit, payment.currency)}</Typography></Stack>
-        <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>Confirmation goes to {payment.email}.</Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="baseline" spacing={1}><Typography sx={{ fontWeight: 700 }}>Due now</Typography><Typography sx={{ fontSize: 26, fontWeight: 700, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', letterSpacing: '-.8px' }}>{money(payment.deposit, payment.currency)}</Typography></Stack>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1, lineHeight: 1.6, overflowWrap: 'anywhere' }}>Confirmation goes to {payment.email}.</Typography>
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 2.5, pt: 2.5 }}><PaymentMethods provider={provider} compact /></Box>
       </Box>
     </Box>
   </Box>;

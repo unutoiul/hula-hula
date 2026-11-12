@@ -1,9 +1,10 @@
 import type { InquiryResult } from './twoc2p.js';
 
-// Stripe Checkout (https://docs.stripe.com/api/checkout/sessions): Stripe's
-// own hosted payment page, the counterpart of 2C2P's. Plain fetch with
-// form-encoded bodies, like the rest of api/. Used for new bookings only when
-// PAYMENT_PROVIDER=stripe (see payments.ts).
+// Stripe Checkout (https://docs.stripe.com/api/checkout/sessions), embedded:
+// Stripe's payment form shows inside our own payment step (ui_mode
+// "embedded_page"), and Stripe sends the guest to their confirmation when
+// they've paid. Plain fetch with form-encoded bodies, like the rest of api/.
+// Used for new bookings only when PAYMENT_PROVIDER=stripe (see payments.ts).
 //
 // Stripe's answers are translated into the reply codes the booking code
 // already understands from 2C2P (shared/paymentStatus.ts): 0000 paid, 4120
@@ -26,6 +27,8 @@ const secretKey = () => process.env.STRIPE_SECRET_KEY ?? '';
 export const isStripeConfigured = () => /^(sk|rk)_(live|test)_/.test(secretKey());
 /** Test keys: Stripe's test cards only, nothing is charged. */
 export const isStripeTestMode = () => /^(sk|rk)_test_/.test(secretKey());
+/** The public key the browser shows Stripe's form with (safe to hand out). */
+export const stripePublishableKey = () => (/^pk_(live|test)_/.test(process.env.STRIPE_PUBLISHABLE_KEY ?? '') ? process.env.STRIPE_PUBLISHABLE_KEY! : '');
 
 /** Stripe's form encoding: nested objects and arrays become key[sub][0]=value. */
 export function formEncode(value: Record<string, unknown>, prefix = '', out = new URLSearchParams()): URLSearchParams {
@@ -72,7 +75,8 @@ interface StripePaymentIntent { id: string; latest_charge?: StripeCharge | strin
 
 export interface StripeCheckoutSession {
   id: string;
-  url: string | null;
+  /** What the browser mounts Stripe's embedded form with. */
+  client_secret?: string | null;
   status: 'open' | 'complete' | 'expired' | null;
   payment_status: 'paid' | 'unpaid' | 'no_payment_required';
   amount_total: number | null;
@@ -90,29 +94,30 @@ export interface CheckoutRequest {
   currencyCode: string;
   /** Stripe needs at least 30 minutes and at most 24 hours from now. */
   expiresAt: Date;
-  successUrl: string;
-  cancelUrl: string;
+  /** Where Stripe sends the guest once they've paid: their confirmation. */
+  returnUrl: string;
   email: string;
 }
 
-/** Opens a Stripe Checkout page for exactly this amount; the page and the session id come back. */
-export async function createCheckoutSession(request: CheckoutRequest): Promise<{ id: string; url: string }> {
+/** Starts an embedded Stripe Checkout for exactly this amount; the session id and the browser's client secret come back. */
+export async function createCheckoutSession(request: CheckoutRequest): Promise<{ id: string; clientSecret: string }> {
   const description = request.description.slice(0, 250);
   const metadata = { ref: request.ref, invoice_no: request.invoiceNo };
   const session = await call<StripeCheckoutSession>('POST', '/checkout/sessions', {
     mode: 'payment',
+    ui_mode: 'embedded_page',
     line_items: [{ quantity: 1, price_data: { currency: request.currencyCode.toLowerCase(), unit_amount: Math.round(request.amount * 100), product_data: { name: description } } }],
     customer_email: request.email,
     client_reference_id: request.ref,
     metadata,
     payment_intent_data: { description, metadata },
     expires_at: Math.floor(request.expiresAt.getTime() / 1000),
-    success_url: request.successUrl,
-    cancel_url: request.cancelUrl,
+    return_url: request.returnUrl,
+    submit_type: 'book',
     locale: 'auto',
   }, `checkout-${request.invoiceNo}`);
-  if (!session.url) throw new StripeError(502, 'Stripe returned no payment page');
-  return { id: session.id, url: session.url };
+  if (!session.client_secret) throw new StripeError(502, 'Stripe returned no payment form');
+  return { id: session.id, clientSecret: session.client_secret };
 }
 
 const BRANDS: Record<string, string> = { visa: 'Visa', mastercard: 'Mastercard', amex: 'American Express', jcb: 'JCB', unionpay: 'UnionPay', diners: 'Diners Club', discover: 'Discover' };

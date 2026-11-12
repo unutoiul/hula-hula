@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { AvailabilityResponse, PaymentProvider, RateOffer, RoomTypeOffer } from '../../shared/bookingContract';
+import type { AvailabilityResponse, PaymentProvider, RateOffer, RoomTypeOffer, StripeCheckout } from '../../shared/bookingContract';
 import { distributeGuests, type Occupancy } from '../../shared/occupancy';
 import { toISODate, useBookingSearch } from '../context/BookingSearchContext';
 import { useLocation } from '../router';
@@ -21,7 +21,10 @@ export interface GuestForm {
 }
 
 export interface PaymentSession {
-  ref: string; accessKey: string; webPaymentUrl: string; currency: string;
+  ref: string; accessKey: string; currency: string;
+  /** 2C2P's page to pay on; null with Stripe, whose form shows on the payment step. */
+  webPaymentUrl: string | null;
+  stripe?: StripeCheckout;
   total: number; deposit: number; balance: number; expiresAt: string;
   email: string; signature: string; testPayment?: boolean;
   /** Missing on a payment saved before Stripe existed: that was 2C2P. */
@@ -49,8 +52,8 @@ interface BookingFlow {
   guest: GuestForm;
   updateGuest: (patch: Partial<GuestForm>) => void;
   payment: PaymentSession | null;
-  /** Holds the rooms and starts a payment: gives back the provider's payment page (2C2P or Stripe), or why it couldn't. */
-  startPayment: (extras: { hp: string; elapsedMs: number }) => Promise<{ webPaymentUrl: string } | { error: string }>;
+  /** Holds the rooms and starts a payment: gives back 2C2P's payment page (null with Stripe, whose form is on the payment step), or why it couldn't. */
+  startPayment: (extras: { hp: string; elapsedMs: number }) => Promise<{ webPaymentUrl: string | null } | { error: string }>;
   /** After a declined payment: drop the old payment so the next try starts a fresh one. */
   resetPayment: () => void;
   /** Empty the room selection (and drop any payment started for it). */
@@ -202,7 +205,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
 
   const updateGuest = useCallback((patch: Partial<GuestForm>) => setGuest((current) => ({ ...current, ...patch })), []);
 
-  const startPayment = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }): Promise<{ webPaymentUrl: string } | { error: string }> => {
+  const startPayment = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }): Promise<{ webPaymentUrl: string | null } | { error: string }> => {
     if (!plan || expanded.length === 0) return { error: 'Please choose rooms that fit everyone first.' };
     const rooms = expanded.map(({ rate }, index) => ({ roomRateUuid: rate.roomRateUuid, adults: plan[index].adults, children: plan[index].children }));
     const details = {
@@ -224,7 +227,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     }
     accessKeyStore.set(response.ref, response.accessKey);
     const session: PaymentSession = {
-      ref: response.ref, accessKey: response.accessKey, webPaymentUrl: response.webPaymentUrl, currency: response.currency,
+      ref: response.ref, accessKey: response.accessKey, webPaymentUrl: response.webPaymentUrl, stripe: response.stripe, currency: response.currency,
       total: response.total, deposit: response.deposit, balance: response.balance, expiresAt: response.expiresAt,
       email: details.email, signature, testPayment: response.testPayment, provider: response.paymentProvider,
     };
