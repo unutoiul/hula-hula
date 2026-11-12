@@ -86,7 +86,7 @@ export const offersConfig: ContentConfig = {
     { key: 'show_on_homepage', label: 'Show as a card on the homepage', kind: 'switch', helper: 'Switch off for a secret promo-code offer' },
 
     { key: 's-deal', label: 'Discount & perks', kind: 'section', helper: 'Use a discount, perks, or both. A perks-only offer is a package.' },
-    { key: 'discount_percent', label: 'Discount', kind: 'number', min: 0, max: 90, unit: '%', helper: 'Off the room price, on the nights inside the stay dates' },
+    { key: 'discount_percent', label: 'Discount', kind: 'number', min: 0, max: 99, unit: '%', helper: 'Off the room price, on the nights inside the stay dates' },
     { key: 'perks', label: 'Perks included', kind: 'tags', suggestions: PERK_SUGGESTIONS, helper: 'Pick from the list or type your own and press Enter (up to 8)' },
 
     { key: 's-when', label: 'When it applies', kind: 'section', helper: 'Leave any of these empty for no limit.' },
