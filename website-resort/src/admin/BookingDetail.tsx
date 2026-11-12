@@ -16,8 +16,8 @@ import { useState, type ReactNode } from 'react';
 import { countryName } from '../booking/countries';
 import { dayLabel, guestsLabel, mealsLabel, money, nightsLabel, plural } from '../booking/format';
 import {
-  type Badge, channelName, type DeskBooking, FLAG_LABELS, guestCount, guestName, isPaid, isReversed, isTest, nightCount, paymentBadge, savingsOf,
-  siteMinderBadge, siteMinderText, stampLabel,
+  type Badge, channelName, type DeskBooking, FLAG_LABELS, guestCount, guestName, isPaid, isReversed, isTest, nightCount, paymentBadge, paymentPortal,
+  paymentProviderOf, savingsOf, siteMinderBadge, siteMinderText, stampLabel,
 } from './bookingModel';
 import { InfoButton } from './InfoButton';
 import { supabase } from './supabase';
@@ -57,6 +57,8 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
   const paid = isPaid(b);
   const reversed = isReversed(b);
   const sm = siteMinderBadge(b);
+  const provider = paymentProviderOf(b);
+  const portal = paymentPortal(provider);
   const phoneDigits = b.guest_phone?.replace(/[^\d]/g, '') ?? '';
 
   const act = async (work: () => PromiseLike<{ error: { message: string } | null }>, done?: string) => {
@@ -82,12 +84,12 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
       });
       if (!response.ok) {
         const result = await response.json().catch(() => ({})) as { error?: string };
-        throw new Error(result.error || 'Could not check 2C2P right now.');
+        throw new Error(result.error || `Could not check ${provider} right now.`);
       }
       await onChanged();
-      setToast('Payment status checked with 2C2P');
+      setToast(`Payment status checked with ${provider}`);
     } catch (problem) {
-      setError(problem instanceof Error ? problem.message : 'Could not check 2C2P right now.');
+      setError(problem instanceof Error ? problem.message : `Could not check ${provider} right now.`);
     } finally { setBusy(false); }
   };
 
@@ -162,23 +164,23 @@ function DetailBody({ b, onClose, onChanged }: { b: DeskBooking; onClose: () => 
           </Stack>
         </Section>
 
-        <Section title="Payment" info={<p>Payments go through 2C2P. To refund or void one, find the 2C2P transaction number below in the 2C2P merchant portal.</p>}>
-          {reversed && <Alert severity="warning" sx={{ mb: 2 }}>2C2P reports this payment as {paymentBadge(b).label.toLowerCase()}. Check the amount in the portal and review the reservation in SiteMinder. The payment change does not cancel the stay automatically.</Alert>}
+        <Section title="Payment" info={<p>This payment went through {provider}. To refund or void it, find the {provider} transaction number below in {portal}.</p>}>
+          {reversed && <Alert severity="warning" sx={{ mb: 2 }}>{provider} reports this payment as {paymentBadge(b).label.toLowerCase()}. Check the amount in the portal and review the reservation in SiteMinder. The payment change does not cancel the stay automatically.</Alert>}
           <Rows rows={[
             ['Status', <StatusChip key="s" badge={paymentBadge(b)} />],
-            [reversed ? 'Original payment' : 'Paid online', reversed ? (b.paid_amount === null ? 'Check the 2C2P portal' : money(b.paid_amount, b.currency)) : paid ? money(b.paid_amount ?? b.deposit_amount, b.currency) : `${money(b.deposit_amount, b.currency)} due — not paid`],
+            [reversed ? 'Original payment' : 'Paid online', reversed ? (b.paid_amount === null ? `Check ${portal}` : money(b.paid_amount, b.currency)) : paid ? money(b.paid_amount ?? b.deposit_amount, b.currency) : `${money(b.deposit_amount, b.currency)} due — not paid`],
             ['Total for the stay', money(b.total_amount, b.currency)],
             ['To pay at the hotel', reversed ? 'Confirm with reservations after reviewing the reversal' : b.balance_amount > 0 ? money(b.balance_amount, b.currency) : paid ? 'Nothing — paid in full' : null],
             ['Offer savings', savingsOf(b) > 0 ? money(savingsOf(b), b.currency) : null],
             ['Paid with', channelName(b.channel_code)],
             ['Paid at', b.paid_at && stampLabel(b.paid_at)],
-            ['2C2P transaction', b.tran_ref],
+            [`${provider} transaction`, b.tran_ref],
             ['Approval code', b.approval_code],
             ['Invoice number', b.invoice_no],
             ['Payment last checked', b.last_inquiry_at && stampLabel(b.last_inquiry_at)],
-            ['2C2P reply', !paid && b.resp_code ? `${b.resp_code}${b.resp_desc ? ` · ${b.resp_desc}` : ''}` : null],
+            [`${provider} reply`, !paid && b.resp_code ? `${b.resp_code}${b.resp_desc ? ` · ${b.resp_desc}` : ''}` : null],
           ]} />
-          <Button variant="outlined" size="small" disabled={busy} onClick={() => void refreshPayment()} sx={{ mt: 2 }}>{busy ? 'Checking…' : 'Check 2C2P status'}</Button>
+          <Button variant="outlined" size="small" disabled={busy} onClick={() => void refreshPayment()} sx={{ mt: 2 }}>{busy ? 'Checking…' : `Check ${provider} status`}</Button>
         </Section>
 
         {(paid || reversed) && <Section title="SiteMinder" info={<p>SiteMinder doesn’t accept bookings from the website yet, so each paid booking is emailed to reservations to enter by hand. Press “Entered in SiteMinder” once it’s in — until then the website keeps the room off sale so it isn’t sold twice.</p>}>

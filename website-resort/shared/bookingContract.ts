@@ -5,6 +5,9 @@
 
 export type DepositType = 'full-amount' | 'first-night' | 'fixed-amount' | 'percentage' | null;
 
+/** Who takes the online payment: 2C2P, or Stripe Checkout (PAYMENT_PROVIDER=stripe). */
+export type PaymentProvider = 'stripe' | '2c2p';
+
 /** How many people one room can take. `children` 0 means the room isn't set up
  * for children separately, so a child simply takes an adult's place. */
 export interface RoomCapacity { guests: number; adults: number; children: number }
@@ -60,8 +63,9 @@ export interface AvailabilityResponse {
   roomTypes: RoomTypeOffer[];
   policies: { terms: string | null; checkInTime: string | null; checkOutTime: string | null };
   maxRooms: number;
-  /** Payments run on 2C2P's sandbox: nothing is charged, the guest pays at the hotel. */
+  /** Payments run on 2C2P's sandbox or Stripe test keys: nothing is charged, the guest pays at the hotel. */
   testPayments: boolean;
+  paymentProvider: PaymentProvider;
 }
 
 export interface GuestDetails {
@@ -93,7 +97,7 @@ export interface CreateBookingRequest {
 export type CreateBookingErrorCode = 'INVALID' | 'SOLD_OUT' | 'SITEMINDER_UNAVAILABLE' | 'PAYMENT_UNAVAILABLE' | 'NOT_CONFIGURED';
 
 export type CreateBookingResponse =
-  | { ok: true; ref: string; accessKey: string; webPaymentUrl: string; currency: string; total: number; deposit: number; balance: number; expiresAt: string; testPayment: boolean }
+  | { ok: true; ref: string; accessKey: string; webPaymentUrl: string; currency: string; total: number; deposit: number; balance: number; expiresAt: string; testPayment: boolean; paymentProvider: PaymentProvider }
   | { ok: false; code: CreateBookingErrorCode; message: string };
 
 /** What the guest's browser may see. `confirmed` = paid and handed to the
@@ -117,6 +121,6 @@ export interface BookingStatusResponse {
   expiresAt: string;
   /** When status is "failed": why, in words a guest understands. */
   failureReason?: string;
-  /** Paid on 2C2P's sandbox: nothing was charged, everything is paid at the hotel. */
+  /** Paid on 2C2P's sandbox or with Stripe test keys: nothing was charged, everything is paid at the hotel. */
   testPayment?: boolean;
 }

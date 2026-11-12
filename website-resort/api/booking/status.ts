@@ -6,7 +6,7 @@ import { confirmPayment } from '../_lib/finalize.js';
 import { allowMethods, queryString } from '../_lib/http.js';
 import { ACCESS_KEY_PATTERN, REF_PATTERN, sha256Hex } from '../_lib/ids.js';
 import { nightsBetween } from '../_lib/search.js';
-import { isTestMode } from '../_lib/twoc2p.js';
+import { isTestPayment } from '../_lib/payments.js';
 import { isReversedPayment, isSuccessfulPayment, paymentStatus } from '../../shared/paymentStatus.js';
 
 const INQUIRY_EVERY_MS = 5_000;
@@ -14,8 +14,9 @@ const INQUIRY_EVERY_MS = 5_000;
 // GET /api/booking/status?ref&key — what /book/confirmation polls after the
 // guest pays. Only the browser that started the booking has its key, and the
 // answer never includes personal details. While a booking is still pending it
-// asks 2C2P directly (at most every few seconds), so a confirmation never
-// depends on 2C2P's notification arriving — or reaching us at all.
+// asks the payment provider (2C2P or Stripe) directly, at most every few
+// seconds, so a confirmation never depends on its notification arriving — or
+// reaching us at all.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ['GET'])) return;
   res.setHeader('Cache-Control', 'no-store');
@@ -61,7 +62,7 @@ function declineReason(code: string, description: string | null): string {
 function toPublic(row: BookingRow): BookingStatusResponse {
   const reversed = isReversedPayment(row.resp_code);
   const declined = !reversed && row.status === 'pending' && !!row.resp_code && !isSuccessfulPayment(row.resp_code) && !NOT_FINAL.has(row.resp_code);
-  const test = row.flags.includes('test_payment') || (row.status === 'pending' && isTestMode());
+  const test = row.flags.includes('test_payment') || (row.status === 'pending' && isTestPayment(row));
   const status: PublicBookingStatus = reversed ? paymentStatus(row.resp_code) as 'voided' | 'refunded'
     : row.status === 'paid' || row.status === 'delivered' ? 'confirmed'
     : row.status === 'failed' || declined ? 'failed'

@@ -4,7 +4,7 @@ import { depositFor, type DefaultDeposit } from './deposit.js';
 import { fromSatang, toSatang } from './money.js';
 import { todayInBangkok } from './search.js';
 import type { Catalog, SmPenalty, SmQuote, SmRoomRate, SmRoomType } from './siteminder.js';
-import { isTestMode } from './twoc2p.js';
+import { isTestMode, paymentProvider } from './payments.js';
 
 // Turns SiteMinder's three separate answers — the room types, their rates
 // (meal plan, deposit, cancellation terms) and the live quote for one stay —
@@ -166,5 +166,6 @@ export function buildAvailability(priced: PricedRate[], catalog: Catalog, search
     policies: { terms: stripTags(catalog.property.termsAndConditions), checkInTime: times?.checkInStartTime ?? null, checkOutTime: times?.checkOutEndTime ?? null },
     maxRooms,
     testPayments: isTestMode(),
+    paymentProvider: paymentProvider(),
   };
 }

@@ -5,14 +5,16 @@ import { isWebsiteInvoice } from './ids.js';
 import { formatMoney, toSatang } from './money.js';
 import { sendTemplate, sendText } from './resend.js';
 import { getCatalog } from './siteminder.js';
-import { isTestMode, PAID, paymentInquiry } from './twoc2p.js';
+import { inquire, isTestPayment, providerLabel } from './payments.js';
+import { PAID } from './twoc2p.js';
 import { isReversedPayment, isSuccessfulPayment } from '../../shared/paymentStatus.js';
 
 // The single path for payment confirmation and subsequent portal changes.
-// Called by 2C2P's notification, the guest's status page, staff and the cron;
-// they may overlap, so every step is a conditional update that only one of
-// them can win, and the emails carry idempotency keys. It always asks 2C2P
-// itself: a notification or a browser redirect only says "go and look".
+// Called by the provider's notification, the guest's status page, staff and
+// the cron; they may overlap, so every step is a conditional update that only
+// one of them can win, and the emails carry idempotency keys. It always asks
+// the provider itself (2C2P, or Stripe for a booking paid there): a
+// notification or a browser redirect only says "go and look".
 
 const DELIVERY_STALE_MS = 5 * 60_000;
 export const MAX_DELIVERY_ATTEMPTS = 5;
@@ -28,7 +30,7 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
   const row = await getByInvoice(invoiceNo);
   if (row && isReversedPayment(row.resp_code) && source !== 'admin') return row;
 
-  const inquiry = await paymentInquiry(invoiceNo);
+  const inquiry = await inquire(invoiceNo, row);
   if (!row) {
     // Only invoices this site issued: the same merchant account also takes
     // QuickPay links and test payments made from the 2C2P portal, which never
@@ -43,7 +45,7 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
   }
 
   const checkedAt = new Date().toISOString();
-  if (inquiry.currencyCode && inquiry.currencyCode !== row.currency) throw new Error('2C2P inquiry currency does not match the booking');
+  if (inquiry.currencyCode && inquiry.currencyCode !== row.currency) throw new Error(`${providerLabel(row)} inquiry currency does not match the booking`);
   if (isReversedPayment(row.resp_code)) {
     const [updated] = await updateWhere(samePayment(row), { last_inquiry_at: checkedAt });
     return updated ?? await getByInvoice(invoiceNo);
@@ -51,7 +53,7 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
 
   if (isReversedPayment(inquiry.respCode)) {
     const flags = new Set(row.flags);
-    if (isTestMode()) flags.add('test_payment');
+    if (isTestPayment(row)) flags.add('test_payment');
     // Reversals take precedence over a concurrent Approved → Settled update.
     // For a previously paid booking, keep its hand-off status as it is now.
     const reversalFilter = row.status === 'paid' || row.status === 'delivered'
@@ -95,7 +97,9 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
   if (row.status === 'expired' || Date.now() > Date.parse(row.expires_at)) flags.add('paid_after_expiry');
   if (typeof inquiry.amount === 'number' && toSatang(inquiry.amount) !== toSatang(row.deposit_amount)) flags.add('amount_mismatch');
   if (row.pii_wiped_at) flags.add('details_deleted');
-  if (isTestMode()) flags.add('test_payment');
+  if (isTestPayment(row)) flags.add('test_payment');
+  // Preview deployments share the live database and inboxes: say so loudly.
+  if (process.env.VERCEL_ENV === 'preview') flags.add('preview_site');
   const [paid] = await updateWhere(`${samePayment(row)}&status=in.(pending,expired)`, {
     status: 'paid',
     paid_amount: typeof inquiry.amount === 'number' ? inquiry.amount : row.deposit_amount,
@@ -146,7 +150,7 @@ export async function deliver(row: BookingRow): Promise<BookingRow> {
     console.error('Booking hand-off failed', claimed.ref, error);
     await updateWhere(`id=eq.${claimed.id}`, { delivery_claimed_at: null, delivery_error: String(error).slice(0, 500) }).catch(() => {});
     if (claimed.delivery_attempts >= MAX_DELIVERY_ATTEMPTS) {
-      await alertTeam(`Booking ${claimed.ref} could not be handed off`, `Booking ${claimed.ref} (${formatDay(claimed.check_in)} – ${formatDay(claimed.check_out)}) is paid (${formatMoney(claimed.paid_amount ?? claimed.deposit_amount, claimed.currency)}, 2C2P ${claimed.tran_ref ?? claimed.invoice_no}) but its notification email keeps failing: ${String(error).slice(0, 300)}. The guest's details are still stored; open the Bookings tab in /admin or check the server logs.`);
+      await alertTeam(`Booking ${claimed.ref} could not be handed off`, `Booking ${claimed.ref} (${formatDay(claimed.check_in)} – ${formatDay(claimed.check_out)}) is paid (${formatMoney(claimed.paid_amount ?? claimed.deposit_amount, claimed.currency)}, ${providerLabel(claimed)} ${claimed.tran_ref ?? claimed.invoice_no}) but its notification email keeps failing: ${String(error).slice(0, 300)}. The guest's details are still stored; open the Bookings tab in /admin or check the server logs.`);
     }
     return claimed;
   }

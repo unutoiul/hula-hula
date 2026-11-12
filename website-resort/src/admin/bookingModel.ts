@@ -101,12 +101,18 @@ export function siteMinderBadge(b: DeskBooking): Badge | null {
 export const needsAction = (b: DeskBooking) => !b.archived_at && (isReversed(b) || (isPaid(b) && !b.keyed_at));
 
 export const FLAG_LABELS: Record<string, string> = {
-  paid_after_expiry: 'Paid after the 15-minute room hold ran out — check the room is still free before entering it.',
-  amount_mismatch: 'The amount 2C2P charged differs from the deposit — compare with the 2C2P portal.',
+  paid_after_expiry: 'Paid after the room hold ran out — check the room is still free before entering it.',
+  amount_mismatch: 'The amount charged differs from the deposit — compare with the payment portal.',
   guest_email_failed: 'The guest’s confirmation email didn’t send — forward it or email them.',
-  details_deleted: 'The guest’s details were deleted before this booking was kept — find the payer in the 2C2P portal.',
-  test_payment: 'Test payment through 2C2P’s test system: nothing was charged.',
+  details_deleted: 'The guest’s details were deleted before this booking was kept — find the payer in the payment portal.',
+  test_payment: 'Test payment (2C2P’s test system or Stripe test mode): nothing was charged.',
+  preview_site: 'Made on a preview of the website, not the live site — check with the web team before entering it in SiteMinder.',
 };
+
+/** Which provider took the payment, from what it left behind: Stripe's ids start "pi_" and its channels read "Stripe · …". */
+export const paymentProviderOf = (b: Pick<DeskBooking, 'tran_ref' | 'channel_code' | 'resp_desc'>) =>
+  (b.tran_ref?.startsWith('pi_') || b.channel_code?.startsWith('Stripe') || b.resp_desc?.includes('Stripe') ? 'Stripe' : '2C2P');
+export const paymentPortal = (provider: string) => (provider === 'Stripe' ? 'the Stripe Dashboard' : 'the 2C2P merchant portal');
 
 const CHANNELS: Record<string, string> = { VI: 'Visa', MA: 'Mastercard', JC: 'JCB', AM: 'American Express', UP: 'UnionPay', DI: 'Diners Club', PPQR: 'PromptPay QR', QR: 'QR payment', TRUEMONEY: 'TrueMoney', SHPPAY: 'ShopeePay' };
 export const channelName = (code: string | null) => (code ? CHANNELS[code.toUpperCase()] ?? code : null);
@@ -208,9 +214,9 @@ export function siteMinderText(b: DeskBooking): string {
     `Guests: ${adults} adults${children ? `, ${children} children` : ''}`,
     ...b.items.map((item) => `Room: ${item.quantity} × ${item.roomTypeName} — ${item.rateName} (${item.adults} adults${item.children ? `, ${item.children} children` : ''} each)${item.offer ? ` · offer “${item.offer.title}”${item.offer.percent ? ` −${item.offer.percent}%` : ''}${item.offer.perks.length ? `, perks: ${item.offer.perks.join(', ')}` : ''}` : ''}`),
     isReversed(b)
-      ? `Total: ${money(b.total_amount, b.currency)} · payment ${paymentBadge(b).label.toLowerCase()} in 2C2P — review the portal amount and reservation before confirming a balance`
+      ? `Total: ${money(b.total_amount, b.currency)} · payment ${paymentBadge(b).label.toLowerCase()} in ${paymentProviderOf(b)} — review the portal amount and reservation before confirming a balance`
       : `Total: ${money(b.total_amount, b.currency)} · paid ${money(b.paid_amount ?? b.deposit_amount, b.currency)} online${b.balance_amount > 0 ? ` · ${money(b.balance_amount, b.currency)} to pay at the hotel` : ''}`,
-    b.tran_ref && `2C2P transaction: ${b.tran_ref} (invoice ${b.invoice_no})`,
+    b.tran_ref && `${paymentProviderOf(b)} transaction: ${b.tran_ref} (invoice ${b.invoice_no})`,
     b.arrival_time && `Arrival time: ${b.arrival_time}`,
     b.special_requests && `Special requests: ${b.special_requests}`,
   ].filter(Boolean).join('\n');

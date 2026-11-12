@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { AvailabilityResponse, RateOffer, RoomTypeOffer } from '../../shared/bookingContract';
+import type { AvailabilityResponse, PaymentProvider, RateOffer, RoomTypeOffer } from '../../shared/bookingContract';
 import { distributeGuests, type Occupancy } from '../../shared/occupancy';
 import { toISODate, useBookingSearch } from '../context/BookingSearchContext';
 import { useLocation } from '../router';
@@ -24,6 +24,8 @@ export interface PaymentSession {
   ref: string; accessKey: string; webPaymentUrl: string; currency: string;
   total: number; deposit: number; balance: number; expiresAt: string;
   email: string; signature: string; testPayment?: boolean;
+  /** Missing on a payment saved before Stripe existed: that was 2C2P. */
+  provider?: PaymentProvider;
 }
 
 export interface ResolvedLine { line: CartLine; roomType: RoomTypeOffer; rate: RateOffer }
@@ -47,7 +49,7 @@ interface BookingFlow {
   guest: GuestForm;
   updateGuest: (patch: Partial<GuestForm>) => void;
   payment: PaymentSession | null;
-  /** Holds the rooms and starts a 2C2P payment: gives back 2C2P's payment page, or why it couldn't. */
+  /** Holds the rooms and starts a payment: gives back the provider's payment page (2C2P or Stripe), or why it couldn't. */
   startPayment: (extras: { hp: string; elapsedMs: number }) => Promise<{ webPaymentUrl: string } | { error: string }>;
   /** After a declined payment: drop the old payment so the next try starts a fresh one. */
   resetPayment: () => void;
@@ -224,7 +226,7 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     const session: PaymentSession = {
       ref: response.ref, accessKey: response.accessKey, webPaymentUrl: response.webPaymentUrl, currency: response.currency,
       total: response.total, deposit: response.deposit, balance: response.balance, expiresAt: response.expiresAt,
-      email: details.email, signature, testPayment: response.testPayment,
+      email: details.email, signature, testPayment: response.testPayment, provider: response.paymentProvider,
     };
     setPayment(session);
     // Saved right now, not after the next render: the guest is about to leave

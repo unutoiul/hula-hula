@@ -35,6 +35,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error('Admin payment check failed', ref, error);
-    return res.status(502).json({ error: 'Could not check 2C2P right now. Please try again.' });
+    return res.status(502).json({ error: 'Could not check the payment right now. Please try again.' });
   }
 }

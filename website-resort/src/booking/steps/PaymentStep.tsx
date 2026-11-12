@@ -6,18 +6,21 @@ import { useEffect, useState } from 'react';
 import { navigate } from '../../router';
 import { fonts } from '../../theme';
 import { useBookingFlow } from '../BookingFlowContext';
-import { money } from '../format';
+import { money, providerName, testPaymentNote } from '../format';
 
-// Step 3: pay. The guest pays on 2C2P's own secure page — the bank's 3-D
-// Secure check fails when 2C2P's form is embedded in another site, since the
-// browser blocks 2C2P's cookies there — and 2C2P sends them back to
-// /book/confirmation. "Continue to secure payment" on the details step goes
-// straight there; this page is where a guest lands if they come back before
-// paying, with the same amount (worked out by the server) and the hold timer.
+// Step 3: pay. The guest pays on the provider's own secure page (2C2P's, or
+// Stripe's) — the bank's 3-D Secure check fails when a payment form is
+// embedded in another site, since the browser blocks the provider's cookies
+// there — and the provider sends them back to /book/confirmation. "Continue to
+// secure payment" on the details step goes straight there; this page is where
+// a guest lands if they come back before paying (Stripe's "back" link leads
+// here), with the same amount (worked out by the server) and the hold timer.
 export function PaymentStep() {
   const { payment, totals } = useBookingFlow();
   const remaining = useCountdown(payment?.expiresAt);
   if (!payment) return null;
+  const provider = payment.provider ?? '2c2p';
+  const name = providerName(provider);
   const expired = remaining !== null && remaining <= 0;
   const priceMoved = Math.abs(payment.total - totals.total) > 1 && totals.total > 0;
 
@@ -26,18 +29,18 @@ export function PaymentStep() {
       <Button onClick={() => navigate('/book/details')} startIcon={<West />} size="small" sx={{ mb: 1, minHeight: 0 }}>Edit details</Button>
       <Typography variant="h1" sx={{ fontSize: { xs: 34, md: 46 }, lineHeight: 1.1 }}>Secure payment</Typography>
       <Typography sx={{ color: 'text.secondary', mt: 1, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <LockRounded sx={{ fontSize: 18 }} /> Paid through 2C2P — card details go straight to them, never to us.
+        <LockRounded sx={{ fontSize: 18 }} /> Paid through {name} — card details go straight to them, never to us.
       </Typography>
 
-      {payment.testPayment && <Alert severity="info" sx={{ mb: 2 }}>Test mode: payments go through 2C2P’s test system, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4111 1111 1111 1111, expiry 12/28, CVV 123, and code 123456 at the bank check (a real card won’t work here).</Alert>}
+      {payment.testPayment && <Alert severity="info" sx={{ mb: 2 }}>{testPaymentNote(provider)} A real card won’t work here.</Alert>}
       {priceMoved && <Alert severity="info" sx={{ mb: 2 }}>Prices were updated when we confirmed your rooms — the amounts on this page are the ones you’ll pay.</Alert>}
       {expired
-        ? <Alert severity="warning" action={<Button color="inherit" size="small" onClick={() => navigate('/book')}>Start again</Button>}>Your rooms were held for 15 minutes and the hold has run out. Please check prices again.</Alert>
+        ? <Alert severity="warning" action={<Button color="inherit" size="small" onClick={() => navigate('/book')}>Start again</Button>}>The hold on your rooms has run out. Please check prices again.</Alert>
         : <Box sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 16px 36px rgba(23,60,44,.07)' }}>
           <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1.25} sx={{ px: { xs: 2.5, sm: 3 }, py: 2, bgcolor: 'success.light', borderBottom: '1px solid', borderColor: 'divider' }}>
             <Box>
               <Typography sx={{ fontFamily: fonts.playful, fontSize: 20, lineHeight: 1.2 }}>Pay {money(payment.deposit, payment.currency)} now</Typography>
-              <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .25 }}>Card, PromptPay QR or mobile banking</Typography>
+              <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: .25 }}>{provider === 'stripe' ? 'Card, Apple Pay or PromptPay QR' : 'Card, PromptPay QR or mobile banking'}</Typography>
             </Box>
             {remaining !== null && <Chip role="timer" icon={<TimerOutlined />} size="small"
               label={`Rooms held ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`}
@@ -45,7 +48,7 @@ export function PaymentStep() {
           </Stack>
           <Box sx={{ p: { xs: 2.5, sm: 3 } }}>
             <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-              You’ll finish paying on 2C2P’s secure payment page, where your bank may ask you to confirm with a code. Afterwards you come straight back here to your confirmation.
+              You’ll finish paying on {name}’s secure payment page, where your bank may ask you to confirm with a code. Afterwards you come straight back here to your confirmation.
             </Typography>
             <Button variant="contained" size="large" startIcon={<LockRounded />} onClick={() => window.location.assign(payment.webPaymentUrl)} sx={{ mt: 2.5 }}>
               Pay {money(payment.deposit, payment.currency)} securely

@@ -1,6 +1,7 @@
 import type { BookingItem, BookingRow } from './bookings.js';
 import { clip, escape, whatsappLink } from './escape.js';
 import { formatMoney } from './money.js';
+import { providerLabel } from './payments.js';
 import { nightsBetween } from './search.js';
 
 // Template variables for the two booking emails in emails/:
@@ -22,14 +23,15 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 const countryName = (code: string | null) => { if (!code) return 'Not given'; try { return regions.of(code) ?? code; } catch { return code; } };
 
 export const FLAG_TEXT: Record<string, string> = {
-  paid_after_expiry: 'Paid after the hold on the room ran out. Check the room is still free in SiteMinder before entering it; if it isn’t, refund the guest in the 2C2P portal and let them know.',
-  amount_mismatch: '2C2P reports a different amount from what this booking expected. Check the payment in the 2C2P portal before confirming.',
+  paid_after_expiry: 'Paid after the hold on the room ran out. Check the room is still free in SiteMinder before entering it; if it isn’t, refund the guest in the payment portal (2C2P or Stripe, shown above) and let them know.',
+  amount_mismatch: 'The payment provider reports a different amount from what this booking expected. Check the payment in its portal (2C2P or Stripe, shown above) before confirming.',
   guest_email_failed: 'The guest’s confirmation email could not be sent. Please forward them their booking details.',
-  details_deleted: 'The guest’s details had already been deleted when this payment arrived. Find the payer in the 2C2P portal using the references above.',
-  test_payment: 'TEST payment through 2C2P’s sandbox — no money was taken. Treat this as a reservation: confirm it with the guest and collect the full amount at the hotel.',
+  details_deleted: 'The guest’s details had already been deleted when this payment arrived. Find the payer in the payment portal (2C2P or Stripe) using the references above.',
+  test_payment: 'TEST payment (2C2P sandbox or Stripe test mode) — no money was taken. Treat this as a reservation: confirm it with the guest and collect the full amount at the hotel.',
+  preview_site: 'Made on a PREVIEW of the website, not the live site. Check with the web team before entering it in SiteMinder.',
 };
 
-// What was really paid online: nothing for a 2C2P sandbox (test) payment.
+// What was really paid online: nothing for a test payment.
 const isTest = (row: BookingRow) => row.flags.includes('test_payment');
 const paidOnline = (row: BookingRow) => (isTest(row) ? 0 : row.paid_amount ?? row.deposit_amount);
 
@@ -97,7 +99,7 @@ export function notificationVariables(row: BookingRow) {
       + (item.offer?.percent ? ` (offer “${item.offer.title}” −${item.offer.percent}%, list price ${formatMoney((item.unitOriginalTotal ?? item.unitTotal) * item.quantity, row.currency)})` : item.offer ? ` (package “${item.offer.title}”)` : '')]),
     ['Perks to arrange', [...new Set(row.items.flatMap((item) => item.offer?.perks ?? []))].join(', ') || null],
     ['Total', formatMoney(row.total_amount, row.currency)],
-    ['Paid online', isTest(row) ? `${formatMoney(0, row.currency)} — TEST payment, nothing charged (2C2P sandbox ${row.tran_ref ?? row.invoice_no})` : `${formatMoney(paidOnline(row), row.currency)} (2C2P ${row.tran_ref ?? row.invoice_no})`],
+    ['Paid online', isTest(row) ? `${formatMoney(0, row.currency)} — TEST payment, nothing charged (${providerLabel(row)} test ${row.tran_ref ?? row.invoice_no})` : `${formatMoney(paidOnline(row), row.currency)} (${providerLabel(row)} ${row.tran_ref ?? row.invoice_no})`],
     ['Balance at hotel', formatMoney(balance, row.currency)],
     ['Arrival time', row.arrival_time], ['Promo code', row.promo_code], ['Requests', row.special_requests],
     ['Booking ref', row.ref],

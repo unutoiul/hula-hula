@@ -7,7 +7,7 @@ import { navigate } from '../../router';
 import { useBookingFlow } from '../BookingFlowContext';
 import { CartSummary, stickyCartSx } from '../components/CartSummary';
 import { COUNTRIES } from '../countries';
-import { money } from '../format';
+import { money, providerName, testPaymentNote } from '../format';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+()\d\s.-]{6,30}$/;
@@ -46,9 +46,10 @@ export function DetailsStep() {
     setSending(true);
     const result = await startPayment({ hp, elapsedMs: Math.round(performance.now() - startedAt.current) });
     if ('error' in result) { setSending(false); setError(result.error); return; }
-    // On to 2C2P's own payment page (the bank's 3-D Secure check only works
-    // there, not with 2C2P's form embedded in ours); it sends the guest back to
-    // /book/confirmation. The button stays busy until the page changes.
+    // On to the provider's own payment page (2C2P's or Stripe's; the bank's
+    // 3-D Secure check only works there, not with a form embedded in ours); it
+    // sends the guest back to /book/confirmation. The button stays busy until
+    // the page changes.
     window.location.assign(result.webPaymentUrl);
   };
 
@@ -89,7 +90,7 @@ export function DetailsStep() {
         {shown('acceptedPolicies') && <FormHelperText error>{errors.acceptedPolicies}</FormHelperText>}
       </Box>
 
-      {availability.data?.testPayments && <Alert severity="info" sx={{ mt: 2 }}>Test mode: payments go through 2C2P’s test system, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4111 1111 1111 1111, expiry 12/28, CVV 123, and code 123456 at the bank check.</Alert>}
+      {availability.data?.testPayments && <Alert severity="info" sx={{ mt: 2 }}>{testPaymentNote(availability.data.paymentProvider)}</Alert>}
       {/* If our booking can't go ahead (e.g. the payment provider is down), the
           guest can still book the same dates on SiteMinder's own engine. */}
       {error && <Alert severity="error" sx={{ mt: 2 }}>
@@ -99,7 +100,7 @@ export function DetailsStep() {
         <Button type="submit" variant="contained" size="large" disabled={sending || !plan} startIcon={<LockRounded />}>
           {sending ? 'Taking you to secure payment…' : `Continue to secure payment · ${money(totals.dueNow, totals.currency)}`}
         </Button>
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>You’ll pay on 2C2P’s secure page and come straight back here. Your card details never touch our website.</Typography>
+        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>You’ll pay on {providerName(availability.data?.paymentProvider)}’s secure page and come straight back here. Your card details never touch our website.</Typography>
       </Stack>
     </Box>
 

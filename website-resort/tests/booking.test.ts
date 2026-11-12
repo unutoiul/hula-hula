@@ -140,3 +140,51 @@ describe('special offers', async () => {
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 75 }, [{ date: '2026-12-10', amount: 845000 }]), [633800]);
   });
 });
+
+describe('Stripe Checkout', async () => {
+  const { formEncode, inquiryFromSession } = await import('../api/_lib/stripe.ts');
+  const { isReversedPayment, isSuccessfulPayment } = await import('../shared/paymentStatus.ts');
+  const card = (card: Record<string, unknown>) => ({ type: 'card', card });
+  const session = (over: Record<string, unknown> = {}, charge: Record<string, unknown> = {}) => ({
+    id: 'cs_test_1', url: null, status: 'complete' as const, payment_status: 'paid' as const, amount_total: 1100050, currency: 'thb',
+    metadata: { ref: 'HH7K3M9Q', invoice_no: 'WEBHH7K3M9Q' },
+    payment_intent: { id: 'pi_1', latest_charge: { id: 'ch_1', amount_refunded: 0, refunded: false, currency: 'thb', payment_method_details: card({ brand: 'visa', wallet: null }), ...charge } },
+    ...over,
+  });
+
+  it('encodes nested params the way Stripe reads them', () => {
+    const body = formEncode({ mode: 'payment', line_items: [{ quantity: 1, price_data: { currency: 'thb', unit_amount: 1100050 } }], metadata: { ref: 'HH1' }, skipped: undefined });
+    assert.equal(decodeURIComponent(body.toString()), 'mode=payment&line_items[0][quantity]=1&line_items[0][price_data][currency]=thb&line_items[0][price_data][unit_amount]=1100050&metadata[ref]=HH1');
+  });
+
+  it('reads a paid session as paid, in baht, with how it was paid', () => {
+    const paid = inquiryFromSession(session(), 'WEBHH7K3M9Q');
+    assert.ok(isSuccessfulPayment(paid.respCode));
+    assert.equal(paid.amount, 11000.5);
+    assert.equal(paid.currencyCode, 'THB');
+    assert.equal(paid.tranRef, 'pi_1');
+    assert.equal(paid.referenceNo, 'ch_1');
+    assert.equal(paid.channelCode, 'Stripe · Visa');
+    assert.equal(inquiryFromSession(session({}, { payment_method_details: card({ brand: 'mastercard', wallet: { type: 'apple_pay' } }) }), 'WEBHH7K3M9Q').channelCode, 'Stripe · Apple Pay (Mastercard)');
+    assert.equal(inquiryFromSession(session({}, { payment_method_details: { type: 'promptpay' } }), 'WEBHH7K3M9Q').channelCode, 'Stripe · PromptPay');
+  });
+
+  it('reads full and partial refunds as reversed', () => {
+    assert.ok(isReversedPayment(inquiryFromSession(session({}, { amount_refunded: 1100050, refunded: true }), 'WEBHH7K3M9Q').respCode));
+    const partly = inquiryFromSession(session({}, { amount_refunded: 50000 }), 'WEBHH7K3M9Q');
+    assert.ok(isReversedPayment(partly.respCode));
+    assert.match(partly.respDesc ?? '', /Partly refunded.*THB 500/);
+  });
+
+  it('treats an unpaid or expired page as nothing final yet', () => {
+    for (const over of [{ status: 'open', payment_status: 'unpaid', payment_intent: null }, { status: 'expired', payment_status: 'unpaid', payment_intent: null }, { status: 'complete', payment_status: 'unpaid' }]) {
+      const answer = inquiryFromSession(session(over), 'WEBHH7K3M9Q');
+      assert.ok(!isSuccessfulPayment(answer.respCode) && !isReversedPayment(answer.respCode));
+      assert.equal(answer.respCode, '2001');
+    }
+  });
+
+  it('refuses a session that belongs to another booking', () => {
+    assert.throws(() => inquiryFromSession(session(), 'WEBHHXXXXXX'), /does not belong/);
+  });
+});
