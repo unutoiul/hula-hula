@@ -28,7 +28,7 @@ export const FLAG_TEXT: Record<string, string> = {
   guest_email_failed: 'The guest’s confirmation email could not be sent. Please forward them their booking details.',
   details_deleted: 'The guest’s details had already been deleted when this payment arrived. Find the payer in the payment portal (2C2P or Stripe) using the references above.',
   test_payment: 'TEST payment (2C2P sandbox or Stripe test mode) — no money was taken. Treat this as a reservation: confirm it with the guest and collect the full amount at the hotel.',
-  preview_site: 'Made on a PREVIEW of the website, not the live site. Check with the web team before entering it in SiteMinder.',
+  preview_site: 'Made on the Stripe TEST SITE (a copy of the website), not the live site. Check with the web team before entering it in SiteMinder.',
 };
 
 // What was really paid online: nothing for a test payment.

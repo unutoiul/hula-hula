@@ -98,8 +98,9 @@ export async function confirmPayment(invoiceNo: string, source: ConfirmSource): 
   if (typeof inquiry.amount === 'number' && toSatang(inquiry.amount) !== toSatang(row.deposit_amount)) flags.add('amount_mismatch');
   if (row.pii_wiped_at) flags.add('details_deleted');
   if (isTestPayment(row)) flags.add('test_payment');
-  // Preview deployments share the live database and inboxes: say so loudly.
-  if (process.env.VERCEL_ENV === 'preview') flags.add('preview_site');
+  // Preview deployments and the Stripe test site (PREVIEW_SITE=true) share the
+  // live database and inboxes: say so loudly.
+  if (process.env.VERCEL_ENV === 'preview' || process.env.PREVIEW_SITE === 'true') flags.add('preview_site');
   const [paid] = await updateWhere(`${samePayment(row)}&status=in.(pending,expired)`, {
     status: 'paid',
     paid_amount: typeof inquiry.amount === 'number' ? inquiry.amount : row.deposit_amount,
