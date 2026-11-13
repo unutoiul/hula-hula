@@ -48,12 +48,6 @@ export default function BookingApp() {
     // Once, on arrival — afterwards the page drives the search, not the URL.
   }, []);
 
-  useEffect(() => {
-    const previous = document.title;
-    document.title = 'Book your stay — Hula Hula Resort';
-    return () => { document.title = previous; };
-  }, []);
-
   if (!synced) return null;
   return <BookingFlowProvider><BookingShell /></BookingFlowProvider>;
 }

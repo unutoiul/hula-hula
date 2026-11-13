@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Upload through the Google Hotel Center rate provider after property matching
+     and live rate/availability feeds are configured. This is not a sitemap. -->
+<PointsOfSale>
+  <PointOfSale id="hulahula-direct-en-thb">
+    <DisplayNames display_text="Hula Hula Resort" display_language="en" />
+    <Match status="yes" language="en" />
+    <Match status="yes" currency="THB" />
+    <URL>https://www.hulahularesort.com/book?checkIn=(CHECKINYEAR)-(CHECKINMONTH)-(CHECKINDAY)&amp;checkOut=(CHECKOUTYEAR)-(CHECKOUTMONTH)-(CHECKOUTDAY)&amp;adults=(NUM-ADULTS)&amp;children=(NUM-CHILDREN)</URL>
+  </PointOfSale>
+</PointsOfSale>

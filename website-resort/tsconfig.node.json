@@ -18,5 +18,5 @@
     // dir instead.
     "outDir": "./node_modules/.tsbuild/node"
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "src/seo.ts"]
 }

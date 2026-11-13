@@ -2,8 +2,8 @@ import { useMemo, useSyncExternalStore } from 'react';
 
 // Just enough routing for three areas — the homepage (/), the booking pages
 // (/book/...) and the CMS (/admin) — without a router dependency. vercel.json
-// already serves index.html for every non-/api path, so these are plain
-// history.pushState navigations.
+// serves the booking HTML for /book and the main HTML for other app paths,
+// so these are plain history.pushState navigations.
 
 const NAVIGATE_EVENT = 'hh:navigate';
 

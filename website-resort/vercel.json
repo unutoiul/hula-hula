@@ -1,5 +1,16 @@
 {
   "regions": ["sin1"],
-  "rewrites": [{ "source": "/((?!api/|@|src/|node_modules/)[^.]*)", "destination": "/" }],
+  "rewrites": [
+    { "source": "/book", "destination": "/book.html" },
+    { "source": "/book/", "destination": "/book.html" },
+    { "source": "/((?!api/|@|src/|node_modules/)[^.]*)", "destination": "/" }
+  ],
+  "headers": [
+    { "source": "/admin/:path*", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
+    { "source": "/book/details/:path*", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
+    { "source": "/book/payment/:path*", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
+    { "source": "/book/confirmation/:path*", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
+    { "source": "/api/:path*", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }
+  ],
   "crons": [{ "path": "/api/cron/reconcile", "schedule": "0 20 * * *" }]
 }

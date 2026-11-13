@@ -30,17 +30,6 @@ export default function AdminApp() {
   const [tab, setTab] = useState(0);
   const phone = useMediaQuery(useTheme().breakpoints.down('sm'), { noSsr: true });
 
-  // Keep the CMS out of search engines.
-  useEffect(() => {
-    const robots = document.createElement('meta');
-    robots.name = 'robots';
-    robots.content = 'noindex, nofollow';
-    document.head.appendChild(robots);
-    const previous = document.title;
-    document.title = 'Website admin — Hula Hula Resort';
-    return () => { robots.remove(); document.title = previous; };
-  }, []);
-
   useEffect(() => {
     if (!supabase) return;
     void supabase.auth.getSession().then(({ data }) => setSession(data.session));

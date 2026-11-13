@@ -20,6 +20,7 @@ import { ResortPromotionsSection } from './components/sections/ResortPromotionsS
 import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
 import { SiteContentProvider, useSiteContent } from './context/SiteContentContext';
 import { useLocation } from './router';
+import { PageMetadata } from './PageMetadata';
 import { BeachBall, Bubbles, Gulls, Longtail, PaperBoat, RisingSun, SEAM, SectionSeam, SwimRing } from './components/common/SectionSeam';
 
 // "Offers" (or "What's on" when there are only events) joins the menu, before
@@ -92,6 +93,6 @@ function Routes() {
   </ContactFormProvider></BookingSearchProvider>;
 }
 
-function App() { return <MotionPreferenceProvider><Routes /></MotionPreferenceProvider>; }
+function App() { return <MotionPreferenceProvider><PageMetadata /><Routes /></MotionPreferenceProvider>; }
 
 export default App;

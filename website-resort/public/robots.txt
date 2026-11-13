@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Allow: /api/content
+Allow: /api/booking/availability
+Allow: /api/booking/room-types
+
+# Public content and live rates must be crawlable for the booking page to render.
+# API responses send X-Robots-Tag: noindex so they are not search result pages.
+
+# Staff and checkout pages also send an HTTP X-Robots-Tag: noindex header.
+# Allow crawling of those pages so search engines can read that directive.
+Sitemap: https://www.hulahularesort.com/sitemap.xml
