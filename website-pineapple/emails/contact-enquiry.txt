@@ -1,0 +1,11 @@
+New enquiry: {{{TOPIC}}}
+From: {{{GUEST_NAME}}}
+Email: {{{GUEST_EMAIL}}}
+Phone: {{{GUEST_PHONE}}}
+Stay: {{{STAY}}}
+Sent: {{{SENT_AT}}} (Krabi time), from {{{PAGE}}}
+
+{{{MESSAGE}}}
+
+Reply directly to this email to answer the guest.
+{{{SITE_URL}}}/admin

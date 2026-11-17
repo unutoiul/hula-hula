@@ -1,0 +1,29 @@
+{
+  "verifiedAt": "2026-11-17T07:08:02.809Z",
+  "templates": [
+    {
+      "alias": "rp-contact-enquiry",
+      "id": "65a8eec4-a382-4ef5-b2c8-1be7ae6497e9",
+      "status": "published",
+      "url": "https://resend.com/templates/65a8eec4-a382-4ef5-b2c8-1be7ae6497e9"
+    },
+    {
+      "alias": "rp-contact-confirmation",
+      "id": "f3065718-34f8-458a-8d2a-44099403b68f",
+      "status": "published",
+      "url": "https://resend.com/templates/f3065718-34f8-458a-8d2a-44099403b68f"
+    },
+    {
+      "alias": "rp-booking-notification",
+      "id": "148d040a-a799-4338-8f85-325b38427003",
+      "status": "published",
+      "url": "https://resend.com/templates/148d040a-a799-4338-8f85-325b38427003"
+    },
+    {
+      "alias": "rp-booking-confirmation",
+      "id": "03107d72-6030-45d6-b94d-a48183ed571d",
+      "status": "published",
+      "url": "https://resend.com/templates/03107d72-6030-45d6-b94d-a48183ed571d"
+    }
+  ]
+}

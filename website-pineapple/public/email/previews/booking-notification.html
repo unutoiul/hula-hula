@@ -1,0 +1,123 @@
+<!doctype html>
+<!--
+  Resend template "booking-notification": goes to the reservations inbox when
+  a guest has booked and paid on the website (api/_lib/deliver.ts). This email
+  is the hand-off for manual entry in SiteMinder: the
+  team enters the booking in SiteMinder from it — the rows below follow the
+  order they're keyed in — then presses "Entered in SiteMinder" in /admin →
+  Bookings. The guest is the reply-to. The booking, guest details included,
+  also stays in /admin → Bookings.
+  Edit it here, then run `npm run email:publish`. Same rules as
+  contact-enquiry.html, whose look it shares: one centred 600px table, inline
+  styles, web-safe fonts, a PNG logo, double-quoted attributes. FLAGS_DISPLAY
+  switches on the "please check" box and WHATSAPP_DISPLAY the WhatsApp button
+  ("none;mso-hide:all" hides them).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>New website booking RP-PREVIEW</title>
+</head>
+<body style="margin:0;padding:0;background:#fff9f2;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">A little holiday at Royal Pineapple Hotel</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff9f2;">
+    <tr><td align="center" style="padding:28px 14px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border:1px solid #ecd2dd;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:8px;background:#c92f6b;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td align="center" style="padding:26px 28px 8px;">
+          <a href="http://localhost:3004"><img border="0" src="../royal-pineapple-logo.png" width="100" height="100" alt="Royal Pineapple Hotel" style="display:block;border:0;width:100px;height:100px;"></a>
+        </td></tr>
+        <tr><td align="center" style="padding:6px 28px 0;">
+          <span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#fbe9f0;color:#b52660;font:700 11px/1 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;">New booking · RP-PREVIEW</span>
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px 4px;font:400 30px/1.2 Georgia, 'Times New Roman', serif;color:#5a2448;">Alex Example booked a stay</td></tr>
+        <tr><td align="center" style="padding:0 34px 22px;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#806271;">Paid online on the Royal Pineapple website. Please enter this booking manually in <strong style="color:#5a2448;">SiteMinder</strong>, then mark it “Entered in SiteMinder” in the website admin.</td></tr>
+
+        <tr><td style="padding:0 28px 18px;display:none;mso-hide:all;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fbc5;border:1px solid #e4e208;border-radius:18px;">
+            <tr><td style="padding:16px 22px;font:400 14px/1.7 Arial, Helvetica, sans-serif;color:#5a2448;"><span style="font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#686b0b;">Please check before entering</span><br></td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:0 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbe9f0;border-radius:18px;">
+            <tr>
+              <td width="50%" style="padding:18px 22px 6px;font:400 15px/1.5 Arial, Helvetica, sans-serif;color:#5a2448;vertical-align:top;"><span style="font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#b52660;">Check-in</span><br><strong>10 December 2026</strong></td>
+              <td width="50%" style="padding:18px 22px 6px;font:400 15px/1.5 Arial, Helvetica, sans-serif;color:#5a2448;vertical-align:top;"><span style="font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#b52660;">Check-out</span><br><strong>12 December 2026</strong></td>
+            </tr>
+            <tr><td colspan="2" style="padding:0 22px 18px;font:400 14px/1.5 Arial, Helvetica, sans-serif;color:#806271;">2 nights · 2 adults</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:16px 0;font:14px/1.6 Arial, sans-serif;color:#5a2448;"><strong>1 × Deluxe Double Room</strong><br>Room with breakfast · 2 adults</td><td align="right" style="font:14px/1.6 Arial, sans-serif;color:#5a2448;">THB 6,000</td></tr></table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;border-top:2px solid #5a2448;">
+            <tr><td style="padding:10px 0 3px;">Total for the stay</td><td align="right" style="padding:10px 0 3px;"><strong>THB 6,000</strong></td></tr>
+            <tr><td style="padding:3px 0;color:#b52660;">Paid online</td><td align="right" style="padding:3px 0;color:#b52660;"><strong>THB 3,000</strong></td></tr>
+            <tr><td style="padding:3px 0;">Balance to collect at the hotel</td><td align="right" style="padding:3px 0;"><strong>THB 3,000</strong></td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Guest</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;"><strong>Alex Example</strong></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Email</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;"><a href="mailto:alex@example.invalid" style="color:#b52660;text-decoration:underline;">alex@example.invalid</a></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Phone</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">+00 000 000 000</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Country</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">Thailand</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Arrival</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">4:00 pm</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Requests</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;white-space:pre-wrap;word-break:break-word;">A quiet room, please.</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Promo code</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">None</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Paid</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">17 November 2026, 14:30 (Krabi time) · Card</td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:12px 28px 6px;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Everything in one block, to copy</td></tr>
+        <tr><td style="padding:0 28px 8px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff9f2;border:1px solid #ecd2dd;border-radius:18px;">
+            <tr><td style="padding:16px 20px;font:400 13px/1.7 Consolas, 'Courier New', monospace;color:#5a2448;word-break:break-word;">Guest: Alex Example<br>Booking: RP-PREVIEW<br>Preview only — no booking or payment has been made.</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 8px;">
+          <a href="mailto:alex@example.invalid?subject=Your%20Royal%20Pineapple%20booking%20RP-PREVIEW" style="display:inline-block;margin:0 8px 10px 0;padding:13px 24px;border-radius:999px;background:#b52660;color:#ffffff;font:700 14px/1 Arial, Helvetica, sans-serif;text-decoration:none;">Reply by email</a><a href="" style="display:none;mso-hide:all;margin:0 8px 10px 0;padding:13px 24px;border-radius:999px;background:#b52660;color:#ffffff;font:700 14px/1 Arial, Helvetica, sans-serif;text-decoration:none;">Reply on WhatsApp</a>
+        </td></tr>
+        <tr><td style="padding:6px 28px 26px;font:400 13px/1.6 Arial, Helvetica, sans-serif;color:#806271;">Tip: just hit reply — your answer goes straight to Alex Example. Find payment details and refund instructions in the website admin under Bookings.</td></tr>
+        <tr><td align="center" style="padding:0 28px 20px;">
+          <img border="0" src="../royal-pineapple-stationery.jpg" width="200" height="133" alt="" role="presentation" style="display:block;border:0;width:200px;max-width:100%;height:auto;">
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px;background:#fff9f2;border-top:1px solid #ecd2dd;font:400 12px/1.6 Arial, Helvetica, sans-serif;color:#806271;">
+          Royal Pineapple Hotel · 339/9 Maharaj Road, Paknam, Krabi 81000 · reservation@thepineapplehotel.com · <a href="http://localhost:3004/admin" style="color:#b52660;">Open the website admin</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

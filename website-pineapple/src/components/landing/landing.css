@@ -1,0 +1,102 @@
+.royal-home{--royal-plum:#5a2448;--royal-rose:#c92f6b;--royal-pink:#f06598;--royal-paper:#fff9f2;--royal-rule:#e8ced7;--royal-serif:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;background:var(--royal-paper)}
+.royal-home .MuiTypography-h2,.royal-home .MuiTypography-h3{font-family:var(--royal-serif);font-weight:400;letter-spacing:-.035em}
+.royal-home a,.royal-home button{-webkit-tap-highlight-color:transparent}
+.royal-home :is(a,button):focus-visible{outline:2px solid var(--royal-rose);outline-offset:5px}
+.royal-wrap{width:calc(100% - 2 * var(--page-gutter));max-width:var(--page-content-width);margin-inline:auto}
+.royal-eyebrow{display:flex;align-items:center;gap:12px;margin:0 0 24px;color:var(--royal-rose);font-size:10px;font-weight:700;line-height:1.7;letter-spacing:.2em;text-transform:uppercase}
+.royal-eyebrow>span{width:28px;height:1px;background:currentColor}
+.royal-hero{position:relative;padding-top:126px;background:radial-gradient(ellipse at 95% 5%,#fde6ee66,transparent 45%),var(--royal-paper)}
+.royal-hero-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:70px;align-items:center;padding:54px 0 34px}
+.royal-hero-copy{padding-bottom:16px;position:relative;z-index:2}
+.royal-hero-copy h1{font-family:var(--royal-serif);font-size:clamp(54px,5.2vw,77px);font-weight:400;letter-spacing:-.055em;line-height:1.025;color:var(--royal-plum);margin:0}
+.royal-hero-copy h1 em{display:block;color:var(--royal-rose);font-weight:400;margin-top:4px}
+.royal-hero-description{max-width:405px;font-size:15px;line-height:1.9;color:#775f6c;margin:26px 0 28px}
+.royal-hero-actions{display:flex;gap:25px;align-items:center;flex-wrap:wrap}
+.royal-hero-actions .MuiButton-root{min-height:50px;padding-inline:28px}
+.royal-text-link{font-size:12px;font-weight:600;color:var(--royal-plum);text-decoration:none;border-bottom:1px solid #d4a0b5;padding-block:9px}
+.royal-text-link span{margin-left:8px}
+.royal-address{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:#836b78;font-size:10px;margin:29px 0 0}
+.royal-address svg{width:15px;height:15px;color:var(--royal-rose)}
+.royal-address>span{margin-inline:5px;color:var(--royal-pink)}
+.royal-hero-art{position:relative;padding-bottom:32px;min-width:0}
+.royal-hero-photo{height:530px;border-radius:48% 48% 4px 4px / 42% 42% 4px 4px;overflow:hidden;background:#fde6ee}
+.royal-hero-photo img{transition:opacity .3s ease}
+.royal-photo-outline{position:absolute;inset:-12px -12px 64px;border:1px solid #e89ab6;border-radius:48% 48% 5px 5px / 42% 42% 5px 5px;pointer-events:none}
+.royal-hero-flowers{position:absolute;left:-64px;bottom:7px;width:300px;height:auto;z-index:2;pointer-events:none;user-select:none}
+.royal-postmark{position:absolute;right:-20px;top:34px;background:#fffdf9;width:106px;height:106px;border:1px solid var(--royal-rose);outline:5px solid #fffdf9;border-radius:50%;color:var(--royal-rose);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(11deg)}
+.royal-postmark span{font-size:8px;text-transform:uppercase;letter-spacing:.15em}
+.royal-postmark strong{font-family:var(--royal-serif);font-size:35px;font-style:italic;font-weight:400;line-height:1.3}
+.royal-photo-caption{display:flex;align-items:center;justify-content:space-between;padding:17px 0 0 185px;gap:10px;color:var(--royal-plum);font-family:var(--royal-serif);font-size:14px;font-style:italic}
+.royal-photo-controls{display:flex;flex-shrink:0}
+.royal-photo-controls button{background:transparent;border:0;padding:11px 7px;cursor:pointer}
+.royal-photo-controls button span{display:block;width:6px;height:6px;background:#dcc4cd;border-radius:50%}
+.royal-photo-controls button[aria-pressed=true] span{background:var(--royal-rose)}
+.royal-booking-row{display:flex;gap:40px;align-items:center;padding:0 0 36px;scroll-margin-top:112px}
+.royal-booking-intro{flex-shrink:0}
+.royal-booking-intro h2{font-family:var(--royal-serif);font-size:26px;font-weight:400;letter-spacing:-.035em;color:var(--royal-plum);margin:0 0 4px}
+.royal-booking-intro p{font-size:11px;color:#836b78;margin:0}
+.royal-booking{flex:1;min-width:0}
+.royal-booking>div{border-radius:5px;box-shadow:0 7px 30px #5a244809;max-width:none;background:#fffdf9}
+.royal-booking .MuiButton-contained{border-radius:3px;min-height:52px}
+.royal-booking button .MuiTypography-root:not(.MuiTypography-overline){font-family:inherit;font-size:14px}
+.royal-hero-foot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--royal-rule);padding:20px 0;color:#8c6d7c;font-size:10px;letter-spacing:.09em}
+.royal-hero-foot>span:first-child{text-transform:uppercase}
+.royal-hero-foot a{display:flex;gap:18px;align-items:center;text-decoration:none;color:var(--royal-plum);letter-spacing:0}
+.royal-hero-foot a span{font-size:17px}
+.royal-flourish{color:var(--royal-rose);font-family:var(--royal-serif);font-size:21px;font-weight:400;letter-spacing:3px}
+.royal-intro{padding:88px 0 80px;scroll-margin-top:100px}
+.royal-section-heading{text-align:center;max-width:720px;margin:0 auto 55px}
+.royal-section-heading .royal-eyebrow{justify-content:center;margin-bottom:17px}
+.royal-section-heading h2{font-family:var(--royal-serif);font-weight:400;font-size:var(--section-heading-size);letter-spacing:-.045em;line-height:1.1;color:var(--royal-plum);margin:0 0 17px}
+.royal-section-heading h2 em{color:var(--royal-rose);font-weight:400}
+.royal-section-heading>p:last-child{font-size:14px;line-height:1.8;color:#826574;margin:16px auto 0;max-width:500px}
+.royal-intro-grid{display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:90px}
+.royal-intro-pictures{position:relative;padding:0 65px 55px 0}
+.royal-intro-main{height:430px;border-radius:190px 190px 3px 3px;overflow:hidden;outline:1px solid #e0b5c5;outline-offset:9px}
+.royal-intro-inset{width:44%;height:215px;border:7px solid var(--royal-paper);position:absolute;right:0;bottom:15px;transform:rotate(5deg);overflow:hidden;box-shadow:0 8px 24px #5a244815}
+.royal-handwritten{position:absolute;bottom:0;left:10px;color:var(--royal-rose);font-family:var(--royal-serif);font-size:24px;font-style:italic;line-height:1.1;transform:rotate(-7deg)}
+.royal-intro-copy .royal-eyebrow{margin-bottom:17px}
+.royal-intro-copy h3{font-family:var(--royal-serif);font-size:40px;line-height:1.13;letter-spacing:-.035em;font-weight:400;color:var(--royal-plum);margin:0 0 22px}
+.royal-intro-copy h3 em{font-weight:400;color:var(--royal-rose)}
+.royal-intro-copy>p:not(.royal-eyebrow){font-size:14px;line-height:1.9;color:#775f6c;margin:0 0 17px;max-width:440px}
+.royal-intro-copy>.MuiButton-root{font-size:12px;padding-inline:0}
+.royal-intro-signature{display:flex;align-items:center;gap:17px;margin-top:20px}
+.royal-intro-signature img{width:83px;height:100px;object-fit:contain;transform:rotate(-6deg)}
+.royal-intro-signature span{font-family:var(--royal-serif);font-size:20px;font-style:italic;color:var(--royal-plum);line-height:1.25}
+.royal-intro-signature strong{font-weight:400;color:var(--royal-rose)}
+.royal-facts{display:grid;grid-template-columns:repeat(4,1fr);margin:50px 0 35px;padding:30px 0;border-top:1px solid var(--royal-rule);border-bottom:1px solid var(--royal-rule)}
+.royal-facts>div{text-align:center;border-right:1px solid var(--royal-rule);display:flex;flex-direction:column;gap:8px}
+.royal-facts>div:last-child{border-right:0}
+.royal-facts strong{font-family:var(--royal-serif);font-size:32px;font-weight:400;color:var(--royal-rose)}
+.royal-facts span{font-size:11px;color:#826574}
+.royal-pillars{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.royal-pillars>a{position:relative;display:flex;flex-direction:column;padding:22px 8px;color:var(--royal-plum);text-decoration:none;border-bottom:1px solid #d7aebf;transition:background .2s ease,padding .2s ease}
+.royal-pillars>a:hover{background:#fde6ee66;padding-inline:15px}
+.royal-pillar-number{font-size:9px;letter-spacing:.12em;color:var(--royal-rose);margin-bottom:10px}
+.royal-pillars strong{font-family:var(--royal-serif);font-weight:400;font-size:27px;margin-bottom:8px}
+.royal-pillars>a>span:not(.royal-pillar-number){font-size:11px;line-height:1.6;color:#826574;max-width:150px}
+.royal-pillars svg{position:absolute;right:6px;top:25px;font-size:15px;color:var(--royal-rose)}
+.royal-home #rooms{padding-top:60px;border-top:1px solid var(--royal-rule)}
+.royal-home .royal-room-card{position:relative;background:#fffaf4;border:1px solid #d7a2b7;border-radius:16px;padding:10px 10px 25px}
+.royal-home .royal-room-card::before{content:'';position:absolute;inset:4px;border:1px solid #efd4df;border-radius:12px;pointer-events:none}
+.royal-home .royal-room-card>div:first-child{border-radius:9px;aspect-ratio:4/3}
+.royal-home .royal-room-card>div:nth-child(2){padding-inline:12px}
+
+.royal-postcards{position:relative;background:#f9e7ec;padding:85px 0 65px;scroll-margin-top:100px;border-top:1px solid #efd0dc;border-bottom:1px solid #efd0dc;overflow:hidden}
+.royal-postcards .royal-section-heading{margin-bottom:42px}
+.royal-postcard-grid{display:grid;grid-template-columns:1fr 1fr .7fr;align-items:center;gap:35px}
+.royal-postcard{display:block;width:100%;padding:12px 12px 0;background:#fffdf9;border:1px solid #e5c7d1;color:var(--royal-plum);box-shadow:0 12px 25px #5a24480e;cursor:pointer;transition:transform .25s ease,box-shadow .25s ease}
+.royal-postcard-pool{transform:rotate(-3deg)}
+.royal-postcard-arrival{transform:rotate(2deg);margin-top:40px}
+.royal-postcard-arches{transform:rotate(-2deg)}
+.royal-postcard:hover{transform:rotate(0) translateY(-6px);box-shadow:0 18px 34px #5a24481a}
+.royal-postcard img{display:block;width:100%;height:auto}
+.royal-postcard>span{display:flex;align-items:center;justify-content:space-between;gap:5px;font-family:var(--royal-serif);font-size:16px;font-style:italic;text-align:left;padding:17px 3px}
+.royal-postcard>span>span{font-family:Arial,sans-serif;font-style:normal;font-size:17px}
+.royal-postcard-note{text-align:center;font-size:11px;color:#8b6e7d;margin-top:44px;letter-spacing:.05em}
+.royal-home>section:not(.royal-hero):not(.royal-intro):not(.royal-postcards){border-bottom:1px solid #e8ced755}
+@media(min-width:1500px){.royal-hero-photo{height:580px}.royal-hero-grid{padding-top:62px;padding-bottom:42px}}
+@media(max-width:1199px){.royal-wrap{width:calc(100% - 2 * var(--page-gutter))}.royal-hero-grid{gap:42px}.royal-hero-copy h1{font-size:59px}.royal-hero-photo{height:470px}.royal-hero-description{font-size:14px}.royal-photo-caption{padding-left:150px;font-size:12px}.royal-hero-flowers{width:255px;left:-40px}.royal-intro-grid{gap:50px}.royal-booking-row{gap:24px}.royal-booking-intro h2{font-size:22px}.royal-booking button .MuiTypography-root:not(.MuiTypography-overline){font-size:12px}.royal-booking>div>div:last-of-type{min-width:195px}}
+@media(max-width:899px){.royal-wrap{width:calc(100% - 2 * var(--page-gutter))}.royal-hero{padding-top:110px}.royal-hero-grid{grid-template-columns:1fr;padding-top:35px;gap:38px}.royal-hero-copy{text-align:center;padding-bottom:0}.royal-hero-copy .royal-eyebrow{justify-content:center}.royal-hero-copy h1{font-size:60px}.royal-desktop-break{display:none}.royal-hero-description{max-width:440px;margin:23px auto;font-size:15px}.royal-hero-actions,.royal-address{justify-content:center}.royal-address{margin-top:23px}.royal-hero-art{max-width:620px;width:calc(100% - 28px);margin:auto}.royal-hero-photo{height:460px}.royal-hero-flowers{left:-30px;bottom:3px;width:260px}.royal-postmark{right:-13px}.royal-photo-caption{padding-left:175px;font-size:14px}.royal-booking-row{flex-direction:column;gap:18px}.royal-booking-intro{text-align:center}.royal-booking-intro h2{font-size:26px}.royal-booking{width:100%}.royal-booking button .MuiTypography-root:not(.MuiTypography-overline){font-size:13px}.royal-intro{padding-top:65px;padding-bottom:50px}.royal-section-heading{margin-bottom:42px}.royal-intro-grid{grid-template-columns:1fr;gap:55px;max-width:610px;margin:auto}.royal-intro-pictures{max-width:530px;margin:auto}.royal-intro-copy{max-width:530px;margin:auto}.royal-intro-copy h3{font-size:38px}.royal-facts{margin-top:45px}.royal-facts strong{font-size:27px}.royal-facts span{font-size:10px;padding-inline:6px}.royal-pillars{grid-template-columns:repeat(5,minmax(145px,1fr));overflow-x:auto;gap:15px;padding-bottom:5px;scroll-snap-type:x mandatory}.royal-pillars>a{scroll-snap-align:start}.royal-postcards{padding-top:65px}.royal-postcard-grid{gap:22px}.royal-postcard{padding:8px 8px 0}.royal-postcard>span{font-size:13px;padding:13px 0}.royal-home #rooms{padding-top:40px}}
+@media(max-width:599px){.royal-wrap{width:calc(100% - 2 * var(--page-gutter))}.royal-hero-grid{gap:35px;padding-top:28px;padding-bottom:16px}.royal-eyebrow{font-size:9px;letter-spacing:.17em;margin-bottom:20px}.royal-hero-copy h1{font-size:47px;letter-spacing:-.055em}.royal-hero-description{font-size:14px;line-height:1.8;max-width:330px;margin-top:20px}.royal-hero-actions{gap:17px}.royal-hero-actions .MuiButton-root{padding-inline:24px;min-height:48px;font-size:12px}.royal-text-link{font-size:11px}.royal-address{font-size:9px;gap:4px}.royal-hero-art{width:calc(100% - 14px)}.royal-hero-photo{height:345px}.royal-photo-outline{inset:-8px -8px 63px}.royal-hero-flowers{width:195px;left:-20px;bottom:5px}.royal-postmark{width:78px;height:78px;top:19px;right:-7px;outline-width:4px}.royal-postmark strong{font-size:27px}.royal-postmark span{font-size:6px}.royal-photo-caption{padding-left:115px;font-size:12px;line-height:1.25;min-height:47px}.royal-photo-controls button{padding:12px 6px}.royal-photo-controls button span{width:5px;height:5px}.royal-booking-row{padding-bottom:25px}.royal-booking>div>div:last-of-type{min-width:0}.royal-booking button .MuiTypography-root:not(.MuiTypography-overline){font-size:14px}.royal-hero-foot{font-size:9px;letter-spacing:.03em;padding-block:15px}.royal-hero-foot>.royal-flourish{display:none}.royal-hero-foot a{gap:8px}.royal-intro{padding-top:53px}.royal-section-heading h2{font-size:var(--section-heading-size)}.royal-section-heading .royal-eyebrow{font-size:8px}.royal-intro-pictures{padding-right:40px;padding-bottom:50px}.royal-intro-main{height:340px;outline-offset:6px}.royal-intro-inset{height:170px;border-width:5px;bottom:20px}.royal-handwritten{font-size:21px;left:5px;bottom:0}.royal-intro-grid{gap:40px}.royal-intro-copy h3{font-size:35px}.royal-intro-copy>p:not(.royal-eyebrow){font-size:14px}.royal-facts{grid-template-columns:1fr 1fr;row-gap:28px;padding-block:27px;margin-bottom:18px}.royal-facts>div:nth-child(2){border-right:0}.royal-facts strong{font-size:30px}.royal-facts span{font-size:10px}.royal-pillars{grid-template-columns:repeat(5,155px);gap:15px}.royal-home #rooms{padding-top:35px}.royal-postcards{padding:53px 0 35px}.royal-postcard-grid{grid-template-columns:1fr;max-width:390px;margin:auto;gap:27px;padding-inline:9px}.royal-postcard-arrival{margin-top:0}.royal-postcard-arches{width:76%;margin:auto}.royal-postcard>span{font-size:17px;padding:16px 3px}.royal-postcard-note{margin-top:34px}.royal-section-heading>p:last-child{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.royal-home *{scroll-behavior:auto!important}.royal-postcard,.royal-pillars>a,.royal-hero-photo img{transition:none}}

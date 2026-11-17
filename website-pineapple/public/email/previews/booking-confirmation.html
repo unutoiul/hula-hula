@@ -1,0 +1,78 @@
+<!doctype html>
+<!--
+  Resend template "booking-confirmation": the guest's confirmation once their
+  online payment has gone through (api/_lib/finalize.ts). Replies go to the
+  reservations inbox. Edit here, then `npm run email:publish`.
+  Like contact-confirmation.html it never repeats free text the guest typed
+  (special requests) — only the booking itself. BALANCE_DISPLAY hides the
+  "pay at the hotel" row when everything was paid online; PROMO_DISPLAY shows
+  the promo line. Same email-client rules as contact-enquiry.html.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>You’re booked! — Royal Pineapple Hotel</title>
+</head>
+<body style="margin:0;padding:0;background:#fff9f2;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">A little holiday at Royal Pineapple Hotel</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff9f2;">
+    <tr><td align="center" style="padding:28px 14px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border:1px solid #ecd2dd;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:8px;background:#c92f6b;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td align="center" style="padding:26px 28px 8px;">
+          <a href="http://localhost:3004"><img border="0" src="../royal-pineapple-logo.png" width="100" height="100" alt="Royal Pineapple Hotel" style="display:block;border:0;width:100px;height:100px;"></a>
+        </td></tr>
+        <tr><td align="center" style="padding:6px 28px 0;">
+          <span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#fbe9f0;color:#b52660;font:700 11px/1 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;">Booking confirmed · RP-PREVIEW</span>
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px 6px;font:400 30px/1.2 Georgia, 'Times New Roman', serif;color:#5a2448;">You’re booked, Alex! Hello, holiday.</td></tr>
+        <tr><td align="center" style="padding:0 34px 22px;font:400 16px/1.7 Arial, Helvetica, sans-serif;color:#806271;">
+          Thanks for booking with us. Here’s everything in one place — keep this email, and quote <strong style="color:#5a2448;">RP-PREVIEW</strong> if you get in touch.
+        </td></tr>
+
+        <tr><td style="padding:0 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbe9f0;border-radius:18px;">
+            <tr>
+              <td width="50%" style="padding:16px 20px;font:400 15px/1.5 Arial, Helvetica, sans-serif;color:#5a2448;"><span style="font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#b52660;">Check-in</span><br><strong>10 December 2026</strong><br><span style="font-size:13px;color:#806271;">from 3:00 pm</span></td>
+              <td width="50%" style="padding:16px 20px;font:400 15px/1.5 Arial, Helvetica, sans-serif;color:#5a2448;"><span style="font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#b52660;">Check-out</span><br><strong>12 December 2026</strong><br><span style="font-size:13px;color:#806271;">by 12:00 noon</span></td>
+            </tr>
+            <tr><td colspan="2" style="padding:0 20px 16px;font:400 14px/1.5 Arial, Helvetica, sans-serif;color:#806271;">2 nights · 2 adults</td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:16px 0;font:14px/1.6 Arial, sans-serif;color:#5a2448;"><strong>1 × Deluxe Double Room</strong><br>Room with breakfast · 2 adults</td><td align="right" style="font:14px/1.6 Arial, sans-serif;color:#5a2448;">THB 6,000</td></tr></table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;border-top:2px solid #5a2448;">
+            <tr><td style="padding:10px 0 3px;">Total for your stay</td><td align="right" style="padding:10px 0 3px;"><strong>THB 6,000</strong></td></tr>
+            <tr><td style="padding:3px 0;color:#b52660;">Paid online</td><td align="right" style="padding:3px 0;color:#b52660;"><strong>THB 3,000</strong></td></tr>
+            <tr style="display:table-row;"><td style="padding:3px 0;">To pay at the hotel</td><td align="right" style="padding:3px 0;"><strong>THB 3,000</strong></td></tr>
+          </table>
+          <div style="display:none;mso-hide:all;padding:8px 0 0;font:400 13px/1.6 Arial, Helvetica, sans-serif;color:#b52660;"></div>
+        </td></tr>
+
+        <tr><td style="padding:20px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #ecd2dd;border-radius:16px;">
+            <tr><td style="padding:14px 18px;font:400 14px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;"><strong>Cancellation</strong><br><span style="color:#806271;">Preview only. The cancellation terms from the selected rate appear here.</span></td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td align="center" style="padding:26px 28px 4px;font:700 17px/1.4 Arial, Helvetica, sans-serif;color:#5a2448;">Anything we can arrange before you arrive?</td></tr>
+        <tr><td align="center" style="padding:8px 28px 6px;">
+          <a href="https://wa.me/66641230789" style="display:inline-block;margin:0 4px 10px;padding:13px 24px;border-radius:999px;background:#b52660;color:#ffffff;font:700 14px/1 Arial, Helvetica, sans-serif;text-decoration:none;">Chat on WhatsApp</a><a href="tel:+6675622622" style="display:inline-block;margin:0 4px 10px;padding:12px 23px;border-radius:999px;border:1px solid #b52660;color:#b52660;font:700 14px/1 Arial, Helvetica, sans-serif;text-decoration:none;">Call +66 75 622 622</a>
+        </td></tr>
+        <tr><td align="center" style="padding:14px 28px 4px;font:400 16px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">See you on the sunny side,<br><strong>The Royal Pineapple team</strong></td></tr>
+        <tr><td align="center" style="padding:12px 28px 20px;">
+          <img border="0" src="../royal-pineapple-riviera.jpg" width="540" height="360" alt="A little sunshine from Royal Pineapple: our golden hotel and pink pool days" style="display:block;border:0;width:100%;max-width:540px;height:auto;">
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px;background:#fff9f2;border-top:1px solid #ecd2dd;font:400 12px/1.6 Arial, Helvetica, sans-serif;color:#806271;">
+          Royal Pineapple Hotel · 339/9 Maharaj Road, Paknam, Krabi 81000 · reservation@thepineapplehotel.com · <a href="http://localhost:3004" style="color:#b52660;">Visit the website</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

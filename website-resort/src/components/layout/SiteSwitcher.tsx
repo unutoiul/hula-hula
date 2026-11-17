@@ -1,3 +1,4 @@
+import ApartmentRounded from '@mui/icons-material/ApartmentRounded';
 import BeachAccessRounded from '@mui/icons-material/BeachAccessRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import East from '@mui/icons-material/East';
@@ -8,16 +9,19 @@ import { useState } from 'react';
 import { fonts } from '../../theme';
 import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 
-// The Hula Hula family: the resort and the golf club are two websites that
-// hand guests to each other. Three ways across: the "Resort | Golf Club" tabs
-// in the top strip (large screens), the yellow badge on the header logo, and
-// the mobile menu. The logo itself goes home. The golf club's copy of this file is
-// website-golf/src/components/layout/SiteSwitcher.tsx — keep the two in step.
-// The golf club lives on its Vercel address until it has its own domain.
+// The Hula Hula family: the resort, the golf club and Royal Pineapple are
+// three websites that hand guests to each other. Three ways across: the
+// "Resort | Golf Club | Royal Pineapple" tabs in the top strip (large
+// screens), the yellow badge on the header logo, and the mobile menu. The
+// logo itself goes home. The other copies of this file are
+// website-golf/src/components/layout/SiteSwitcher.tsx and
+// website-pineapple/src/components/layout/SiteSwitcher.tsx — keep the three in step.
+// The golf club and Royal Pineapple live on their Vercel addresses until they have their own domains.
 
 export const SITES = [
   { id: 'resort', name: 'Hula Hula Resort', short: 'Resort', line: 'Tropical stays & pool villas in Ao Nang', url: 'https://hulahularesort.com', image: '/images/switcher/resort.webp', Icon: BeachAccessRounded },
   { id: 'golf', name: 'Hula Hula Golf Club', short: 'Golf Club', line: '9 holes, FootGolf & range bays by the airport', url: 'https://hulahula-golf.vercel.app', image: '/images/switcher/golf.webp', Icon: GolfCourseRounded },
+  { id: 'pineapple', name: 'Royal Pineapple Hotel', short: 'Royal Pineapple', line: 'Boutique stays in the heart of Krabi Town', url: 'https://hulahula-pineapple.vercel.app', image: '/images/switcher/pineapple.webp', Icon: ApartmentRounded },
 ] as const;
 
 const HERE = 'resort';

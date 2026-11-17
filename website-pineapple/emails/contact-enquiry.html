@@ -1,0 +1,85 @@
+<!doctype html>
+<!--
+  Resend template "contact-enquiry": the email the website's contact form sends
+  to the resort inbox (api/contact.ts). Edit it here, not in the Resend
+  dashboard, then run `npm run email:publish` to upload and publish it —
+  scripts/publish-contact-email.mjs declares the variables used below.
+
+  Resend templates have no if/else, so optional fields lean on fallback
+  values, and the WhatsApp button is switched on through WHATSAPP_DISPLAY
+  ("none;mso-hide:all" hides it in Gmail and Outlook alike). Every attribute
+  is double-quoted, because the API escapes the guest's text before it is
+  dropped in. Built for email clients: one centred 600px table, inline
+  styles, web-safe fonts and a PNG logo (Gmail and Outlook don't show SVG).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>New enquiry from the Royal Pineapple website</title>
+</head>
+<body style="margin:0;padding:0;background:#fff9f2;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">{{{GUEST_NAME}}} wrote about {{{TOPIC}}}: {{{PREVIEW}}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff9f2;">
+    <tr><td align="center" style="padding:28px 14px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border:1px solid #ecd2dd;border-radius:24px;overflow:hidden;">
+        <tr><td style="height:8px;background:#c92f6b;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td align="center" style="padding:26px 28px 8px;">
+          <a href="{{{SITE_URL}}}"><img border="0" src="cid:royal-pineapple-logo" width="100" height="100" alt="Royal Pineapple Hotel" style="display:block;border:0;width:100px;height:100px;"></a>
+        </td></tr>
+        <tr><td align="center" style="padding:6px 28px 0;">
+          <span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#fbe9f0;color:#b52660;font:700 11px/1 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;">New enquiry · {{{TOPIC}}}</span>
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px 4px;font:400 30px/1.2 Georgia, 'Times New Roman', serif;color:#5a2448;">{{{GUEST_NAME}}} has a little question</td></tr>
+        <tr><td align="center" style="padding:0 28px 22px;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#806271;">Sent from the contact form on the Royal Pineapple website.</td></tr>
+        <tr><td style="padding:0 28px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbe9f0;border-radius:18px;">
+            <tr><td style="padding:20px 22px;font:400 16px/1.7 Arial, Helvetica, sans-serif;color:#5a2448;white-space:pre-wrap;word-break:break-word;">{{{MESSAGE}}}</td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:18px 28px 6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Topic</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">{{{TOPIC}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Name</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">{{{GUEST_NAME}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Email</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;"><a href="mailto:{{{GUEST_EMAIL}}}" style="color:#b52660;text-decoration:underline;">{{{GUEST_EMAIL}}}</a></td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Phone</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">{{{GUEST_PHONE}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Stay</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">{{{STAY}}}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;width:132px;vertical-align:top;font:700 11px/1.6 Arial, Helvetica, sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#806271;">Sent</td>
+              <td style="padding:10px 0;border-top:1px solid #ecd2dd;vertical-align:top;font:400 15px/1.6 Arial, Helvetica, sans-serif;color:#5a2448;">{{{SENT_AT}}} (Krabi time) · from {{{PAGE}}}</td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:18px 28px 8px;">
+          <a href="mailto:{{{GUEST_EMAIL}}}?subject={{{REPLY_SUBJECT}}}" style="display:inline-block;margin:0 8px 10px 0;padding:13px 24px;border-radius:999px;background:#b52660;color:#ffffff;font:700 14px/1 Arial, Helvetica, sans-serif;text-decoration:none;">Reply by email</a><a href="{{{WHATSAPP_URL}}}" style="display:{{{WHATSAPP_DISPLAY}}};margin:0 8px 10px 0;padding:13px 24px;border-radius:999px;background:#b52660;color:#ffffff;font:700 14px/1 Arial, Helvetica, sans-serif;text-decoration:none;">Reply on WhatsApp</a>
+        </td></tr>
+        <tr><td style="padding:6px 28px 26px;font:400 13px/1.6 Arial, Helvetica, sans-serif;color:#806271;">Tip: just hit reply — your answer goes straight to {{{GUEST_NAME}}}.</td></tr>
+        <tr><td align="center" style="padding:0 28px 20px;">
+          <img border="0" src="cid:royal-pineapple-stationery" width="200" height="133" alt="" role="presentation" style="display:block;border:0;width:200px;max-width:100%;height:auto;">
+        </td></tr>
+        <tr><td align="center" style="padding:16px 28px;background:#fff9f2;border-top:1px solid #ecd2dd;font:400 12px/1.6 Arial, Helvetica, sans-serif;color:#806271;">
+          Royal Pineapple Hotel · 339/9 Maharaj Road, Paknam, Krabi 81000 · reservation@thepineapplehotel.com · <a href="{{{SITE_URL}}}" style="color:#b52660;">Visit the website</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

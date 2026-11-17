@@ -1,0 +1,9 @@
+Thanks, {{{GUEST_FIRST_NAME}}}! We have your message about {{{TOPIC}}}. Our team will reply by email, usually within a day.
+
+Royal Pineapple Hotel
+WhatsApp: https://wa.me/66641230789
+Call: +66 75 622 622
+reservation@thepineapplehotel.com
+{{{SITE_URL}}}
+
+If you did not contact us, you can ignore this email.

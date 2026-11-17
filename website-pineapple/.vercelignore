@@ -1,0 +1,15 @@
+/scripts
+/assets
+/output
+/emails
+node_modules
+/dist
+.git
+/.vercel
+vite.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+/supabase
+/tests

@@ -38,7 +38,7 @@ export function Footer({ from = SEAM.cream, mobileActionSpace = false }: { from?
           <Typography variant="overline" sx={{ lineHeight: 1.8 }}>
             {openingHoursLines(club).map((line) => <Box component="span" key={line} sx={{ display: 'block' }}>{line}</Box>)}
           </Typography>
-          <Typography variant="overline">Staying over? <Link href={CONTACT.resort} target="_blank" rel="noopener noreferrer" color="inherit">Hula Hula Resort, Ao Nang</Link></Typography>
+          <Typography variant="overline">Staying over? <Link href={CONTACT.resort} target="_blank" rel="noopener noreferrer" color="inherit">Hula Hula Resort, Ao Nang</Link> or <Link href="https://hulahula-pineapple.vercel.app" target="_blank" rel="noopener noreferrer" color="inherit">Royal Pineapple, Krabi Town</Link></Typography>
           <Typography component="div" variant="overline" sx={{ '& button': { minHeight: 44 } }}>© {new Date().getFullYear()} Hula Hula Golf Club<MotionToggleLink /></Typography>
           <DesignCredit />
         </Stack>

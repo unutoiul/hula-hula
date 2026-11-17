@@ -1,0 +1,16 @@
+New paid website booking: {{{BOOKING_REF}}}
+{{{PREVIEW}}}
+Guest: {{{GUEST_NAME}}}
+Email: {{{GUEST_EMAIL}}}
+Phone: {{{GUEST_PHONE}}}
+Check-in: {{{CHECK_IN}}}
+Check-out: {{{CHECK_OUT}}}
+{{{NIGHTS}}} / {{{GUESTS}}}
+Rooms:
+{{{ROOMS_TEXT}}}
+Total: {{{TOTAL}}}
+Paid: {{{PAID_AMOUNT}}}
+Balance: {{{BALANCE}}}
+
+Please open the website admin for the full room details, payment checks and special requests. Enter the booking manually in SiteMinder, then mark it entered.
+{{{SITE_URL}}}/admin

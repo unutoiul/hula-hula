@@ -1,0 +1,30 @@
+/* The SVG mask clips the moving reel; the source badge is a stationary overlay. */
+.postcard-badge-stage { position: relative; width: 100%; isolation: isolate; filter: drop-shadow(0 12px 18px #5a24481c); }
+.badge-picture-mask { position: absolute; inset: 0; mask-size: 100% 100%; -webkit-mask-size: 100% 100%; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; mask-mode: alpha; }
+.postcard-badge-stage .postcard-picture-window { position: absolute; aspect-ratio: auto; border-radius: 0; background: #ead5c6; }
+.badge-frame-layer { position: absolute; z-index: 2; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+.postcard-stack.postcard-stack-badges { padding-top: 82px; }
+.postcard-stack-badges .postcard-stack-front { width: 96%; }
+.postcard-stack-badges .direct-offer-seal { right: -1%; bottom: 144px; width: 112px; }
+.postcard-stack-badges .direct-offer-seal > strong { font-size: 43px; }
+.offer-postcard .postcard-badge-stage { filter: drop-shadow(0 4px 5px #5a244818); }
+.offer-postcard-plum .postcard-badge-stage { filter: drop-shadow(0 4px 5px #230b1e30); }
+.offer-postcard .postcard-reel-footer { padding-inline: 3px; }
+
+@media (max-width: 1199px) {
+  .postcard-stack.postcard-stack-badges { padding-top: 67px; }
+  .postcard-stack-badges .direct-offer-seal { width: 95px; bottom: 125px; }
+  .postcard-stack-badges .direct-offer-seal > strong { font-size: 37px; }
+}
+@media (max-width: 899px) {
+  .postcard-stack.postcard-stack-badges { padding-top: 86px; }
+}
+@media (max-width: 599px) {
+  .postcard-stack.postcard-stack-badges { padding-top: 59px; }
+  .postcard-stack-badges .postcard-stack-front { width: 100%; }
+  .postcard-stack-badges .direct-offer-seal { width: 75px; right: -3%; bottom: 108px; }
+  .postcard-stack-badges .direct-offer-seal > strong { font-size: 29px; }
+  .postcard-stack-badges .direct-offer-seal > span { font-size: 5px; }
+  .postcard-stack-badges .direct-offer-seal > small { font-size: 4px; }
+  .postcard-stack-badges .postcard-scene-title { font-size: 17px; }
+}

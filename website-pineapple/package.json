@@ -1,0 +1,41 @@
+{
+  "name": "royal-pineapple-hotel",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "node --env-file-if-exists=.env.local scripts/dev-api.mjs",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
+    "test:unit": "node --test tests/booking.test.ts",
+    "photos": "python scripts/prepare-pineapple-photos.py",
+    "test:payments": "node --import tsx --test tests/payment-status.test.ts tests/siteminder-delivery.test.ts",
+    "preview": "vite preview",
+    "email:publish": "node --env-file-if-exists=.env.local scripts/publish-contact-email.mjs"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.3.1",
+    "@mui/material": "^7.3.1",
+    "@stripe/stripe-js": "^10.2.1",
+    "@supabase/supabase-js": "^2.118.0",
+    "@vercel/analytics": "^2.0.1",
+    "gsap": "^3.15.1",
+    "motion": "^13.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vercel/node": "^13.0.1",
+    "@vitejs/plugin-react": "^5.0.2",
+    "tsx": "4.21.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.1.3"
+  }
+}
