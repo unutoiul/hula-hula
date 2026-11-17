@@ -3,7 +3,7 @@ import type { Highlight } from './cmsCards';
 /** Visual concepts requested for review. They never create promo codes or alter rates. */
 export const previewOffers: Highlight[] = [
   {
-    id: 'preview-direct', kind: 'offer', preview: true, label: 'A little thank-you for booking direct', tag: '−45%',
+    id: 'preview-direct', kind: 'offer', preview: true, label: 'Your book-direct treat', tag: '−45%',
     title: 'Your holiday. A little sweeter.',
     description: 'Golden arches, pink pool days and a direct-booking treat worth daydreaming about.',
     perks: ['A special rate for booking direct', 'Your choice of a lovely little room', 'A warm welcome from our own team'],

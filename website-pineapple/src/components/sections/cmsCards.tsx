@@ -8,6 +8,7 @@ import { useContactForm } from '../../context/ContactFormContext';
 import { useSiteContent } from '../../context/SiteContentContext';
 import { photoAssets as p } from '../../data/photos';
 import { navigate } from '../../router';
+import { previewOffers } from './previewOffers';
 
 // Turning the CMS's offers and events into "highlights" — the one list the
 // hero's rotating card and the "Offers & what's on" section both show — and
@@ -110,6 +111,21 @@ export function eventHighlight(event: SiteEvent): Highlight {
     case 'book': return { ...base, ctaLabel: event.cta.label || 'Book your stay', ctaIcon: bookIcon };
     default: return { ...base, ctaLabel: event.cta.label || 'Ask about this', ctaIcon: askIcon };
   }
+}
+
+/**
+ * What the homepage shows, in the "Offers & what's on" section and on the
+ * hero's offer badge alike: everything published at /admin, or, until
+ * something is, the two sample offers (whose buttons ask the team).
+ */
+export function useHomepageHighlights(): Highlight[] {
+  const published = useHighlights();
+  const openContact = useContactForm();
+  if (published.length) return published;
+  return previewOffers.map((item) => ({ ...item, onCta: () => openContact({
+    topic: item.title, page: 'Offer preview',
+    message: `Hello Royal Pineapple! I saw the “${item.title}” sample offer. Could you confirm the available dates, prices and inclusions?`,
+  }) }));
 }
 
 /** The running offers, then the events, in the order set at /admin — with their buttons wired up. */

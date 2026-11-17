@@ -1,24 +1,17 @@
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import { Box } from '@mui/material';
-import { useContactForm } from '../../context/ContactFormContext';
 import { SECTION_HEADING } from '../../layoutConstants';
 import { fonts } from '../../theme';
 import { ResortPhoto } from '../common/ResortPhoto';
 import { Reveal } from '../common/ScrollMotion';
 import { BadgePicture } from '../landing/BadgePicture';
 import { eyebrowSx, serifHeadingSx } from '../landing/landingStyles';
-import { useHighlights, type Highlight } from './cmsCards';
-import { previewOffers } from './previewOffers';
+import { useHomepageHighlights, type Highlight } from './cmsCards';
 
 export function HighlightsSection() {
-  const published = useHighlights();
-  const openContact = useContactForm();
-  const preview = !published.length;
-  const items = preview ? previewOffers.map(item => ({ ...item, onCta: () => openContact({
-    topic: item.title, page: 'Offer preview',
-    message: `Hello Royal Pineapple! I saw the “${item.title}” sample offer. Could you confirm the available dates, prices and inclusions?`,
-  }) })) : published;
+  const items = useHomepageHighlights();
+  const preview = items.some(item => item.preview);
 
   return <Box component="section" id="offers" aria-labelledby="offers-heading" sx={{
     display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '.68fr 2fr' }, alignItems: 'center', gap: { xs: '32px', lg: '44px' },

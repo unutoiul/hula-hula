@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'rea
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
 import { brand, fonts } from '../../theme';
 import { MotionBox } from '../common/motionPrimitives';
-import { previewOffers } from '../sections/previewOffers';
+import { useHomepageHighlights, type Highlight } from '../sections/cmsCards';
 import { BadgePicture } from './BadgePicture';
 import { PostcardReel, postcardScenes, wrapReelIndex } from './PostcardReel';
 
@@ -20,17 +20,40 @@ const reelButtonSx = {
 } as const;
 
 // The offer card's words scale with the card itself (container query units).
+const clampLines = (lines: number) => ({ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: lines, overflow: 'hidden' }) as const;
 const offerWordsSx = {
   position: 'absolute', inset: '13% 17% 27%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
   gap: 'clamp(4px, 1.8cqw, 8px)', textAlign: 'center', color: '#fff7e8', textShadow: '0 1px 7px #32102c80',
-  '& .kicker, & small': { maxWidth: '100%', fontSize: 'clamp(5px, 2.4cqw, 9px)', textWrap: 'balance' },
+  '& .kicker, & small': { ...clampLines(2), maxWidth: '100%', fontSize: 'clamp(5px, 2.4cqw, 9px)', textWrap: 'balance' },
   '& .kicker': { lineHeight: 1.35, letterSpacing: '.13em', fontWeight: 600, textTransform: 'uppercase' },
   '& small': { lineHeight: 1.4, fontWeight: 400, letterSpacing: '.01em' },
   '& strong': { fontFamily: fonts.serif, fontWeight: 400 },
 } as const;
 
+/**
+ * The words on the hero's offer badge, for whatever the homepage's offers
+ * section shows (a published offer or event, or a sample): the kicker, then
+ * the discount, date or name big, then the name or a detail underneath.
+ */
+function OfferBadgeWords({ item }: { item: Highlight }) {
+  const big = item.tag ?? item.title;
+  const percent = big.match(/^(.*\d)%$/);
+  const detail = item.note?.split(' · ').find(part => part !== item.tag);
+  const small = item.preview ? 'Offer preview' : big === item.title ? detail ?? 'Book direct' : item.title;
+  return <Box sx={offerWordsSx}>
+    <span className="kicker">{item.label}</span>
+    {percent
+      ? <Box component="strong" sx={{ display: 'inline-flex', alignItems: 'baseline', gap: '.025em', m: 0, fontSize: 'clamp(24px, 16.5cqw, 64px)', lineHeight: .95, letterSpacing: '-.055em', fontVariantNumeric: 'lining-nums', whiteSpace: 'nowrap', '& > span': { fontSize: '.5em', letterSpacing: '-.02em' } }}>{percent[1]}<span>%</span></Box>
+      : big.length <= 7
+        ? <Box component="strong" sx={{ fontSize: 'clamp(20px, 12cqw, 48px)', lineHeight: 1, letterSpacing: '-.04em', whiteSpace: 'nowrap' }}>{big}</Box>
+        : <Box component="strong" sx={{ ...clampLines(3), maxWidth: '100%', fontStyle: 'italic', fontSize: 'clamp(13px, 9cqw, 34px)', lineHeight: 1.02, letterSpacing: '-.03em', textWrap: 'balance' }}>{big}</Box>}
+    <small>{small}</small>
+  </Box>;
+}
+
 export function PostcardCollage() {
   const { reduced, systemReduced, toggle } = useMotionPreference();
+  const highlights = useHomepageHighlights();
   const scope = useRef<HTMLDivElement>(null);
   const inView = useInView(scope, { amount: .35 });
   const [index, setIndex] = useState(0);
@@ -50,7 +73,8 @@ export function PostcardCollage() {
   const sequence = target === null ? [index] : [index, index + step, index + step * 2, index + step * 3, target];
   const photoIndex = wrapReelIndex(index, postcardScenes.length);
   const photo = postcardScenes[photoIndex];
-  const offer = previewOffers[wrapReelIndex(index, previewOffers.length)];
+  const offer = highlights[wrapReelIndex(index, highlights.length)];
+  const offerImages = highlights.map(item => item.image).join('|');
 
   const request = useCallback((next: -1 | 1) => {
     if (target !== null) return;
@@ -62,15 +86,16 @@ export function PostcardCollage() {
     if (target !== null) { setIndex(target); setTarget(null); }
   }, [target]);
 
+  // Decode every photo and offer image first, so the reel never lands on a blank card.
   useEffect(() => {
     let mounted = true;
-    const images = [...postcardScenes.map(scene => scene.image), ...previewOffers.map(item => item.image)];
+    const images = [...postcardScenes.map(scene => scene.image), ...offerImages.split('|')];
     void Promise.all(images.map(source => {
       const image = new Image(); image.src = source;
       return image.decode().catch(() => {});
     })).then(() => { if (mounted) setReady(true); });
     return () => { mounted = false; };
-  }, []);
+  }, [offerImages]);
 
   useEffect(() => {
     const update = () => setVisible(!document.hidden);
@@ -157,28 +182,23 @@ export function PostcardCollage() {
         }}>Wish you were here…</Box>
       </Box>
 
-      <Box component="a" href="#offers" aria-label={`${offer.tag} ${offer.label}. Offer preview. View details.`} sx={{
+      <Box component="a" href="#offers" aria-label={`${offer.label}: ${offer.title.replace(/[.!?]$/, '')}.${offer.preview ? ' Offer preview.' : ''} See the details.`}
+        data-cta={offer.preview ? 'View this offer preview ↗' : offer.kind === 'event' ? 'See what’s on ↗' : 'See this offer ↗'} sx={{
         position: 'absolute', zIndex: 3, right: '3%', bottom: { xs: 26, sm: 34 }, width: { xs: '49%', sm: '41%', md: '45%', lg: '41%' },
         transform: { xs: 'rotate(7deg)', sm: 'rotate(8deg)' }, containerType: 'inline-size', textDecoration: 'none', color: '#fff5e4', cursor: 'grab',
         '&:focus-visible': { borderRadius: '32px' },
         '&::after': {
-          content: '"View this offer preview ↗"', position: 'absolute', top: { xs: 'calc(100% + 5px)', sm: 'calc(100% + 8px)' }, right: { xs: 0, sm: 15 },
+          content: 'attr(data-cta)', position: 'absolute', top: { xs: 'calc(100% + 5px)', sm: 'calc(100% + 8px)' }, right: { xs: 0, sm: 15 },
           color: '#8c4868', fontSize: { xs: 8, sm: 10 }, lineHeight: 1.5, whiteSpace: 'nowrap',
         },
       }}>
         <BadgePicture frameName="grand-arrival" eager shadow="0 12px 14px #5a24482c">
           <PostcardReel key={`offer-${index}-${target}`} sequence={sequence} moving={busy} direction={direction}>
             {item => {
-              const number = wrapReelIndex(item, previewOffers.length);
-              const card = previewOffers[number];
+              const card = highlights[wrapReelIndex(item, highlights.length)];
               return <><img src={card.image} alt="" width={1600} height={1067} decoding="async" draggable={false} />
                 <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #4a143be6, #4a143bc7 64%, #4a143b80)' }} />
-                <Box sx={offerWordsSx}><span className="kicker">{number === 0 ? 'Your book-direct treat' : 'The slow-morning escape'}</span>
-                  {number === 0
-                    ? <Box component="strong" sx={{ display: 'inline-flex', alignItems: 'baseline', gap: '.025em', m: 0, fontSize: 'clamp(24px, 16.5cqw, 64px)', lineHeight: .95, letterSpacing: '-.055em', fontVariantNumeric: 'lining-nums', whiteSpace: 'nowrap', '& > span': { fontSize: '.5em', letterSpacing: '-.02em' } }}>−45<span>%</span></Box>
-                    : <Box component="strong" sx={{ fontStyle: 'italic', fontSize: 'clamp(13px, 9cqw, 34px)', lineHeight: 1.02, letterSpacing: '-.03em' }}>Breakfast<br />for two</Box>}
-                  <small>{number === 0 ? 'Direct booking · Offer preview' : 'Three nights · Offer preview'}</small>
-                </Box></>;
+                <OfferBadgeWords item={card} /></>;
             }}
           </PostcardReel>
         </BadgePicture>
