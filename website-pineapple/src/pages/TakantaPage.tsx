@@ -4,7 +4,6 @@ import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRound
 import MailOutlineRounded from '@mui/icons-material/MailOutlineRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Container, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { useEffect } from 'react';
 import { useContactForm } from '../context/ContactFormContext';
 import { CONTACT, takantaEventTypes, takantaFacilities, takantaOutdoor, takantaSpaces, takantaWhy } from '../data/content';
 import { photoAssets as p } from '../data/photos';
@@ -37,7 +36,6 @@ function TeamCard({ title, line, phone, tel, email, subject }: { title: string; 
 // event perks and both teams' contacts, all from the hall's own fact sheet.
 export function TakantaPage() {
   const openContact = useContactForm();
-  useEffect(() => { document.title = 'Takanta Event Hall (TK Hall) — event venue near Krabi Airport'; }, []);
   return <PageShell>
     <PageIntro eyebrow="Takanta Event Hall · TK Hall" title="Your complete event destination in Krabi." image={p.takantaBanquet.src}
       imageAlt="A Takanta hall set for a banquet, with round tables, gold sashes and two big LED walls"

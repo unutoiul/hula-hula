@@ -4,7 +4,6 @@ import East from '@mui/icons-material/East';
 import MailOutlineRounded from '@mui/icons-material/MailOutlineRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Container, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { useEffect } from 'react';
 import { useContactForm } from '../context/ContactFormContext';
 import { CONTACT, coffeeBreak, eventEquipment, eventFood, poolsideEvents, resortVenues, takantaSpaces, venues, weddingServices } from '../data/content';
 import { photoAssets as p } from '../data/photos';
@@ -33,7 +32,6 @@ export function CheckList({ title, items, columns = false }: { title: string; it
 // Takanta Event Hall (its own page) and Hula Hula Resort.
 export function MeetingsPage() {
   const openContact = useContactForm();
-  useEffect(() => { document.title = 'Meetings, events & weddings — Royal Pineapple Hotel, Krabi'; }, []);
   const enquire = (topic: string) => openContact({ topic, message: 'Hello Royal Pineapple! We’re planning an event for about … guests on … (date).', page: 'Meetings & events' });
   return <PageShell>
     <PageIntro eyebrow="Meetings, events & weddings" title="Transform meetings into memorable experiences." image={p.meetingClassroom.src} imageAlt="The Summer room set up classroom-style with a projector screen"

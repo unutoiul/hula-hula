@@ -22,7 +22,6 @@ import { PageIntro, PageShell } from './PageShell';
 // this room, the facts, everything in it, and booking — then the other rooms.
 export function RoomPage({ id }: { id: string }) {
   const room = rooms.find((r) => r.id === id);
-  useEffect(() => { if (room) document.title = `${room.title} — Royal Pineapple Hotel, Krabi Town`; }, [room]);
   useEffect(() => { if (!room) navigate('/#rooms', { replace: true }); }, [room]);
   if (!room) return null;
   return <PageShell>

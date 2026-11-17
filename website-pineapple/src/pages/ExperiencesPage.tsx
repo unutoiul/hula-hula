@@ -1,7 +1,6 @@
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRounded';
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
-import { useEffect } from 'react';
 import { useContactForm } from '../context/ContactFormContext';
 import { celebrations, recommendedDay, tours } from '../data/content';
 import { photoAssets as p } from '../data/photos';
@@ -18,7 +17,6 @@ import { PageIntro, PageShell } from './PageShell';
 export function ExperiencesPage() {
   const openContact = useContactForm();
   const { days, today } = useProgramme();
-  useEffect(() => { document.title = 'The 7-day Krabi programme — Royal Pineapple Hotel'; }, []);
   const ask = (topic: string, message: string) => openContact({ topic, message, page: 'Experiences' });
   return <PageShell>
     <PageIntro eyebrow="Activities & experiences" title="Make your stay more than a room." image={p.dayMonday.src} imageAlt="Guests painting batik on Koh Klang"

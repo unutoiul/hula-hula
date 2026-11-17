@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Allow: /api/site
+Allow: /api/events
+
+# The club's settings and events must be crawlable for the pages to render.
+# API responses send X-Robots-Tag: noindex so they are not search result pages.
+
+# Staff and checkout pages send an HTTP X-Robots-Tag: noindex header.
+# Allow crawling of those pages so search engines can read that directive.
+Sitemap: https://hulahula-golf.vercel.app/sitemap.xml

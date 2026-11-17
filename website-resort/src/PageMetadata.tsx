@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { useLocation } from './router';
-import { hotelStructuredData, pageMetadata, SOCIAL_IMAGE } from './seo';
+import { pageHead, SOCIAL_IMAGE } from './seo';
 
-// Vite supplies the same metadata in the initial HTML. Keep it correct when
-// navigating between the resort, booking search, checkout and staff pages.
+// The build writes each page's <head> into its own HTML file (seoPlugin.ts).
+// This keeps it right as visitors move between pages inside the app.
 export function PageMetadata() {
   const { pathname } = useLocation();
   useEffect(() => {
-    const page = pageMetadata(pathname);
+    const page = pageHead(pathname);
     document.title = page.title;
     const meta = (key: string, content: string, attribute: 'name' | 'property' = 'name') => {
       let element = document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
@@ -26,7 +26,6 @@ export function PageMetadata() {
     meta('twitter:title', page.title);
     meta('twitter:description', page.description);
     let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    let structured = document.getElementById('hotel-structured-data');
     if (page.canonical) {
       if (!canonical) {
         canonical = document.createElement('link');
@@ -35,17 +34,17 @@ export function PageMetadata() {
       }
       canonical.href = page.canonical;
       meta('og:url', page.canonical, 'property');
-      if (!structured) {
-        structured = document.createElement('script');
-        structured.id = 'hotel-structured-data';
-        structured.setAttribute('type', 'application/ld+json');
-        document.head.appendChild(structured);
-      }
-      structured.textContent = JSON.stringify(hotelStructuredData);
     } else {
       canonical?.remove();
-      structured?.remove();
       document.head.querySelector('meta[property="og:url"]')?.remove();
+    }
+    document.head.querySelectorAll('script[data-seo]').forEach((script) => script.remove());
+    for (const data of page.structuredData ?? []) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.dataset.seo = '';
+      script.textContent = JSON.stringify(data);
+      document.head.appendChild(script);
     }
   }, [pathname]);
   return null;

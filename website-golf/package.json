@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:api": "node --env-file-if-exists=.env.local scripts/dev-api.mjs",
     "build": "tsc -b && vite build",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.api.json",
+    "typecheck": "tsc -b tsconfig.node.json && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.api.json",
     "test:unit": "node --test tests/*.test.ts",
     "email:publish": "node --env-file-if-exists=.env.local scripts/publish-emails.mjs",
     "preview": "vite preview",

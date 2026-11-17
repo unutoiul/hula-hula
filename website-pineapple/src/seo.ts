@@ -1,53 +1,37 @@
+import { CONTACT, rooms } from './data/content';
+
+// Every public page's title, description, canonical address and structured
+// data, in one place. seoPlugin.ts writes them into each page's HTML at build
+// time (and into the sitemap); PageMetadata keeps them right as visitors
+// move between pages in the app.
+
 // The address search engines and link previews should use: royalpineapplehotel.com
 // redirects here, and thepineapplehotel.com and the Vercel address serve the same site.
 export const SITE_URL = 'https://www.royalpineapplehotel.com';
+export const SITE_NAME = 'Royal Pineapple Hotel';
 export const SOCIAL_IMAGE = `${SITE_URL}/images/share.jpg`;
+export const SOCIAL_IMAGE_ALT = 'Royal Pineapple Hotel, a pink-and-yellow boutique hotel with a pool in Krabi Town';
 
-const home = {
-  title: 'Royal Pineapple Hotel | Official Website | Krabi Town, Thailand',
-  description: 'A contemporary colonial-inspired urban resort in the heart of Krabi Town, part of the Hula Hula family. 72 rooms with balconies, a pool, a free 7-day Krabi programme, 24-hour café, co-working and gym. Stay local, explore more.',
-  canonical: `${SITE_URL}/`,
-  robots: 'index, follow, max-image-preview:large',
-};
-const booking = {
-  title: 'Book Direct | Royal Pineapple Hotel, Krabi Town',
-  description: 'Check live room availability and prices at Royal Pineapple Hotel in Krabi Town. Choose your dates and guests, compare rooms and book directly on our official website.',
-  canonical: `${SITE_URL}/book`,
-  robots: home.robots,
-};
-const pages: Record<string, { title: string; description: string }> = {
-  '/meetings': { title: 'Meetings, events & weddings | Royal Pineapple Hotel, Krabi', description: 'Four meeting rooms and a pool terrace for 10 to 200 guests in Krabi Town, with catering, equipment and wedding packages — and up to 2,000 guests at the family’s Takanta Event Hall.' },
-  '/meetings/takanta': { title: 'Takanta Event Hall (TK Hall) | Event venue near Krabi Airport', description: 'Halls, terraces and lawns for 30 to 2,000 guests at Hula Hula Golf Club, near Krabi International Airport: meetings, seminars, weddings, banquets and parties, with two 15-metre LED walls, catering and a one-stop event team.' },
-  '/experiences': { title: 'The 7-day Krabi programme | Royal Pineapple Hotel', description: 'A different Krabi trip every day of the week from Royal Pineapple Hotel: Koh Klang, FootGolf, a Thai cooking class, Tiger Cave Temple, Central Krabi, Railay and Panurat Temple.' },
-};
+export interface PageHead { title: string; description: string; canonical: string | null; robots: string; structuredData?: object[] }
 
-export function pageMetadata(pathname: string) {
-  if (['/book', '/book/', '/book.html'].includes(pathname)) return booking;
-  if (['/', '/index.html'].includes(pathname)) return home;
-  if (pages[pathname]) return { ...pages[pathname], canonical: `${SITE_URL}${pathname}`, robots: home.robots };
-  if (pathname.startsWith('/rooms/')) {
-    return { title: 'Rooms | Royal Pineapple Hotel, Krabi Town', description: home.description, canonical: `${SITE_URL}${pathname}`, robots: home.robots };
-  }
-  return {
-    title: pathname.startsWith('/admin') ? 'Website admin — Royal Pineapple Hotel' : 'Book your stay — Royal Pineapple Hotel',
-    description: booking.description,
-    canonical: null,
-    robots: 'noindex, nofollow',
-  };
-}
+const INDEX = 'index, follow, max-image-preview:large';
+const HOTEL_ID = `${SITE_URL}/#hotel`;
+
+const HOME_DESCRIPTION = 'A contemporary colonial-inspired urban resort in the heart of Krabi Town, part of the Hula Hula family. 72 rooms with balconies, a pool, a free 7-day Krabi programme, 24-hour café, co-working and gym. Stay local, explore more.';
 
 // Describe the property, without publishing an undated price or an unverified rating.
 export const hotelStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Hotel',
-  '@id': `${SITE_URL}/#hotel`,
-  name: 'Royal Pineapple Hotel',
-  alternateName: 'The Pineapple Hotel',
+  '@id': HOTEL_ID,
+  name: SITE_NAME,
+  alternateName: ['Royal Pineapple', 'The Pineapple Hotel'],
   url: `${SITE_URL}/`,
-  description: home.description,
+  logo: `${SITE_URL}/logo/royal-pineapple.svg`,
+  description: HOME_DESCRIPTION,
   image: [SOCIAL_IMAGE],
   telephone: '+66 75 622 622',
-  email: 'reservation@thepineapplehotel.com',
+  email: CONTACT.email,
   numberOfRooms: 72,
   amenityFeature: ['Outdoor pool', '24-hour gym', '24-hour co-working space', '24-hour café', 'Restaurant', 'Spa and salon', 'Meeting rooms', 'Free parking', 'Free Wi-Fi', 'Shuttle bus'].map((name) => ({ '@type': 'LocationFeatureSpecification', name, value: true })),
   address: {
@@ -58,7 +42,9 @@ export const hotelStructuredData = {
     postalCode: '81000',
     addressCountry: 'TH',
   },
-  parentOrganization: { '@type': 'Organization', name: 'Hula Hula Holiday', url: 'https://hulahularesort.com' },
+  hasMap: CONTACT.maps,
+  sameAs: [CONTACT.facebook, CONTACT.instagram, CONTACT.tiktok],
+  parentOrganization: { '@type': 'Organization', name: 'Hula Hula Holiday', url: 'https://www.hulahularesort.com/' },
   potentialAction: {
     '@type': 'ReserveAction',
     target: {
@@ -70,3 +56,82 @@ export const hotelStructuredData = {
     result: { '@type': 'LodgingReservation', name: 'Book a stay at Royal Pineapple Hotel' },
   },
 };
+
+/** The site's name in search results ("Royal Pineapple Hotel" rather than the domain). */
+const websiteStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
+  url: `${SITE_URL}/`,
+  name: SITE_NAME,
+  alternateName: ['Royal Pineapple', 'The Pineapple Hotel'],
+  inLanguage: 'en',
+  publisher: { '@id': HOTEL_ID },
+};
+
+/** Home › … › this page, for the breadcrumb trail under the result. */
+const breadcrumbs = (trail: [string, string][]) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [['Home', '/'] as [string, string], ...trail].map(([name, path], index) => ({ '@type': 'ListItem', position: index + 1, name, item: `${SITE_URL}${path}` })),
+});
+
+interface Page { title: string; description: string; trail: [string, string][]; extra?: object[] }
+
+const pages: Record<string, Page> = {
+  '/book': {
+    title: 'Book Direct | Royal Pineapple Hotel, Krabi Town',
+    description: 'Check live room availability and prices at Royal Pineapple Hotel in Krabi Town. Choose your dates and guests, compare rooms and book directly on our official website.',
+    trail: [['Book your stay', '/book']],
+  },
+  '/meetings': {
+    title: 'Meetings, Events & Weddings in Krabi Town | Royal Pineapple Hotel',
+    description: 'Four meeting rooms and a pool terrace for 10 to 200 guests in Krabi Town, with catering, equipment and wedding packages — and up to 2,000 guests at the family’s Takanta Event Hall.',
+    trail: [['Meetings & events', '/meetings']],
+  },
+  '/meetings/takanta': {
+    title: 'Takanta Event Hall (TK Hall) | Event Venue near Krabi Airport',
+    description: 'Halls, terraces and lawns for 30 to 2,000 guests at Hula Hula Golf Club, near Krabi International Airport: meetings, seminars, weddings, banquets and parties, with two 15-metre LED walls and catering.',
+    trail: [['Meetings & events', '/meetings'], ['Takanta Event Hall', '/meetings/takanta']],
+  },
+  '/experiences': {
+    title: 'Things to Do in Krabi: the 7-Day Programme | Royal Pineapple Hotel',
+    description: 'A different Krabi trip every day of the week from Royal Pineapple Hotel: Koh Klang, FootGolf, a Thai cooking class, Tiger Cave Temple, Central Krabi, Railay and Panurat Temple.',
+    trail: [['7-day Krabi programme', '/experiences']],
+  },
+  ...Object.fromEntries(rooms.map((room): [string, Page] => [`/rooms/${room.id}`, {
+    title: `${/suite$/i.test(room.title) ? room.title : `${room.title} Room`} | Royal Pineapple Hotel, Krabi`,
+    description: `${room.detail} ${room.beds}, sleeps ${room.sleeps}, ${room.view.toLowerCase()}. Book direct on our official website.`,
+    trail: [[room.title, `/rooms/${room.id}`]],
+    extra: [{
+      '@context': 'https://schema.org',
+      '@type': 'HotelRoom',
+      name: room.title,
+      description: room.about,
+      image: room.images.map((image) => `${SITE_URL}${image}`),
+      bed: room.beds,
+      floorSize: { '@type': 'QuantitativeValue', value: room.sqm, unitCode: 'MTK' },
+      occupancy: { '@type': 'QuantitativeValue', maxValue: room.sleeps },
+      containedInPlace: { '@id': HOTEL_ID },
+    }],
+  }])),
+};
+
+/** Every public page, for the per-page HTML files and the sitemap. */
+export const PUBLIC_ROUTES = ['/', ...Object.keys(pages)];
+
+export function pageHead(pathname: string): PageHead {
+  const path = pathname === '/index.html' ? '/' : pathname === '/book.html' || pathname === '/book/' ? '/book' : pathname.replace(/(.)\/$/, '$1');
+  if (path === '/') {
+    return { title: 'Royal Pineapple Hotel | Official Website | Krabi Town, Thailand', description: HOME_DESCRIPTION, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, hotelStructuredData] };
+  }
+  const page = pages[path];
+  if (page) return { title: page.title, description: page.description, canonical: `${SITE_URL}${path}`, robots: INDEX, structuredData: [breadcrumbs(page.trail), ...(page.extra ?? [])] };
+  // Staff pages, checkout steps and unknown addresses stay out of search results.
+  return {
+    title: path.startsWith('/admin') ? 'Website admin — Royal Pineapple Hotel' : 'Book your stay — Royal Pineapple Hotel',
+    description: pages['/book'].description,
+    canonical: null,
+    robots: 'noindex, nofollow',
+  };
+}

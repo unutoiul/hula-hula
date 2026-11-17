@@ -1,33 +1,14 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
-import { hotelStructuredData, pageMetadata, SOCIAL_IMAGE } from './src/seo';
+import { seoPages } from './seoPlugin';
+import { pageHead, PUBLIC_ROUTES, SITE_NAME, SITE_URL, SOCIAL_IMAGE, SOCIAL_IMAGE_ALT } from './src/seo';
 
 export default defineConfig({
-  plugins: [react(), {
-    name: 'hotel-page-metadata',
-    transformIndexHtml(_html, context) {
-      const page = pageMetadata(context.path);
-      return [
-        { tag: 'title', children: page.title },
-        { tag: 'meta', attrs: { name: 'description', content: page.description } },
-        { tag: 'meta', attrs: { name: 'robots', content: page.robots } },
-        ...(page.canonical ? [{ tag: 'link', attrs: { rel: 'canonical', href: page.canonical } }] : []),
-        { tag: 'meta', attrs: { property: 'og:type', content: 'website' } },
-        { tag: 'meta', attrs: { property: 'og:site_name', content: 'Royal Pineapple Hotel' } },
-        { tag: 'meta', attrs: { property: 'og:title', content: page.title } },
-        { tag: 'meta', attrs: { property: 'og:description', content: page.description } },
-        ...(page.canonical ? [{ tag: 'meta', attrs: { property: 'og:url', content: page.canonical } }] : []),
-        { tag: 'meta', attrs: { property: 'og:image', content: SOCIAL_IMAGE } },
-        { tag: 'meta', attrs: { property: 'og:image:alt', content: 'Royal Pineapple Hotel, a pink-and-yellow boutique hotel with a pool in Krabi Town' } },
-        { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
-        { tag: 'meta', attrs: { name: 'twitter:title', content: page.title } },
-        { tag: 'meta', attrs: { name: 'twitter:description', content: page.description } },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: SOCIAL_IMAGE } },
-        ...(page.canonical ? [{ tag: 'script', attrs: { id: 'hotel-structured-data', type: 'application/ld+json' }, children: JSON.stringify(hotelStructuredData).replace(/</g, '\\u003c') }] : []),
-      ].map((tag) => ({ ...tag, injectTo: 'head' as const }));
-    },
-  }],
+  plugins: [react(), seoPages({
+    siteName: SITE_NAME, siteUrl: SITE_URL, image: SOCIAL_IMAGE, imageAlt: SOCIAL_IMAGE_ALT,
+    head: pageHead, routes: PUBLIC_ROUTES, entries: ['/', '/book'],
+  })],
   build: {
     rollupOptions: {
       input: {

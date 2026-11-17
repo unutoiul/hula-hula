@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:api": "node --env-file-if-exists=.env.local scripts/dev-api.mjs",
     "build": "tsc -b && vite build",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "typecheck": "tsc -b tsconfig.node.json && tsc --noEmit -p tsconfig.json",
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
     "test:unit": "node --import tsx --test tests/booking.test.ts tests/email-artwork.test.ts",
     "photos": "python scripts/prepare-pineapple-photos.py",

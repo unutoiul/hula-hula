@@ -1,5 +1,10 @@
 {
   "regions": ["sin1"],
   "rewrites": [{ "source": "/((?!api/|@|src/|node_modules/)[^.]*)", "destination": "/" }],
+  "headers": [
+    { "source": "/admin(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
+    { "source": "/book/(.+)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
+    { "source": "/api/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }
+  ],
   "crons": [{ "path": "/api/cron/reconcile", "schedule": "0 21 * * *" }]
 }
