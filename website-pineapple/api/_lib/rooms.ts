@@ -64,7 +64,7 @@ export function cancellationTerms(ratePenalties: SmPenalty[] | undefined, proper
   };
   const penalty = pick(ratePenalties) ?? pick(propertyPenalties);
   const rules = [...(penalty?.penaltyRules ?? [])].filter((r) => r.penaltyType !== 'no-penalty').sort((a, b) => b.daysPriorCheckIn - a.daysPriorCheckIn);
-  if (!rules.length) return { refundable: null, summary: 'Cancellation terms are confirmed by the resort with your booking.' };
+  if (!rules.length) return { refundable: null, summary: 'Cancellation terms are confirmed by the hotel with your booking.' };
   const first = rules[0];
   if (first.daysPriorCheckIn >= 365) {
     return first.penaltyType === 'full-amount'

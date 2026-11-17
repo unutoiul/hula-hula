@@ -110,7 +110,7 @@ export type CreateBookingResponse =
   | { ok: false; code: CreateBookingErrorCode; message: string };
 
 /** What the guest's browser may see. `confirmed` = paid and handed to the
- * resort; there is deliberately no personal data in here. */
+ * hotel; there is deliberately no personal data in here. */
 export type PublicBookingStatus = 'pending' | 'confirmed' | 'expired' | 'failed' | 'voided' | 'refunded';
 
 export interface BookingLine { roomTypeName: string; rateName: string; quantity: number; adults: number; children: number; offerTitle?: string; perks?: string[] }

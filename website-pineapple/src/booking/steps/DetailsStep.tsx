@@ -15,7 +15,7 @@ const PHONE = /^[+()\d\s.-]{6,30}$/;
 const ARRIVALS = ['Not sure yet', 'Before 12:00 (early check-in on request)', '12:00 – 15:00', '15:00 – 18:00', '18:00 – 21:00', 'After 21:00'];
 
 // Step 2: who's coming. Everything typed here goes only to the booking: it's
-// sent to the resort with the reservation and kept with it for the
+// sent to the hotel with the reservation and kept with it for the
 // reservations team (/admin → Bookings).
 export function DetailsStep() {
   const { guest, updateGuest, startPayment, totals, availability, cart, plan } = useBookingFlow();
@@ -121,7 +121,7 @@ export function DetailsStep() {
         {policies?.checkInTime && <Typography sx={{ mb: 1 }}><strong>Check-in</strong> from {policies.checkInTime}{policies.checkOutTime ? <> · <strong>check-out</strong> by {policies.checkOutTime}</> : null}</Typography>}
         {cancellations.map((text) => <Typography key={text} sx={{ mb: 1 }}><strong>Cancellation:</strong> {text}</Typography>)}
         <Typography sx={{ mb: 2 }}><strong>Payment:</strong> {totals.balance > 0 ? `${money(totals.dueNow, totals.currency)} is charged now; the remaining ${money(totals.balance, totals.currency)} is paid at the hotel.` : 'The full amount is charged now.'}</Typography>
-        <Typography sx={{ whiteSpace: 'pre-line', fontSize: 14, color: 'text.secondary' }}>{policies?.terms ?? 'The resort’s full terms are confirmed with your booking.'}</Typography>
+        <Typography sx={{ whiteSpace: 'pre-line', fontSize: 14, color: 'text.secondary' }}>{policies?.terms ?? 'The hotel’s full terms are confirmed with your booking.'}</Typography>
       </DialogContent>
       <DialogActions><Button onClick={() => { updateGuest({ acceptedPolicies: true }); setPolicyOpen(false); }} variant="contained">I accept</Button></DialogActions>
     </Dialog>

@@ -100,7 +100,10 @@ export interface CheckoutRequest {
 /** Starts an embedded Stripe Checkout for exactly this amount; the session id and the browser's client secret come back. */
 export async function createCheckoutSession(request: CheckoutRequest): Promise<{ id: string; clientSecret: string }> {
   const description = request.description.slice(0, 250);
-  const metadata = { ref: request.ref, invoice_no: request.invoiceNo };
+  // The Stripe account is shared with Hula Hula Resort: `site` tells the two
+  // hotels' payments apart in the dashboard, and card statements read
+  // "HULA HULA* PINEAPPLE" (the account's prefix plus this suffix, 22 max).
+  const metadata = { ref: request.ref, invoice_no: request.invoiceNo, site: 'royal-pineapple' };
   const session = await call<StripeCheckoutSession>('POST', '/checkout/sessions', {
     mode: 'payment',
     ui_mode: 'embedded_page',
@@ -108,7 +111,7 @@ export async function createCheckoutSession(request: CheckoutRequest): Promise<{
     customer_email: request.email,
     client_reference_id: request.ref,
     metadata,
-    payment_intent_data: { description, metadata },
+    payment_intent_data: { description, metadata, statement_descriptor_suffix: 'PINEAPPLE' },
     expires_at: Math.floor(request.expiresAt.getTime() / 1000),
     return_url: request.returnUrl,
     submit_type: 'book',

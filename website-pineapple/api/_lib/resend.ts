@@ -34,7 +34,7 @@ async function post(payload: Record<string, unknown>, idempotencyKey?: string): 
 }
 
 export async function sendTemplate({ from, to, bcc, replyTo, subject, template, variables, idempotencyKey }: TemplateEmail): Promise<SendResult> {
-  const attachments = await inlineEmailArtwork();
+  const attachments = await inlineEmailArtwork(template);
   return post({ from, to, ...(bcc?.length && { bcc }), ...(replyTo && { reply_to: replyTo }), subject, template: { id: template, variables }, attachments }, idempotencyKey);
 }
 

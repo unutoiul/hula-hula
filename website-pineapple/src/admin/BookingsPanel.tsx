@@ -18,7 +18,7 @@ import { InfoButton } from './InfoButton';
 import { supabase } from './supabase';
 
 const PAGE_SIZES = [25, 100, 250];
-const PAGE_SIZE_KEY = 'hh-admin-bookings-per-page';
+const PAGE_SIZE_KEY = 'rp-admin-bookings-per-page';
 
 // The page size each person picked, kept in their browser.
 function savedPageSize(): number {

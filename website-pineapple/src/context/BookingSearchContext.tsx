@@ -38,9 +38,11 @@ export function parseISODate(value: string | null): Date | null {
 
 // Royal Pineapple's SiteMinder booking engine, once its address is known
 // (VITE_BOOKING_ENGINE_URL, e.g. https://book-directonline.com/properties/…).
-// Without it — and with on-site booking off — the search goes to the front
-// desk on WhatsApp instead, with the dates and guests already written in.
+// Without it — and with on-site booking off — the booking button sends a
+// booking request by email (CheckAvailabilityButton), and this link is the
+// WhatsApp version of the same request.
 const SITEMINDER_BOOKING_URL = import.meta.env.VITE_BOOKING_ENGINE_URL ?? '';
+export const BOOKING_ENGINE = Boolean(SITEMINDER_BOOKING_URL);
 const WHATSAPP = 'https://wa.me/66641230789';
 const stayDate = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 

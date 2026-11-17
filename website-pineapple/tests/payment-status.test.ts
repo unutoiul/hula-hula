@@ -34,7 +34,7 @@ function setup(t: TestContext, patch: Partial<BookingRow> = {}) {
   t.mock.method(console, 'error', () => {});
   t.mock.method(console, 'warn', () => {});
   const row = {
-    id: 'test-id', ref: 'HH123ABC', invoice_no: 'WEBHH123ABC', access_key_hash: sha256Hex(KEY),
+    id: 'test-id', ref: 'RP123ABC', invoice_no: 'WEBRP123ABC', access_key_hash: sha256Hex(KEY),
     status: 'delivered', check_in: '2027-02-01', check_out: '2027-02-02', items: [],
     currency: 'THB', total_amount: 6000, deposit_amount: 3000, balance_amount: 3000, paid_amount: 3000,
     guest_first_name: 'Synthetic', guest_last_name: 'Test', guest_email: null, guest_phone: null, guest_country: null,

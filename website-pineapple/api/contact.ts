@@ -9,16 +9,16 @@ const TEMPLATE = process.env.RESEND_CONTACT_ENQUIRY_TEMPLATE_ID || 'rp-contact-e
 const CONFIRMATION_TEMPLATE = process.env.RESEND_CONTACT_CONFIRMATION_TEMPLATE_ID || 'rp-contact-confirmation';
 const krabiTime = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Bangkok' });
 
-// Receives the site's contact form and emails it to the resort inbox through
+// Receives the site's contact form and emails it to the hotel inbox through
 // Resend (https://resend.com), using the "contact-enquiry" template from
 // emails/contact-enquiry.html, then thanks the guest with the
 // "contact-confirmation" template (publish both with `npm run email:publish`).
 // On the enquiry the guest is the reply-to, so a plain "Reply" answers them;
-// on the confirmation it's the resort inbox. Needs
+// on the confirmation it's the hotel inbox. Needs
 // RESEND_API_KEY; RESEND_CONTACT_ENQUIRY_TEMPLATE_ID and
 // RESEND_CONTACT_CONFIRMATION_TEMPLATE_ID default to the template aliases.
 // CONTACT_TO (default reservation@thepineapplehotel.com), CONTACT_BCC (default
-// contact@bluetrendy.com, blind-copied so the resort doesn't see it; comma-separated, or empty for none), CONTACT_FROM
+// contact@bluetrendy.com, blind-copied so the hotel doesn't see it; comma-separated, or empty for none), CONTACT_FROM
 // (an address on a domain verified in Resend) and SITE_URL are optional
 // overrides. Bots that fill the hidden "hp_ref" field, or submit faster than
 // a person could, get a quiet success and no email.
@@ -90,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(502).json({ error: 'Could not reach the email service' });
   }
 
-  // Only once the resort has the message: a thank-you to the guest. It never
+  // Only once the hotel has the message: a thank-you to the guest. It never
   // fails the request — the enquiry itself is already delivered.
   try {
     const confirmation = await sendTemplate({

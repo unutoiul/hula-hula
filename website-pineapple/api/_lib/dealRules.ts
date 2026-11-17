@@ -22,7 +22,7 @@ export interface Deal {
 }
 
 export interface DealContext {
-  /** Today at the resort. */
+  /** Today at the hotel. */
   today: string;
   /** Every night of the stay, in order. */
   nightDates: string[];

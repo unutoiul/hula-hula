@@ -67,7 +67,7 @@ export function ConfirmationStep() {
   if (problem === 'missing') return <Box sx={card}>
     <Typography variant="h1" sx={{ fontSize: { xs: 30, md: 40 } }}>Check your email</Typography>
     <Typography sx={{ color: 'text.secondary', mt: 1.5 }}>We can’t show this booking in this browser. If you paid, your confirmation is on its way by email{ref ? ` (booking ${ref})` : ''}. Questions? WhatsApp us on {CONTACT.phone}.</Typography>
-    <Button href="/" onClick={linkClick('/')} variant="outlined" sx={{ mt: 3 }}>Back to the resort</Button>
+    <Button href="/" onClick={linkClick('/')} variant="outlined" sx={{ mt: 3 }}>Back to the hotel</Button>
   </Box>;
 
   if (!status || status.status === 'pending') return <Box sx={{ ...card, textAlign: 'center' }} aria-live="polite">
@@ -140,7 +140,7 @@ export function ConfirmationStep() {
       {status.balance !== null && status.balance > 0 && <Stack direction="row" justifyContent="space-between"><Typography>To pay at the hotel</Typography><Typography>{money(status.balance, status.currency)}</Typography></Stack>}
     </Stack>
     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 4 }}>
-      <Button href="/" onClick={linkClick('/')} variant="contained">Back to the resort</Button>
+      <Button href="/" onClick={linkClick('/')} variant="contained">Back to the hotel</Button>
       <Button href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" variant="outlined">Plan something special</Button>
     </Stack>
   </Box>;

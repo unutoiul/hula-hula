@@ -9,7 +9,7 @@ export const MAX_CHILDREN = 8;
 
 export interface StaySearch { checkIn: string; checkOut: string; nights: number; adults: number; children: number; promo?: string }
 
-/** Today's date at the resort, YYYY-MM-DD. */
+/** Today's date at the hotel, YYYY-MM-DD. */
 export const todayInBangkok = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
 
 export const nightsBetween = (checkIn: string, checkOut: string) => Math.round((Date.parse(`${checkOut}T00:00:00Z`) - Date.parse(`${checkIn}T00:00:00Z`)) / 86_400_000);

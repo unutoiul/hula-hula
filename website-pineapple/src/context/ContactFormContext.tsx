@@ -8,13 +8,15 @@ export interface ContactRequest {
   message?: string;
   /** The section the guest opened the form from (included in the email). */
   page?: string;
+  /** A booking request: the dates and guests from the search go in, ticked. */
+  booking?: boolean;
 }
 
 const ContactFormContext = createContext<(request: ContactRequest) => void>(() => {});
 
 // One contact popup for the whole page. Any "ask us" button calls
 // useContactForm()({ topic, message }) to open it pre-filled; the popup emails
-// the resort through /api/contact (and still offers WhatsApp as an option).
+// the hotel through /api/contact (and still offers WhatsApp as an option).
 export function ContactFormProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   // Kept after closing so the popup's content doesn't vanish mid-animation.

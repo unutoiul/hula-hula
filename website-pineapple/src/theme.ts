@@ -18,9 +18,6 @@ export const brand = {
   cream: '#fff9f2', paper: '#fffdf9',
 };
 
-// The names the family's shared components use for their backgrounds.
-export const vacationColors = { cream: brand.cream, coral: brand.royal, pink: brand.blush, leaf: brand.leaf, yellow: brand.pineapple, sea: brand.royal };
-
 const theme = createTheme({
   palette: {
     primary: { main: brand.royal, dark: brand.plum, light: brand.blush, contrastText: '#ffffff' },

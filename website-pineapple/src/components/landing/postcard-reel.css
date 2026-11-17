@@ -1,12 +1,8 @@
 /* Concentric corners: every inset is the same on all four sides. */
 .postcard-reel { min-width: 0; }
-.postcard-paper { --paper-inset: 18px; --paper-radius: 32px; position: relative; padding: var(--paper-inset); border: 1px solid #bd3868; border-radius: var(--paper-radius); background: #fff8eb; box-shadow: 0 14px 35px #5a244819; }
-.postcard-paper::before { content: ''; position: absolute; inset: 7px; border: 1px solid #c7527d; border-radius: calc(var(--paper-radius) - 7px); pointer-events: none; }
+
 .postcard-picture-window { position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; border-radius: calc(var(--paper-radius) - var(--paper-inset)); background: #eddcce; isolation: isolate; }
-.postcard-reel-strip { position: absolute; inset: 0; display: flex; flex-direction: row-reverse; width: 100%; height: 100%; }
-.postcard-reel-strip > img { display: block; flex: 0 0 100%; width: 100%; min-width: 100%; height: 100%; object-fit: cover; user-select: none; }
-.postcard-reel-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 4px 0; }
-.postcard-scene-title { color: #b62a61; font: italic 23px/1.2 var(--royal-serif, Georgia, serif); }
+
 .postcard-reel-controls { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
 .postcard-reel-controls > button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #d8b5c5; border-radius: 50%; background: #fff9f2; color: #782d51; cursor: pointer; transition: background .2s; }
 .postcard-reel-controls > button:hover { background: #f7dce6; }
@@ -14,24 +10,9 @@
 .postcard-reel-controls > button > svg { font-size: 18px; }
 .postcard-reel-count { min-width: 48px; font-size: 10px; color: #69354f; text-align: center; font-variant-numeric: tabular-nums; }
 .postcard-reel-count > span { color: #a88998; }
-.postcard-reel-controls > button:focus-visible, .postal-mini:focus-visible, .direct-offer-seal:focus-visible, .offer-postcard-cta:focus-visible { outline: 3px solid #ce3672; outline-offset: 5px; }
+.postcard-reel-controls > button:focus-visible,.offer-postcard-cta:focus-visible{ outline: 3px solid #ce3672; outline-offset: 5px; }
 
 .story-hero .story-postcards { padding: 20px 0 0; }
-.postcard-stack { position: relative; padding-top: 125px; padding-bottom: 12px; isolation: isolate; }
-.postcard-stack-front { position: relative; width: 95%; z-index: 2; transform: rotate(-3deg); }
-.postal-mini { position: absolute; top: 0; right: 5%; width: 60%; padding: 12px; border: 1px solid #f8eadb; outline: 1px solid #642447; outline-offset: 3px; background: #642447; box-shadow: 0 9px 23px #5a24481b; transform: rotate(8deg); color: #fff1df; text-decoration: none; }
-.postal-mini-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 9px; }
-.postal-mini-heading > span { max-width: 120px; font-size: 8px; line-height: 1.8; letter-spacing: .14em; }
-.postal-mini-heading .postal-mini-stamp { width: 40px; height: 34px; object-fit: contain; opacity: .9; }
-.postal-mini > img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
-.postal-mini-caption { display: block; padding: 9px 0 1px; font: italic 19px/1.3 var(--royal-serif, Georgia, serif); }
-.direct-offer-seal { position: absolute; z-index: 3; right: -1%; bottom: 94px; width: 126px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #c72e6a; color: #fff6e6; text-decoration: none; border-radius: 50%; box-shadow: 0 7px 18px #5a24482b; transform: rotate(10deg); }
-.direct-offer-seal::before { content: ''; position: absolute; inset: 6px; border: 1px dashed #f7c7d3; border-radius: inherit; }
-.direct-offer-seal > span { font-size: 8px; letter-spacing: .12em; }
-.direct-offer-seal > strong { font: 400 48px/1.15 var(--royal-serif, Georgia, serif); letter-spacing: -.05em; }
-.direct-offer-seal > strong > span { font-size: .55em; }
-.direct-offer-seal > small { font-size: 6px; letter-spacing: .09em; }
-.story-postcards .collage-help { justify-content: space-between; margin: 22px 2px 0; padding-right: 5%; }
 
 .offer-postcards { display: grid; grid-template-columns: .68fr 2fr; align-items: center; gap: 44px; padding: 48px 0 80px; scroll-margin-top: 110px; }
 .offer-postcards-intro h2 { font: 400 var(--section-heading-size)/1.08 var(--royal-serif, Georgia, serif); letter-spacing: -.04em; color: #5a2448; margin: 21px 0; }
@@ -45,10 +26,7 @@
 .offer-postcard-topline { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 0 3px 10px; }
 .offer-postcard-topline > span { font-size: 8px; letter-spacing: .13em; font-weight: 700; }
 .offer-postcard-topline > img { object-fit: contain; width: 43px; height: 37px; }
-.offer-postcard .postcard-paper { --paper-inset: 10px; --paper-radius: 20px; box-shadow: none; }
-.offer-postcard .postcard-paper::before { inset: 4px; border-radius: 16px; }
-.offer-postcard .postcard-reel-footer { padding: 8px 0 0; gap: 5px; }
-.offer-postcard .postcard-scene-title { font-size: 15px; color: var(--offer-muted); }
+
 .offer-postcard .postcard-reel-count { display: none; }
 .offer-postcard .postcard-reel-controls { gap: 5px; }
 .offer-postcard .postcard-reel-controls > button { width: 36px; height: 36px; border-color: var(--offer-line); background: transparent; color: var(--offer-ink); }
@@ -67,10 +45,6 @@
 .offer-postcard-terms { color: var(--offer-muted); font-size: 9px; line-height: 1.7; margin: 13px 0 0; }
 
 @media (max-width: 1199px) {
-  .postcard-stack { padding-top: 100px; }
-  .direct-offer-seal { width: 108px; bottom: 90px; }
-  .direct-offer-seal > strong { font-size: 41px; }
-  .postcard-scene-title { font-size: 20px; }
   .offer-postcards { grid-template-columns: 1fr; gap: 32px; }
   .offer-postcards-intro { text-align: center; }
   .offer-postcards-intro .royal-eyebrow { justify-content: center; }
@@ -80,29 +54,13 @@
 }
 @media (max-width: 899px) {
   .story-hero .story-postcards { padding-top: 0; }
-  .postcard-stack { padding-top: 112px; }
-  .direct-offer-seal { right: -1%; width: 115px; }
+
   .offer-postcards { padding-top: 32px; padding-bottom: 56px; }
 }
 @media (max-width: 599px) {
-  .postcard-paper { --paper-inset: 12px; --paper-radius: 24px; }
-  .postcard-paper::before { inset: 5px; border-radius: 19px; }
-  .postcard-stack { padding-top: 88px; }
-  .postcard-stack-front { width: 98%; }
-  .postal-mini { width: 65%; padding: 8px; right: 7%; }
-  .postal-mini-heading { gap: 7px; padding-bottom: 5px; }
-  .postal-mini-heading > span { font-size: 6px; max-width: 90px; }
-  .postal-mini-heading .postal-mini-stamp { width: 30px; height: 26px; }
-  .postal-mini-caption { font-size: 15px; }
-  .direct-offer-seal { width: 90px; bottom: 81px; right: -3%; }
-  .direct-offer-seal > span { font-size: 6px; }
-  .direct-offer-seal > strong { font-size: 35px; }
-  .direct-offer-seal > small { font-size: 5px; }
-  .postcard-scene-title { font-size: 18px; max-width: 170px; }
-  .postcard-reel-footer { gap: 4px; padding-top: 12px; }
   .postcard-reel-controls > button { width: 40px; height: 40px; }
   .postcard-reel-count { min-width: 34px; font-size: 9px; }
-  .story-postcards .collage-help { margin-top: 13px; padding-right: 0; }
+
   .offer-postcards-grid { grid-template-columns: 1fr; gap: 28px; max-width: 420px; }
   .offer-postcard { padding: 15px; }
   .offer-postcard-copy { padding-inline: 8px; }

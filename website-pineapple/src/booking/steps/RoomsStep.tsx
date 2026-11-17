@@ -66,11 +66,11 @@ export function RoomsStep() {
         {data && data.roomTypes.length === 0 && <Box sx={{ textAlign: 'center', py: 6, px: 2, border: '1px dashed', borderColor: 'divider', borderRadius: '24px' }}>
           <Typography variant="h3" sx={{ fontSize: 26 }}>No rooms free for those dates</Typography>
           <Typography sx={{ color: 'text.secondary', mt: 1, mb: 3 }}>Try moving your dates a little — or ask us, we’ll do our best to find you a spot.</Typography>
-          <Button variant="outlined" onClick={() => openContact({ topic: 'Room booking & availability', message: `Hi Hula Hula! Do you have anything free ${stayLabel(toISODate(search.checkIn), toISODate(search.checkOut))} for ${guestsLabel(search.adults, search.children)}?`, page: 'Booking — no availability' })}>Ask our team</Button>
+          <Button variant="outlined" onClick={() => openContact({ topic: 'Room booking & availability', message: `Hello Royal Pineapple! Do you have anything free ${stayLabel(toISODate(search.checkIn), toISODate(search.checkOut))} for ${guestsLabel(search.adults, search.children)}?`, page: 'Booking — no availability' })}>Ask our team</Button>
         </Box>}
         {data?.roomTypes.map((roomType) => <RoomTypeCard key={roomType.roomTypeUuid} roomType={roomType} nights={data.nights} currency={data.currency} />)}
         {data && data.roomTypes.length > 0 && <Typography sx={{ fontSize: 13, color: 'text.secondary', textAlign: 'center' }}>
-          More than {data.maxRooms} rooms, or a group? <Link component="button" onClick={() => openContact({ topic: 'Room booking & availability', message: 'Hi Hula Hula! We’re a group and would like to book several rooms.', page: 'Booking — group' })}>Ask us about group bookings</Link>.
+          More than {data.maxRooms} rooms, or a group? <Link component="button" onClick={() => openContact({ topic: 'Room booking & availability', message: 'Hello Royal Pineapple! We’re a group and would like to book several rooms.', page: 'Booking — group' })}>Ask us about group bookings</Link>.
         </Typography>}
       </Stack>
     </Box>
@@ -189,19 +189,20 @@ function SearchBar() {
 }
 
 function RoomTypeCard({ roomType, nights, currency }: { roomType: RoomTypeOffer; nights: number; currency: string }) {
-  const { images, blurb } = roomContent(roomType.roomTypeUuid, roomType.name);
+  const { title, listedAs, images, blurb } = roomContent(roomType.roomTypeUuid, roomType.name);
   const [index, setIndex] = useState(0);
   return <Box component="article" sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 22px rgba(90,36,72,.06)' }}>
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: '220px minmax(0, 1fr)', md: 'minmax(0, 1fr)', lg: '240px minmax(0, 1fr)' } }}>
       <Box sx={{ position: 'relative', aspectRatio: { xs: '16 / 10', sm: 'auto', md: '16 / 10', lg: 'auto' }, minHeight: { sm: 220 } }}>
-        <ResortPhoto image={images[index]} alt={`${roomType.name}, photo ${index + 1}`} sizes="(max-width: 600px) 100vw, 260px" sx={{ position: { sm: 'absolute' }, inset: 0 }} />
+        <ResortPhoto image={images[index]} alt={`${title}, photo ${index + 1}`} sizes="(max-width: 600px) 100vw, 260px" sx={{ position: { sm: 'absolute' }, inset: 0 }} />
         {images.length > 1 && <>
-          <IconButton aria-label={`Previous photo of ${roomType.name}`} onClick={() => setIndex((i) => (i - 1 + images.length) % images.length)} sx={{ position: 'absolute', left: 8, top: 'calc(50% - 20px)', bgcolor: '#fffaf6', width: 40, height: 40, '&:hover': { bgcolor: 'secondary.main' } }}><ChevronLeft fontSize="small" /></IconButton>
-          <IconButton aria-label={`Next photo of ${roomType.name}`} onClick={() => setIndex((i) => (i + 1) % images.length)} sx={{ position: 'absolute', right: 8, top: 'calc(50% - 20px)', bgcolor: '#fffaf6', width: 40, height: 40, '&:hover': { bgcolor: 'secondary.main' } }}><ChevronRight fontSize="small" /></IconButton>
+          <IconButton aria-label={`Previous photo of ${title}`} onClick={() => setIndex((i) => (i - 1 + images.length) % images.length)} sx={{ position: 'absolute', left: 8, top: 'calc(50% - 20px)', bgcolor: '#fffaf6', width: 40, height: 40, '&:hover': { bgcolor: 'secondary.main' } }}><ChevronLeft fontSize="small" /></IconButton>
+          <IconButton aria-label={`Next photo of ${title}`} onClick={() => setIndex((i) => (i + 1) % images.length)} sx={{ position: 'absolute', right: 8, top: 'calc(50% - 20px)', bgcolor: '#fffaf6', width: 40, height: 40, '&:hover': { bgcolor: 'secondary.main' } }}><ChevronRight fontSize="small" /></IconButton>
         </>}
       </Box>
       <Box sx={{ p: { xs: 2.5, md: 3 } }}>
-        <Typography variant="h2" sx={{ fontSize: { xs: 24, md: 28 }, lineHeight: 1.15 }}>{roomType.name}</Typography>
+        <Typography variant="h2" sx={{ fontSize: { xs: 24, md: 28 }, lineHeight: 1.15 }}>{title}</Typography>
+        {listedAs && <Typography sx={{ mt: .5, fontSize: 12.5, color: 'text.secondary' }}>Booked as “{listedAs}”</Typography>}
         <Stack direction="row" flexWrap="wrap" useFlexGap gap={2} sx={{ mt: 1, color: 'text.secondary', fontSize: 13, '& svg': { fontSize: 18, verticalAlign: 'text-bottom', mr: .5 } }}>
           <span><PeopleOutlineRounded />Sleeps {roomType.capacity.guests}</span>
           {roomType.roomSize && <span><SquareFootRounded />{roomType.roomSize} {roomType.roomSizeUnit}</span>}
@@ -217,6 +218,7 @@ function RoomTypeCard({ roomType, nights, currency }: { roomType: RoomTypeOffer;
 function RatePlanRow({ roomType, rate, nights, currency }: { roomType: RoomTypeOffer; rate: RateOffer; nights: number; currency: string }) {
   const { quantityOf, roomsLeft, setQuantity } = useBookingFlow();
   const quantity = quantityOf(rate.roomRateUuid);
+  const { title } = roomContent(roomType.roomTypeUuid, roomType.name);
   const canAdd = quantity < rate.maxQuantity && roomsLeft(roomType) > 0;
   const payAll = rate.deposit.balance <= 0;
   return <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'minmax(0, 1fr) auto' }, gap: 2, alignItems: 'center', px: { xs: 2.5, md: 3 }, py: 2.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: quantity ? 'rgba(253,230,238,.45)' : 'transparent' }}>
@@ -251,9 +253,9 @@ function RatePlanRow({ roomType, rate, nights, currency }: { roomType: RoomTypeO
       {quantity === 0
         ? <Button variant="contained" size="small" disabled={!canAdd} onClick={() => setQuantity(roomType, rate, 1)}>{canAdd ? 'Select' : 'No more left'}</Button>
         : <Stack direction="row" alignItems="center" spacing={1} aria-label={`${rate.name}: ${quantity} selected`}>
-          <IconButton size="small" aria-label={`One fewer ${roomType.name}`} onClick={() => setQuantity(roomType, rate, quantity - 1)} sx={{ border: '1px solid', borderColor: 'divider', width: 40, height: 40 }}><Remove sx={{ fontSize: 16 }} /></IconButton>
+          <IconButton size="small" aria-label={`One fewer ${title}`} onClick={() => setQuantity(roomType, rate, quantity - 1)} sx={{ border: '1px solid', borderColor: 'divider', width: 40, height: 40 }}><Remove sx={{ fontSize: 16 }} /></IconButton>
           <Typography sx={{ minWidth: 56, textAlign: 'center', fontSize: 13, fontWeight: 700 }}>{plural(quantity, 'room')}</Typography>
-          <IconButton size="small" aria-label={`One more ${roomType.name}`} disabled={!canAdd} onClick={() => setQuantity(roomType, rate, quantity + 1)} sx={{ border: '1px solid', borderColor: 'divider', width: 40, height: 40 }}><Add sx={{ fontSize: 16 }} /></IconButton>
+          <IconButton size="small" aria-label={`One more ${title}`} disabled={!canAdd} onClick={() => setQuantity(roomType, rate, quantity + 1)} sx={{ border: '1px solid', borderColor: 'divider', width: 40, height: 40 }}><Add sx={{ fontSize: 16 }} /></IconButton>
         </Stack>}
     </Stack>
   </Box>;

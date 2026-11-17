@@ -6,6 +6,7 @@ import type { RateOffer } from '../../../shared/bookingContract';
 import { PaymentMethods } from '../../components/booking/PaymentMethods';
 import { toISODate, useBookingSearch } from '../../context/BookingSearchContext';
 import { useBookingFlow } from '../BookingFlowContext';
+import { roomContent } from '../roomContent';
 import { guestsLabel, mealsLabel, money, nightsLabel, shortDayLabel } from '../format';
 
 /** The basket's column on wide screens: stays in view, and scrolls by itself
@@ -66,19 +67,19 @@ export function CartSummary({ action, showFit = true, editable = false }: { acti
     {cart.length === 0
       ? <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>No rooms picked yet — choose a rate to add it here.</Typography>
       : <Stack spacing={1.5} aria-live="polite">
-        {cart.map(({ line, roomType, rate }) => <Box key={rate.roomRateUuid}>
+        {cart.map(({ line, roomType, rate }) => { const { title } = roomContent(roomType.roomTypeUuid, roomType.name); return <Box key={rate.roomRateUuid}>
           <Stack direction="row" justifyContent="space-between" spacing={1.25}>
             <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.5 }}>{line.quantity} × {roomType.name}</Typography>
+              <Typography sx={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.5 }}>{line.quantity} × {title}</Typography>
               <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{rate.name}{mealsLabel(rate.meals).toLowerCase() !== rate.name.toLowerCase() ? ` · ${mealsLabel(rate.meals)}` : ''}</Typography>
             </Box>
             <Stack direction="row" alignItems="flex-start" spacing={.25} sx={{ flexShrink: 0 }}>
               <Typography sx={{ fontSize: 13.5, fontWeight: 600, whiteSpace: 'nowrap' }}>{money(rate.total * line.quantity, totals.currency)}</Typography>
-              {editable && <IconButton size="small" aria-label={`Remove ${roomType.name} (${rate.name})`} onClick={() => setQuantity(roomType, rate, 0)} sx={{ mt: '-5px', mr: '-8px', color: 'text.secondary' }}><CloseRounded sx={{ fontSize: 16 }} /></IconButton>}
+              {editable && <IconButton size="small" aria-label={`Remove ${title} (${rate.name})`} onClick={() => setQuantity(roomType, rate, 0)} sx={{ mt: '-5px', mr: '-8px', color: 'text.secondary' }}><CloseRounded sx={{ fontSize: 16 }} /></IconButton>}
             </Stack>
           </Stack>
           <NightlyPrices nightly={rate.nightly} quantity={line.quantity} currency={totals.currency} />
-        </Box>)}
+        </Box>; })}
         {editable && <Button size="small" onClick={clearCart} sx={{ alignSelf: 'flex-start', minHeight: 0, py: .25, fontSize: 12 }}>Clear all</Button>}
       </Stack>}
 

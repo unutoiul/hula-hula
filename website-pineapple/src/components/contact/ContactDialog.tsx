@@ -32,7 +32,7 @@ type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 // The contact popup: name, email, optional phone/WhatsApp number, a message
 // pre-started for the topic, and (optionally) the stay dates picked in the
-// booking search. Sends to /api/contact, which emails the resort. WhatsApp
+// booking search. Sends to /api/contact, which emails the hotel. WhatsApp
 // stays one tap away, and is the fallback if sending fails.
 export function ContactDialog({ open, request, onClose }: { open: boolean; request: ContactRequest; onClose: () => void }) {
   const theme = useTheme();
@@ -59,6 +59,7 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
     setSubject(request.topic);
     setCustomSubject('');
     setMessage(request.message ?? '');
+    setIncludeStay(!!request.booking);
     setStatus('idle');
     setTriedSubmit(false);
     startedAt.current = performance.now();
@@ -110,14 +111,18 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
           sx={{ width: 76, height: 76, mx: 'auto', borderRadius: '50%', bgcolor: 'secondary.main', display: 'grid', placeItems: 'center', boxShadow: '0 8px 0 rgba(90,36,72,.08)' }}>
           <CheckRounded sx={{ fontSize: 40, color: 'text.primary' }} />
         </MotionBox>
-        <Typography variant="h3" sx={{ mt: 2.5, fontSize: { xs: 28, sm: 32 } }}>Message sent!</Typography>
-        <Typography sx={{ mt: 1, color: 'text.secondary', lineHeight: 1.7 }}>Thanks, {name.trim().split(' ')[0]}. We’ll reply to {email.trim()} soon.</Typography>
-        <Button onClick={onClose} variant="contained" sx={{ mt: 3.5, width: { xs: '100%', sm: 'auto' } }}>Back to the sunshine</Button>
+        <Typography variant="h3" sx={{ mt: 2.5, fontSize: { xs: 28, sm: 32 } }}>{request.booking ? 'Request sent!' : 'Message sent!'}</Typography>
+        <Typography sx={{ mt: 1, color: 'text.secondary', lineHeight: 1.7 }}>
+          Thanks, {name.trim().split(' ')[0]}. {request.booking ? 'We’ll check those dates and' : 'We’ll'} reply to {email.trim()}, usually within a day. A copy is on its way to your inbox now.
+        </Typography>
+        <Button onClick={onClose} variant="contained" sx={{ mt: 3.5, width: { xs: '100%', sm: 'auto' } }}>Done</Button>
       </Box> : <Box component="form" noValidate onSubmit={submit}>
         <Box sx={{ pr: 7 }}>
-          <Box component="span" sx={{ display: 'inline-block', px: 1.5, py: .75, borderRadius: 999, bgcolor: '#fde6ee', color: 'success.main', fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase' }}>{topic || 'Your subject'}</Box>
-          <Typography id="contact-title" variant="h3" sx={{ mt: 1.5, fontSize: { xs: 28, sm: 34 }, lineHeight: 1.1 }}>Let’s chat!</Typography>
-          <Typography sx={{ mt: 1, fontSize: 15, lineHeight: 1.6, color: 'text.secondary' }}>Send us a note and we’ll reply by email, usually within a day.</Typography>
+          <Box component="span" sx={{ display: 'inline-block', px: 1.5, py: .75, borderRadius: 999, bgcolor: 'primary.light', color: 'primary.main', fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase' }}>{topic || 'Your subject'}</Box>
+          <Typography id="contact-title" variant="h3" sx={{ mt: 1.5, fontSize: { xs: 28, sm: 34 }, lineHeight: 1.1 }}>{request.booking ? 'Request your stay' : 'Let’s chat!'}</Typography>
+          <Typography sx={{ mt: 1, fontSize: 15, lineHeight: 1.6, color: 'text.secondary' }}>
+            {request.booking ? 'Tell us who’s coming and we’ll confirm availability and your best direct rate by email. Nothing is charged now.' : 'Send us a note and we’ll reply by email, usually within a day.'}
+          </Typography>
         </Box>
 
         <Stack spacing={2} sx={{ mt: 3 }}>
@@ -146,7 +151,7 @@ export function ContactDialog({ open, request, onClose }: { open: boolean; reque
 
         <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ sm: 'center' }} justifyContent="space-between" gap={1.5} sx={{ mt: 3 }}>
           <Button type="submit" variant="contained" disabled={status === 'sending'} endIcon={<SendRounded />} sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            {status === 'sending' ? 'Sending…' : 'Send message'}
+            {status === 'sending' ? 'Sending…' : request.booking ? 'Send request' : 'Send message'}
           </Button>
           <Button href={whatsapp} target="_blank" rel="noopener noreferrer" color="inherit" startIcon={<WhatsApp sx={{ color: '#25a366' }} />} sx={{ alignSelf: { xs: 'center', sm: 'auto' }, fontFamily: fonts.sans }}>
             Prefer WhatsApp?

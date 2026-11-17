@@ -13,8 +13,9 @@ import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 // The Hula Hula family: the resort, the golf club and Royal Pineapple are
 // three websites that hand guests to each other. Three ways across: the
 // "Resort | Golf Club | Royal Pineapple" tabs in the top strip (large
-// screens), the yellow badge on the header logo, and the mobile menu. The
-// logo itself goes home. The other copies of this file are
+// screens), the badge on the header logo, and the mobile menu. The logo
+// itself goes home. Here everything in the switcher wears the hotel's royal
+// pink (the resort and golf club use their yellow). The other copies of this file are
 // website-resort/src/components/layout/SiteSwitcher.tsx and
 // website-golf/src/components/layout/SiteSwitcher.tsx — keep the three in step.
 // The golf club and Royal Pineapple live on their Vercel addresses until they have their own domains.
@@ -28,7 +29,7 @@ export const SITES = [
 const HERE = 'pineapple';
 const here = SITES.find((s) => s.id === HERE)!;
 
-/** The tabs in the pink strip at the very top (large screens). */
+/** The tabs in the plum strip at the very top (large screens). */
 export function SiteTabs() {
   return <Stack component="nav" aria-label="Hula Hula websites" direction="row" sx={{ p: '3px', gap: '2px', borderRadius: 999, bgcolor: 'rgba(255,255,255,.14)' }}>
     {SITES.map(({ id, short, url, Icon }) => {
@@ -42,25 +43,30 @@ export function SiteTabs() {
   </Stack>;
 }
 
-/** All three places as cards, the current one marked — in the logo badge's panel and the mobile menu. */
-export function SiteList({ onHere }: { onHere?: () => void }) {
+/**
+ * All three places as cards, the current one marked — in the logo badge's
+ * panel and the mobile menu (`compact`: smaller photos, for a phone's menu).
+ */
+export function SiteList({ onHere, compact = false }: { onHere?: () => void; compact?: boolean }) {
+  const thumb = compact ? 48 : 56;
   return <Stack spacing={1}>
     {SITES.map(({ id, name, line, url, image }) => {
       const isHere = id === HERE;
       return <Box key={id} component="a" href={isHere ? '/' : url} onClick={isHere ? (e: MouseEvent) => { linkClick('/')(e); onHere?.(); } : undefined} aria-current={isHere ? 'page' : undefined} sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25, borderRadius: '18px', textDecoration: 'none', color: 'text.primary',
+        display: 'flex', alignItems: 'center', gap: 1.5, p: compact ? 1 : 1.25, borderRadius: '18px', textDecoration: 'none', color: 'text.primary',
         border: '1px solid', borderColor: isHere ? 'primary.main' : 'divider', bgcolor: isHere ? 'primary.light' : 'background.paper',
         transition: 'border-color .2s ease, transform .2s ease, box-shadow .2s ease',
         '&:hover': { borderColor: 'primary.main', ...(isHere ? {} : { transform: 'translateY(-1px)', boxShadow: '0 8px 20px rgba(90,36,72,.10)' }) },
+        '&:hover .site-go': isHere ? undefined : { bgcolor: 'primary.dark' },
       }}>
-        <Box component="img" src={image} alt="" width={56} height={56} sx={{ width: 56, height: 56, flexShrink: 0, borderRadius: '14px', objectFit: 'cover' }} />
+        <Box component="img" src={image} alt="" width={thumb} height={thumb} sx={{ width: thumb, height: thumb, flexShrink: 0, borderRadius: '14px', objectFit: 'cover' }} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {isHere && <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'primary.main', lineHeight: 1.4 }}>You’re here</Typography>}
-          <Typography sx={{ fontFamily: fonts.playful, fontSize: 17, lineHeight: 1.2 }}>{name}</Typography>
+          <Typography sx={{ fontFamily: fonts.playful, fontSize: compact ? 16 : 17, lineHeight: 1.2 }}>{name}</Typography>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary', lineHeight: 1.4, mt: .25 }}>{line}</Typography>
         </Box>
-        <Box aria-hidden sx={{
-          width: 34, height: 34, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', '& svg': { fontSize: 18 },
+        <Box className="site-go" aria-hidden sx={{
+          width: 34, height: 34, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', '& svg': { fontSize: 18 }, transition: 'background-color .2s ease',
           bgcolor: isHere ? 'common.white' : 'primary.main', color: isHere ? 'primary.main' : 'primary.contrastText', border: isHere ? '1px solid' : 0, borderColor: 'primary.main',
         }}>{isHere ? <CheckRounded /> : <East />}</Box>
       </Box>;
@@ -69,8 +75,8 @@ export function SiteList({ onHere }: { onHere?: () => void }) {
 }
 
 /**
- * The header logo goes home. The little yellow badge on its corner opens the
- * panel of the three websites; its tap area is bigger than it looks, for thumbs.
+ * The header logo goes home. The little royal-pink badge on its corner opens
+ * the panel of the three websites; its tap area is bigger than it looks, for thumbs.
  */
 export function HomeLogo({ size }: { size: MarkSize }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -83,8 +89,8 @@ export function HomeLogo({ size }: { size: MarkSize }) {
     <Tooltip title="Switch website" placement="bottom" disableInteractive disableFocusListener disableTouchListener disableHoverListener={!!anchor}>
       <Box component="button" type="button" onClick={(e) => setAnchor(e.currentTarget)} aria-haspopup="dialog" aria-expanded={!!anchor} aria-label={`Switch website: you’re on ${here.name}`} sx={{
         position: 'absolute', top: { xs: -2, md: 2 }, right: { xs: -10, md: -12 }, width: { xs: 22, md: 26 }, height: { xs: 22, md: 26 }, p: 0, borderRadius: '50%', cursor: 'pointer',
-        display: 'grid', placeItems: 'center', bgcolor: 'secondary.main', color: 'text.primary', border: '2px solid #fffdf9', boxShadow: '0 3px 8px rgba(90,36,72,.18)',
-        transition: 'transform .2s ease', '&:hover': { transform: 'scale(1.12)' }, '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: '2px' }, '& svg': { fontSize: { xs: 14, md: 16 } },
+        display: 'grid', placeItems: 'center', bgcolor: anchor ? 'primary.dark' : 'primary.main', color: 'primary.contrastText', border: '2px solid #fffdf9', boxShadow: '0 3px 8px rgba(90,36,72,.22)',
+        transition: 'transform .2s ease, background-color .2s ease', '&:hover': { transform: 'scale(1.12)', bgcolor: 'primary.dark' }, '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: '2px' }, '& svg': { fontSize: { xs: 14, md: 16 } },
         '&::before': { content: '""', position: 'absolute', inset: -10, borderRadius: '50%' },
       }}><SwapHorizRounded /></Box>
     </Tooltip>

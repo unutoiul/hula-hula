@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { confirmPayment } from '../_lib/finalize.js';
 import { allowMethods, readJsonBody } from '../_lib/http.js';
+import { REF_PATTERN } from '../_lib/ids.js';
 import { retrieveEvent, StripeError, type StripeEvent } from '../_lib/stripe.js';
 
 // POST /api/payment/stripe-webhook — Stripe's event notification. The body
@@ -38,9 +39,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   if (!HANDLED.has(event.type)) return res.status(200).json({ ok: true, ignored: event.type });
 
-  // Every Checkout session and payment the website starts carries its invoice number.
+  // Every Checkout session and payment the website starts carries its invoice
+  // number; the resort's payments (same Stripe account) aren't ours to touch.
   const invoiceNo = event.data.object.metadata?.invoice_no;
   if (!invoiceNo) return res.status(200).json({ ok: true, ignored: 'not a website booking' });
+  if (!REF_PATTERN.test(invoiceNo.replace(/^WEB/, ''))) return res.status(200).json({ ok: true, ignored: 'another Hula Hula website’s booking' });
 
   try {
     await confirmPayment(invoiceNo, 'webhook');

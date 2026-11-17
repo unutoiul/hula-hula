@@ -8,12 +8,14 @@ const COOKIE_CONSENT_KEY = 'rp-cookie-consent';
 export function CookieConsent() {
   const [open, setOpen] = useState(false);
 
+  // Storage can be blocked (private windows, strict settings): the banner
+  // still shows and still closes, it just asks again next visit.
   useEffect(() => {
-    if (!window.localStorage.getItem(COOKIE_CONSENT_KEY)) setOpen(true);
+    try { if (!window.localStorage.getItem(COOKIE_CONSENT_KEY)) setOpen(true); } catch { setOpen(true); }
   }, []);
 
   const resolve = (choice: string) => {
-    window.localStorage.setItem(COOKIE_CONSENT_KEY, choice);
+    try { window.localStorage.setItem(COOKIE_CONSENT_KEY, choice); } catch { /* storage blocked */ }
     setOpen(false);
   };
 
@@ -33,7 +35,7 @@ export function CookieConsent() {
       </Typography>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center" sx={{ mt: 4.5 }}>
         <Button variant="outlined" color="inherit" onClick={() => resolve('settings')} sx={{ borderColor: 'text.primary', color: 'text.primary', '&:hover': { borderColor: 'primary.main', color: 'primary.main' } }}>Cookie settings</Button>
-        <Button variant="outlined" color="primary" onClick={() => resolve('accepted')}>Accept all cookies</Button>
+        <Button variant="contained" color="primary" disableElevation onClick={() => resolve('accepted')}>Accept all cookies</Button>
       </Stack>
     </Box>
   </Box>;

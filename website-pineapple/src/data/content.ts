@@ -20,13 +20,6 @@ export const pillars = [
   { word: 'Explore', line: 'A different Krabi trip every day', href: '#explore' },
 ] as const;
 
-export const quickFacts = [
-  { value: '72', label: 'rooms, each with a balcony' },
-  { value: '2 min', label: 'to the Krabi River' },
-  { value: '20 min', label: 'to Ao Nang Beach & the airport' },
-  { value: 'Free', label: 'parking and Wi-Fi' },
-];
-
 /** In every room. */
 export const roomFeatures = ['Air conditioning', 'Private balcony', 'Tea & coffee', 'Private bathroom with shower', 'Flat-screen TV with cable', 'Safe', 'Hairdryer', 'Toiletries', 'Free Wi-Fi'];
 
@@ -35,7 +28,7 @@ export const roomFeatures = ['Air conditioning', 'Private balcony', 'Tea & coffe
 // hotel's SiteMinder keys are in, rooms are matched by their OTA name.
 export const rooms: RoomContent[] = [
   {
-    id: 'signature-pineapple', otaName: 'Signature Pineapple', kicker: 'Our signature room', title: 'Signature Pineapple',
+    id: 'signature-pineapple', siteminderRoomTypeUuid: 'f660e0b0-4687-457c-8312-5a0ba6a2fd3c', otaName: 'Signature Pineapple', kicker: 'Our signature room', title: 'Signature Pineapple',
     detail: 'A window cut right through the wall, framed in carved wood, and a big table for getting things done.',
     sqm: 36, beds: 'King bed', sleeps: 2, view: 'Street view', bestFor: 'Workations',
     highlights: ['Carved wooden window between the work nook and the bed', 'Big working table', 'Private balcony', 'Quiet street side'],
@@ -43,7 +36,7 @@ export const rooms: RoomContent[] = [
     images: [p.signature.src, p.signatureWindow.src, p.signatureBed.src, p.signatureDesk.src],
   },
   {
-    id: 'emerald-pool-access', otaName: 'Premier Pool Access', kicker: 'Straight into the pool', title: 'Emerald Pool Access',
+    id: 'emerald-pool-access', siteminderRoomTypeUuid: '7db25b14-a9ec-4ca2-90ac-5592a30a6dc0', otaName: 'Premier Pool Access', kicker: 'Straight into the pool', title: 'Emerald Pool Access',
     detail: 'Ground floor, arched glass doors and the pool a few steps away. The room kids (and couples) ask for.',
     sqm: 38, beds: 'King bed', sleeps: 2, view: 'Pool access', bestFor: 'Kids & couples',
     highlights: ['Arched doors onto the pool terrace', 'Ground floor', 'Sea-blue walls and coral quilts', 'Work desk'],
@@ -51,7 +44,7 @@ export const rooms: RoomContent[] = [
     images: [p.emerald.src, p.emeraldPool.src, p.emeraldBed.src, p.emeraldBath.src],
   },
   {
-    id: 'premier-blue-sky', otaName: 'Premier Pool Town View', kicker: 'Quiet corner, pool view', title: 'Premier Blue Sky Holiday',
+    id: 'premier-blue-sky', siteminderRoomTypeUuid: '9d2d5468-41ca-4f8c-8e7e-ecaa00b49ca0', otaName: 'Premier Pool Town View', kicker: 'Quiet corner, pool view', title: 'Premier Blue Sky Holiday',
     detail: 'Sky-blue walls, a long desk and a balcony over the pool, in the quieter corner of the building.',
     sqm: 34, beds: 'King bed', sleeps: 2, view: 'Pool view', bestFor: 'Long stays & staycations',
     highlights: ['Balcony over the pool', 'Long desk', 'Quieter corner of the hotel', 'Starfish quilt'],
@@ -59,7 +52,7 @@ export const rooms: RoomContent[] = [
     images: [p.blueSky.src, p.blueSkyView.src, p.blueSkyDesk.src, p.blueSkyBed.src],
   },
   {
-    id: 'double-hibiscus', otaName: 'Deluxe King Town View', kicker: 'Pretty in pink', title: 'Double Hibiscus',
+    id: 'double-hibiscus', siteminderRoomTypeUuid: '73cf71b9-a735-4fb3-80e9-b54bbfaa28d4', otaName: 'Deluxe Town View', kicker: 'Pretty in pink', title: 'Double Hibiscus',
     detail: 'Blush-pink walls, a hibiscus quilt and a carved flower frame you’ll want in your photos.',
     sqm: 28, beds: 'King bed', sleeps: 2, view: 'Town view', bestFor: 'Short stays & business trips',
     highlights: ['Balcony over Krabi Town', 'Carved flower frame above the bed', 'Desk and dressing table', 'Pink terrazzo bathroom'],
@@ -67,7 +60,7 @@ export const rooms: RoomContent[] = [
     images: [p.hibiscus.src, p.hibiscusBed.src, p.hibiscusDesk.src, p.hibiscusBath.src],
   },
   {
-    id: 'twin-coco', otaName: 'Deluxe Twin', kicker: 'Two beds, good value', title: 'Twin Coco',
+    id: 'twin-coco', siteminderRoomTypeUuid: 'c82ed00a-447e-4bae-b04c-0bdc8d585137', otaName: 'Deluxe Twin Room', kicker: 'Two beds, good value', title: 'Twin Coco',
     detail: 'Two single beds, soft green walls and coconut cushions. Easy for friends and work trips.',
     sqm: 32, beds: 'Two single beds', sleeps: 2, view: 'Street view', bestFor: 'Friends & colleagues',
     highlights: ['Two single beds', 'Patterned tile floor', 'Desk and dressing table', 'Private balcony'],
@@ -75,7 +68,7 @@ export const rooms: RoomContent[] = [
     images: [p.twinCoco.src, p.twinCocoBeds.src, p.twinCocoDesk.src, p.twinCocoBath.src],
   },
   {
-    id: 'triple-coco', otaName: 'Triple Street View', kicker: 'Room for three', title: 'Triple Coco',
+    id: 'triple-coco', siteminderRoomTypeUuid: '0ff2e747-0c2e-41f2-986c-3bd48703784e', otaName: 'Triple Street View', kicker: 'Room for three', title: 'Triple Coco',
     detail: 'Three beds in a long green room, with coconut cushions and a balcony.',
     sqm: 32, beds: 'Three single beds', sleeps: 3, view: 'Street view', bestFor: 'Three friends',
     highlights: ['Three single beds', 'Patterned tile floor', 'Long room with a desk', 'Private balcony'],
@@ -83,7 +76,7 @@ export const rooms: RoomContent[] = [
     images: [p.tripleCoco.src, p.tripleCocoBeds.src, p.tripleCocoRoom.src, p.tripleCocoBath.src],
   },
   {
-    id: 'triple-blue-sky', otaName: 'Triple Pool View', kicker: 'Three by the pool', title: 'Triple Blue Sky',
+    id: 'triple-blue-sky', siteminderRoomTypeUuid: '18bb9bc3-07a3-4454-8bad-a38515a3925a', otaName: 'Triple Pool View', kicker: 'Three by the pool', title: 'Triple Blue Sky',
     detail: 'Sky-blue walls, starfish quilts, room for three and a balcony over the pool.',
     sqm: 34, beds: 'Three single beds', sleeps: 3, view: 'Pool view', bestFor: 'Small families',
     highlights: ['Three beds', 'Balcony over the pool', 'Starfish quilts', 'Work desk'],
@@ -91,7 +84,7 @@ export const rooms: RoomContent[] = [
     images: [p.tripleBlue.src, p.tripleBlueBeds.src, p.tripleBlueRoom.src, p.tripleBluePool.src],
   },
   {
-    id: 'family-friend-suite', otaName: 'Family Suite Town View', kicker: 'Top floor, room for all', title: 'Family/Friend Suite',
+    id: 'family-friend-suite', siteminderRoomTypeUuid: 'fbdbba82-9f7d-4c30-9244-43296f66ddf6', otaName: 'Family Suite Town View', kicker: 'Top floor, room for all', title: 'Family/Friend Suite',
     detail: 'Our biggest: a bedroom, a living room with a sofa, and green views over Krabi Town from the top floor.',
     sqm: 80, beds: 'Two queen beds', sleeps: 4, view: 'Krabi Town green view', bestFor: 'Families & groups',
     highlights: ['Separate bedroom and living room', 'Top floor, wide town views', 'Sofa and coffee table', 'Room for four'],

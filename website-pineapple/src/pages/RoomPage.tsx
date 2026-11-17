@@ -1,17 +1,15 @@
-import ChatBubbleOutlineRounded from '@mui/icons-material/ChatBubbleOutlineRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import CloseRounded from '@mui/icons-material/CloseRounded';
-import East from '@mui/icons-material/East';
 import OpenInFull from '@mui/icons-material/OpenInFull';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Container, Dialog, IconButton, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { ONSITE_BOOKING, useBookingSearch } from '../context/BookingSearchContext';
-import { useContactForm } from '../context/ContactFormContext';
+import { useBookingSearch } from '../context/BookingSearchContext';
 import { CONTACT, roomFeatures, rooms } from '../data/content';
-import { linkClick, navigate } from '../router';
+import { navigate } from '../router';
+import { CheckAvailabilityButton } from '../components/booking/CheckAvailabilityButton';
 import { fonts } from '../theme';
 import type { RoomContent } from '../types';
 import { ResortPhoto } from '../components/common/ResortPhoto';
@@ -65,20 +63,16 @@ export function RoomPage({ id }: { id: string }) {
 const stayDate = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' });
 
 /**
- * Book (live rates, once on-site booking is on) or — until then — ask the
- * front desk for this room on WhatsApp, with the dates from the search
- * already written in; the contact form is the other way to ask.
+ * The same booking button as everywhere else (live rates, the booking engine
+ * or an emailed booking request, whichever is set up), naming this room —
+ * and WhatsApp for a quick question, the dates already written in.
  */
 function BookButtons({ room, stacked = false }: { room: RoomContent; stacked?: boolean }) {
-  const openContact = useContactForm();
-  const { bookHref, checkIn, checkOut, adults, children } = useBookingSearch();
-  const ask = <Button onClick={() => openContact({ topic: 'Rooms', message: `Hello Royal Pineapple! I’d like to stay in the ${room.title}.`, page: room.title })} variant="outlined" startIcon={<ChatBubbleOutlineRounded />} fullWidth={stacked}>Send a message</Button>;
-  if (ONSITE_BOOKING) return <>
-    <Button href={bookHref} onClick={linkClick(bookHref)} variant="contained" endIcon={<East />} fullWidth={stacked}>Book the {room.title}</Button>{ask}
-  </>;
+  const { checkIn, checkOut, adults, children } = useBookingSearch();
   const text = `Hello Royal Pineapple! Is the ${room.title} free from ${stayDate.format(checkIn)} to ${stayDate.format(checkOut)}, for ${adults} adult${adults === 1 ? '' : 's'}${children ? ` and ${children} child${children === 1 ? '' : 'ren'}` : ''}?`;
   return <>
-    <Button href={`${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener" variant="contained" startIcon={<WhatsApp />} fullWidth={stacked}>Ask for this room</Button>{ask}
+    <Box sx={{ minWidth: { sm: stacked ? 0 : 230 } }}><CheckAvailabilityButton room={room.title} fullWidth={stacked} /></Box>
+    <Button href={`${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener" variant="outlined" startIcon={<WhatsApp />} fullWidth={stacked}>Ask on WhatsApp</Button>
   </>;
 }
 

@@ -7,7 +7,7 @@ import type { BookingRow } from '../api/_lib/bookings.ts';
 import { deliverReservation } from '../api/_lib/deliver.ts';
 
 const booking = {
-  ref: 'HH-TEST-ONLY', check_in: '2026-12-10', check_out: '2026-12-11',
+  ref: 'RP-TEST-ONLY', check_in: '2026-12-10', check_out: '2026-12-11',
   items: [{
     roomTypeUuid: 'test-room', roomTypeName: 'Test room', roomRateUuid: 'test-rate', rateName: 'Room only',
     meals: { breakfast: false, lunch: false, dinner: false }, cancellation: 'Test only', depositType: null,

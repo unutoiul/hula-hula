@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
-    "test:unit": "node --test tests/booking.test.ts",
+    "test:unit": "node --import tsx --test tests/booking.test.ts tests/email-artwork.test.ts",
     "photos": "python scripts/prepare-pineapple-photos.py",
     "test:payments": "node --import tsx --test tests/payment-status.test.ts tests/siteminder-delivery.test.ts",
     "preview": "vite preview",
