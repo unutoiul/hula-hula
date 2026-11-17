@@ -4,7 +4,7 @@ import { useContactForm } from '../../context/ContactFormContext';
 import { photoAssets as p } from '../../data/photos';
 import { useKrabiClock } from '../../hooks/useKrabiClock';
 import { SECTION_HEADING, SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
-import { brand } from '../../theme';
+import { brand, fonts } from '../../theme';
 import { PostcardFrame } from '../common/PostcardFrame';
 import { ResortPhoto } from '../common/ResortPhoto';
 import { Reveal } from '../common/ScrollMotion';
@@ -35,7 +35,7 @@ function KrabiClock() {
   </Box>
   <Box sx={{ minWidth: 0, textAlign: 'left' }}>
     <Typography aria-hidden sx={{ fontSize: 11, lineHeight: 1.6, color: 'text.secondary' }}>It’s {krabiTime.format(now)} in Krabi.</Typography>
-    <Typography sx={{ fontFamily: 'var(--royal-serif, Georgia, serif)', fontSize: { xs: 21, sm: 26 }, lineHeight: 1.15, color: 'primary.main', mt: .25 }}>Tick Tock is open.</Typography>
+    <Typography sx={{ fontFamily: fonts.serif, fontSize: { xs: 21, sm: 26 }, lineHeight: 1.15, color: 'primary.main', mt: .25 }}>Tick Tock is open.</Typography>
     <Typography sx={{ fontSize: 12, lineHeight: 1.6, color: 'text.secondary', mt: .75, maxWidth: 280 }}>The pool, the café and the co-working tables, whenever you’re awake.</Typography>
   </Box>
   </Stack>;
@@ -45,7 +45,7 @@ function KrabiClock() {
 // the floating breakfast as the treat to add.
 export function TickTockSection() {
   const openContact = useContactForm();
-  return <Box id="tick-tock" component="section" aria-labelledby="tick-tock-heading" sx={{ bgcolor: 'info.light', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
+  return <Box id="tick-tock" component="section" aria-labelledby="tick-tock-heading" sx={{ bgcolor: brand.cream, scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl" sx={{ py: SECTION_Y }}>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1.05fr) minmax(0,.95fr)' }, gap: { xs: 3, md: 6 }, alignItems: 'center' }}>
         <Reveal sx={{ minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>

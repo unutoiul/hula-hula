@@ -1,4 +1,5 @@
 import { alpha, createTheme } from '@mui/material/styles';
+import { globalStyles } from './globalStyles';
 
 export const fonts = {
   serif: '"Fredoka", "Trebuchet MS", sans-serif',
@@ -57,7 +58,7 @@ const theme = createTheme({
       },
     },
     MuiIconButton: { styleOverrides: { root: { '&:focus-visible': { outline: '3px solid #50830d', outlineOffset: 3 } } } },
-    MuiCssBaseline: { styleOverrides: `html{scroll-behavior:smooth}body{overflow-x:clip}::selection{background:#f9f70c;color:#173c2c}a:focus-visible,button:focus-visible{outline:3px solid #50830d;outline-offset:4px}em{font-style:normal}img{max-width:100%}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}` },
+    MuiCssBaseline: { styleOverrides: globalStyles },
   },
 });
 

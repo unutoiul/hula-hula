@@ -29,7 +29,7 @@ export function RoomCard({ room }: { room: RoomContent }) {
   const [index, setIndex] = useState(0);
   const href = roomHref(room);
   const count = room.images.length;
-  return <Box component="article" className="royal-room-card" sx={{ position: 'relative', width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column', color: 'text.primary', bgcolor: '#fffaf4', border: '1px solid #d7a2b7', borderRadius: '16px', p: '10px 10px 24px', '&::before': { content: '""', position: 'absolute', inset: 4, border: '1px solid #efd4df', borderRadius: '12px', pointerEvents: 'none' } }}>
+  return <Box component="article" sx={{ position: 'relative', width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column', color: 'text.primary', bgcolor: '#fffaf4', border: '1px solid #d7a2b7', borderRadius: '16px', p: '10px 10px 24px', '&::before': { content: '""', position: 'absolute', inset: 4, border: '1px solid #efd4df', borderRadius: '12px', pointerEvents: 'none' } }}>
     <Box sx={{ position: 'relative', aspectRatio: '4 / 3', overflow: 'hidden', borderRadius: '10px', bgcolor: 'primary.light' }}>
       <ResortPhoto image={room.images[index]} alt={`${room.title}, photo ${index + 1} of ${count}`} sizes="(max-width: 600px) 80vw, (max-width: 1200px) 45vw, 25vw" />
       <Box sx={{ position: 'absolute', left: 18, top: 18, px: 1.2, py: .45, borderRadius: 999, bgcolor: 'rgba(255,253,249,.94)', fontSize: 12, fontWeight: 700, color: 'primary.dark' }}>{room.bestFor}</Box>

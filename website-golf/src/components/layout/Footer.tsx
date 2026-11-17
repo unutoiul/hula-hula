@@ -1,19 +1,20 @@
 import { Box, Container, Link, Stack, Typography } from '@mui/material';
-import { openingHoursLines } from '../../booking/config';
-import { useContact, useSite } from '../../context/SiteDataContext';
+import { Fragment } from 'react';
+import { useContact } from '../../context/SiteDataContext';
 import { ClubMark } from '../common/ClubMark';
 import { RisingSun, SEAM, SectionSeam } from '../common/SectionSeam';
 import { DesignCredit } from './DesignCredit';
 import { MotionToggleLink } from './MotionToggle';
+import { SITES } from './SiteSwitcher';
 import { TropicalBackdrop, tropicalSectionSx } from '../common/TropicalBackdrop';
 
 // The same sunny closing block on every page, wave and rising sun included.
-// Just where we are, when we're open and the resort: phone, Line and email
-// are already in the header's top strip and the contact section.
+// One centred column, the same on all three Hula Hula sites: a closing line,
+// the logo, where we are, how to reach us, the rest of the family and the
+// small print. Opening hours live in the Visit section.
 // `from` is the colour of the section above, so the wave flows out of it.
 export function Footer({ from = SEAM.cream, mobileActionSpace = false }: { from?: string; mobileActionSpace?: boolean }) {
   const CONTACT = useContact();
-  const { club } = useSite();
   return <>
     <SectionSeam from={from} to={SEAM.sun} mirror behind={<RisingSun left="78%" />} />
     <Box component="footer" sx={{
@@ -29,16 +30,19 @@ export function Footer({ from = SEAM.cream, mobileActionSpace = false }: { from?
       <TropicalBackdrop side="right" anchor="bottom" />
       <Container maxWidth="xl">
         <Stack alignItems="center" spacing={2.5} textAlign="center">
-          <Typography variant="h2" sx={{ fontSize: { xs: 31, md: 48 }, lineHeight: 1.1, maxWidth: { xs: 280, sm: 'none' } }}>See you on the first tee.</Typography>
+          <Typography variant="h2" sx={{ fontSize: { xs: 31, md: 48 }, lineHeight: 1.1, maxWidth: { xs: 280, sm: 'none' }, textWrap: 'balance' }}>See you on the first tee.</Typography>
           <ClubMark size="large" href="/" />
           <Typography variant="overline" sx={{ maxWidth: 380, lineHeight: 1.6 }}>
             Hula Hula Golf Club<br />
-            <Link href={CONTACT.maps} target="_blank" rel="noopener noreferrer" color="inherit" underline="hover">{CONTACT.area}</Link>
+            <Link href={CONTACT.maps} target="_blank" rel="noopener noreferrer" color="inherit" underline="always">{CONTACT.area}</Link>
           </Typography>
-          <Typography variant="overline" sx={{ lineHeight: 1.8 }}>
-            {openingHoursLines(club).map((line) => <Box component="span" key={line} sx={{ display: 'block' }}>{line}</Box>)}
+          <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
+            <a href={CONTACT.tel}>{CONTACT.phone}</a><br /><Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>{CONTACT.email}</Box>
           </Typography>
-          <Typography variant="overline">Staying over? <Link href={CONTACT.resort} target="_blank" rel="noopener noreferrer" color="inherit">Hula Hula Resort, Ao Nang</Link> or <Link href="https://hulahula-pineapple.vercel.app" target="_blank" rel="noopener noreferrer" color="inherit">Royal Pineapple, Krabi Town</Link></Typography>
+          <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
+            Part of the Hula Hula family<br />
+            {SITES.filter(site => site.id !== 'golf').map((site, i) => <Fragment key={site.id}>{i > 0 && ' · '}<a href={site.url} target="_blank" rel="noopener noreferrer">{site.name}</a></Fragment>)}
+          </Typography>
           <Typography component="div" variant="overline" sx={{ '& button': { minHeight: 44 } }}>© {new Date().getFullYear()} Hula Hula Golf Club<MotionToggleLink /></Typography>
           <DesignCredit />
         </Stack>

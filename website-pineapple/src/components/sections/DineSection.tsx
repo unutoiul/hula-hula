@@ -14,7 +14,7 @@ import { MealRow } from './MealRow';
 export function DineSection() {
   const openContact = useContactForm();
   const [active, setActive] = useState(0);
-  return <Box id="dine" component="section" aria-labelledby="chaba-heading" sx={{ bgcolor: 'primary.light', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
+  return <Box id="dine" component="section" aria-labelledby="chaba-heading" sx={{ bgcolor: '#fcecf1', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl" sx={{ py: SECTION_Y }}>
       <Reveal><Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', lg: 'minmax(0,1.05fr) minmax(0,1fr)' }, alignItems: 'end', gap: { xs: 2.5, lg: 6 }, mb: { xs: 4, md: 5 }, textAlign: { xs: 'center', lg: 'left' } }}>
         <Box sx={{ minWidth: 0 }}>

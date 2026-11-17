@@ -1,4 +1,5 @@
 import { alpha, createTheme } from '@mui/material/styles';
+import { globalStyles } from './globalStyles';
 
 // Royal Pineapple's palette, on the Hula Hula family's type and shapes (same
 // fonts, buttons and spacing as the resort and golf club). Colours come from
@@ -75,7 +76,7 @@ const theme = createTheme({
       },
     },
     MuiIconButton: { styleOverrides: { root: { '&:focus-visible': { outline: `3px solid ${brand.royal}`, outlineOffset: 3 } } } },
-    MuiCssBaseline: { styleOverrides: `html{scroll-behavior:smooth}body{overflow-x:clip}::selection{background:${brand.pineapple};color:${brand.ink}}a:focus-visible,button:focus-visible{outline:3px solid ${brand.royal};outline-offset:4px}em{font-style:normal}img{max-width:100%}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}` },
+    MuiCssBaseline: { styleOverrides: globalStyles },
   },
 });
 

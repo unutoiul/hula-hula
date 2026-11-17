@@ -1,6 +1,7 @@
-import { motion } from 'motion/react';
+import { Box } from '@mui/material';
 import { useMemo, type ReactNode } from 'react';
 import { photoAssets as p } from '../../data/photos';
+import { MotionBox } from '../common/motionPrimitives';
 
 export const postcardScenes = [
   { id: 'pool', image: p.poolFlamingo.src, title: 'Pink pool days. The real thing.', alt: 'The real hotel pool, with pink loungers, a flamingo float and yellow arched balconies' },
@@ -9,6 +10,11 @@ export const postcardScenes = [
 ];
 
 export const wrapReelIndex = (index: number, count: number) => ((index % count) + count) % count;
+
+const tileSx = {
+  position: 'relative', flex: '0 0 100%', minWidth: '100%', width: '100%', height: '100%', overflow: 'hidden',
+  '& > img': { display: 'block', width: '100%', height: '100%', objectFit: 'cover', userSelect: 'none' },
+} as const;
 
 /** Homepage-only reel: a quick run, horizontal blur, then a slow, clear landing. */
 export function PostcardReel({ sequence, moving, direction, onSettled, children }: {
@@ -19,12 +25,12 @@ export function PostcardReel({ sequence, moving, direction, onSettled, children 
     filter: ['blur(0px)', 'blur(9px)', 'blur(10px)', 'blur(3px)', 'blur(0px)'],
   } : { x: '0%', filter: 'blur(0px)' }, [moving, direction]);
 
-  return <motion.div className="home-slot-strip" data-direction={direction} aria-hidden="true"
+  return <MotionBox aria-hidden="true" sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: direction === 1 ? 'row-reverse' : 'row', width: '100%', height: '100%' }}
     initial={{ x: '0%', filter: 'blur(0px)' }} animate={animation}
     transition={moving ? {
       x: { duration: 2.3, times: [0, .22, 1], ease: ['linear', [.2, .7, .25, 1]] },
       filter: { duration: 2.3, times: [0, .08, .34, .8, 1], ease: 'linear' },
     } : { duration: 0 }} onAnimationComplete={moving ? onSettled : undefined}>
-    {sequence.map((index, position) => <div className="home-slot-tile" key={`${index}-${position}`}>{children(index)}</div>)}
-  </motion.div>;
+    {sequence.map((index, position) => <Box key={`${index}-${position}`} sx={tileSx}>{children(index)}</Box>)}
+  </MotionBox>;
 }

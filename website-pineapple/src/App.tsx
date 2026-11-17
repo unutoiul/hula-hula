@@ -25,6 +25,7 @@ import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
 import { SiteContentProvider, useSiteContent } from './context/SiteContentContext';
 import { useLocation } from './router';
 import { PageMetadata } from './PageMetadata';
+import { brand, fonts } from './theme';
 
 // "Offers" (or "What's on" when there are only events) joins the menu while
 // the offers section has something to show.
@@ -42,7 +43,13 @@ function HotelHeader() {
 function HotelPage() {
   // Nothing tilted or bobbing near an edge may widen the page: clip sideways
   // overflow here (clip, unlike hidden, doesn't create a scroll container).
-  return <Box component="main" className="royal-home" id="top" sx={{ overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' } }}>
+  return <Box component="main" id="top" sx={{
+    overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' }, bgcolor: brand.cream,
+    '& .MuiTypography-h2, & .MuiTypography-h3': { fontFamily: fonts.serif, fontWeight: 400, letterSpacing: '-.035em' },
+    '& :is(a, button):focus-visible': { outline: `2px solid ${brand.royal}`, outlineOffset: 5 },
+    '& > section:not(#welcome)': { borderBottom: '1px solid #e8ced755' },
+    '@media (prefers-reduced-motion: reduce)': { '& *': { scrollBehavior: 'auto !important' } },
+  }}>
     <CookieConsent />
     <HotelHeader />
     <Hero />

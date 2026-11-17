@@ -24,7 +24,7 @@ import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 export const SITES = [
   { id: 'resort', name: 'Hula Hula Resort', short: 'Resort', line: 'Tropical stays & pool villas in Ao Nang', url: 'https://hulahularesort.com', image: '/images/switcher/resort.webp', Icon: BeachAccessRounded },
   { id: 'golf', name: 'Hula Hula Golf Club', short: 'Golf Club', line: '9 holes, FootGolf & range bays by the airport', url: 'https://hulahula-golf.vercel.app', image: '/images/switcher/golf.webp', Icon: GolfCourseRounded },
-  { id: 'pineapple', name: 'Royal Pineapple Hotel', short: 'Royal Pineapple', line: 'Boutique stays in the heart of Krabi Town', url: 'https://hulahula-pineapple.vercel.app', image: '/images/switcher/pineapple.webp', Icon: ApartmentRounded },
+  { id: 'pineapple', name: 'Royal Pineapple Hotel', short: 'Royal Pineapple', line: 'Boutique stays in the heart of Krabi Town', url: 'https://thepineapplehotel.com', image: '/images/switcher/pineapple.webp', Icon: ApartmentRounded },
 ] as const;
 
 const HERE = 'golf';

@@ -15,7 +15,7 @@ import { Sticker } from '../common/VacationDecor';
 // the whole Hula Hula family's, up to 2,000 guests at the golf club's hall.
 export function MeetSection() {
   const openContact = useContactForm();
-  return <Box id="meet" component="section" sx={{ bgcolor: 'secondary.light', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
+  return <Box id="meet" component="section" sx={{ bgcolor: '#fff6f6', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl" sx={{ py: SECTION_Y }}>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', lg: 'repeat(2,minmax(0,1fr))' }, gap: { xs: 5, lg: 6 }, alignItems: 'center' }}>
         <Reveal sx={{ position: 'relative', minWidth: 0, width: '100%', maxWidth: { xs: 680, lg: 'none' }, mx: 'auto', pb: { xs: 3, lg: 0 } }}>

@@ -6,7 +6,7 @@ import { artwork } from '../landing/artwork';
 import { SECTION_HEADING, SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 
 export function ArrivalSection() {
-  return <Box id="arrival" component="section" sx={{ py: SECTION_Y, bgcolor: 'info.light', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
+  return <Box id="arrival" component="section" sx={{ py: SECTION_Y, bgcolor: '#fae7ed', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
     <Container maxWidth="xl">
       <Stack direction={{ xs: 'column', lg: 'row' }} spacing={{ xs: 5, lg: 6 }} alignItems={{ lg: 'flex-start' }}>
         <Reveal sx={{ maxWidth: { lg: 340 }, flexShrink: 0, position: 'relative', textAlign: { xs: 'center', lg: 'left' } }}>

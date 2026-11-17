@@ -12,6 +12,9 @@ import { Sticker } from '../common/VacationDecor';
 import { useContactForm } from '../../context/ContactFormContext';
 import { HighlightsSection } from './HighlightsSection';
 
+// Photo postcards straighten and lift a little under a mouse pointer.
+const photoPostcardHover = { '@media (hover: hover) and (pointer: fine)': { transition: 'transform 180ms cubic-bezier(.23,1,.32,1)', '&:hover': { transform: 'rotate(0deg) translateY(-4px)' } } } as const;
+
 const destinations = ['Ao Nang Beach', 'Krabi Town', 'Golf & footgolf'];
 
 export function ResortPromotionsSection() {
@@ -24,7 +27,7 @@ export function ResortPromotionsSection() {
       <HighlightsSection />
       <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1.15fr .85fr' }, gap: { xs: 4, md: 8 }, alignItems: 'center', mb: { xs: 9, md: 12 } }}>
         <Reveal sx={{ position: 'relative' }}>
-          <ScrollTilt amount={-3}><Box className="photo-postcard" sx={{ border: '8px solid white', borderRadius: '24px 80px 24px 24px', overflow: 'hidden', transform: 'rotate(-2deg)', boxShadow: '0 18px 40px rgba(18,78,57,.1)' }}><ResortPhoto image={p.fruitCart.src} alt="Smiling Hula Hula host beside the resort’s bright green and yellow fruit cart" sizes="(max-width: 899px) 90vw, 48vw" sx={{ height: 'auto' }} /></Box></ScrollTilt>
+          <ScrollTilt amount={-3}><Box sx={{ ...photoPostcardHover, border: '8px solid white', borderRadius: '24px 80px 24px 24px', overflow: 'hidden', transform: 'rotate(-2deg)', boxShadow: '0 18px 40px rgba(18,78,57,.1)' }}><ResortPhoto image={p.fruitCart.src} alt="Smiling Hula Hula host beside the resort’s bright green and yellow fruit cart" sizes="(max-width: 899px) 90vw, 48vw" sx={{ height: 'auto' }} /></Box></ScrollTilt>
           <Box sx={{ position: 'absolute', right: -6, bottom: -32 }}><Sticker color="#f9f70c">Hello,<br />Hula!</Sticker></Box>
         </Reveal>
         <Reveal delay={0.12} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
@@ -49,7 +52,7 @@ export function ResortPromotionsSection() {
           <Typography sx={{ mt: 1.5, fontSize: 12, lineHeight: 1.6, color: 'text.secondary', maxWidth: 440, mx: { xs: 'auto', md: 0 } }}>Confirm current routes, departure times, and charges with our team.</Typography>
         </Box>
         <Box component="figure" sx={{ m: 0 }}>
-          <ScrollTilt amount={3.5}><Box className="photo-postcard" sx={{ border: '7px solid white', borderRadius: 3, overflow: 'hidden', transform: 'rotate(3deg)', boxShadow: '0 12px 34px rgba(18,78,57,.12)' }}><ResortPhoto image={p.shuttlePromotion.src} alt="Hula Hula shuttle truck promotion showing resort, Krabi Town, and Ao Nang Beach destinations" sizes="(max-width: 899px) 80vw, 30vw" sx={{ height: 'auto', objectFit: 'contain' }} /></Box></ScrollTilt>
+          <ScrollTilt amount={3.5}><Box sx={{ ...photoPostcardHover, border: '7px solid white', borderRadius: 3, overflow: 'hidden', transform: 'rotate(3deg)', boxShadow: '0 12px 34px rgba(18,78,57,.12)' }}><ResortPhoto image={p.shuttlePromotion.src} alt="Hula Hula shuttle truck promotion showing resort, Krabi Town, and Ao Nang Beach destinations" sizes="(max-width: 899px) 80vw, 30vw" sx={{ height: 'auto', objectFit: 'contain' }} /></Box></ScrollTilt>
           <Typography component="figcaption" sx={{ mt: 2, fontSize: 12, textAlign: 'center', color: 'text.secondary' }}>A familiar Hula Hula ride.</Typography>
         </Box>
       </Reveal>

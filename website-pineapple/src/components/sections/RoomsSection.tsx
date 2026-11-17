@@ -60,7 +60,7 @@ function RoomEssentials() {
 }
 
 export function RoomsSection() {
-  return <Box id="rooms" component="section" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET, pb: { xs: 7, md: 9 } }}>
+  return <Box id="rooms" component="section" sx={{ scrollMarginTop: SECTION_SCROLL_OFFSET, pt: { xs: '35px', sm: '40px', md: '60px' }, pb: { xs: 7, md: 9 }, borderTop: '1px solid #e8ced7' }}>
     <Container maxWidth="xl">
       <Typography variant="overline" color="primary.main" sx={{ display: 'block', mb: 1, letterSpacing: '.18em' }}>72 rooms. Eight ways to feel at home.</Typography>
       <DragCarousel sectionKicker="72 rooms, eight ways to stay" onDark={false} items={rooms} itemLabel="room"

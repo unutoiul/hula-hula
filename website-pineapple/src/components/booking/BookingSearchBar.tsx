@@ -12,8 +12,8 @@ const bookingDateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: '
 // no destination field), each opening a small popover to edit. Dates/guests
 // are shared state (BookingSearchContext) with the Arrival section's full
 // panel, and both end in the same CheckAvailabilityButton.
-// `wide` (the hero, where the bar floats on the photo's edge): dates, guests
-// and the button in one row from tablets up, bigger text.
+// `wide` (the homepage hero's booking row): dates, guests and the button in
+// one row from tablets up, a flatter card and a squarer button.
 export function BookingSearchBar({ wide = false }: { wide?: boolean }) {
   const today = new Date();
   const { checkIn, checkOut, selectDay, selectingCheckout, adults, setAdults, children, setChildren } = useBookingSearch();
@@ -31,11 +31,11 @@ export function BookingSearchBar({ wide = false }: { wide?: boolean }) {
     wasSelectingCheckout.current = selectingCheckout;
   }, [selectingCheckout]);
 
-  const valueSize = wide ? { xs: 15, md: 18 } : 13;
+  const valueSize = wide ? { xs: 14, sm: 13, md: 12, lg: 14 } : 13;
   return <Box sx={{
-    width: '100%', maxWidth: wide ? 980 : 640, display: wide ? { sm: 'flex' } : 'block', alignItems: 'stretch',
-    border: '1px solid', borderColor: 'divider', borderTop: wide ? undefined : '4px solid #c92f6b', bgcolor: 'background.paper', color: 'text.primary', borderRadius: wide ? { xs: '24px', sm: '999px' } : '24px', overflow: 'hidden',
-    boxShadow: wide ? '0 22px 50px rgba(90,36,72,.22)' : '0 8px 24px rgba(90,36,72,.07)',
+    width: '100%', maxWidth: wide ? 'none' : 640, display: wide ? { sm: 'flex' } : 'block', alignItems: 'stretch',
+    border: '1px solid', borderColor: 'divider', borderTop: wide ? undefined : '4px solid #c92f6b', bgcolor: 'background.paper', color: 'text.primary', borderRadius: wide ? '5px' : '24px', overflow: 'hidden',
+    boxShadow: wide ? '0 7px 30px rgba(90,36,72,.035)' : '0 8px 24px rgba(90,36,72,.07)',
   }}>
     {/* Dates and guests sit side by side where the bar is wide enough (sm, lg+)
         and stack where it isn't (phones, and the narrow md hero column). Equal
@@ -60,7 +60,7 @@ export function BookingSearchBar({ wide = false }: { wide?: boolean }) {
         <Typography component="span" sx={{ display: 'block', fontFamily: fonts.sans, fontWeight: 400, fontSize: valueSize, mt: .15 }}>{adults} adult{adults !== 1 ? 's' : ''}{children > 0 ? `, ${children} child${children !== 1 ? 'ren' : ''}` : ''}</Typography>
       </Box>
     </Box>
-    <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', minWidth: wide ? { sm: 230 } : undefined }}><CheckAvailabilityButton /></Box>
+    <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', ...(wide && { minWidth: { xs: 0, sm: 195, lg: 230 }, '& .MuiButton-root': { borderRadius: '3px', minHeight: 52 } }) }}><CheckAvailabilityButton /></Box>
 
     {/* Anchored to the whole fields row and centered, not to the (much narrower)
         Dates sub-box — the two-month calendar is wider than that box, so

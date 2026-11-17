@@ -2,13 +2,32 @@ import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import PauseRounded from '@mui/icons-material/PauseRounded';
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
-import { motion, useInView } from 'motion/react';
+import { Box } from '@mui/material';
+import { useInView } from 'motion/react';
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
+import { brand, fonts } from '../../theme';
+import { MotionBox } from '../common/motionPrimitives';
 import { previewOffers } from '../sections/previewOffers';
 import { BadgePicture } from './BadgePicture';
 import { PostcardReel, postcardScenes, wrapReelIndex } from './PostcardReel';
-import './home-postcard-stack.css';
+
+const reelButtonSx = {
+  display: 'grid', placeItems: 'center', width: 44, height: 44, p: 0, border: '1px solid #d8b5c5', borderRadius: '50%',
+  bgcolor: brand.cream, color: '#782d51', cursor: 'pointer', transition: 'background-color .2s',
+  '&:hover': { bgcolor: '#f7dce6' }, '&[aria-disabled="true"]': { opacity: .4, cursor: 'default' }, '& > svg': { fontSize: 18 },
+  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+} as const;
+
+// The offer card's words scale with the card itself (container query units).
+const offerWordsSx = {
+  position: 'absolute', inset: '13% 17% 27%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+  gap: 'clamp(4px, 1.8cqw, 8px)', textAlign: 'center', color: '#fff7e8', textShadow: '0 1px 7px #32102c80',
+  '& .kicker, & small': { maxWidth: '100%', fontSize: 'clamp(5px, 2.4cqw, 9px)', textWrap: 'balance' },
+  '& .kicker': { lineHeight: 1.35, letterSpacing: '.13em', fontWeight: 600, textTransform: 'uppercase' },
+  '& small': { lineHeight: 1.4, fontWeight: 400, letterSpacing: '.01em' },
+  '& strong': { fontFamily: fonts.serif, fontWeight: 400 },
+} as const;
 
 export function PostcardCollage() {
   const { reduced, systemReduced, toggle } = useMotionPreference();
@@ -102,13 +121,17 @@ export function PostcardCollage() {
     setDragging(false);
   };
 
-  return <motion.div className="story-postcards home-postcard-composition" ref={scope} role="region" aria-roledescription="carousel"
+  return <MotionBox ref={scope} role="region" aria-roledescription="carousel"
     aria-label="Hotel postcards and offers" aria-busy={busy} tabIndex={0}
     initial={reduced ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0 : .8 }}
     onPointerEnter={event => { if (event.pointerType === 'mouse') setHovered(true); }} onPointerLeave={() => setHovered(false)}
     onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
-    onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); request(event.key === 'ArrowRight' ? 1 : -1); } }}>
-    <div className="home-postcard-stage" data-dragging={dragging}
+    onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); request(event.key === 'ArrowRight' ? 1 : -1); } }}
+    sx={{
+      position: 'relative', width: '100%', minWidth: 0, outline: 'none', p: { xs: '0 3px', sm: '0 8px', md: '6px 0 0' }, maxWidth: { xs: 640, md: 'none' }, mx: { xs: 'auto', md: 0 },
+      '&:focus-visible': { outline: '2px solid #c83b74', outlineOffset: 10, borderRadius: '12px' },
+    }}>
+    <Box sx={{ position: 'relative', width: '100%', aspectRatio: { xs: '1.02', sm: '1.17', md: '1.12', lg: '1.17' }, isolation: 'isolate', touchAction: 'pan-y', cursor: dragging ? 'grabbing' : 'grab', userSelect: 'none' }}
       onPointerDown={event => { if (event.button === 0 && !busy) { pointer.current = { x: event.clientX, y: event.clientY, dragged: false }; suppressClick.current = false; setPressed(true); } }}
       onPointerMove={event => {
         const start = pointer.current;
@@ -121,39 +144,57 @@ export function PostcardCollage() {
       onPointerLeave={event => { if (!event.currentTarget.hasPointerCapture(event.pointerId)) cancelGesture(); }}
       onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}>
 
-      <div className="home-postcard-back">
-        <BadgePicture frameName="riviera-postcard" label={photo.alt} eager>
+      <Box sx={{ position: 'absolute', zIndex: 1, top: { xs: 20, sm: 25 }, left: 0, width: { xs: '97%', sm: '96%' }, transform: { xs: 'rotate(-3deg)', sm: 'rotate(-4deg)' } }}>
+        <BadgePicture frameName="riviera-postcard" label={photo.alt} eager shadow="0 16px 20px #5a244821">
           <PostcardReel key={`photo-${index}-${target}`} sequence={sequence} moving={busy} direction={direction} onSettled={settle}>
             {item => { const scene = postcardScenes[wrapReelIndex(item, postcardScenes.length)]; return <img src={scene.image} alt="" width={1600} height={1067} fetchPriority={item === 0 ? 'high' : 'auto'} decoding="async" draggable={false} />; }}
           </PostcardReel>
         </BadgePicture>
-        <span className="home-postcard-handwriting" aria-hidden="true">Wish you were here…</span>
-      </div>
+        <Box component="span" aria-hidden="true" sx={{
+          position: 'absolute', left: { xs: 10, sm: 18, lg: 25 }, top: { xs: 'calc(100% + 10px)', sm: 'calc(100% + 12px)' }, maxWidth: { xs: 145, sm: 'none' },
+          fontFamily: fonts.serif, fontStyle: 'italic', fontWeight: 400, fontSize: { xs: 19, sm: 22, lg: 25 }, lineHeight: 1.2, color: '#c12e68', transform: 'rotate(2deg)',
+        }}>Wish you were here…</Box>
+      </Box>
 
-      <a className="home-offer-front" href="#offers" aria-label={`${offer.tag} ${offer.label}. Offer preview. View details.`}>
-        <BadgePicture frameName="grand-arrival" eager>
+      <Box component="a" href="#offers" aria-label={`${offer.tag} ${offer.label}. Offer preview. View details.`} sx={{
+        position: 'absolute', zIndex: 3, right: '-1%', bottom: { xs: 12, sm: 14 }, width: { xs: '57%', sm: '48%', md: '52%', lg: '48%' },
+        transform: { xs: 'rotate(7deg)', sm: 'rotate(8deg)' }, containerType: 'inline-size', textDecoration: 'none', color: '#fff5e4', cursor: 'grab',
+        '&:focus-visible': { borderRadius: '32px' },
+        '&::after': {
+          content: '"View this offer preview ↗"', position: 'absolute', top: { xs: 'calc(100% + 5px)', sm: 'calc(100% + 8px)' }, right: { xs: 0, sm: 15 },
+          color: '#8c4868', fontSize: { xs: 8, sm: 10 }, lineHeight: 1.5, whiteSpace: 'nowrap',
+        },
+      }}>
+        <BadgePicture frameName="grand-arrival" eager shadow="0 12px 14px #5a24482c">
           <PostcardReel key={`offer-${index}-${target}`} sequence={sequence} moving={busy} direction={direction}>
             {item => {
               const number = wrapReelIndex(item, previewOffers.length);
               const card = previewOffers[number];
-              return <><img src={card.image} alt="" width={1600} height={1067} decoding="async" draggable={false} /><div className="home-offer-shade" />
-                <div className="home-offer-words"><span className="home-offer-kicker">{number === 0 ? 'Your book-direct treat' : 'The slow-morning escape'}</span>
-                  {number === 0 ? <strong className="home-offer-value">−45<span>%</span></strong> : <strong className="home-offer-breakfast">Breakfast<br />for two</strong>}
-                  <small className="home-offer-note">{number === 0 ? 'Direct booking · Offer preview' : 'Three nights · Offer preview'}</small>
-                </div></>;
+              return <><img src={card.image} alt="" width={1600} height={1067} decoding="async" draggable={false} />
+                <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #4a143be6, #4a143bc7 64%, #4a143b80)' }} />
+                <Box sx={offerWordsSx}><span className="kicker">{number === 0 ? 'Your book-direct treat' : 'The slow-morning escape'}</span>
+                  {number === 0
+                    ? <Box component="strong" sx={{ display: 'inline-flex', alignItems: 'baseline', gap: '.025em', m: 0, fontSize: 'clamp(24px, 16.5cqw, 64px)', lineHeight: .95, letterSpacing: '-.055em', fontVariantNumeric: 'lining-nums', whiteSpace: 'nowrap', '& > span': { fontSize: '.5em', letterSpacing: '-.02em' } }}>−45<span>%</span></Box>
+                    : <Box component="strong" sx={{ fontStyle: 'italic', fontSize: 'clamp(13px, 9cqw, 34px)', lineHeight: 1.02, letterSpacing: '-.03em' }}>Breakfast<br />for two</Box>}
+                  <small>{number === 0 ? 'Direct booking · Offer preview' : 'Three nights · Offer preview'}</small>
+                </Box></>;
             }}
           </PostcardReel>
         </BadgePicture>
-      </a>
-    </div>
-    <div className="home-postcard-footer">
-      <div className="home-postcard-caption" aria-live={focused ? 'polite' : 'off'}><span>{photo.title}</span><small>Swipe, scroll sideways, or use the arrows.</small></div>
-      <div className="postcard-reel-controls">
-        <button type="button" onClick={() => request(-1)} aria-disabled={busy} aria-label="Previous hotel photo and offer"><ArrowBackRounded /></button>
-        <span className="postcard-reel-count" aria-hidden="true">0{photoIndex + 1}<span> / 0{postcardScenes.length}</span></span>
-        <button type="button" onClick={() => request(1)} aria-disabled={busy} aria-label="Next hotel photo and offer"><ArrowForwardRounded /></button>
-        {!systemReduced && <button type="button" onClick={toggle} aria-pressed={reduced} aria-label={reduced ? 'Play all animations' : 'Pause all animations'}>{reduced ? <PlayArrowRounded /> : <PauseRounded />}</button>}
-      </div>
-    </div>
-  </motion.div>;
+      </Box>
+    </Box>
+    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'space-between' }, flexWrap: 'wrap', gap: { xs: '15px', sm: '14px', lg: '12px' }, p: '20px 3px 0' }}>
+      <Box aria-live={focused ? 'polite' : 'off'} sx={{
+        display: 'flex', flexDirection: 'column', gap: { xs: '4px', sm: '8px' }, color: '#8a6479', width: { xs: '100%', sm: 'auto' }, textAlign: { xs: 'center', sm: 'left' },
+        '& > span': { fontFamily: fonts.serif, fontStyle: 'italic', fontSize: { xs: 18, lg: 20 }, lineHeight: 1.3, color: '#a42d5c' },
+        '& > small': { fontSize: { xs: 8, sm: 9 }, lineHeight: 1.6 },
+      }}><span>{photo.title}</span><small>Swipe, scroll sideways, or use the arrows.</small></Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: '10px', sm: '5px' }, flexShrink: 0 }}>
+        <Box component="button" type="button" onClick={() => request(-1)} aria-disabled={busy} aria-label="Previous hotel photo and offer" sx={reelButtonSx}><ArrowBackRounded /></Box>
+        <Box component="span" aria-hidden="true" sx={{ minWidth: 42, fontSize: { xs: 9, sm: 10 }, color: '#69354f', textAlign: 'center', fontVariantNumeric: 'tabular-nums', '& > span': { color: '#a88998' } }}>0{photoIndex + 1}<span> / 0{postcardScenes.length}</span></Box>
+        <Box component="button" type="button" onClick={() => request(1)} aria-disabled={busy} aria-label="Next hotel photo and offer" sx={reelButtonSx}><ArrowForwardRounded /></Box>
+        {!systemReduced && <Box component="button" type="button" onClick={toggle} aria-pressed={reduced} aria-label={reduced ? 'Play all animations' : 'Pause all animations'} sx={reelButtonSx}>{reduced ? <PlayArrowRounded /> : <PauseRounded />}</Box>}
+      </Box>
+    </Box>
+  </MotionBox>;
 }
