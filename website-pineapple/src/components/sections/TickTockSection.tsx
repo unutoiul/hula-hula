@@ -49,10 +49,10 @@ export function TickTockSection() {
     <Container maxWidth="xl" sx={{ py: SECTION_Y }}>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1.05fr) minmax(0,.95fr)' }, gap: { xs: 3, md: 6 }, alignItems: 'center' }}>
         <Reveal sx={{ minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>
-          <Typography variant="overline" sx={{ color: 'info.dark' }}>Tick Tock 24/7 · by the pool</Typography>
-          <Typography id="tick-tock-heading" variant="h2" sx={{ fontSize: SECTION_HEADING, lineHeight: 1.08, mt: 1.5 }}>Pool days.<br />Your kind of pace.</Typography>
+          <Typography variant="overline" sx={{ color: 'info.dark' }}>Tick Tock 24/7 · the poolside social hub</Typography>
+          <Typography id="tick-tock-heading" variant="h2" sx={{ fontSize: SECTION_HEADING, lineHeight: 1.08, mt: 1.5 }}>Refreshments.<br />Conversations.<br />Anytime.</Typography>
           <Typography sx={{ mt: 2.5, color: 'text.secondary', fontSize: 15, lineHeight: 1.85, maxWidth: 500, mx: { xs: 'auto', md: 0 } }}>
-            Coffee, a cold drink, a good conversation. Tick Tock is our poolside café and co-working spot, open around the clock. Pull up a chair whenever the mood takes you.
+            From sunrise coffee to late-night cravings, Tick Tock is the social heartbeat of the hotel. Travellers, remote workers, locals and friends meet here by the pool over fresh juices, light bites and cocktails, or settle in to work. Pull up a chair whenever the mood strikes.
           </Typography>
           <KrabiClock />
         </Reveal>

@@ -23,6 +23,7 @@ for stale in OUTPUT.glob('*'):  # regenerate from scratch so dropped photos don'
 
 ROOMS = HOTEL / 'Roomtype'
 COMMON = HOTEL / 'common area'
+TAKANTA = ASSETS / 'TAKANTA EVENT HALL'
 SELECTION = {
     # The hotel, its pool and the public rooms
     'poolFlamingo': COMMON / '4P3A1801.jpg',
@@ -49,6 +50,14 @@ SELECTION = {
     'meetingSmall': HOTEL / 'Meeting' / '4P3A2315.jpg',
     'meetingBoard': HOTEL / 'Meeting' / '4P3A2321.jpg',
     'gym': HOTEL / 'gym' / 'Gym1.png',
+    # Takanta Event Hall, the family's event venue near the airport (camera
+    # originals only: the 1536 x 1024 and starred files there are AI images)
+    'takantaBanquet': TAKANTA / '09 - Copy.JPG',
+    'takantaStage': TAKANTA / 'DSCF1494-3.JPG',
+    'takantaLedWedding': TAKANTA / '62.jpg',
+    'takantaReception': TAKANTA / '32.JPG',
+    'takantaLawn': TAKANTA / '23.JPG',
+    'takantaExterior': TAKANTA / '12.JPG',
     # Rooms, by their new names (photo folders keep the OTA names)
     'twinCoco': ROOMS / 'Deluxe Twin' / '500A7721.jpg',
     'twinCocoBeds': ROOMS / 'Deluxe Twin' / '500A7727.jpg',

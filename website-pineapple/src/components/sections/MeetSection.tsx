@@ -1,7 +1,7 @@
 import East from '@mui/icons-material/East';
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import { useContactForm } from '../../context/ContactFormContext';
-import { familyVenues, venues } from '../../data/content';
+import { resortVenues, takantaSpaces, venues } from '../../data/content';
 import { photoAssets as p } from '../../data/photos';
 import { SECTION_HEADING, SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { linkClick } from '../../router';
@@ -11,8 +11,17 @@ import { Reveal } from '../common/ScrollMotion';
 import { PostcardFrame } from '../common/PostcardFrame';
 import { Sticker } from '../common/VacationDecor';
 
+const familyLinkSx = { display: 'inline-flex', alignItems: 'center', gap: .75, fontWeight: 700, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } } as const;
+
+function VenueRow({ name, detail }: { name: string; detail: string }) {
+  return <Stack component="li" direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={{ xs: .5, sm: 2 }} sx={{ py: 1.5, borderBottom: '1px dashed', borderColor: 'divider' }}>
+    <Typography sx={{ fontSize: 15 }}>{name}</Typography>
+    <Typography sx={{ fontSize: 14, color: 'text.secondary', flexShrink: 0 }}>{detail}</Typography>
+  </Stack>;
+}
+
 // Meetings, parties and weddings: the hotel's own rooms at a glance, then
-// the whole Hula Hula family's, up to 2,000 guests at the golf club's hall.
+// the whole Hula Hula family's, up to 2,000 guests at Takanta Event Hall.
 export function MeetSection() {
   const openContact = useContactForm();
   return <Box id="meet" component="section" sx={{ bgcolor: '#fff6f6', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
@@ -28,7 +37,7 @@ export function MeetSection() {
           <Typography variant="overline" color="primary.main">Meet & celebrate</Typography>
           <Typography variant="h2" sx={{ fontSize: SECTION_HEADING, lineHeight: 1.08, mt: 1.5 }}>Good things happen<br />together.</Typography>
           <Typography sx={{ mt: 2.5, color: 'text.secondary', lineHeight: 1.8, maxWidth: 500, mx: { xs: 'auto', lg: 0 } }}>
-            Four meeting rooms and the pool terrace for 10 to 200 people, with rooms to stay in, food from our own kitchen and Krabi on the doorstep. Retreats, workshops, team days, parties and weddings.
+            Work, meet and recharge in Krabi’s creative hub. Four meeting rooms and the pool terrace for 10 to 200 people, rooms upstairs, food from our own kitchen and Krabi on the doorstep. Retreats, workshops, team building, parties and weddings.
           </Typography>
           <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, mt: 3, display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 1, maxWidth: 520, mx: { xs: 'auto', lg: 0 }, textAlign: 'left' }}>
             {venues.map((v) => <Box component="li" key={v.name} sx={{ p: 1.5, borderRadius: '16px', bgcolor: 'background.paper' }}>
@@ -45,17 +54,20 @@ export function MeetSection() {
 
       <Reveal>
         <Box component="details" sx={{ mt: { xs: 5, md: 6 }, p: { xs: 2.5, md: 3 }, borderRadius: '15px', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
-          <Box component="summary" sx={{ cursor: 'pointer', fontSize: 15, fontWeight: 600, color: 'primary.dark' }}>Planning something bigger? Meet the Hula Hula family’s venues.</Box>
+          <Box component="summary" sx={{ cursor: 'pointer', fontSize: 15, fontWeight: 600, color: 'primary.dark' }}>Planning something bigger? The Hula Hula family hosts up to 2,000.</Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'repeat(2,minmax(0,1fr))' }, gap: { xs: 3, md: 5 }, mt: 2.5 }}>
-            {familyVenues.map((place) => <Box key={place.place}>
-              <Box component="a" href={place.url} target="_blank" rel="noopener" sx={{ display: 'inline-flex', alignItems: 'center', gap: .75, fontWeight: 700, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>{place.place}<East sx={{ fontSize: 16 }} /></Box>
+            <Box>
+              <Box component="a" href="/meetings/takanta" onClick={linkClick('/meetings/takanta')} sx={familyLinkSx}>Takanta Event Hall · 30 to 2,000 guests<East sx={{ fontSize: 16 }} /></Box>
               <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, mt: 1 }}>
-                {place.rooms.map((room) => <Stack component="li" key={room.name} direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={{ xs: .5, sm: 2 }} sx={{ py: 1.5, borderBottom: '1px dashed', borderColor: 'divider' }}>
-                  <Typography sx={{ fontSize: 15 }}>{room.name}{'sub' in room && room.sub ? <Box component="span" sx={{ color: 'text.secondary' }}> · {room.sub}</Box> : null}</Typography>
-                  <Typography sx={{ fontSize: 14, color: 'text.secondary', flexShrink: 0 }}>{room.sqm} m² · {room.theatre} theatre</Typography>
-                </Stack>)}
+                {takantaSpaces.filter((space) => space.roundTables).map((space) => <VenueRow key={space.name} name={space.name} detail={`${space.area} · up to ${space.roundTables} at round tables`} />)}
               </Box>
-            </Box>)}
+            </Box>
+            <Box>
+              <Box component="a" href="https://hulahularesort.com" target="_blank" rel="noopener" sx={familyLinkSx}>Hula Hula Resort, Ao Nang<East sx={{ fontSize: 16 }} /></Box>
+              <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, mt: 1 }}>
+                {resortVenues.map((room) => <VenueRow key={room.name} name={room.name} detail={`${room.sqm} m² · ${room.theatre} theatre`} />)}
+              </Box>
+            </Box>
           </Box>
         </Box>
       </Reveal>

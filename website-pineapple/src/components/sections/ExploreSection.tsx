@@ -5,7 +5,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Container, 
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
-import { fitQuestions, localPicks, nearby, travelTimes } from '../../data/content';
+import { bothSides, fitQuestions, localPicks, nearby, travelTimes } from '../../data/content';
 import { photoAssets as p } from '../../data/photos';
 import { SECTION_HEADING, SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { sectionLink, useLocation } from '../../router';
@@ -41,7 +41,7 @@ function TravelRoute() {
   </Box>;
 }
 
-// Krabi Town from the hotel: how far things are, where the team eats, what's
+// Krabi Town from the hotel: both sides of Krabi, how far things are, where the team eats, what's
 // nearby, and honest answers on whether a town base is right for you.
 export function ExploreSection() {
   const { pathname } = useLocation();
@@ -51,10 +51,10 @@ export function ExploreSection() {
     <Container maxWidth="xl">
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1.1fr) minmax(0,1fr)' }, gap: { xs: 5, md: 8 }, alignItems: 'center' }}>
         <Reveal sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-          <Typography variant="overline" color="primary.main">Explore Krabi Town</Typography>
+          <Typography variant="overline" color="primary.main">Your launchpad for Krabi</Typography>
           <Typography variant="h2" sx={{ fontSize: SECTION_HEADING, lineHeight: 1.08, mt: 1.5 }}>Out you go.<br />Krabi is waiting.</Typography>
           <Typography sx={{ mt: 2.5, color: 'text.secondary', lineHeight: 1.8, maxWidth: 540, mx: { xs: 'auto', md: 0 } }}>
-            Start with a market breakfast and a wander by the river. Head out for islands, temples or an Ao Nang beach day. Our team can help you find your way — and your next favourite little place.
+            Hidden cafés, Southern Thai cooking, riverside walks and night markets are right on the doorstep. Krabi’s famous beaches and islands lie one way, waterfalls, temples and hot springs the other. See the real Krabi by day, then come home to a peaceful tropical retreat.
           </Typography>
           <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} justifyContent={{ xs: 'center', md: 'flex-start' }} sx={{ mt: 3 }}>
             {nearby.map((place) => <Box key={place} sx={{ px: 1.5, py: .6, borderRadius: 999, border: '1px solid', borderColor: 'divider', fontSize: 13.5, fontWeight: 600, bgcolor: 'background.paper' }}>{place}</Box>)}
@@ -70,7 +70,23 @@ export function ExploreSection() {
         </Reveal>
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1fr) minmax(0,1.2fr)' }, gap: { xs: 4, md: 5 }, mt: { xs: 8, md: 10 }, alignItems: 'start' }}>
+      <Reveal>
+        <Box sx={{ mt: { xs: 8, md: 10 } }}>
+          <Typography variant="h3" sx={{ fontSize: { xs: 26, md: 34 }, textAlign: { xs: 'center', md: 'left' } }}>Both sides of Krabi, one happy base</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'repeat(2,minmax(0,1fr))' }, gap: 2, mt: 2.5 }}>
+            {bothSides.map((side, i) => <Box key={side.side} sx={{ p: { xs: 2.5, md: 3 }, borderRadius: '28px', bgcolor: i ? '#fdf3d8' : 'primary.light' }}>
+              <Typography variant="overline" sx={{ color: i ? 'secondary.dark' : 'primary.main' }}>{side.side}</Typography>
+              <Typography sx={{ fontFamily: fonts.playful, fontSize: { xs: 22, md: 25 }, lineHeight: 1.2, mt: .5 }}>{side.title}</Typography>
+              <Stack direction="row" flexWrap="wrap" useFlexGap gap={1} sx={{ mt: 2 }}>
+                {side.places.map((place) => <Box key={place} sx={{ px: 1.5, py: .6, borderRadius: 999, bgcolor: 'rgba(255,253,249,.8)', fontSize: 13.5, fontWeight: 600 }}>{place}</Box>)}
+              </Stack>
+            </Box>)}
+          </Box>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 1.5, textAlign: { xs: 'center', md: 'left' } }}>Every one a day trip from our door. The tour desk will happily set it up.</Typography>
+        </Box>
+      </Reveal>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', md: 'minmax(0,1fr) minmax(0,1.2fr)' }, gap: { xs: 4, md: 5 }, mt: { xs: 5, md: 6 }, alignItems: 'start' }}>
         <Reveal><TravelRoute /></Reveal>
         <Reveal delay={0.1}>
           <Box sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: '28px', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>

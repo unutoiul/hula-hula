@@ -26,18 +26,18 @@ export function LandingIntro() {
           position: 'relative', p: { xs: '0 0 15px', sm: '25px 0 45px' }, textAlign: 'center',
           background: 'radial-gradient(ellipse, #f9dfe7aa, transparent 70%)', ...centredOnSmallScreens, maxWidth: { xs: 540, md: 'none' },
         }}>
-          <Box component="img" src={artwork.luggage} alt="Royal Pineapple’s European-style hotel, palms and pink pineapple on a vintage travel sticker" width={1100} height={902} loading="lazy" decoding="async"
+          <Box component="img" src={artwork.luggage} alt="Royal Pineapple’s colonial-inspired hotel, palms and pink pineapple on a vintage travel sticker" width={1100} height={902} loading="lazy" decoding="async"
             sx={{ display: 'block', width: '100%', height: 'auto', maxHeight: 510, objectFit: 'contain', transform: 'rotate(-4deg)', filter: 'drop-shadow(0 13px 15px #5a244811)' }} />
           <Box component="span" sx={{
             display: 'block', m: { xs: '24px 0 0 25px', sm: '24px 0 0 70px' }, transform: 'rotate(-4deg)',
             fontFamily: fonts.serif, fontSize: { xs: 21, sm: 22 }, fontStyle: 'italic', lineHeight: 1.25, color: brand.royal,
-          }}>Your happy little home<br />in the heart of Krabi.</Box>
+          }}>Your home away from home<br />in the heart of Krabi.</Box>
         </Box></Reveal>
         <Reveal delay={.1}><Box sx={{ ...centredOnSmallScreens, maxWidth: { xs: 530, md: 'none' } }}>
           <Box component="p" sx={{ ...eyebrowSx, mb: '17px' }}>The Royal Pineapple story</Box>
-          <Box component="h3" sx={{ ...serifHeadingSx, fontSize: { xs: 35, sm: 38, md: 40 }, lineHeight: 1.13, letterSpacing: '-.035em', m: '0 0 22px' }}>European charm.<br /><em>Thai heart.</em></Box>
-          <Box component="p" sx={storySx}>Golden arches. A balcony of your own. Pink loungers by a turquoise pool. Our little corner of Krabi Town has a personality all its own.</Box>
-          <Box component="p" sx={storySx}>Head out for markets, riverside walks and island days. Come home to good food, friendly faces, and a wonderfully easy afternoon.</Box>
+          <Box component="h3" sx={{ ...serifHeadingSx, fontSize: { xs: 35, sm: 38, md: 40 }, lineHeight: 1.13, letterSpacing: '-.035em', m: '0 0 22px' }}>Colonial-inspired.<br /><em>Thai at heart.</em></Box>
+          <Box component="p" sx={storySx}>Why a pineapple? Krabi’s farmers grow them between the rubber trees, and all over the world a pineapple means welcome, friendship and good fortune. Consider this yours.</Box>
+          <Box component="p" sx={storySx}>Behind the golden arches: contemporary colonial-inspired style, carved wood, a turquoise pool with pink loungers and a balcony for every room. Explore Krabi all day, then come home to good food and friendly faces.</Box>
           <Button href="#rooms" color="inherit" endIcon={<East />} sx={{ fontSize: 12, px: 0 }}>Find your little corner</Button>
           <Box sx={{
             display: 'flex', alignItems: 'center', gap: '17px', mt: '20px',
@@ -57,7 +57,7 @@ export function LandingIntro() {
         '& strong': { fontFamily: fonts.serif, fontWeight: 400, fontSize: { xs: 30, sm: 27, md: 32 }, color: brand.royal },
         '& span': { fontSize: { xs: 10, md: 11 }, color: '#826574', px: { xs: '6px', md: 0 } },
       }}>
-        <div><strong>72</strong><span>rooms with a balcony</span></div><div><strong>24/7</strong><span>poolside café & social hub</span></div><div><strong>Krabi Town</strong><span>your local starting point</span></div><div><strong>One big</strong><span>Thai welcome</span></div>
+        <div><strong>72</strong><span>rooms with a balcony</span></div><div><strong>24/7</strong><span>poolside café & social hub</span></div><div><strong>Krabi Town</strong><span>the social heart of Krabi</span></div><div><strong>One big</strong><span>Thai welcome</span></div>
       </Box>
 
       {/* On tablets and phones the five pillars scroll sideways, snapping to each one. */}

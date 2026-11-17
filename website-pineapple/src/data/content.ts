@@ -17,7 +17,7 @@ export const pillars = [
   { word: 'Recharge', line: 'Hair, beauty & massage at On Cloud', href: '#wellness' },
   { word: 'Connect', line: 'Poolside, any hour, at Tick Tock 24/7', href: '#tick-tock' },
   { word: 'Meet', line: 'Rooms for 10 to 200 people', href: '#meet' },
-  { word: 'Explore', line: 'A different Krabi trip every day', href: '#explore' },
+  { word: 'Explore', line: 'Real Krabi, beyond the tourist trail', href: '#explore' },
 ] as const;
 
 /** In every room. */
@@ -184,6 +184,12 @@ export const travelTimes = [
   { place: 'Krabi Airport', minutes: 20 },
 ];
 
+/** Krabi Town sits between the province's two sides; every place here is a day trip from the hotel. */
+export const bothSides = [
+  { side: 'West side', title: 'Beaches & islands', places: ['Ao Nang Beach', 'Railay Beach', 'Phi Phi Islands', 'Island hopping', 'Klong Root clear-water kayaking'] },
+  { side: 'East side', title: 'Waterfalls, temples & hot springs', places: ['Huay To Waterfall', 'Tiger Cave Temple', 'Hula Hula Golf Club', 'The hot spring waterfall', 'The Emerald Pool'] },
+];
+
 export const nearby = ['Khao Khanap Nam', 'Koh Klang floating village', 'Wat Kaew (the White Temple)', 'Krabi Walking Street', 'Poo Dam, the Black Crab', 'Maharaj Morning Market'];
 
 /** Where the team eats, from the hotel's own list. */
@@ -195,15 +201,15 @@ export const localPicks = [
   ] },
   { meal: 'Lunch', places: [
     { name: 'Naipon', note: 'Any Thai dish you can think of, at friendly Thai prices.' },
-    { name: 'Koh Klang seafood', note: 'Lunch on the island. Try the shrimp with oregano.' },
+    { name: 'Koh Klang seafood', note: 'Lunch on the island. The shrimp with oregano is the signature.' },
   ] },
   { meal: 'Dinner', places: [
-    { name: 'Anchalee Restaurant', note: 'Southern Thai for over 30 years. Auntie Aun grows many of the vegetables herself.' },
-    { name: 'Nongjane Restaurant', note: 'Chef Wat’s tom yum and Southern orange curry with sea bass. Opens at 6 pm; expect to wait 20–60 minutes.' },
-    { name: 'Koeyyai Seafood', note: 'Pomfret hotpot, and crab or shrimp in curry powder.' },
+    { name: 'Anchalee Restaurant', note: 'Southern Thai for over 30 years. Auntie Aun knows every Krabi speciality, and many of the vegetables come from her own garden.' },
+    { name: 'Nongjane Restaurant', note: 'Named after Chef Wat’s daughter, Jane. He shops Maharaj Market himself every morning, and his tom yum deserves a Michelin star. Try the Southern orange curry with sea bass. From 6 pm; food takes 20–60 minutes, so don’t arrive starving.' },
+    { name: 'Koeyyai Seafood', note: 'Thai omelette, crispy pork, pomfret hotpot, and crab or shrimp stir-fried in curry powder.' },
   ] },
   { meal: 'Coffee', places: [
-    { name: 'Botany Café', note: 'Plants, clean lines, good coffee, juices and matcha. Good for working.' },
+    { name: 'Botany Café', note: 'Leafy, minimalist and very photogenic, indoors and out. Good coffee, fresh juices, amazing matcha and desserts. Good for working, too.' },
   ] },
 ];
 
@@ -211,7 +217,7 @@ export const localPicks = [
 export const fitQuestions = [
   { q: 'I’m coming from Europe or further. Is Krabi Town right for me?', a: 'If you like local culture, real Thai food and a quieter base for island trips, yes. We’re in Krabi Town, about 20 minutes from Ao Nang Beach, and the tour desk books every island. If you want to stay right on the beach, our sister hotel, Hula Hula Resort in Ao Nang, may suit you better.', link: { label: 'Visit Hula Hula Resort', href: 'https://hulahularesort.com' } },
   { q: 'We’re driving from elsewhere in Thailand. Is there parking?', a: 'Plenty, and it’s free. Southern Thai food is all around us: dim sum mornings, kraprao or noodle lunches and seafood dinners, all within walking distance. Central Krabi is 5 minutes away by car.' },
-  { q: 'Can we hold a meeting or a party?', a: 'Yes. Four meeting rooms and the pool terrace take 10 to 200 people, and the Hula Hula family’s Takanta Event Hall at the golf club seats up to 2,000.', link: { label: 'See the meeting rooms', href: '/meetings' } },
+  { q: 'Can we hold a meeting or a party?', a: 'Yes, from 10 people right up to 2,000. Our four meeting rooms and the pool terrace take 10 to 200, and for the big ones there’s the Hula Hula family’s Takanta Event Hall at Hula Hula Golf Club, near the airport: halls and lawns for 30 to 2,000 guests.', link: { label: 'Meetings, events & weddings', href: '/meetings' } },
 ];
 
 // ── Meetings & events ──────────────────────────────────────────────────────
@@ -224,18 +230,50 @@ export const venues: Venue[] = [
   { name: 'Pool Terrace', floor: 'Outdoors', sqm: 150, theatre: '180', banquet: '120', cocktail: '150', image: p.poolLoungers.src },
 ];
 
-/** The rest of the Hula Hula family's event spaces. */
-export const familyVenues = [
-  { place: 'Hula Hula Golf Club', url: 'https://hulahula-golf.vercel.app', rooms: [
-    { name: 'Takanta', sub: 'Spectacular', sqm: 900, banquet: '500–700', theatre: '800', outdoor: '400 m² outside' },
-    { name: 'Petchplaosaeng', sub: 'Glittering Diamond', sqm: 465, banquet: '300', theatre: '400', outdoor: '200 m² outside' },
-    { name: 'Ployphailin', sub: 'Blue Sapphire', sqm: 375, banquet: '250', theatre: '300' },
-  ] },
-  { place: 'Hula Hula Resort, Ao Nang', url: 'https://hulahularesort.com', rooms: [
-    { name: 'Chang Restaurant', sqm: 280, banquet: '200', theatre: '300' },
-    { name: 'Oasis Pool Terrace', sqm: 180, banquet: '150', theatre: '220' },
-    { name: 'Bird of Paradise', sqm: 140, banquet: '120', theatre: '150' },
-  ] },
+// ── Takanta Event Hall ──────────────────────────────────────────────────────
+// TK Hall, the Hula Hula family's event venue by Hula Hula Golf Club, near
+// the airport. Everything here is from the hall's own fact sheet
+// (assets/TAKANTA EVENT HALL/Content & Information/TAKANTA EVENT HALL.docx).
+export interface EventSpace { name: string; area: string; size?: string; roundTables?: number; outdoor?: boolean }
+export const takantaSpaces: EventSpace[] = [
+  { name: 'Takanta Hall', area: '900 m²', size: '15 × 60 m', roundTables: 600 },
+  { name: 'Phet Phrao Saeng Hall', area: '465 m²', size: '15 × 32 m', roundTables: 300 },
+  { name: 'Ployphailin Hall', area: '375 m²', size: '15 × 25 m', roundTables: 250 },
+  { name: 'Rabiang Thong', area: '400 m²', size: '7.5 × 80 m', roundTables: 400, outdoor: true },
+  { name: 'Rabiang Ngern', area: '200 m²', outdoor: true },
+  { name: 'San Fah Prathan', area: '200 m²', size: '10 × 18 m', outdoor: true },
+  { name: 'Front Lawn', area: '200 m²', outdoor: true },
+  { name: 'Lom Yen Kitchen', area: '270 m²', size: '15 × 18 m' },
+  { name: 'Parking area', area: 'about 2,000 m²' },
+];
+export const takantaOutdoor = [
+  { name: 'San Fah Prathan', detail: 'An open-air space for outdoor celebrations, group activities, private events and special occasions.' },
+  { name: 'Front Lawn', detail: 'Open lawn for casual gatherings, outdoor activities, receptions and setups made just for you.' },
+  { name: 'Rabiang Ngern & Rabiang Thong', detail: 'Flexible open-air terraces for receptions, banquets, parties, ceremonies and other special events.' },
+];
+export const takantaEventTypes = [
+  { title: 'Meetings', detail: 'Corporate meetings, presentations, conferences and business get-togethers.' },
+  { title: 'Seminars', detail: 'Flexible layouts and modern audiovisual kit for seminars, workshops and training.' },
+  { title: 'Weddings', detail: 'Your dream wedding, with your choice of venue, decoration, catering and a team that has done it many times.' },
+  { title: 'Banquets', detail: 'Elegant dinners with seating arranged your way and catering to match.' },
+  { title: 'Corporate events', detail: 'Product launches, company celebrations, conferences and annual parties.' },
+  { title: 'Parties & celebrations', detail: 'Birthdays, anniversaries and private parties, in a space designed around your event.' },
+];
+export const takantaFacilities = ['Professional sound system', 'Two 15-metre LED walls', 'Zoom meeting support', 'Wi-Fi', 'CCTV security', 'Large car park', 'Event equipment', 'Indoor and outdoor spaces', 'Catering', 'Event setup and support', 'A professional event team', 'Places to stay'];
+export const takantaWhy = [
+  { title: 'Easy to reach', detail: 'Near Krabi International Airport.' },
+  { title: '30 to 2,000 guests', detail: 'Halls and open-air spaces for every size.' },
+  { title: 'Your theme, your way', detail: 'Modern, minimal rooms that become whatever you imagine.' },
+  { title: 'Food included', detail: 'Catering for meetings and celebrations.' },
+  { title: 'A team on your side', detail: 'Experienced staff from planning to the last song.' },
+  { title: 'Plenty of parking', detail: 'About 2,000 m² for guests and organisers.' },
+];
+
+/** Hula Hula Resort's event spaces in Ao Nang. */
+export const resortVenues = [
+  { name: 'Chang Restaurant', sqm: 280, banquet: '200', theatre: '300' },
+  { name: 'Oasis Pool Terrace', sqm: 180, banquet: '150', theatre: '220' },
+  { name: 'Bird of Paradise', sqm: 140, banquet: '120', theatre: '150' },
 ];
 
 export const eventEquipment = ['Projector & screen', 'LCD / LED display', 'Sound system', 'Wireless microphones', 'Podium', 'Flip chart & whiteboard', 'Notepads & pens', 'Wi-Fi', 'Stage', 'Registration table'];

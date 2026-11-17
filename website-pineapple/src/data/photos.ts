@@ -194,6 +194,54 @@ export const photoAssets = {
     "height": 900,
     "source": "assets/ROYAL PINEAPPLE HOTEL/gym/Gym1.png"
   },
+  "takantaBanquet": {
+    "src": "/images/pineapple/takantaBanquet-1600.webp",
+    "srcSet": "/images/pineapple/takantaBanquet-480.webp 480w, /images/pineapple/takantaBanquet-960.webp 960w, /images/pineapple/takantaBanquet-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/takantaBanquet-480.avif 480w, /images/pineapple/takantaBanquet-960.avif 960w, /images/pineapple/takantaBanquet-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "assets/TAKANTA EVENT HALL/09 - Copy.JPG"
+  },
+  "takantaStage": {
+    "src": "/images/pineapple/takantaStage-1600.webp",
+    "srcSet": "/images/pineapple/takantaStage-480.webp 480w, /images/pineapple/takantaStage-960.webp 960w, /images/pineapple/takantaStage-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/takantaStage-480.avif 480w, /images/pineapple/takantaStage-960.avif 960w, /images/pineapple/takantaStage-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "assets/TAKANTA EVENT HALL/DSCF1494-3.JPG"
+  },
+  "takantaLedWedding": {
+    "src": "/images/pineapple/takantaLedWedding-1600.webp",
+    "srcSet": "/images/pineapple/takantaLedWedding-480.webp 480w, /images/pineapple/takantaLedWedding-960.webp 960w, /images/pineapple/takantaLedWedding-1600.webp 1567w",
+    "avifSrcSet": "/images/pineapple/takantaLedWedding-480.avif 480w, /images/pineapple/takantaLedWedding-960.avif 960w, /images/pineapple/takantaLedWedding-1600.avif 1567w",
+    "width": 1567,
+    "height": 1045,
+    "source": "assets/TAKANTA EVENT HALL/62.jpg"
+  },
+  "takantaReception": {
+    "src": "/images/pineapple/takantaReception-1600.webp",
+    "srcSet": "/images/pineapple/takantaReception-480.webp 480w, /images/pineapple/takantaReception-960.webp 960w, /images/pineapple/takantaReception-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/takantaReception-480.avif 480w, /images/pineapple/takantaReception-960.avif 960w, /images/pineapple/takantaReception-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "assets/TAKANTA EVENT HALL/32.JPG"
+  },
+  "takantaLawn": {
+    "src": "/images/pineapple/takantaLawn-1600.webp",
+    "srcSet": "/images/pineapple/takantaLawn-480.webp 480w, /images/pineapple/takantaLawn-960.webp 960w, /images/pineapple/takantaLawn-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/takantaLawn-480.avif 480w, /images/pineapple/takantaLawn-960.avif 960w, /images/pineapple/takantaLawn-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "assets/TAKANTA EVENT HALL/23.JPG"
+  },
+  "takantaExterior": {
+    "src": "/images/pineapple/takantaExterior-1600.webp",
+    "srcSet": "/images/pineapple/takantaExterior-480.webp 480w, /images/pineapple/takantaExterior-960.webp 960w, /images/pineapple/takantaExterior-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/takantaExterior-480.avif 480w, /images/pineapple/takantaExterior-960.avif 960w, /images/pineapple/takantaExterior-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "assets/TAKANTA EVENT HALL/12.JPG"
+  },
   "twinCoco": {
     "src": "/images/pineapple/twinCoco-1600.webp",
     "srcSet": "/images/pineapple/twinCoco-480.webp 480w, /images/pineapple/twinCoco-960.webp 960w, /images/pineapple/twinCoco-1600.webp 1600w",

@@ -4,7 +4,7 @@ export const SOCIAL_IMAGE = `${SITE_URL}/images/share.jpg`;
 
 const home = {
   title: 'Royal Pineapple Hotel | Official Website | Krabi Town, Thailand',
-  description: 'A boutique hotel with a pool in the heart of Krabi Town, part of the Hula Hula family. 72 rooms with balconies, a free 7-day Krabi programme, 24-hour café, co-working and gym. Book direct.',
+  description: 'A contemporary colonial-inspired urban resort in the heart of Krabi Town, part of the Hula Hula family. 72 rooms with balconies, a pool, a free 7-day Krabi programme, 24-hour café, co-working and gym. Stay local, explore more.',
   canonical: `${SITE_URL}/`,
   robots: 'index, follow, max-image-preview:large',
 };
@@ -15,7 +15,8 @@ const booking = {
   robots: home.robots,
 };
 const pages: Record<string, { title: string; description: string }> = {
-  '/meetings': { title: 'Meetings, events & weddings | Royal Pineapple Hotel, Krabi', description: 'Four meeting rooms and a pool terrace for 10 to 200 guests in Krabi Town, with catering, equipment and wedding packages — and up to 2,000 guests across the Hula Hula family.' },
+  '/meetings': { title: 'Meetings, events & weddings | Royal Pineapple Hotel, Krabi', description: 'Four meeting rooms and a pool terrace for 10 to 200 guests in Krabi Town, with catering, equipment and wedding packages — and up to 2,000 guests at the family’s Takanta Event Hall.' },
+  '/meetings/takanta': { title: 'Takanta Event Hall (TK Hall) | Event venue near Krabi Airport', description: 'Halls, terraces and lawns for 30 to 2,000 guests at Hula Hula Golf Club, near Krabi International Airport: meetings, seminars, weddings, banquets and parties, with two 15-metre LED walls, catering and a one-stop event team.' },
   '/experiences': { title: 'The 7-day Krabi programme | Royal Pineapple Hotel', description: 'A different Krabi trip every day of the week from Royal Pineapple Hotel: Koh Klang, FootGolf, a Thai cooking class, Tiger Cave Temple, Central Krabi, Railay and Panurat Temple.' },
 };
 

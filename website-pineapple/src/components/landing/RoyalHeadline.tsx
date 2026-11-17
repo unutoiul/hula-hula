@@ -5,7 +5,8 @@ import { useMotionPreference } from '../../context/MotionPreferenceContext';
 import { brand, fonts } from '../../theme';
 import { visuallyHiddenSx } from './landingStyles';
 
-const endings = ['Thai heart.', 'Pink pool days.', 'Krabi soul.'];
+// The hotel's own line, "Stay local. Explore more.", then two more reasons to.
+const endings = ['Explore more.', 'Pink pool days.', 'Feel at home.'];
 const word: Variants = {
   enter: {},
   center: { transition: { staggerChildren: .035 } },
@@ -35,10 +36,10 @@ export function RoyalHeadline() {
     m: 0, color: brand.plum, fontFamily: fonts.serif, fontWeight: 400, lineHeight: .99, letterSpacing: '-.055em',
     fontSize: { xs: 'clamp(52px, 15vw, 74px)', sm: '76px', md: 'clamp(59px, 6.2vw, 74px)', lg: 'clamp(62px, 6.1vw, 86px)' },
   }}>
-    <Box component="span" sx={visuallyHiddenSx}>European charm. Thai heart. Royal Pineapple Hotel, Krabi.</Box>
+    <Box component="span" sx={visuallyHiddenSx}>Stay local. Explore more. Royal Pineapple Hotel, Krabi Town.</Box>
     <span aria-hidden="true">
-      {/* The line break keeps "charm." under "European" except on tablets, where the line is wide enough. */}
-      <Box component="span" sx={{ display: 'block', '& > br': { display: { xs: 'initial', sm: 'none', md: 'initial' } } }}>European<br />charm.</Box>
+      {/* The line break puts "local." under "Stay" except on tablets, where the line is wide enough. */}
+      <Box component="span" sx={{ display: 'block', '& > br': { display: { xs: 'initial', sm: 'none', md: 'initial' } } }}>Stay<br />local.</Box>
       <Box component="span" sx={{
         display: 'block', position: 'relative', width: 'fit-content', maxWidth: '100%', mx: { xs: 'auto', md: 0 },
         minHeight: { xs: '1.45em', sm: '1.3em' }, mt: { xs: '8px', sm: '12px', md: '10px' }, pb: { xs: '15px', sm: '16px' },

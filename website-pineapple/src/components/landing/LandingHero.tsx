@@ -21,12 +21,12 @@ export function LandingHero() {
           <Box component="p" sx={{
             ...eyebrowSx, justifyContent: { xs: 'center', md: 'flex-start' }, gap: { xs: '8px', sm: '12px' }, mb: { xs: '19px', sm: '22px', md: '25px' },
             fontSize: { xs: 7, sm: 9 }, letterSpacing: { xs: '.14em', sm: '.17em' }, '& > span': { ...eyebrowSx['& > span'], width: { xs: 20, sm: 28 } },
-          }}><span />Your happy little corner of Krabi</Box>
+          }}><span />Welcome to the social heart of Krabi</Box>
           <RoyalHeadline />
           <Box component="p" sx={{
             color: '#7d606f', fontSize: { xs: 13, sm: 15, md: 14, lg: 15 }, lineHeight: { xs: 1.85, sm: 1.9 },
             maxWidth: { xs: 335, sm: 420, md: 350, lg: 380 }, m: { xs: '20px auto 22px', sm: '24px auto', md: '25px 0 26px' },
-          }}>Golden arches. Pink pool days. A balcony of your own. A little European romance, a warm Thai welcome, and all the good feeling of a Hula Hula holiday.</Box>
+          }}>Golden arches. Pink pool days. A balcony of your own. Contemporary colonial style, a warm Thai welcome and a home away from home, right in Krabi Town.</Box>
           <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' }, gap: { xs: '17px', sm: '16px', lg: '22px' } }}>
             <Button href="#booking-search" variant="contained" endIcon={<East />} sx={{ minHeight: { xs: 48, sm: 50 }, px: { xs: '19px', sm: '20px', lg: '25px' }, fontSize: { xs: 11, lg: 12 } }}>Find your happy place</Button>
             <Box component="a" href="#rooms" sx={{ ...textLinkSx, fontSize: { xs: 10, sm: 12 } }}>Take a little look <span aria-hidden="true">↗</span></Box>
@@ -52,7 +52,7 @@ export function LandingHero() {
         '& > a': { color: '#735164', textDecoration: 'none' },
         '& > a > span': { color: brand.royal, pl: '13px' },
       }}>
-        <span>European charm. Thai heart. Hula Hula spirit.</span>
+        <span>A pineapple welcome to wealth & good fortune.</span>
         <a href="#welcome">Make yourself a little at home <span aria-hidden="true">↓</span></a>
       </Box>
     </Box>
