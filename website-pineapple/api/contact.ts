@@ -12,7 +12,7 @@ const krabiTime = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeSt
 // Receives the site's contact form and emails it to the hotel inbox through
 // Resend (https://resend.com), using the "contact-enquiry" template from
 // emails/contact-enquiry.html, then thanks the guest with the
-// "contact-confirmation" template (publish both with `npm run email:publish`).
+// "contact-confirmation" template (both published in Resend from emails/).
 // On the enquiry the guest is the reply-to, so a plain "Reply" answers them;
 // on the confirmation it's the hotel inbox. Needs
 // RESEND_API_KEY; RESEND_CONTACT_ENQUIRY_TEMPLATE_ID and

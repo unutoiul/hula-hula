@@ -13,8 +13,8 @@ export function LandingHero() {
   }}>
     <Box sx={pageWrapSx}>
       <Box sx={{
-        display: 'grid', alignItems: 'center', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 5fr) minmax(0, 6fr)' },
-        columnGap: { md: '36px', lg: 'clamp(48px, 4.4vw, 68px)' }, rowGap: { xs: '26px', sm: '32px' },
+        display: 'grid', alignItems: 'center', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 44fr) minmax(0, 56fr)' },
+        columnGap: { md: '28px', lg: 'clamp(32px, 3vw, 44px)' }, rowGap: { xs: '26px', sm: '32px' },
         maxWidth: { xs: 640, md: 'none' }, mx: 'auto', pt: { xs: '28px', sm: '36px', md: '28px' }, pb: { xs: '24px', sm: '30px', md: '28px' },
       }}>
         <Box sx={{ minWidth: 0, pb: { md: '24px' } }}>

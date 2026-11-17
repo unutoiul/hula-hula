@@ -17,38 +17,30 @@ const reelButtonSx = {
   display: 'grid', placeItems: 'center', width: 44, height: 44, p: 0, border: '1px solid #d8b5c5', borderRadius: '50%',
   bgcolor: brand.cream, color: '#782d51', cursor: 'pointer', transition: 'background-color .2s',
   '&:hover': { bgcolor: '#f7dce6' }, '&[aria-disabled="true"]': { opacity: .4, cursor: 'default' }, '& > svg': { fontSize: 18 },
+  '@container (max-width: 300px)': { width: 40 },
   '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
 } as const;
 
-// The offer card's words scale with the card itself (container query units).
-const clampLines = (lines: number) => ({ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: lines, overflow: 'hidden' }) as const;
+const twoLines = { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', overflowWrap: 'anywhere', textWrap: 'balance' } as const;
+// Keep copy in the clear centre of the frame, between the palms and above the pineapple.
 const offerWordsSx = {
-  position: 'absolute', inset: '13% 17% 27%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-  gap: 'clamp(4px, 1.8cqw, 8px)', textAlign: 'center', color: '#fff7e8', textShadow: '0 1px 7px #32102c80',
-  '& .kicker, & small': { ...clampLines(2), maxWidth: '100%', fontSize: 'clamp(5px, 2.4cqw, 9px)', textWrap: 'balance' },
-  '& .kicker': { lineHeight: 1.35, letterSpacing: '.13em', fontWeight: 600, textTransform: 'uppercase' },
-  '& small': { lineHeight: 1.4, fontWeight: 400, letterSpacing: '.01em' },
+  position: 'absolute', inset: '12% 26% 35%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+  gap: '1.15cqw', textAlign: 'center', color: '#fff7e8', textShadow: '0 1px 7px #32102c80',
+  '& .kicker, & small': { maxWidth: '100%', fontSize: 'clamp(5px, 2.85cqw, 8px)', lineHeight: 1.15 },
+  '& .kicker': { ...twoLines, letterSpacing: '.09em', fontWeight: 600, textTransform: 'uppercase' },
+  '& small': { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   '& strong': { fontFamily: fonts.serif, fontWeight: 400 },
 } as const;
 
-/**
- * The words on the hero's offer badge, for whatever the homepage's offers
- * section shows (a published offer or event, or a sample): the kicker, then
- * the discount, date or name big, then the name or a detail underneath.
- */
 function OfferBadgeWords({ item }: { item: Highlight }) {
   const big = item.tag ?? item.title;
-  const percent = big.match(/^(.*\d)%$/);
-  const detail = item.note?.split(' · ').find(part => part !== item.tag);
-  const small = item.preview ? 'Offer preview' : big === item.title ? detail ?? 'Book direct' : item.title;
+  const percent = big.match(/^([+−-]?\d+(?:[.,]\d+)?)%$/);
   return <Box sx={offerWordsSx}>
     <span className="kicker">{item.label}</span>
     {percent
-      ? <Box component="strong" sx={{ display: 'inline-flex', alignItems: 'baseline', gap: '.025em', m: 0, fontSize: 'clamp(24px, 16.5cqw, 64px)', lineHeight: .95, letterSpacing: '-.055em', fontVariantNumeric: 'lining-nums', whiteSpace: 'nowrap', '& > span': { fontSize: '.5em', letterSpacing: '-.02em' } }}>{percent[1]}<span>%</span></Box>
-      : big.length <= 7
-        ? <Box component="strong" sx={{ fontSize: 'clamp(20px, 12cqw, 48px)', lineHeight: 1, letterSpacing: '-.04em', whiteSpace: 'nowrap' }}>{big}</Box>
-        : <Box component="strong" sx={{ ...clampLines(3), maxWidth: '100%', fontStyle: 'italic', fontSize: 'clamp(13px, 9cqw, 34px)', lineHeight: 1.02, letterSpacing: '-.03em', textWrap: 'balance' }}>{big}</Box>}
-    <small>{small}</small>
+      ? <Box component="strong" sx={{ display: 'inline-flex', alignItems: 'baseline', gap: '.025em', fontSize: 'clamp(20px, 14cqw, 40px)', lineHeight: 1, letterSpacing: '-.055em', fontVariantNumeric: 'lining-nums', whiteSpace: 'nowrap', '& > span': { fontSize: '.55em' } }}>{percent[1]}<span>%</span></Box>
+      : <Box component="strong" sx={{ ...twoLines, maxWidth: '100%', fontStyle: 'italic', fontSize: 'clamp(12px, 7.7cqw, 23px)', lineHeight: 1.06, letterSpacing: '-.025em' }}>{big}</Box>}
+    {percent && !item.preview && big !== item.title && <small>{item.title}</small>}
   </Box>;
 }
 
@@ -155,12 +147,20 @@ export function PostcardCollage() {
     onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
     onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); request(event.key === 'ArrowRight' ? 1 : -1); } }}
     sx={{
-      position: 'relative', width: '100%', minWidth: 0, containerType: 'inline-size', outline: 'none',
-      '--offer-width': 'clamp(132px, 36cqw, 208px)',
+      position: 'relative', width: { xs: '100%', md: 'calc(100% - 16px)' }, minWidth: 0, containerType: 'inline-size', outline: 'none',
       '&:focus-visible': { outline: '2px solid #c83b74', outlineOffset: 5, borderRadius: '12px' },
     }}>
-    <Box sx={{ display: 'grid', pt: { xs: '8px', sm: '15px' }, isolation: 'isolate', touchAction: 'pan-y', cursor: dragging ? 'grabbing' : 'grab', userSelect: 'none' }}
-      onPointerDown={event => { if (event.button === 0 && !busy) { pointer.current = { x: event.clientX, y: event.clientY, dragged: false }; suppressClick.current = false; setPressed(true); } }}
+    <Box sx={{
+      display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) clamp(144px, 41cqw, 248px)', columnGap: '6px',
+      pt: { xs: '8px', sm: '15px' }, pr: '2%', isolation: 'isolate', touchAction: 'pan-y', userSelect: 'none',
+    }}
+      onPointerDown={event => {
+        if (event.button !== 0 || busy) return;
+        suppressClick.current = false;
+        if (event.target instanceof Element && event.target.closest('button')) return;
+        pointer.current = { x: event.clientX, y: event.clientY, dragged: false };
+        setPressed(true);
+      }}
       onPointerMove={event => {
         const start = pointer.current;
         if (!start || start.dragged) return;
@@ -172,22 +172,29 @@ export function PostcardCollage() {
       onPointerLeave={event => { if (!event.currentTarget.hasPointerCapture(event.pointerId)) cancelGesture(); }}
       onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}>
 
-      <Box sx={{ width: '95%', mx: 'auto', transform: { xs: 'rotate(-1.5deg)', sm: 'rotate(-2.5deg)' } }}>
+      <Box sx={{
+        gridColumn: '1 / -1', gridRow: 1, width: 'calc(97.5% - clamp(12px, 3.4cqw, 24px))', ml: '2.5%',
+        transform: { xs: 'rotate(-1.5deg)', sm: 'rotate(-2.5deg)' }, cursor: dragging ? 'grabbing' : 'grab',
+      }}>
         <BadgePicture frameName="riviera-postcard" label={photo.alt} eager shadow="0 12px 18px #5a244821">
           <PostcardReel key={`photo-${index}-${target}`} sequence={sequence} moving={busy} direction={direction} onSettled={settle}>
-            {item => { const scene = postcardScenes[wrapReelIndex(item, postcardScenes.length)]; return <img src={scene.image} alt="" width={1600} height={1067} fetchPriority={item === 0 ? 'high' : 'auto'} decoding="async" draggable={false} />; }}
+            {item => {
+              const scene = postcardScenes[wrapReelIndex(item, postcardScenes.length)];
+              return <img src={scene.image} alt="" width={1600} height={1067} fetchPriority={item === 0 ? 'high' : 'auto'}
+                decoding="async" draggable={false} style={scene.id === 'pool' ? { transform: 'scaleX(-1)' } : undefined} />;
+            }}
           </PostcardReel>
         </BadgePicture>
       </Box>
 
       <Box component="a" href="#offers" aria-label={`${offerAction}: ${offer.title}`} sx={{
-        position: 'relative', zIndex: 1, justifySelf: 'end', width: 'var(--offer-width)', mr: '2%',
-        mt: 'clamp(-64px, -10cqw, -38px)', containerType: 'inline-size', textDecoration: 'none', color: brand.plum,
+        position: 'relative', zIndex: 1, gridColumn: 2, gridRow: 2, alignSelf: 'start',
+        mt: 'clamp(-70px, -10.5cqw, -42px)', containerType: 'inline-size', textDecoration: 'none', color: brand.plum,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '12px',
         '&:hover > span': { bgcolor: '#f7dce6' },
       }}>
-        <Box sx={{ width: '100%', transform: 'rotate(5deg)' }}>
-          <BadgePicture frameName="grand-arrival" eager shadow="0 8px 12px #5a24482c">
+        <Box sx={{ width: '100%', transform: 'rotate(6deg)' }}>
+          <BadgePicture frameName="grand-arrival" eager shadow="0 10px 16px #5a24483b">
             <PostcardReel key={`offer-${index}-${target}`} sequence={sequence} moving={busy} direction={direction}>
               {item => {
                 const card = highlights[wrapReelIndex(item, highlights.length)];
@@ -202,18 +209,18 @@ export function PostcardCollage() {
           {offerAction} <ArrowOutward aria-hidden="true" sx={{ fontSize: 12 }} />
         </Box>
       </Box>
-    </Box>
-    <Box sx={{
-      position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px',
-      width: 'calc(98% - var(--offer-width) - 6px)', mt: '-88px',
-      '@container (min-width: 540px)': { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '8px', mt: '-44px' },
-    }}>
-      <Box aria-live={focused ? 'polite' : 'off'} sx={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: { xs: 17, sm: 20 }, lineHeight: 1.15, color: brand.royal }}>{photo.title}</Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0, '@container (min-width: 330px)': { gap: '5px' } }}>
-        <Box component="button" type="button" onClick={() => request(-1)} aria-disabled={busy} aria-label="Previous hotel photo and offer" sx={reelButtonSx}><ArrowBackRounded /></Box>
-        <Box component="span" aria-hidden="true" sx={{ display: 'none', '@container (min-width: 330px)': { display: 'block' }, minWidth: 28, color: '#69354f', fontSize: 11, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{photoIndex + 1}/{postcardScenes.length}</Box>
-        <Box component="button" type="button" onClick={() => request(1)} aria-disabled={busy} aria-label="Next hotel photo and offer" sx={reelButtonSx}><ArrowForwardRounded /></Box>
-        {!systemReduced && <Box component="button" type="button" onClick={toggle} aria-label={reduced ? 'Play all animations' : 'Pause all animations'} sx={reelButtonSx}>{reduced ? <PlayArrowRounded /> : <PauseRounded />}</Box>}
+      <Box sx={{
+        gridColumn: 1, gridRow: 2, alignSelf: 'start', display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+        gap: '6px', pt: { xs: '12px', sm: '20px' },
+        '@container (min-width: 540px)': { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: '8px 20px' },
+      }}>
+        <Box aria-live={focused ? 'polite' : 'off'} sx={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: { xs: 17, sm: 20 }, lineHeight: 1.15, color: brand.royal }}>{photo.title}</Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0, '@container (min-width: 348px)': { gap: '5px' } }}>
+          <Box component="button" type="button" onClick={() => request(-1)} aria-disabled={busy} aria-label="Previous hotel photo and offer" sx={reelButtonSx}><ArrowBackRounded /></Box>
+          <Box component="span" aria-hidden="true" sx={{ display: 'none', '@container (min-width: 348px)': { display: 'block' }, minWidth: 28, color: '#69354f', fontSize: 11, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{photoIndex + 1}/{postcardScenes.length}</Box>
+          <Box component="button" type="button" onClick={() => request(1)} aria-disabled={busy} aria-label="Next hotel photo and offer" sx={reelButtonSx}><ArrowForwardRounded /></Box>
+          {!systemReduced && <Box component="button" type="button" onClick={toggle} aria-label={reduced ? 'Play all animations' : 'Pause all animations'} sx={reelButtonSx}>{reduced ? <PlayArrowRounded /> : <PauseRounded />}</Box>}
+        </Box>
       </Box>
     </Box>
   </MotionBox>;

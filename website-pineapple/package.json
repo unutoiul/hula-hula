@@ -5,15 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "node --env-file-if-exists=.env.local scripts/dev-api.mjs",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b tsconfig.node.json && tsc --noEmit -p tsconfig.json",
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
     "test:unit": "node --import tsx --test tests/booking.test.ts tests/email-artwork.test.ts",
-    "photos": "python scripts/prepare-pineapple-photos.py",
     "test:payments": "node --import tsx --test tests/payment-status.test.ts tests/siteminder-delivery.test.ts",
-    "preview": "vite preview",
-    "email:publish": "node --env-file-if-exists=.env.local scripts/publish-contact-email.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
