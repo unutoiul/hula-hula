@@ -1,5 +1,6 @@
-// Royal Pineapple lives on its Vercel address until thepineapplehotel.com points here.
-export const SITE_URL = 'https://hulahula-pineapple.vercel.app';
+// The address search engines and link previews should use: royalpineapplehotel.com
+// redirects here, and thepineapplehotel.com and the Vercel address serve the same site.
+export const SITE_URL = 'https://www.royalpineapplehotel.com';
 export const SOCIAL_IMAGE = `${SITE_URL}/images/share.jpg`;
 
 const home = {

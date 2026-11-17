@@ -36,7 +36,7 @@ const paidOnline = (row: BookingRow) => (isTest(row) ? 0 : row.paid_amount ?? ro
 export function siteUrlForEmail(): string {
   if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, '');
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return 'https://hulahula-pineapple.vercel.app';
+  return 'https://www.royalpineapplehotel.com';
 }
 
 export const guestCount = (items: BookingItem[]) => {

@@ -10,4 +10,4 @@ Allow: /api/booking/room-types
 
 # Staff and checkout pages also send an HTTP X-Robots-Tag: noindex header.
 # Allow crawling of those pages so search engines can read that directive.
-Sitemap: https://hulahula-pineapple.vercel.app/sitemap.xml
+Sitemap: https://www.royalpineapplehotel.com/sitemap.xml
