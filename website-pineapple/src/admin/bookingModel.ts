@@ -9,6 +9,8 @@ import { isReversedPayment, paymentStatus } from '../../shared/paymentStatus';
 
 export interface DeskItem {
   roomTypeName: string;
+  /** SiteMinder's name for the room when the website's differs. */
+  siteMinderName?: string;
   rateName: string;
   meals: { breakfast: boolean; lunch: boolean; dinner: boolean };
   cancellation: string;
@@ -206,7 +208,7 @@ export function siteMinderText(b: DeskBooking): string {
     b.guest_country && `Country: ${countryName(b.guest_country)}`,
     `Stay: ${dayLabel(b.check_in)} → ${dayLabel(b.check_out)} (${nightCount(b)} nights)`,
     `Guests: ${adults} adults${children ? `, ${children} children` : ''}`,
-    ...b.items.map((item) => `Room: ${item.quantity} × ${item.roomTypeName} — ${item.rateName} (${item.adults} adults${item.children ? `, ${item.children} children` : ''} each)${item.offer ? ` · offer “${item.offer.title}”${item.offer.percent ? ` −${item.offer.percent}%` : ''}${item.offer.perks.length ? `, perks: ${item.offer.perks.join(', ')}` : ''}` : ''}`),
+    ...b.items.map((item) => `Room: ${item.quantity} × ${item.roomTypeName}${item.siteMinderName ? ` (${item.siteMinderName})` : ''} — ${item.rateName} (${item.adults} adults${item.children ? `, ${item.children} children` : ''} each)${item.offer ? ` · offer “${item.offer.title}”${item.offer.percent ? ` −${item.offer.percent}%` : ''}${item.offer.perks.length ? `, perks: ${item.offer.perks.join(', ')}` : ''}` : ''}`),
     isReversed(b)
       ? `Total: ${money(b.total_amount, b.currency)} · payment ${paymentBadge(b).label.toLowerCase()} — review the payment amount and reservation before confirming a balance`
       : `Total: ${money(b.total_amount, b.currency)} · paid ${money(b.paid_amount ?? b.deposit_amount, b.currency)} online${b.balance_amount > 0 ? ` · ${money(b.balance_amount, b.currency)} to pay at the hotel` : ''}`,

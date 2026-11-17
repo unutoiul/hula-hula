@@ -16,7 +16,10 @@ export type BookingStatus = 'pending' | 'paid' | 'delivered' | 'failed' | 'expir
 /** One line of the booking: `quantity` identical rooms at the same rate and occupancy. */
 export interface BookingItem {
   roomTypeUuid: string;
+  /** The website's name for the room ("Twin Coco"), what the guest booked. */
   roomTypeName: string;
+  /** SiteMinder's name ("Deluxe Twin Room") when it differs, for the team. */
+  siteMinderName?: string;
   roomRateUuid: string;
   rateName: string;
   meals: { breakfast: boolean; lunch: boolean; dinner: boolean };

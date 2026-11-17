@@ -227,7 +227,7 @@ function RoomCard({ item, currency }: { item: DeskBooking['items'][number]; curr
   return <Box sx={{ p: 1.5, borderRadius: '14px', border: '1px solid', borderColor: 'divider' }}>
     <Stack direction="row" justifyContent="space-between" spacing={1.5}>
       <Box sx={{ minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 700 }}>{item.quantity} × {item.roomTypeName}</Typography>
+        <Typography sx={{ fontWeight: 700 }}>{item.quantity} × {item.roomTypeName}{item.siteMinderName && <Box component="span" sx={{ fontWeight: 400, color: 'text.secondary' }}> ({item.siteMinderName})</Box>}</Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{item.rateName} · {mealsLabel(item.meals)}</Typography>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{guestsLabel(item.adults, item.children)}{item.quantity > 1 ? ' in each room' : ''}</Typography>
       </Box>

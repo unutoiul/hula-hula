@@ -31,7 +31,7 @@ export function PaymentStep() {
       {expired
         ? <Alert severity="warning" action={<Button color="inherit" size="small" onClick={() => navigate('/book')}>Start again</Button>}>The hold on your rooms has run out. Please check prices again.</Alert>
         : <Box sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 16px 36px rgba(90,36,72,.07)' }}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1.25} sx={{ px: { xs: 2.5, sm: 3 }, py: 2, bgcolor: 'success.light', borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1.25} sx={{ px: { xs: 2.5, sm: 3 }, py: 2, bgcolor: 'primary.light', borderBottom: '1px solid', borderColor: 'divider' }}>
             <Box>
               <Typography sx={{ fontSize: 20, fontWeight: 700, lineHeight: 1.3, fontVariantNumeric: 'tabular-nums' }}>Pay {money(payment.deposit, payment.currency)} now</Typography>
               <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: .5 }}>Choose an available payment method below</Typography>

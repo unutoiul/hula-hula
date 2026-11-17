@@ -91,7 +91,7 @@ export function CartSummary({ action, showFit = true, editable = false }: { acti
       </Stack>}
       <Stack direction="row" justifyContent="space-between" alignItems="baseline" spacing={1}><Typography sx={{ fontSize: 15, fontWeight: 700 }}>Total stay</Typography><Typography sx={{ fontSize: 26, fontWeight: 700, letterSpacing: '-.8px', whiteSpace: 'nowrap' }}>{money(totals.total, totals.currency)}</Typography></Stack>
       <Typography sx={{ fontSize: 11.5, color: 'text.secondary', mt: .25 }}>Includes taxes and service charges</Typography>
-      <Box sx={{ mt: 2.5, p: 1.75, borderRadius: '12px', bgcolor: 'rgba(80,131,13,.065)', border: '1px solid rgba(80,131,13,.15)' }}>
+      <Box sx={{ mt: 2.5, p: 1.75, borderRadius: '12px', bgcolor: 'rgba(201,47,107,.05)', border: '1px solid rgba(201,47,107,.18)' }}>
         <Stack direction="row" justifyContent="space-between" alignItems="baseline" spacing={1}>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Due now</Typography>
           <Typography sx={{ fontSize: 20, fontWeight: 700, whiteSpace: 'nowrap' }}>{money(totals.dueNow, totals.currency)}</Typography>

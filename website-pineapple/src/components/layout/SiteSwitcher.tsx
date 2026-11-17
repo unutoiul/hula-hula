@@ -4,7 +4,7 @@ import CheckRounded from '@mui/icons-material/CheckRounded';
 import East from '@mui/icons-material/East';
 import GolfCourseRounded from '@mui/icons-material/GolfCourseRounded';
 import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
-import { Box, Popover, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Popover, Stack, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import { useState, type MouseEvent } from 'react';
 import { linkClick } from '../../router';
 import { fonts } from '../../theme';
@@ -80,13 +80,16 @@ export function SiteList({ onHere, compact = false }: { onHere?: () => void; com
  */
 export function HomeLogo({ size }: { size: MarkSize }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  // The "Switch website" hint is for mouse users only: on a phone a tap fires
+  // hover too, and the hint would pop up over the logo and stay there.
+  const canHover = useMediaQuery('(hover: hover) and (pointer: fine)');
   return <Box sx={{ position: 'relative', display: 'inline-flex' }}>
     <Box component="a" href="/" onClick={linkClick('/')} aria-label={`${here.name} home`} sx={{
       display: 'inline-flex', lineHeight: 0, borderRadius: '16px', transition: 'transform .25s ease', '&:hover': { transform: 'translateY(-1px) scale(1.02)' },
     }}>
       <ClubMarkArt size={size} />
     </Box>
-    <Tooltip title="Switch website" placement="bottom" disableInteractive disableFocusListener disableTouchListener disableHoverListener={!!anchor}>
+    <Tooltip title={canHover ? 'Switch website' : ''} placement="bottom" disableInteractive disableFocusListener disableTouchListener disableHoverListener={!!anchor}>
       <Box component="button" type="button" onClick={(e) => setAnchor(e.currentTarget)} aria-haspopup="dialog" aria-expanded={!!anchor} aria-label={`Switch website: you’re on ${here.name}`} sx={{
         position: 'absolute', top: { xs: -2, md: 2 }, right: { xs: -10, md: -12 }, width: { xs: 22, md: 26 }, height: { xs: 22, md: 26 }, p: 0, borderRadius: '50%', cursor: 'pointer',
         display: 'grid', placeItems: 'center', bgcolor: anchor ? 'primary.dark' : 'primary.main', color: 'primary.contrastText', border: '2px solid #fffdf9', boxShadow: '0 3px 8px rgba(90,36,72,.22)',

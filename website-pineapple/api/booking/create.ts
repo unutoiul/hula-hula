@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { BookingRoomRequest, CreateBookingErrorCode, CreateBookingResponse, GuestDetails } from '../../shared/bookingContract.js';
 import { fits } from '../../shared/occupancy.js';
+import { guestRate } from '../../shared/rateNames.js';
+import { guestRoomName } from '../../shared/roomNames.js';
 import { type BookingItem, insertPending, softHolds, updateWhere } from '../_lib/bookings.js';
 import { DbError, dbConfigured } from '../_lib/db.js';
 import { loadDeals } from '../_lib/deals.js';
@@ -26,6 +28,8 @@ const shortDate = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'sho
 // BOOKING_HOLD_MINUTES, and asks Stripe for a payment form for that amount. The
 // answer carries that page plus the booking reference and a private key the
 // browser uses to follow its status.
+const shownRate = (p: PricedRate) => guestRate(p.rate.name, { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded });
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ['POST'])) return;
   res.setHeader('Cache-Control', 'no-store');
@@ -83,14 +87,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     perRoomType.set(p.roomType.uuid, (perRoomType.get(p.roomType.uuid) ?? 0) + 1);
     perRate.set(p.rate.uuid, (perRate.get(p.rate.uuid) ?? 0) + 1);
     if (perRoomType.get(p.roomType.uuid)! > p.available) return fail(409, 'SOLD_OUT', `Only ${p.available} ${p.roomType.name} ${p.available === 1 ? 'is' : 'are'} left for these dates — please choose again.`);
-    if (p.rate.maxNumberOfRooms && perRate.get(p.rate.uuid)! > p.rate.maxNumberOfRooms) return fail(400, 'INVALID', `${p.rate.name} can be booked for up to ${p.rate.maxNumberOfRooms} rooms at a time.`);
+    if (p.rate.maxNumberOfRooms && perRate.get(p.rate.uuid)! > p.rate.maxNumberOfRooms) return fail(400, 'INVALID', `${shownRate(p).name} can be booked for up to ${p.rate.maxNumberOfRooms} rooms at a time.`);
     const line = lines.get(key);
     if (line) line.quantity += 1; else lines.set(key, { p, room, quantity: 1 });
   }
 
   const items: BookingItem[] = [...lines.values()].map(({ p, room, quantity }) => ({
-    roomTypeUuid: p.roomType.uuid, roomTypeName: p.roomType.name, roomRateUuid: p.rate.uuid, rateName: p.rate.name,
-    meals: { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded },
+    roomTypeUuid: p.roomType.uuid, roomTypeName: guestRoomName(p.roomType.uuid, p.roomType.name), roomRateUuid: p.rate.uuid,
+    ...(guestRoomName(p.roomType.uuid, p.roomType.name) !== p.roomType.name ? { siteMinderName: p.roomType.name } : {}),
+    // The name and meals the guest saw on the booking page (shared/rateNames.ts).
+    rateName: shownRate(p).name, meals: shownRate(p).meals,
     cancellation: p.cancellation.summary, depositType: p.depositType,
     adults: room.adults, children: room.children, quantity,
     unitTotal: fromSatang(p.total), unitOriginalTotal: fromSatang(p.originalTotal), unitDeposit: fromSatang(p.dueNow),

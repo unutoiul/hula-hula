@@ -155,3 +155,38 @@ describe('Stripe Checkout', async () => {
     assert.throws(() => inquiryFromSession(session(), 'WEBHHXXXXXX'), /does not belong/);
   });
 });
+
+describe('rate names guests can read', async () => {
+  const { guestRate, isRateCode } = await import('../shared/rateNames.ts');
+  const { buildAvailability } = await import('../api/_lib/rooms.ts');
+  const none = { breakfast: false, lunch: false, dinner: false };
+
+  it('turns SiteMinder codes into what the rate includes, and keeps real names', () => {
+    assert.equal(isRateCode('OPN-OTA(L)'), true);
+    assert.equal(isRateCode('Bed & Breakfast'), false);
+    assert.deepEqual(guestRate('OPN-RO', none), { name: 'Room only', meals: none });
+    assert.deepEqual(guestRate('TTSRB', none), { name: 'Room with breakfast', meals: { ...none, breakfast: true } });
+    assert.deepEqual(guestRate('Flexible rate', none), { name: 'Flexible rate', meals: none });
+  });
+
+  it('shows one of two rates a guest cannot tell apart: the cheaper', () => {
+    const roomType = { uuid: 'rt-1', name: 'Deluxe Twin Room', description: null, roomSize: 32, roomSizeUnit: 'm^2', maxOccupancy: 2, maxAdultOccupancy: 2, maxChildOccupancy: 0 };
+    const rate = (uuid: string, name: string, total: number, breakfast = false) => ({
+      roomType, capacity: { guests: 2, adults: 2, children: 0 }, available: 3, total, originalTotal: total, offer: null, dueNow: total, depositType: 'full' as const,
+      nightly: [], promoDiscount: 0, cancellation: { refundable: null, summary: 'Cancellation terms are confirmed by the hotel with your booking.' },
+      rate: { uuid, roomTypeUuid: 'rt-1', ratePlanUuid: uuid, name, description: null, promotionOnly: false, breakfastIncluded: breakfast, lunchIncluded: false, dinnerIncluded: false, maxOccupancy: 2, maxAdultOccupancy: 2, maxChildOccupancy: 0, depositType: null, depositAmount: null, maxNumberOfRooms: null },
+    });
+    const catalog = { property: { name: 'Royal Pineapple', currencyIsoCode: 'THB', bookingEngineUrl: null, termsAndConditions: null }, roomTypes: new Map(), rates: new Map() };
+    const search = { checkIn: '2026-12-10', checkOut: '2026-12-12', nights: 2, adults: 2, children: 0 };
+    const result = buildAvailability([rate('ota', 'OPN-OTA(L)', 800000), rate('direct', 'OPN-RO', 700000), rate('bb', 'TTSRB', 900000)] as never, catalog as never, search);
+    assert.deepEqual(result.roomTypes[0].rates.map((r) => [r.roomRateUuid, r.name]), [['direct', 'Room only'], ['bb', 'Room with breakfast']]);
+  });
+});
+
+describe('room names', async () => {
+  const { WEBSITE_ROOM_NAMES } = await import('../shared/roomNames.ts');
+  const { rooms } = await import('../src/data/content.ts');
+  it('match the room cards, so the booking record and emails use the same names', () => {
+    assert.deepEqual(WEBSITE_ROOM_NAMES, Object.fromEntries(rooms.filter((room) => room.siteminderRoomTypeUuid).map((room) => [room.siteminderRoomTypeUuid, room.title])));
+  });
+});

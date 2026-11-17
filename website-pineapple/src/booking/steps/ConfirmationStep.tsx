@@ -121,9 +121,9 @@ export function ConfirmationStep() {
     <Typography sx={{ color: 'text.secondary', mt: 1 }}>{email ? `We’ve sent the confirmation to ${email}.` : 'Your confirmation is on its way by email.'} Quote <strong>{status.ref}</strong> if you get in touch.</Typography>
     {status.testPayment && <Alert severity="info" sx={{ mt: 2 }}>This was a test payment — nothing was charged. You’ll pay the full amount at the hotel.</Alert>}
 
-    <Box sx={{ mt: 3, p: 2.5, bgcolor: 'success.light', borderRadius: '18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-      <Box><Typography variant="overline" sx={{ color: 'success.dark' }}>Check-in</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 18 }}>{dayLabel(status.checkIn)}</Typography></Box>
-      <Box><Typography variant="overline" sx={{ color: 'success.dark' }}>Check-out</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 18 }}>{dayLabel(status.checkOut)}</Typography></Box>
+    <Box sx={{ mt: 3, p: 2.5, bgcolor: 'primary.light', borderRadius: '18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+      <Box><Typography variant="overline" sx={{ color: 'primary.main' }}>Check-in</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 18 }}>{dayLabel(status.checkIn)}</Typography></Box>
+      <Box><Typography variant="overline" sx={{ color: 'primary.main' }}>Check-out</Typography><Typography sx={{ fontFamily: fonts.playful, fontSize: 18 }}>{dayLabel(status.checkOut)}</Typography></Box>
       <Typography sx={{ gridColumn: '1 / -1', fontSize: 14, color: 'text.secondary' }}>{nightsLabel(status.nights)} · {plural(rooms, 'room')} · {guestsLabel(adults, children)}</Typography>
     </Box>
 

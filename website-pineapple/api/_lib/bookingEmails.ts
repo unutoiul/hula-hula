@@ -84,7 +84,8 @@ function roomsHtml(row: BookingRow, { forTeam }: { forTeam: boolean }): string {
   return clip(row.items.map((item) => {
     const guests = `${plural(item.adults, 'adult')}${item.children ? `, ${plural(item.children, 'child', 'children')}` : ''} per room`;
     const team = forTeam ? `<br><span style="color:#806271;font-size:12px;">${nightlyText(item, row.currency)}</span>` : '';
-    return `<tr><td style="${cell}"><strong>${item.quantity} × ${escape(item.roomTypeName)}</strong><br>${escape(item.rateName)}${mealText(item)}<br><span style="color:#806271;">${guests}</span>${offerHtml(item, row.currency)}${team}</td>`
+    const listed = forTeam && item.siteMinderName ? ` <span style="color:#806271;font-weight:400;">(${escape(item.siteMinderName)})</span>` : '';
+    return `<tr><td style="${cell}"><strong>${item.quantity} × ${escape(item.roomTypeName)}</strong>${listed}<br>${escape(item.rateName)}${mealText(item)}<br><span style="color:#806271;">${guests}</span>${offerHtml(item, row.currency)}${team}</td>`
       + `<td align="right" style="${cell}white-space:nowrap;padding-left:12px;">${escape(formatMoney(item.unitTotal * item.quantity, row.currency))}</td></tr>`;
   }).join(''));
 }
@@ -98,7 +99,7 @@ export function notificationVariables(row: BookingRow) {
   const keyLines: [string, string | null | undefined][] = [
     ['Guest', name], ['Email', row.guest_email], ['Phone', row.guest_phone], ['Country', countryName(row.guest_country)],
     ['Check-in', formatDay(row.check_in)], ['Check-out', formatDay(row.check_out)], ['Nights', String(nights)],
-    ...row.items.map((item, i): [string, string] => [`Room ${i + 1}`, `${item.quantity} × ${item.roomTypeName} — ${item.rateName} — ${item.adults}A${item.children ? `+${item.children}C` : ''} — ${formatMoney(item.unitTotal * item.quantity, row.currency)}`
+    ...row.items.map((item, i): [string, string] => [`Room ${i + 1}`, `${item.quantity} × ${item.roomTypeName}${item.siteMinderName ? ` (${item.siteMinderName})` : ''} — ${item.rateName} — ${item.adults}A${item.children ? `+${item.children}C` : ''} — ${formatMoney(item.unitTotal * item.quantity, row.currency)}`
       + (item.offer?.percent ? ` (offer “${item.offer.title}” −${item.offer.percent}%, list price ${formatMoney((item.unitOriginalTotal ?? item.unitTotal) * item.quantity, row.currency)})` : item.offer ? ` (package “${item.offer.title}”)` : '')]),
     ['Perks to arrange', [...new Set(row.items.flatMap((item) => item.offer?.perks ?? []))].join(', ') || null],
     ['Total', formatMoney(row.total_amount, row.currency)],

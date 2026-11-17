@@ -103,7 +103,7 @@ function Segment({ icon, label, value, hint, hintColor, onClick, expanded, ariaL
     color: 'inherit', textAlign: 'left', cursor: 'pointer', transition: 'background-color .2s ease', '&:hover': { bgcolor: 'secondary.light' }, '&:focus-visible': { outlineOffset: -4 },
     borderBottom: divider ? { xs: '1px solid #f0dce4', md: 'none' } : 'none', borderRight: divider ? { md: '1px solid #f0dce4' } : 'none',
   }}>
-    <Box aria-hidden sx={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'success.light', color: 'success.dark', '& svg': { fontSize: 21 } }}>{icon}</Box>
+    <Box aria-hidden sx={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'primary.light', color: 'primary.main', '& svg': { fontSize: 21 } }}>{icon}</Box>
     <Box sx={{ minWidth: 0, flex: 1 }}>
       <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', fontSize: 10.5, lineHeight: 1.4 }}>{label}</Typography>
       <Typography sx={{ fontFamily: fonts.playful, fontSize: 15.5, lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</Typography>

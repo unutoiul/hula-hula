@@ -1,4 +1,5 @@
 import type { AvailabilityResponse, DepositType, RateOffer, RoomCapacity, RoomTypeOffer } from '../../shared/bookingContract.js';
+import { guestRate } from '../../shared/rateNames.js';
 import { bestDeal, type Deal, nightlyDiscounts } from './dealRules.js';
 import { depositFor, type DefaultDeposit } from './deposit.js';
 import { fromSatang, toSatang } from './money.js';
@@ -118,17 +119,28 @@ export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<stri
   return priced;
 }
 
+// Two rates a guest can't tell apart (same name, meals and cancellation
+// terms, no special offer) only differ in price: the dearer one is never the
+// right choice, so the page shows the cheaper. SiteMinder sends Royal
+// Pineapple's OTA rate plan this way, next to its own direct rate.
+const sameDeal = (cheaper: RateOffer, rate: RateOffer) =>
+  cheaper.name === rate.name && !cheaper.offer && !rate.offer
+  && cheaper.meals.breakfast === rate.meals.breakfast && cheaper.meals.lunch === rate.meals.lunch && cheaper.meals.dinner === rate.meals.dinner
+  && cheaper.cancellation.summary === rate.cancellation.summary && cheaper.cancellation.refundable === rate.cancellation.refundable
+  && cheaper.deposit.type === rate.deposit.type && cheaper.maxQuantity >= rate.maxQuantity;
+
 const stripTags = (html: string | null) => html?.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim() || null;
 
 export function buildAvailability(priced: PricedRate[], catalog: Catalog, search: { checkIn: string; checkOut: string; nights: number; adults: number; children: number; promo?: string }): AvailabilityResponse {
   const maxRooms = maxRoomsPerBooking();
   const byType = new Map<string, RoomTypeOffer>();
   for (const p of priced) {
+    const shown = guestRate(p.rate.name, { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded });
     const rate: RateOffer = {
       roomRateUuid: p.rate.uuid,
-      name: p.rate.name,
+      name: shown.name,
       description: p.rate.description && p.rate.description.trim() !== '-' ? p.rate.description : null,
-      meals: { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded },
+      meals: shown.meals,
       cancellation: p.cancellation,
       total: fromSatang(p.total),
       originalTotal: fromSatang(p.originalTotal),
@@ -152,7 +164,10 @@ export function buildAvailability(priced: PricedRate[], catalog: Catalog, search
     });
   }
   const roomTypes = [...byType.values()];
-  roomTypes.forEach((room) => room.rates.sort((a, b) => a.total - b.total));
+  roomTypes.forEach((room) => {
+    room.rates.sort((a, b) => a.total - b.total);
+    room.rates = room.rates.filter((rate, i) => !room.rates.slice(0, i).some((cheaper) => sameDeal(cheaper, rate)));
+  });
   roomTypes.sort((a, b) => a.rates[0].total - b.rates[0].total);
   const times = catalog.property.policies?.checkInCheckOut;
   return {
