@@ -17,7 +17,7 @@ export interface PageHead { title: string; description: string; canonical: strin
 const INDEX = 'index, follow, max-image-preview:large';
 const HOTEL_ID = `${SITE_URL}/#hotel`;
 
-const HOME_DESCRIPTION = 'A contemporary colonial-inspired urban resort in the heart of Krabi Town, part of the Hula Hula family. 72 rooms with balconies, a pool, a free 7-day Krabi programme, 24-hour café, co-working and gym. Stay local, explore more.';
+const HOME_DESCRIPTION = 'Find your hideaway in Krabi Town at Royal Pineapple Hotel, with balcony rooms, an outdoor pool, a 24-hour café and a free 7-day Krabi programme.';
 
 // Describe the property, without publishing an undated price or an unverified rating.
 export const hotelStructuredData = {

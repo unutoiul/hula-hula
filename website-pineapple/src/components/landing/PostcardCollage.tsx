@@ -1,5 +1,6 @@
 import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded';
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
+import ArrowOutward from '@mui/icons-material/ArrowOutward';
 import PauseRounded from '@mui/icons-material/PauseRounded';
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import { Box } from '@mui/material';
@@ -74,6 +75,7 @@ export function PostcardCollage() {
   const photoIndex = wrapReelIndex(index, postcardScenes.length);
   const photo = postcardScenes[photoIndex];
   const offer = highlights[wrapReelIndex(index, highlights.length)];
+  const offerAction = offer.preview ? 'Preview offer' : offer.kind === 'event' ? 'See the event' : 'View offer';
   const offerImages = highlights.map(item => item.image).join('|');
 
   const request = useCallback((next: -1 | 1) => {
@@ -153,10 +155,11 @@ export function PostcardCollage() {
     onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
     onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); request(event.key === 'ArrowRight' ? 1 : -1); } }}
     sx={{
-      position: 'relative', width: '100%', minWidth: 0, outline: 'none', p: { xs: '0 3px', sm: '0 8px', md: '6px 0 0' }, maxWidth: { xs: 640, md: 'none' }, mx: { xs: 'auto', md: 0 },
-      '&:focus-visible': { outline: '2px solid #c83b74', outlineOffset: 10, borderRadius: '12px' },
+      position: 'relative', width: '100%', minWidth: 0, containerType: 'inline-size', outline: 'none',
+      '--offer-width': 'clamp(132px, 36cqw, 208px)',
+      '&:focus-visible': { outline: '2px solid #c83b74', outlineOffset: 5, borderRadius: '12px' },
     }}>
-    <Box sx={{ position: 'relative', width: '100%', aspectRatio: { xs: '.96', sm: '1.1', md: '1.05', lg: '1.1' }, isolation: 'isolate', touchAction: 'pan-y', cursor: dragging ? 'grabbing' : 'grab', userSelect: 'none' }}
+    <Box sx={{ display: 'grid', pt: { xs: '8px', sm: '15px' }, isolation: 'isolate', touchAction: 'pan-y', cursor: dragging ? 'grabbing' : 'grab', userSelect: 'none' }}
       onPointerDown={event => { if (event.button === 0 && !busy) { pointer.current = { x: event.clientX, y: event.clientY, dragged: false }; suppressClick.current = false; setPressed(true); } }}
       onPointerMove={event => {
         const start = pointer.current;
@@ -169,52 +172,48 @@ export function PostcardCollage() {
       onPointerLeave={event => { if (!event.currentTarget.hasPointerCapture(event.pointerId)) cancelGesture(); }}
       onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}>
 
-      {/* The postcard and the offer badge only overlap at the corner, so the pool photo's pink flamingo stays in view. */}
-      <Box sx={{ position: 'absolute', zIndex: 1, top: 12, left: 0, width: { xs: '94%', sm: '92%' }, transform: { xs: 'rotate(-3deg)', sm: 'rotate(-4deg)' } }}>
-        <BadgePicture frameName="riviera-postcard" label={photo.alt} eager shadow="0 16px 20px #5a244821">
+      <Box sx={{ width: '95%', mx: 'auto', transform: { xs: 'rotate(-1.5deg)', sm: 'rotate(-2.5deg)' } }}>
+        <BadgePicture frameName="riviera-postcard" label={photo.alt} eager shadow="0 12px 18px #5a244821">
           <PostcardReel key={`photo-${index}-${target}`} sequence={sequence} moving={busy} direction={direction} onSettled={settle}>
             {item => { const scene = postcardScenes[wrapReelIndex(item, postcardScenes.length)]; return <img src={scene.image} alt="" width={1600} height={1067} fetchPriority={item === 0 ? 'high' : 'auto'} decoding="async" draggable={false} />; }}
           </PostcardReel>
         </BadgePicture>
-        <Box component="span" aria-hidden="true" sx={{
-          position: 'absolute', left: { xs: 10, sm: 18, lg: 25 }, top: { xs: 'calc(100% + 10px)', sm: 'calc(100% + 12px)' }, maxWidth: { xs: 145, sm: 'none' },
-          fontFamily: fonts.serif, fontStyle: 'italic', fontWeight: 400, fontSize: { xs: 19, sm: 22, lg: 25 }, lineHeight: 1.2, color: '#c12e68', transform: 'rotate(2deg)',
-        }}>Wish you were here…</Box>
       </Box>
 
-      <Box component="a" href="#offers" aria-label={`${offer.label}: ${offer.title.replace(/[.!?]$/, '')}.${offer.preview ? ' Offer preview.' : ''} See the details.`}
-        data-cta={offer.preview ? 'View this offer preview ↗' : offer.kind === 'event' ? 'See what’s on ↗' : 'See this offer ↗'} sx={{
-        position: 'absolute', zIndex: 3, right: '3%', bottom: { xs: 26, sm: 34 }, width: { xs: '49%', sm: '41%', md: '45%', lg: '41%' },
-        transform: { xs: 'rotate(7deg)', sm: 'rotate(8deg)' }, containerType: 'inline-size', textDecoration: 'none', color: '#fff5e4', cursor: 'grab',
-        '&:focus-visible': { borderRadius: '32px' },
-        '&::after': {
-          content: 'attr(data-cta)', position: 'absolute', top: { xs: 'calc(100% + 5px)', sm: 'calc(100% + 8px)' }, right: { xs: 0, sm: 15 },
-          color: '#8c4868', fontSize: { xs: 8, sm: 10 }, lineHeight: 1.5, whiteSpace: 'nowrap',
-        },
+      <Box component="a" href="#offers" aria-label={`${offerAction}: ${offer.title}`} sx={{
+        position: 'relative', zIndex: 1, justifySelf: 'end', width: 'var(--offer-width)', mr: '2%',
+        mt: 'clamp(-64px, -10cqw, -38px)', containerType: 'inline-size', textDecoration: 'none', color: brand.plum,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '12px',
+        '&:hover > span': { bgcolor: '#f7dce6' },
       }}>
-        <BadgePicture frameName="grand-arrival" eager shadow="0 12px 14px #5a24482c">
-          <PostcardReel key={`offer-${index}-${target}`} sequence={sequence} moving={busy} direction={direction}>
-            {item => {
-              const card = highlights[wrapReelIndex(item, highlights.length)];
-              return <><img src={card.image} alt="" width={1600} height={1067} decoding="async" draggable={false} />
-                <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #4a143be6, #4a143bc7 64%, #4a143b80)' }} />
-                <OfferBadgeWords item={card} /></>;
-            }}
-          </PostcardReel>
-        </BadgePicture>
+        <Box sx={{ width: '100%', transform: 'rotate(5deg)' }}>
+          <BadgePicture frameName="grand-arrival" eager shadow="0 8px 12px #5a24482c">
+            <PostcardReel key={`offer-${index}-${target}`} sequence={sequence} moving={busy} direction={direction}>
+              {item => {
+                const card = highlights[wrapReelIndex(item, highlights.length)];
+                return <><img src={card.image} alt="" width={1600} height={1067} decoding="async" draggable={false} />
+                  <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #4a143be6, #4a143bc7 64%, #4a143b80)' }} />
+                  <OfferBadgeWords item={card} /></>;
+              }}
+            </PostcardReel>
+          </BadgePicture>
+        </Box>
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: '5px', px: '10px', py: '4px', border: '1px solid #dfb8ca', borderRadius: '20px', bgcolor: brand.cream, fontSize: 11, fontWeight: 700 }}>
+          {offerAction} <ArrowOutward aria-hidden="true" sx={{ fontSize: 12 }} />
+        </Box>
       </Box>
     </Box>
-    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'space-between' }, flexWrap: 'wrap', gap: { xs: '15px', sm: '14px', lg: '12px' }, p: '20px 3px 0' }}>
-      <Box aria-live={focused ? 'polite' : 'off'} sx={{
-        display: 'flex', flexDirection: 'column', gap: { xs: '4px', sm: '8px' }, color: '#8a6479', width: { xs: '100%', sm: 'auto' }, textAlign: { xs: 'center', sm: 'left' },
-        '& > span': { fontFamily: fonts.serif, fontStyle: 'italic', fontSize: { xs: 18, lg: 20 }, lineHeight: 1.3, color: '#a42d5c' },
-        '& > small': { fontSize: { xs: 8, sm: 9 }, lineHeight: 1.6 },
-      }}><span>{photo.title}</span><small>Swipe, scroll sideways, or use the arrows.</small></Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: '10px', sm: '5px' }, flexShrink: 0 }}>
+    <Box sx={{
+      position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px',
+      width: 'calc(98% - var(--offer-width) - 6px)', mt: '-88px',
+      '@container (min-width: 540px)': { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '8px', mt: '-44px' },
+    }}>
+      <Box aria-live={focused ? 'polite' : 'off'} sx={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: { xs: 17, sm: 20 }, lineHeight: 1.15, color: brand.royal }}>{photo.title}</Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0, '@container (min-width: 330px)': { gap: '5px' } }}>
         <Box component="button" type="button" onClick={() => request(-1)} aria-disabled={busy} aria-label="Previous hotel photo and offer" sx={reelButtonSx}><ArrowBackRounded /></Box>
-        <Box component="span" aria-hidden="true" sx={{ minWidth: 42, fontSize: { xs: 9, sm: 10 }, color: '#69354f', textAlign: 'center', fontVariantNumeric: 'tabular-nums', '& > span': { color: '#a88998' } }}>0{photoIndex + 1}<span> / 0{postcardScenes.length}</span></Box>
+        <Box component="span" aria-hidden="true" sx={{ display: 'none', '@container (min-width: 330px)': { display: 'block' }, minWidth: 28, color: '#69354f', fontSize: 11, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{photoIndex + 1}/{postcardScenes.length}</Box>
         <Box component="button" type="button" onClick={() => request(1)} aria-disabled={busy} aria-label="Next hotel photo and offer" sx={reelButtonSx}><ArrowForwardRounded /></Box>
-        {!systemReduced && <Box component="button" type="button" onClick={toggle} aria-pressed={reduced} aria-label={reduced ? 'Play all animations' : 'Pause all animations'} sx={reelButtonSx}>{reduced ? <PlayArrowRounded /> : <PauseRounded />}</Box>}
+        {!systemReduced && <Box component="button" type="button" onClick={toggle} aria-label={reduced ? 'Play all animations' : 'Pause all animations'} sx={reelButtonSx}>{reduced ? <PlayArrowRounded /> : <PauseRounded />}</Box>}
       </Box>
     </Box>
   </MotionBox>;

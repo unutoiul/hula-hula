@@ -4,9 +4,9 @@ import { photoAssets as p } from '../../data/photos';
 import { MotionBox } from '../common/motionPrimitives';
 
 export const postcardScenes = [
-  { id: 'pool', image: p.poolFlamingo.src, title: 'Pink pool days. The real thing.', alt: 'The real hotel pool, with pink loungers, a flamingo float and yellow arched balconies' },
-  { id: 'arrival', image: p.facade.src, title: 'A very royal arrival.', alt: 'The golden Royal Pineapple Hotel entrance, white arches and tropical palms' },
-  { id: 'room', image: p.hibiscus.src, title: 'Your little home in pink.', alt: 'The real Double Hibiscus guest room with pink decor and a hibiscus bedspread' },
+  { id: 'pool', image: p.poolFlamingo.src, title: 'Pool courtyard', alt: 'The hotel pool with pink loungers, a flamingo float and yellow arched balconies' },
+  { id: 'arrival', image: p.facade.src, title: 'Hotel entrance', alt: 'The golden Royal Pineapple Hotel entrance, white arches and tropical palms' },
+  { id: 'room', image: p.hibiscus.src, title: 'Double Hibiscus room', alt: 'The Double Hibiscus guest room with pink decor and a hibiscus bedspread' },
 ];
 
 export const wrapReelIndex = (index: number, count: number) => ((index % count) + count) % count;

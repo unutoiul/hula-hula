@@ -5,55 +5,44 @@ import { BookingSearchBar } from '../booking/BookingSearchBar';
 import { KrabiNow } from './KrabiNow';
 import { eyebrowSx, pageWrapSx, RULE, textLinkSx } from './landingStyles';
 import { PostcardCollage } from './PostcardCollage';
-import { RoyalHeadline } from './RoyalHeadline';
 
 export function LandingHero() {
   return <Box component="section" aria-labelledby="royal-hero-title" sx={{
     position: 'relative', overflow: 'hidden', pt: { xs: '110px', md: '126px' },
-    background: `radial-gradient(ellipse at 90% 35%, #fbe6ed 0, #fff9f200 55%), ${brand.cream}`,
+    background: `radial-gradient(ellipse at 88% 24%, #fbe6ed 0, transparent 60%), ${brand.cream}`,
   }}>
     <Box sx={pageWrapSx}>
       <Box sx={{
-        display: 'grid', alignItems: 'center', gridTemplateColumns: { xs: '1fr', md: '.85fr 1.15fr', lg: '.82fr 1.18fr' },
-        gap: { xs: '25px', sm: '30px', md: '25px', lg: '36px' }, pt: { xs: '30px', sm: '37px', md: '35px', lg: '42px' }, pb: { xs: '25px', sm: '35px' },
+        display: 'grid', alignItems: 'center', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 5fr) minmax(0, 6fr)' },
+        columnGap: { md: '36px', lg: 'clamp(48px, 4.4vw, 68px)' }, rowGap: { xs: '26px', sm: '32px' },
+        maxWidth: { xs: 640, md: 'none' }, mx: 'auto', pt: { xs: '28px', sm: '36px', md: '28px' }, pb: { xs: '24px', sm: '30px', md: '28px' },
       }}>
-        <Box sx={{ position: 'relative', zIndex: 2, minWidth: 0, pb: { xs: 0, md: '20px' }, textAlign: { xs: 'center', md: 'left' }, maxWidth: { xs: 540, md: 'none' }, m: { xs: 'auto', md: 0 } }}>
+        <Box sx={{ minWidth: 0, pb: { md: '24px' } }}>
+          <Box component="p" sx={{ ...eyebrowSx, mb: { xs: '14px', md: '20px' } }}><span aria-hidden="true" />The Royal Pineapple Hotel</Box>
+          <Box component="h1" id="royal-hero-title" sx={{
+            m: 0, color: brand.plum, fontFamily: fonts.serif, fontWeight: 400,
+            fontSize: { xs: 'clamp(42px, 10.6vw, 62px)', md: 'clamp(53px, 5.5vw, 82px)' }, lineHeight: 1, letterSpacing: '-.055em',
+            '& em': { display: 'block', mt: '4px', color: brand.royal, fontWeight: 400 },
+          }}>Your hideaway <em>in Krabi Town.</em></Box>
           <Box component="p" sx={{
-            ...eyebrowSx, justifyContent: { xs: 'center', md: 'flex-start' }, gap: { xs: '8px', sm: '12px' }, mb: { xs: '19px', sm: '22px', md: '25px' },
-            fontSize: { xs: 7, sm: 9 }, letterSpacing: { xs: '.14em', sm: '.17em' }, '& > span': { ...eyebrowSx['& > span'], width: { xs: 20, sm: 28 } },
-          }}><span />Welcome to the social heart of Krabi</Box>
-          <RoyalHeadline />
-          <Box component="p" sx={{
-            color: '#7d606f', fontSize: { xs: 13, sm: 15, md: 14, lg: 15 }, lineHeight: { xs: 1.85, sm: 1.9 },
-            maxWidth: { xs: 335, sm: 420, md: 350, lg: 380 }, m: { xs: '20px auto 22px', sm: '24px auto', md: '25px 0 26px' },
-          }}>Golden arches. Pink pool days. A balcony of your own. Contemporary colonial style, a warm Thai welcome and a home away from home, right in Krabi Town.</Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' }, gap: { xs: '17px', sm: '16px', lg: '22px' } }}>
-            <Button href="#booking-search" variant="contained" endIcon={<East />} sx={{ minHeight: { xs: 48, sm: 50 }, px: { xs: '19px', sm: '20px', lg: '25px' }, fontSize: { xs: 11, lg: 12 } }}>Find your happy place</Button>
-            <Box component="a" href="#rooms" sx={{ ...textLinkSx, fontSize: { xs: 10, sm: 12 } }}>Take a little look <span aria-hidden="true">↗</span></Box>
+            color: 'text.secondary', fontSize: { xs: 15, lg: 17 }, lineHeight: 1.65,
+            maxWidth: '36ch', m: { xs: '16px 0 20px', md: '22px 0 26px' },
+          }}>Lounge by the pool, unwind on your own balcony, then step out to explore the neighbourhood.</Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', columnGap: { xs: '16px', sm: '24px' }, rowGap: '8px' }}>
+            <Button href="#booking-search" variant="contained" endIcon={<East />} sx={{ minHeight: '48px', px: { xs: '18px', sm: '24px' }, fontSize: { xs: 12, sm: 13 } }}>Check availability</Button>
+            <Box component="a" href="#rooms" sx={{ ...textLinkSx, display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: { xs: 12, sm: 13 } }}>Explore rooms <span aria-hidden="true">↓</span></Box>
           </Box>
           <KrabiNow />
         </Box>
         <PostcardCollage />
       </Box>
-      <Box id="booking-search" sx={{
-        position: 'relative', zIndex: 3, display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { xs: 'stretch', lg: 'center' },
-        gap: { xs: '20px', sm: '18px', lg: '32px' }, py: '23px', mt: { xs: 0, sm: '6px' }, borderTop: `1px solid ${RULE}`, scrollMarginTop: '112px',
+      <Box id="booking-search" aria-labelledby="booking-search-title" component="section" sx={{
+        display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { xs: 'stretch', lg: 'center' },
+        gap: { xs: '12px', lg: '32px' }, pt: '20px', pb: { xs: '28px', md: '34px' }, borderTop: `1px solid ${RULE}`,
+        maxWidth: { xs: 640, md: 'none' }, mx: 'auto', scrollMarginTop: '112px',
       }}>
-        <Box sx={{ flexShrink: 0, textAlign: { xs: 'center', lg: 'left' } }}>
-          <Box component="p" sx={{ m: '0 0 8px', color: brand.royal, textTransform: 'uppercase', fontSize: { xs: 7, sm: 8 }, letterSpacing: '.14em' }}>A little getaway starts here</Box>
-          <Box component="h2" sx={{ m: '0 0 4px', fontFamily: fonts.serif, fontWeight: 400, letterSpacing: '-.035em', color: brand.plum, fontSize: { xs: 24, sm: 25, md: 21, lg: 24 } }}>Good times start with a date.</Box>
-        </Box>
+        <Box component="h2" id="booking-search-title" sx={{ m: 0, flexShrink: 0, fontFamily: fonts.serif, fontWeight: 400, letterSpacing: '-.035em', color: brand.plum, fontSize: { xs: 26, lg: 30 } }}>Plan your stay</Box>
         <Box sx={{ flex: 1, minWidth: 0 }}><BookingSearchBar wide /></Box>
-      </Box>
-      <Box sx={{
-        display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'space-between' }, gap: '20px', textAlign: { xs: 'center', sm: 'left' },
-        borderTop: `1px solid ${RULE}`, py: { xs: '15px', sm: '18px' }, color: '#9b7b8b', fontSize: { xs: 8, sm: 9 }, letterSpacing: '.04em',
-        '& > span': { display: { xs: 'none', sm: 'inline' } },
-        '& > a': { color: '#735164', textDecoration: 'none' },
-        '& > a > span': { color: brand.royal, pl: '13px' },
-      }}>
-        <span>A pineapple welcome to wealth & good fortune.</span>
-        <a href="#welcome">Make yourself a little at home <span aria-hidden="true">↓</span></a>
       </Box>
     </Box>
   </Box>;

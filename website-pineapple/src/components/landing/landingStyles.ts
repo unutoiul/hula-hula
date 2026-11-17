@@ -29,8 +29,3 @@ export const textLinkSx = {
 
 /** The big serif headings; an <em> inside turns rose. */
 export const serifHeadingSx = { fontFamily: fonts.serif, fontWeight: 400, color: brand.plum, '& em': { color: brand.royal, fontWeight: 400 } } as const;
-
-/** Read out by screen readers, never shown. */
-export const visuallyHiddenSx = {
-  position: 'absolute', width: '1px', height: '1px', p: 0, m: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0,
-} as const;
