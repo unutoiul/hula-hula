@@ -158,7 +158,7 @@ export function PostcardCollage() {
       </Box>
 
       <Box component="a" href="#offers" aria-label={`${offer.tag} ${offer.label}. Offer preview. View details.`} sx={{
-        position: 'absolute', zIndex: 3, right: '-1%', bottom: { xs: 14, sm: 16 }, width: { xs: '49%', sm: '41%', md: '45%', lg: '41%' },
+        position: 'absolute', zIndex: 3, right: '3%', bottom: { xs: 26, sm: 34 }, width: { xs: '49%', sm: '41%', md: '45%', lg: '41%' },
         transform: { xs: 'rotate(7deg)', sm: 'rotate(8deg)' }, containerType: 'inline-size', textDecoration: 'none', color: '#fff5e4', cursor: 'grab',
         '&:focus-visible': { borderRadius: '32px' },
         '&::after': {
