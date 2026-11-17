@@ -30,7 +30,8 @@ interface MonthGridProps {
 }
 
 // Each month shares the calendar's width evenly (one month on phones, two from
-// sm up); day buttons grow with their column up to 40px.
+// sm up); day buttons are circles that grow with their column up to 42px, and
+// the blank cells size the same way, so both months' rows always line up.
 function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: MonthGridProps) {
   const minimum = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
   return <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -38,13 +39,13 @@ function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: Mon
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', rowGap: '4px' }}>
       {WEEKDAY_LABELS.map((w) => <Typography key={w} sx={{ fontFamily: fonts.sans, fontSize: 11, textAlign: 'center', color: 'text.secondary', pb: 1 }}>{w}</Typography>)}
       {getMonthCells(year, month).map((date, index) => {
-        if (!date) return <Box key={`blank-${index}`} sx={{ height: 42 }} />;
+        if (!date) return <Box key={`blank-${index}`} sx={{ width: '100%', maxWidth: 42, aspectRatio: '1 / 1', justifySelf: 'center' }} />;
         const disabled = date < minimum;
         const isCheckIn = isSameDay(date, checkIn);
         const isCheckOut = isSameDay(date, checkOut);
         const inRange = date > checkIn && date < checkOut;
         return <Box key={date.toISOString()} sx={theme => ({
-          height: 42, display: 'grid', placeItems: 'center',
+          display: 'grid', placeItems: 'center',
           bgcolor: inRange ? alpha(theme.palette.primary.main, .09) : 'transparent',
           backgroundImage: isCheckIn || isCheckOut ? `linear-gradient(to ${isCheckIn ? 'left' : 'right'}, ${alpha(theme.palette.primary.main, .09)} 50%, transparent 50%)` : undefined,
         })}><Box component="button" type="button" disabled={disabled}
@@ -52,7 +53,7 @@ function MonthGrid({ year, month, checkIn, checkOut, minDate, onSelectDay }: Mon
           aria-current={isSameDay(date, minimum) ? 'date' : undefined}
           aria-pressed={isCheckIn || isCheckOut}
           onClick={() => onSelectDay(date)} sx={(theme) => ({
-            width: '100%', maxWidth: 42, height: 42, p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '100%', maxWidth: 42, aspectRatio: '1 / 1', p: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 13, fontFamily: fonts.sans, fontWeight: isCheckIn || isCheckOut ? 700 : 500, border: 'none', borderRadius: '50%', cursor: disabled ? 'default' : 'pointer',
             color: isCheckIn || isCheckOut ? 'primary.contrastText' : disabled ? 'text.disabled' : 'text.primary',
             bgcolor: isCheckIn || isCheckOut ? 'primary.main' : 'transparent',
@@ -73,6 +74,8 @@ interface RangeCalendarProps {
   minDate: Date;
   onSelectDay: (day: Date) => void;
   selectingCheckout?: boolean;
+  /** Fill the whole container instead of capping at 720px (the Arrival panel sizes it itself). */
+  fill?: boolean;
 }
 
 // Two months side by side, Airbnb-style: pick a check-in, then a check-out —
@@ -80,15 +83,15 @@ interface RangeCalendarProps {
 // pair of arrows (not per-month) pages both months forward together; back is
 // disabled once you're viewing the earliest selectable month. The arrows sit
 // on the month-name row, so on phones the header reads "‹ Oct 2026 ›".
-export function RangeCalendar({ checkIn, checkOut, minDate, onSelectDay, selectingCheckout = false }: RangeCalendarProps) {
+export function RangeCalendar({ checkIn, checkOut, minDate, onSelectDay, selectingCheckout = false, fill = false }: RangeCalendarProps) {
   const helpId = useId();
   const [monthOffset, setMonthOffset] = useState(() => Math.max(0, (checkIn.getFullYear() - minDate.getFullYear()) * 12 + checkIn.getMonth() - minDate.getMonth()));
   const anchor = new Date(minDate.getFullYear(), minDate.getMonth() + monthOffset, 1);
   const next = new Date(minDate.getFullYear(), minDate.getMonth() + monthOffset + 1, 1);
 
   // Fills its container (so callers size it), capped and centered so the two
-  // months don't drift apart inside a much wider one.
-  return <Box className="stay-calendar" aria-describedby={helpId} sx={{ p: { xs: 2, sm: 2.5 }, width: '100%', maxWidth: 720, mx: 'auto', containerType: 'inline-size' }}>
+  // months don't drift apart inside a much wider one — unless `fill`.
+  return <Box aria-describedby={helpId} sx={{ p: { xs: 2, sm: 2.5 }, width: '100%', maxWidth: fill ? 'none' : 720, mx: 'auto', containerType: 'inline-size', ...(fill && { p: { xs: 2, sm: '28px' } }) }}>
     <Typography sx={{ fontFamily: fonts.serif, fontSize: 25, color: 'primary.dark', lineHeight: 1.2 }}>Your getaway dates</Typography>
     <Typography id={helpId} aria-live="polite" sx={{ fontSize: 12, color: 'text.secondary', mt: .75, mb: 2 }}>{selectingCheckout ? 'Now choose your check-out date.' : 'Choose your check-in, then your check-out.'}</Typography>
     <Box sx={{ position: 'relative' }}>

@@ -131,7 +131,7 @@ export function PostcardCollage() {
       position: 'relative', width: '100%', minWidth: 0, outline: 'none', p: { xs: '0 3px', sm: '0 8px', md: '6px 0 0' }, maxWidth: { xs: 640, md: 'none' }, mx: { xs: 'auto', md: 0 },
       '&:focus-visible': { outline: '2px solid #c83b74', outlineOffset: 10, borderRadius: '12px' },
     }}>
-    <Box sx={{ position: 'relative', width: '100%', aspectRatio: { xs: '1.02', sm: '1.17', md: '1.12', lg: '1.17' }, isolation: 'isolate', touchAction: 'pan-y', cursor: dragging ? 'grabbing' : 'grab', userSelect: 'none' }}
+    <Box sx={{ position: 'relative', width: '100%', aspectRatio: { xs: '.96', sm: '1.1', md: '1.05', lg: '1.1' }, isolation: 'isolate', touchAction: 'pan-y', cursor: dragging ? 'grabbing' : 'grab', userSelect: 'none' }}
       onPointerDown={event => { if (event.button === 0 && !busy) { pointer.current = { x: event.clientX, y: event.clientY, dragged: false }; suppressClick.current = false; setPressed(true); } }}
       onPointerMove={event => {
         const start = pointer.current;
@@ -144,7 +144,8 @@ export function PostcardCollage() {
       onPointerLeave={event => { if (!event.currentTarget.hasPointerCapture(event.pointerId)) cancelGesture(); }}
       onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}>
 
-      <Box sx={{ position: 'absolute', zIndex: 1, top: { xs: 20, sm: 25 }, left: 0, width: { xs: '97%', sm: '96%' }, transform: { xs: 'rotate(-3deg)', sm: 'rotate(-4deg)' } }}>
+      {/* The postcard and the offer badge only overlap at the corner, so the pool photo's pink flamingo stays in view. */}
+      <Box sx={{ position: 'absolute', zIndex: 1, top: 12, left: 0, width: { xs: '94%', sm: '92%' }, transform: { xs: 'rotate(-3deg)', sm: 'rotate(-4deg)' } }}>
         <BadgePicture frameName="riviera-postcard" label={photo.alt} eager shadow="0 16px 20px #5a244821">
           <PostcardReel key={`photo-${index}-${target}`} sequence={sequence} moving={busy} direction={direction} onSettled={settle}>
             {item => { const scene = postcardScenes[wrapReelIndex(item, postcardScenes.length)]; return <img src={scene.image} alt="" width={1600} height={1067} fetchPriority={item === 0 ? 'high' : 'auto'} decoding="async" draggable={false} />; }}
@@ -157,7 +158,7 @@ export function PostcardCollage() {
       </Box>
 
       <Box component="a" href="#offers" aria-label={`${offer.tag} ${offer.label}. Offer preview. View details.`} sx={{
-        position: 'absolute', zIndex: 3, right: '-1%', bottom: { xs: 12, sm: 14 }, width: { xs: '57%', sm: '48%', md: '52%', lg: '48%' },
+        position: 'absolute', zIndex: 3, right: '-1%', bottom: { xs: 14, sm: 16 }, width: { xs: '49%', sm: '41%', md: '45%', lg: '41%' },
         transform: { xs: 'rotate(7deg)', sm: 'rotate(8deg)' }, containerType: 'inline-size', textDecoration: 'none', color: '#fff5e4', cursor: 'grab',
         '&:focus-visible': { borderRadius: '32px' },
         '&::after': {
