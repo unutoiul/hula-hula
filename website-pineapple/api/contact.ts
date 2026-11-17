@@ -17,7 +17,7 @@ const krabiTime = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeSt
 // on the confirmation it's the hotel inbox. Needs
 // RESEND_API_KEY; RESEND_CONTACT_ENQUIRY_TEMPLATE_ID and
 // RESEND_CONTACT_CONFIRMATION_TEMPLATE_ID default to the template aliases.
-// CONTACT_TO (default reservation@thepineapplehotel.com), CONTACT_BCC (default
+// CONTACT_TO (default reservation@royalpineapplehotel.com), CONTACT_BCC (default
 // contact@bluetrendy.com, blind-copied so the hotel doesn't see it; comma-separated, or empty for none), CONTACT_FROM
 // (an address on a domain verified in Resend) and SITE_URL are optional
 // overrides. Bots that fill the hidden "hp_ref" field, or submit faster than
@@ -54,9 +54,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Contact email is not configured: RESEND_API_KEY missing');
     return res.status(500).json({ error: 'Email is not configured on the server' });
   }
-  const to = process.env.CONTACT_TO || 'reservation@thepineapplehotel.com';
+  const to = process.env.CONTACT_TO || 'reservation@royalpineapplehotel.com';
   const bcc = splitAddresses(process.env.CONTACT_BCC ?? 'contact@bluetrendy.com');
-  const from = process.env.CONTACT_FROM || 'Royal Pineapple Hotel <reservation@hulahularesort.com>';
+  const from = process.env.CONTACT_FROM || 'Royal Pineapple Hotel <reservation@royalpineapplehotel.com>';
   const siteUrl = process.env.SITE_URL || `https://${req.headers['x-forwarded-host'] ?? req.headers.host}`;
   const whatsapp = whatsappLink(phone);
 

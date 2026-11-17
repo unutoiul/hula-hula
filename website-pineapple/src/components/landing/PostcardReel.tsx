@@ -22,11 +22,17 @@ export function PostcardReel({ sequence, moving, direction, onSettled, children 
 }) {
   const animation = useMemo(() => moving ? {
     x: ['0%', `${direction * 200}%`, `${direction * 400}%`],
-    filter: ['blur(0px)', 'blur(9px)', 'blur(10px)', 'blur(3px)', 'blur(0px)'],
-  } : { x: '0%', filter: 'blur(0px)' }, [moving, direction]);
+    filter: [
+      'blur(0px) saturate(1)',
+      'blur(14px) saturate(1.12)',
+      'blur(18px) saturate(.9)',
+      'blur(7px) saturate(1.08)',
+      'blur(0px) saturate(1)',
+    ],
+  } : { x: '0%', filter: 'blur(0px) saturate(1)' }, [moving, direction]);
 
   return <MotionBox aria-hidden="true" sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: direction === 1 ? 'row-reverse' : 'row', width: '100%', height: '100%' }}
-    initial={{ x: '0%', filter: 'blur(0px)' }} animate={animation}
+    initial={{ x: '0%', filter: 'blur(0px) saturate(1)' }} animate={animation}
     transition={moving ? {
       x: { duration: 2.3, times: [0, .22, 1], ease: ['linear', [.2, .7, .25, 1]] },
       filter: { duration: 2.3, times: [0, .08, .34, .8, 1], ease: 'linear' },

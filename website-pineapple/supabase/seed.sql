@@ -6,7 +6,7 @@
 --
 -- Then add the staff who may use /admin (they also need a Supabase Auth user,
 -- created under Authentication → Users with a password):
---   insert into public.admins (email) values ('reservation@thepineapplehotel.com');
+--   insert into public.admins (email) values ('reservation@royalpineapplehotel.com');
 
 insert into public.activities (weekday, kicker, title, place, detail, time_label, transport, price_note, free_bus, images, cta_label, published, sort_order) values
   (1, 'Eco-tourism island', 'Koh Klang & the twin mountains', 'Koh Klang',

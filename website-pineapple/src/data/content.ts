@@ -312,7 +312,7 @@ export const galleryPhotos: GalleryPhoto[] = [
 export const CONTACT: ContactInfo = {
   phone: '+66 64 123 0789', tel: 'tel:+66641230789',
   landline: '+66 75 622 622', landlineTel: 'tel:+6675622622',
-  email: 'reservation@thepineapplehotel.com',
+  email: 'reservation@royalpineapplehotel.com',
   address: '339/9 Maharaj Road, Paknam, Muang, Krabi 81000, Thailand',
   facebook: 'https://www.facebook.com/share/1ACrkWoHC9/', instagram: 'https://www.instagram.com/thepineapplehotelkrabi',
   tiktok: 'https://www.tiktok.com/@krabiactivity', maps: 'https://maps.app.goo.gl/HwebZkbP3GWMZNpf7',

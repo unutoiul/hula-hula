@@ -64,9 +64,11 @@ export function PostcardCollage() {
   const step = target !== null && target < index ? -1 : 1;
   const direction = step === 1 ? -1 : 1;
   const sequence = target === null ? [index] : [index, index + step, index + step * 2, index + step * 3, target];
-  const photoIndex = wrapReelIndex(index, postcardScenes.length);
+  // The selected caption and counter respond on click while the pictures animate toward that selection.
+  const selectedIndex = target ?? index;
+  const photoIndex = wrapReelIndex(selectedIndex, postcardScenes.length);
   const photo = postcardScenes[photoIndex];
-  const offer = highlights[wrapReelIndex(index, highlights.length)];
+  const offer = highlights[wrapReelIndex(selectedIndex, highlights.length)];
   const offerAction = offer.preview ? 'Preview offer' : offer.kind === 'event' ? 'See the event' : 'View offer';
   const offerImages = highlights.map(item => item.image).join('|');
 
@@ -189,7 +191,7 @@ export function PostcardCollage() {
 
       <Box component="a" href="#offers" aria-label={`${offerAction}: ${offer.title}`} sx={{
         position: 'relative', zIndex: 1, gridColumn: 2, gridRow: 2, alignSelf: 'start',
-        mt: 'clamp(-70px, -10.5cqw, -42px)', containerType: 'inline-size', textDecoration: 'none', color: brand.plum,
+        mt: 'clamp(-112px, -16cqw, -68px)', containerType: 'inline-size', textDecoration: 'none', color: brand.plum,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '12px',
         '&:hover > span': { bgcolor: '#f7dce6' },
       }}>
@@ -212,9 +214,9 @@ export function PostcardCollage() {
       <Box sx={{
         gridColumn: 1, gridRow: 2, alignSelf: 'start', display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
         gap: '6px', pt: { xs: '12px', sm: '20px' },
-        '@container (min-width: 540px)': { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: '8px 20px' },
+        '@container (min-width: 540px)': { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', gap: '20px', width: '100%' },
       }}>
-        <Box aria-live={focused ? 'polite' : 'off'} sx={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: { xs: 17, sm: 20 }, lineHeight: 1.15, color: brand.royal }}>{photo.title}</Box>
+        <Box aria-live={focused ? 'polite' : 'off'} sx={{ minWidth: 0, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: { xs: 17, sm: 20 }, lineHeight: 1.15, color: brand.royal }}>{photo.title}</Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0, '@container (min-width: 348px)': { gap: '5px' } }}>
           <Box component="button" type="button" onClick={() => request(-1)} aria-disabled={busy} aria-label="Previous hotel photo and offer" sx={reelButtonSx}><ArrowBackRounded /></Box>
           <Box component="span" aria-hidden="true" sx={{ display: 'none', '@container (min-width: 348px)': { display: 'block' }, minWidth: 28, color: '#69354f', fontSize: 11, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{photoIndex + 1}/{postcardScenes.length}</Box>

@@ -15,7 +15,7 @@ Cancellation: {{{CANCELLATION}}}
 Keep this email and quote your booking reference if you get in touch.
 Royal Pineapple Hotel
 339/9 Maharaj Road, Paknam, Krabi 81000
-reservation@thepineapplehotel.com
+reservation@royalpineapplehotel.com
 WhatsApp: https://wa.me/66641230789
 Call: +66 75 622 622
 {{{SITE_URL}}}
