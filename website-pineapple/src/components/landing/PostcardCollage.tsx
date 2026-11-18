@@ -11,6 +11,7 @@ import { brand, fonts } from '../../theme';
 import { MotionBox } from '../common/motionPrimitives';
 import { useHomepageHighlights, type Highlight } from '../sections/cmsCards';
 import { BadgePicture } from './BadgePicture';
+import { PostcardGreeting } from './PostcardGreeting';
 import { PostcardReel, postcardScenes, wrapReelIndex } from './PostcardReel';
 
 const reelButtonSx = {
@@ -178,7 +179,7 @@ export function PostcardCollage() {
         gridColumn: '1 / -1', gridRow: 1, width: 'calc(97.5% - clamp(12px, 3.4cqw, 24px))', ml: '2.5%',
         transform: { xs: 'rotate(-1.5deg)', sm: 'rotate(-2.5deg)' }, cursor: dragging ? 'grabbing' : 'grab',
       }}>
-        <BadgePicture frameName="riviera-postcard" label={photo.alt} eager shadow="0 12px 18px #5a244821">
+        <PostcardGreeting label={photo.alt}>
           <PostcardReel key={`photo-${index}-${target}`} sequence={sequence} moving={busy} direction={direction} onSettled={settle}>
             {item => {
               const scene = postcardScenes[wrapReelIndex(item, postcardScenes.length)];
@@ -186,7 +187,7 @@ export function PostcardCollage() {
                 decoding="async" draggable={false} style={scene.id === 'pool' ? { transform: 'scaleX(-1)' } : undefined} />;
             }}
           </PostcardReel>
-        </BadgePicture>
+        </PostcardGreeting>
       </Box>
 
       <Box component="a" href="#offers" aria-label={`${offerAction}: ${offer.title}`} sx={{
