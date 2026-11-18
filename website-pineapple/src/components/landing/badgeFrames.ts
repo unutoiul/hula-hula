@@ -1,5 +1,17 @@
 // The badge frames: each frame image and the window cut out of its alpha, with that window's position in percent.
 export const badgeFrames = {
+  "greeting-postcard": {
+    "image": "/images/royal-pineapple/badge-frames/greeting-postcard-frame-v3.png",
+    "mask": "/images/royal-pineapple/badge-frames/greeting-postcard-window-v2.svg",
+    "width": 1536,
+    "height": 1024,
+    "window": {
+      "left": 5.794,
+      "top": 29.102,
+      "width": 88.411,
+      "height": 62.695
+    }
+  },
   "pool-club": {
     "image": "/images/royal-pineapple/badge-frames/12-pool-club-frame.webp",
     "mask": "/images/royal-pineapple/badge-frames/12-pool-club-frame-window.svg",

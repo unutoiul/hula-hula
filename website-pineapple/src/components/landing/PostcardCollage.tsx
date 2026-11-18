@@ -150,11 +150,11 @@ export function PostcardCollage() {
     onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
     onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); request(event.key === 'ArrowRight' ? 1 : -1); } }}
     sx={{
-      position: 'relative', width: { xs: '100%', md: 'calc(100% - 16px)' }, minWidth: 0, containerType: 'inline-size', outline: 'none',
+      position: 'relative', width: '100%', minWidth: 0, containerType: 'inline-size', outline: 'none',
       '&:focus-visible': { outline: '2px solid #c83b74', outlineOffset: 5, borderRadius: '12px' },
     }}>
     <Box sx={{
-      display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) clamp(144px, 41cqw, 248px)', columnGap: '6px',
+      display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) clamp(144px, 36cqw, 248px)', columnGap: '6px',
       pt: { xs: '8px', sm: '15px' }, pr: '2%', isolation: 'isolate', touchAction: 'pan-y', userSelect: 'none',
     }}
       onPointerDown={event => {
@@ -176,7 +176,7 @@ export function PostcardCollage() {
       onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}>
 
       <Box sx={{
-        gridColumn: '1 / -1', gridRow: 1, width: 'calc(97.5% - clamp(12px, 3.4cqw, 24px))', ml: '2.5%',
+        gridColumn: '1 / -1', gridRow: 1, width: '100%',
         transform: { xs: 'rotate(-1.5deg)', sm: 'rotate(-2.5deg)' }, cursor: dragging ? 'grabbing' : 'grab',
       }}>
         <PostcardGreeting label={photo.alt}>
@@ -192,7 +192,7 @@ export function PostcardCollage() {
 
       <Box component="a" href="#offers" aria-label={`${offerAction}: ${offer.title}`} sx={{
         position: 'relative', zIndex: 1, gridColumn: 2, gridRow: 2, alignSelf: 'start',
-        mt: 'clamp(-112px, -16cqw, -68px)', containerType: 'inline-size', textDecoration: 'none', color: brand.plum,
+        mt: 'clamp(-112px, -14.5cqw, -68px)', containerType: 'inline-size', textDecoration: 'none', color: brand.plum,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '12px',
         '&:hover > span': { bgcolor: '#f7dce6' },
       }}>
