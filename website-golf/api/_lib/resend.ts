@@ -22,6 +22,17 @@ export const emailConfigured = () => !!process.env.RESEND_API_KEY;
 /** Every email the site sends is also blind-copied to Bluetrendy, who look after the website. */
 export const ALWAYS_BCC = 'contact@bluetrendy.com';
 
+const isAlwaysBcc = (address: string) => address.trim().toLowerCase() === ALWAYS_BCC;
+
+/**
+ * Who an email visibly goes to: never Bluetrendy, who only ever get the hidden
+ * copy, so no guest or member of staff sees it (unless it's the only address).
+ */
+export function visibleTo(to: string[]): string[] {
+  const others = to.filter((address) => !isAlwaysBcc(address));
+  return others.length ? others : to;
+}
+
 /** The blind copies for an email: any it asked for, plus ALWAYS_BCC, never repeating an address it's already sent to. */
 export function withCopies(to: string[], bcc: string[] = []): string[] {
   const sentTo = new Set(to.map((address) => address.toLowerCase()));
@@ -29,7 +40,8 @@ export function withCopies(to: string[], bcc: string[] = []): string[] {
   return [...copies].filter(([key]) => !sentTo.has(key)).map(([, address]) => address);
 }
 
-export async function sendTemplate({ from, to, bcc: asked, replyTo, subject, template, variables, idempotencyKey }: TemplateEmail): Promise<SendResult> {
+export async function sendTemplate({ from, to: recipients, bcc: asked, replyTo, subject, template, variables, idempotencyKey }: TemplateEmail): Promise<SendResult> {
+  const to = visibleTo(recipients);
   const bcc = withCopies(to, asked);
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
