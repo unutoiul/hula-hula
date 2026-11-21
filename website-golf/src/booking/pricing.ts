@@ -19,19 +19,6 @@ export function pricePerPerson(activity: Activity, option: ActivityOption, playe
 /** "from ฿850" — the cheapest way in, for cards and pickers. */
 export const fromPrice = (activity: Activity) => Math.min(...activity.options.map((o) => o.price));
 
-/**
- * An activity with no price set (every option at ฿0) but a deposit is booked
- * online for the deposit alone: a reservation fee per person.
- */
-export const reservationOnly = (activity: Pick<Activity, 'options' | 'soloPrice' | 'deposit'>) => activity.deposit > 0 && !activity.soloPrice && activity.options.every((o) => o.price <= 0);
-
-/** "from ฿850", "฿500 to reserve" (no price, a deposit) or "Ask us", for cards and pickers. */
-export function priceTag(activity: Activity): string {
-  const priced = activity.options.filter((o) => o.price > 0);
-  if (priced.length) return `from ${money(Math.min(...priced.map((o) => o.price)))}`;
-  return activity.bookOnline && activity.deposit > 0 ? `${money(activity.deposit)} to reserve` : 'Ask us';
-}
-
 export function priceLines(activity: Activity, option: ActivityOption, players: number, rentals: Record<string, number> = {}, rentalCatalog: Rental[] = []): PriceLine[] {
   const each = pricePerPerson(activity, option, players);
   const lines: PriceLine[] = [{ label: `${activity.name} · ${option.label}`, detail: `${peopleLabel(activity, players)} × ${money(each)}`, amount: each * players }];
@@ -43,18 +30,6 @@ export function priceLines(activity: Activity, option: ActivityOption, players: 
 }
 
 export const totalOf = (lines: PriceLine[]) => lines.reduce((sum, line) => sum + line.amount, 0);
-
-/**
- * The price lines for a booking made online (the booking pages and
- * api/reservations): as priceLines, except that an option with no price but
- * a deposit costs the deposit, as a reservation fee per person. Staff
- * bookings in /admin keep plain priceLines.
- */
-export function onlineLines(activity: Activity, option: ActivityOption, players: number, rentals: Record<string, number> = {}, rentalCatalog: Rental[] = []): PriceLine[] {
-  const lines = priceLines(activity, option, players, rentals, rentalCatalog);
-  if (pricePerPerson(activity, option, players) > 0 || activity.deposit <= 0) return lines;
-  return [{ ...lines[0], detail: `Reservation fee · ${peopleLabel(activity, players)} × ${money(activity.deposit)}`, amount: activity.deposit * players }, ...lines.slice(1)];
-}
 
 /** What's paid online to book: the activity's deposit for each person in the group, never more than the booking costs. With no deposit set, the full price. */
 export const depositFor = (activity: Pick<Activity, 'deposit'>, players: number, total: number) => (activity.deposit > 0 ? Math.min(activity.deposit * players, total) : total);

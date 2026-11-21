@@ -7,7 +7,7 @@ import { thingHref } from '../../activities/things';
 import { ActivityIcon } from '../../booking/activityIcons';
 import { bookHref } from '../../booking/BookingFlowContext';
 import { timeLabel } from '../../booking/dates';
-import { money, reservationOnly } from '../../booking/pricing';
+import { money } from '../../booking/pricing';
 import { useContact, useSite } from '../../context/SiteDataContext';
 import { SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { linkClick } from '../../router';
@@ -40,8 +40,6 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
   const contact = useContact();
   const visible = preview ? activities.filter(a => a.id === 'golf' || a.id === 'footgolf') : activities;
   const takesDeposit = activities.some(a => a.bookOnline && a.deposit > 0);
-  // Every online activity without a price: booked for a reservation fee alone.
-  const feeOnly = activities.some(a => a.bookOnline) && activities.every(a => !a.bookOnline || reservationOnly(a));
   const span = spans(visible.length);
   const rentalPrices = rentals.filter(rental => rental.price > 0).map((r) => r.price).sort((a, b) => a - b);
   return <Box id="prices" component="section" sx={{ py: SECTION_Y, bgcolor: '#e7f4cc', scrollMarginTop: SECTION_SCROLL_OFFSET }}>
@@ -51,7 +49,7 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
           <Typography variant="overline" color="success.dark">Prices &amp; packages</Typography>
           <Typography variant="h2" sx={{ fontSize: { xs: 43, md: 64 }, lineHeight: 1.03, mt: 1.5 }}>Simple prices.<br /><Box component="span" color="primary.main">Good times included.</Box></Typography>
         </Box>
-        <Typography sx={{ maxWidth: 380, color: 'text.secondary', lineHeight: 1.8 }}>Per person, in Thai baht{feeOnly ? ', with a small reservation fee per person paid online when you book' : takesDeposit ? ', with a small deposit per person online when you book and the rest at the club' : ', paid online when you book'}. Caddie, cart and equipment are in the price wherever you need them.</Typography>
+        <Typography sx={{ maxWidth: 380, color: 'text.secondary', lineHeight: 1.8 }}>Per person, in Thai baht{takesDeposit ? ', with a small deposit per person online when you book and the rest at the club' : ', paid online when you book'}. Caddie, cart and equipment are in the price wherever you need them.</Typography>
       </Stack></Reveal>}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(6, 1fr)' }, gap: { xs: 2, md: 2.5 } }}>
@@ -74,9 +72,7 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
 
                 <Stack direction="row" flexWrap="wrap" useFlexGap gap={{ xs: 2, md: 3 }} sx={{ mt: 2.5 }}>
                   {activity.soloPrice && <Price label="1 person" amount={activity.soloPrice} />}
-                  {activity.bookOnline && reservationOnly(activity)
-                    ? <Price label={`Reservation fee · per ${activity.peopleNoun}`} amount={activity.deposit} />
-                    : activity.options.map((option) => <Price key={option.id} label={activity.soloPrice ? `${option.label} · 2+ each` : option.label} amount={option.price} />)}
+                  {activity.options.map((option) => <Price key={option.id} label={activity.soloPrice ? `${option.label} · 2+ each` : option.label} amount={option.price} />)}
                 </Stack>
 
                 <Stack component="ul" spacing={.75} sx={{ listStyle: 'none', p: 0, m: 0, mt: 2.5, mb: 3 }}>
@@ -101,7 +97,7 @@ export function PricesSection({ showIntro = true, preview = false }: { showIntro
       </Box>
 
       <Stack alignItems="center" spacing={1} sx={{ mt: 3 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>{feeOnly ? 'Pay a reservation fee per person online when you book' : takesDeposit ? 'Pay a deposit per person online when you book' : 'Pay online when you book'}</Typography>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary' }}>{takesDeposit ? 'Pay a deposit per person online when you book' : 'Pay online when you book'}</Typography>
         <PaymentLogos sx={{ justifyContent: 'center' }} />
       </Stack>
       {preview && <Box sx={{ textAlign: 'center', mt: 3 }}><Button href="/prices" onClick={linkClick('/prices')} variant="outlined" endIcon={<East />}>All prices, packages & rentals</Button></Box>}

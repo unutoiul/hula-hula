@@ -1,5 +1,5 @@
-import { type Activity, type ActivityIconKey, type SiteData } from '../booking/config';
-import { priceTag } from '../booking/pricing';
+import { hasPrices, type Activity, type ActivityIconKey, type SiteData } from '../booking/config';
+import { fromPrice, money } from '../booking/pricing';
 import { places, type Place } from '../data/content';
 
 // Everything to do at the club as one list: the activities staff have
@@ -22,7 +22,10 @@ export interface ThingToDo {
 
 export const thingHref = (id: string) => id === 'golf' ? '/course' : `/activities/${id}`;
 
-export const priceNote = (activity: Activity) => priceTag(activity);
+export function priceNote(activity: Activity) {
+  if (!hasPrices(activity)) return 'Ask us';
+  return `from ${money(fromPrice({ ...activity, options: activity.options.filter((o) => o.price > 0) }))}`;
+}
 
 export function thingsToDo(site: Pick<SiteData, 'activities'>): ThingToDo[] {
   return [

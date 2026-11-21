@@ -4,7 +4,7 @@ import { createReservation, ApiError, type Guest, type ReservationStarted } from
 import { isBookableDay } from './availability';
 import { findActivity, onlineActivities, pickupFor, rentalsFor, type Activity, type ActivityOption, type SiteData } from './config';
 import { isISODate, krabiNow } from './dates';
-import { depositFor, onlineLines, totalOf, type PriceLine } from './pricing';
+import { depositFor, priceLines, totalOf, type PriceLine } from './pricing';
 import { normaliseRentalSelection } from './rentals';
 
 // The booking in progress, shared by every step: what's being booked and when,
@@ -140,7 +140,7 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
   // Equipment types have independent allowances; alternatives can share one.
   const rentals = useMemo(() => normaliseRentalSelection(rentalsFor(activity, site.rentals), state.search.players, state.extras.rentals),
     [activity, site.rentals, state.extras.rentals, state.search.players]);
-  const lines = useMemo(() => onlineLines(activity, option, state.search.players, rentals, site.rentals), [activity, option, state.search.players, rentals, site.rentals]);
+  const lines = useMemo(() => priceLines(activity, option, state.search.players, rentals, site.rentals), [activity, option, state.search.players, rentals, site.rentals]);
 
   const confirm = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }) => {
     if (!state.time) return { error: 'Please pick a time first.' };

@@ -6,7 +6,7 @@ import { bookableDays } from '../../booking/availability';
 import { bookHref } from '../../booking/BookingFlowContext';
 import { onlineActivities, type Activity } from '../../booking/config';
 import { krabiNow, shortDayLabel } from '../../booking/dates';
-import { peopleLabel, priceTag } from '../../booking/pricing';
+import { fromPrice, money, peopleLabel } from '../../booking/pricing';
 import { useSite } from '../../context/SiteDataContext';
 import { linkClick } from '../../router';
 import { fonts } from '../../theme';
@@ -62,7 +62,7 @@ export function QuickBook({ maxWidth = 640, stacked = false }: { maxWidth?: numb
               <Typography sx={{ fontFamily: fonts.playful, fontSize: 16 }}>{a.name}</Typography>
               <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{a.tagline}</Typography>
             </Box>
-            <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'nowrap' }}>{priceTag(a)}</Typography>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary', whiteSpace: 'nowrap' }}>from {money(fromPrice(a))}</Typography>
           </Box>
         </Box>)}
       </Stack>
