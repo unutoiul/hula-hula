@@ -1,17 +1,17 @@
 import East from '@mui/icons-material/East';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Container } from '@mui/material';
 import { brand, fonts } from '../../theme';
 import { BookingSearchBar } from '../booking/BookingSearchBar';
 import { KrabiNow } from './KrabiNow';
-import { eyebrowSx, pageWrapSx, RULE, textLinkSx } from './landingStyles';
+import { eyebrowSx, RULE, textLinkSx } from './landingStyles';
 import { PostcardCollage } from './PostcardCollage';
 
 export function LandingHero() {
   return <Box component="section" aria-labelledby="royal-hero-title" sx={{
-    position: 'relative', overflow: 'hidden', pt: { xs: '110px', md: '126px' },
+    position: 'relative', overflow: 'hidden', pt: { xs: '114px', md: '132px' },
     background: `radial-gradient(ellipse at 88% 24%, #fbe6ed 0, transparent 60%), ${brand.cream}`,
   }}>
-    <Box sx={pageWrapSx}>
+    <Container maxWidth="xl">
       <Box sx={{
         display: 'grid', alignItems: 'center', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 40fr) minmax(0, 60fr)' },
         columnGap: { md: '24px', lg: 'clamp(28px, 2.5vw, 36px)' }, rowGap: { xs: '26px', sm: '32px' },
@@ -44,6 +44,6 @@ export function LandingHero() {
         <Box component="h2" id="booking-search-title" sx={{ m: 0, flexShrink: 0, fontFamily: fonts.serif, fontWeight: 400, letterSpacing: '-.035em', color: brand.plum, fontSize: { xs: 26, lg: 30 } }}>Plan your stay</Box>
         <Box sx={{ flex: 1, minWidth: 0 }}><BookingSearchBar wide /></Box>
       </Box>
-    </Box>
+    </Container>
   </Box>;
 }

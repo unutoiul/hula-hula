@@ -1,11 +1,10 @@
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Container, Stack, Typography } from '@mui/material';
 import { Fragment } from 'react';
 import { CONTACT } from '../../data/content';
 import { brand } from '../../theme';
 import { PaymentMethods } from '../booking/PaymentMethods';
 import { ClubMark } from '../common/ClubMark';
 import { artwork } from '../landing/artwork';
-import { pageWrapSx } from '../landing/landingStyles';
 import { DesignCredit } from './DesignCredit';
 import { MotionToggleLink } from './MotionToggle';
 import { SITES } from './SiteSwitcher';
@@ -26,7 +25,7 @@ export function Footer() {
     <Box component="img" src={artwork.flowers} alt="" aria-hidden="true" width={900} height={459} loading="lazy" sx={{
       position: 'absolute', right: { xs: -120, sm: -110 }, bottom: 10, display: 'block', width: { xs: 240, sm: 365 }, height: 'auto', opacity: { xs: .12, sm: .16 }, pointerEvents: 'none',
     }} />
-    <Box sx={{ ...pageWrapSx, position: 'relative', zIndex: 1 }}>
+    <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
       <Stack alignItems="center" spacing={2.5} textAlign="center">
         <Typography variant="h2" sx={{ color: '#fff9f2', fontSize: { xs: 31, md: 48 }, lineHeight: 1.1, maxWidth: { xs: 280, sm: 'none' }, textWrap: 'balance' }}>See you in Krabi Town.</Typography>
         <ClubMark white size="large" />
@@ -46,6 +45,6 @@ export function Footer() {
         <Typography variant="overline" sx={{ color: SOFT }}>© {new Date().getFullYear()} Royal Pineapple Hotel<MotionToggleLink /></Typography>
         <DesignCredit light />
       </Stack>
-    </Box>
+    </Container>
   </Box>;
 }

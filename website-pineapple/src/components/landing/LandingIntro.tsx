@@ -1,18 +1,18 @@
 import East from '@mui/icons-material/East';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Container } from '@mui/material';
 import { pillars } from '../../data/content';
 import { SECTION_HEADING } from '../../layoutConstants';
 import { brand, fonts } from '../../theme';
 import { Reveal } from '../common/ScrollMotion';
 import { artwork } from './artwork';
-import { eyebrowSx, pageWrapSx, RULE, serifHeadingSx } from './landingStyles';
+import { eyebrowSx, RULE, serifHeadingSx } from './landingStyles';
 
 const storySx = { fontSize: 14, lineHeight: 1.9, color: '#775f6c', m: '0 0 17px', maxWidth: 440 } as const;
 const centredOnSmallScreens = { maxWidth: { md: 'none' }, mx: { xs: 'auto', md: 0 } } as const;
 
 export function LandingIntro() {
   return <Box component="section" id="welcome" aria-labelledby="royal-welcome-title" sx={{ pt: { xs: '53px', sm: '65px', md: '88px' }, pb: { xs: '50px', md: '80px' }, scrollMarginTop: '100px' }}>
-    <Box sx={pageWrapSx}>
+    <Container maxWidth="xl">
       <Reveal><Box sx={{ textAlign: 'center', maxWidth: 720, mx: 'auto', mb: { xs: '42px', md: '55px' } }}>
         <Box component="p" sx={{ ...eyebrowSx, justifyContent: 'center', mb: '17px', fontSize: { xs: 8, sm: 10 } }}>A warm welcome, with a twist</Box>
         <Box component="h2" id="royal-welcome-title" sx={{ ...serifHeadingSx, fontSize: SECTION_HEADING, lineHeight: 1.1, letterSpacing: '-.045em', m: '0 0 17px' }}>A little grand.<br /><em>A lot of good feeling.</em></Box>
@@ -76,6 +76,6 @@ export function LandingIntro() {
       }}>
         {pillars.map((pillar, i) => <a key={pillar.word} href={pillar.href}><span className="number">0{i + 1}</span><strong>{pillar.word}</strong><span className="line">{pillar.line}</span><East aria-hidden="true" /></a>)}
       </Box>
-    </Box>
+    </Container>
   </Box>;
 }

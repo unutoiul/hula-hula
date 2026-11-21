@@ -5,12 +5,12 @@ import Instagram from '@mui/icons-material/Instagram';
 import MapRounded from '@mui/icons-material/MapRounded';
 import MusicNoteRounded from '@mui/icons-material/MusicNoteRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Container } from '@mui/material';
 import { useContactForm } from '../../context/ContactFormContext';
 import { CONTACT } from '../../data/content';
 import { brand, fonts } from '../../theme';
 import { artwork } from '../landing/artwork';
-import { eyebrowSx, pageWrapSx, serifHeadingSx } from '../landing/landingStyles';
+import { eyebrowSx, serifHeadingSx } from '../landing/landingStyles';
 import { Reveal } from '../common/ScrollMotion';
 import { SocialIcon } from '../common/SocialIcon';
 
@@ -25,7 +25,7 @@ const actionSx = {
 export function ContactSection() {
   const openContact = useContactForm();
   return <Box component="section" id="contact" aria-labelledby="contact-heading" sx={{ py: { xs: '50px', sm: '75px' }, scrollMarginTop: '100px', bgcolor: brand.cream }}>
-    <Box sx={pageWrapSx}><Reveal><Box sx={{
+    <Container maxWidth="xl"><Reveal><Box sx={{
       display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.15fr 1fr' }, alignItems: 'center', gap: { xs: '32px', md: '40px', lg: '65px' },
       maxWidth: { xs: 620, md: 'none' }, mx: { xs: 'auto', md: 0 },
     }}>
@@ -54,6 +54,6 @@ export function ContactSection() {
           <SocialIcon href={CONTACT.tiktok} label="Royal Pineapple on TikTok"><MusicNoteRounded /></SocialIcon>
         </Box>
       </Box>
-    </Box></Reveal></Box>
+    </Box></Reveal></Container>
   </Box>;
 }

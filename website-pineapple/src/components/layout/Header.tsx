@@ -50,13 +50,14 @@ export function Header({ navItems }: { navItems: NavItem[] }) {
   // Tall with a big logo at the top of the page; once scrolled it slims to a
   // compact bar (and smaller logo) so it takes as little room as possible.
   return <Box component="header" sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 20, bgcolor: 'rgba(255,249,242,.96)', backdropFilter: 'blur(14px)', borderBottom: '1px solid', borderColor: scrolled ? 'divider' : 'transparent', boxShadow: scrolled ? '0 3px 18px rgba(90,36,72,.07)' : 'none', transition: 'border-color .35s ease, box-shadow .35s ease' }}>
-    {/* Contact strip: always-on details at the very top; folds away on scroll. */}
-    <Box sx={{ position: 'relative', overflow: 'hidden', height: scrolled ? 0 : 30, transition: 'height .35s ease', bgcolor: 'primary.dark', color: 'white' }}>
+    {/* Contact strip: always-on details at the very top; folds away on scroll. The same
+        height as the resort's and golf club's, so the 32px family tabs sit inside it. */}
+    <Box sx={{ position: 'relative', overflow: 'hidden', height: scrolled ? 0 : { xs: 34, md: 36 }, transition: 'height .35s ease', bgcolor: 'primary.dark', color: 'white' }}>
       <Container maxWidth="xl" sx={{ height: '100%' }}>
         {/* The family tabs on the left (large screens), contact details on the right. */}
         <Stack direction="row" alignItems="center" justifyContent={{ xs: 'center', md: 'flex-end', lg: 'space-between' }} sx={{ height: '100%' }}>
           <Box sx={{ display: { xs: 'none', lg: 'block' } }}><SiteTabs /></Box>
-          <Stack direction="row" alignItems="center" divider={<Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,.35)' }} />} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ height: '100%', fontSize: { xs: 12, md: 13 }, fontWeight: 600, '& a': { color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', minHeight: 30 }, '& a:hover': { textDecoration: 'underline' }, '& svg': { fontSize: 16 } }}>
+          <Stack direction="row" alignItems="center" divider={<Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,.35)' }} />} spacing={{ xs: 1.5, sm: 2.5 }} sx={{ height: '100%', fontSize: { xs: 12, md: 13 }, fontWeight: 600, '& a': { color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: .75, whiteSpace: 'nowrap', minHeight: 32 }, '& a:hover': { textDecoration: 'underline' }, '& svg': { fontSize: 16 } }}>
             <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${CONTACT.phone}`}><WhatsApp />{CONTACT.phone}</Link>
             <Link href={CONTACT.landlineTel} aria-label={`Call ${CONTACT.landline}`} sx={{ display: { xs: 'none !important', sm: 'inline-flex !important' } }}><PhoneRounded />{CONTACT.landline}</Link>
             <Link href={`mailto:${CONTACT.email}`} aria-label={`Email ${CONTACT.email}`}><MailOutlineRounded /><Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>{CONTACT.email}</Box><Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>Email us</Box></Link>

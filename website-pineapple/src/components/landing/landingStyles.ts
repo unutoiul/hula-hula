@@ -8,12 +8,6 @@ import { brand, fonts } from '../../theme';
 /** Hairlines between the homepage's sections and rows. */
 export const RULE = '#e8ced7';
 
-/** The page's content column: full width less a gutter that grows with the screen, up to 1320px. */
-export const pageWrapSx = {
-  width: { xs: 'calc(100% - 40px)', sm: 'calc(100% - 48px)', md: 'calc(100% - 64px)', lg: 'calc(100% - 96px)' },
-  maxWidth: 1320, mx: 'auto',
-} as const;
-
 /** Small spaced capitals above a heading; an empty first <span> draws the little rule before them. */
 export const eyebrowSx = {
   display: 'flex', alignItems: 'center', gap: '12px', m: 0, mb: { xs: '20px', sm: '24px' }, color: brand.royal,

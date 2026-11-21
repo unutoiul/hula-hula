@@ -19,7 +19,7 @@ export function PageShell({ children, footerFrom = SEAM.cream }: { children: Rea
     }}>Skip to content</Link>
     <Header navItems={navItems} />
     {/* Clears the fixed header at its full (unscrolled) height. */}
-    <Box aria-hidden sx={{ height: { xs: 110, md: 126 }, flexShrink: 0 }} />
+    <Box aria-hidden sx={{ height: { xs: 114, md: 132 }, flexShrink: 0 }} />
     <Box component="main" id="main-content" tabIndex={-1} sx={{ flex: 1, minWidth: 0 }}>{children}</Box>
     <SectionSeam from={footerFrom} to={SEAM.plum} mirror behind={<RisingSun left="78%" />} />
     <Footer />
