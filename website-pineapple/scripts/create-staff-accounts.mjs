@@ -7,16 +7,18 @@
 //   npm run staff:create -- --reset → also gives existing ones a new password
 //
 // Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from .env.local or the
-// shell. Passwords are printed once, here, and stored nowhere else: copy them
-// into the password manager straight away. Run with --reset to replace a lost one.
-import { randomBytes } from 'node:crypto';
+// shell. Set ADMIN_PASSWORD and/or STAFF_PASSWORD to choose the passwords;
+// otherwise each gets an easy-to-remember one like "Mango-Lagoon-Turtle-47".
+// Passwords are printed once, here, and stored nowhere else: copy them into
+// the password manager straight away. Run with --reset to replace a lost one.
+import { randomInt } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const DOMAIN = 'royalpineapplehotel.com';
 const TABLE = 'admins';
 const ACCOUNTS = [
-  { email: `admin@${DOMAIN}`, role: 'admin' },
-  { email: `staff@${DOMAIN}`, role: 'staff' },
+  { email: `admin@${DOMAIN}`, role: 'admin', chosen: process.env.ADMIN_PASSWORD },
+  { email: `staff@${DOMAIN}`, role: 'staff', chosen: process.env.STAFF_PASSWORD },
 ];
 
 const url = process.env.SUPABASE_URL;
@@ -28,17 +30,23 @@ if (!url || !key) {
 const reset = process.argv.includes('--reset');
 const supabase = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 
-// 20 random characters from an alphabet without look-alikes (0/O, 1/l/I), ~115 bits.
-const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-function generatePassword(length = 20) {
-  const bytes = randomBytes(length * 2);
-  let out = '';
-  for (const b of bytes) {
-    if (b >= 256 - (256 % ALPHABET.length)) continue; // no modulo bias
-    out += ALPHABET[b % ALPHABET.length];
-    if (out.length === length) return out;
-  }
-  return generatePassword(length);
+// Three capitalised words and a two-digit number, e.g. "Mango-Lagoon-Turtle-47":
+// easy to say over the phone and type at the desk.
+const WORDS = [
+  'Mango', 'Papaya', 'Coconut', 'Banana', 'Lychee', 'Guava', 'Lime', 'Ginger', 'Pepper', 'Basil',
+  'Lagoon', 'Island', 'Beach', 'Coral', 'Reef', 'Ocean', 'Wave', 'Tide', 'Harbor', 'River',
+  'Sunset', 'Sunrise', 'Rainbow', 'Breeze', 'Cloud', 'Thunder', 'Monsoon', 'Summer', 'Starry', 'Moon',
+  'Turtle', 'Dolphin', 'Parrot', 'Toucan', 'Gecko', 'Monkey', 'Tiger', 'Panda', 'Otter', 'Pelican',
+  'Orchid', 'Lotus', 'Jasmine', 'Hibiscus', 'Palm', 'Bamboo', 'Fern', 'Jungle', 'Garden', 'Meadow',
+  'Golden', 'Silver', 'Purple', 'Orange', 'Yellow', 'Green', 'Blue', 'Scarlet', 'Amber', 'Indigo',
+  'Happy', 'Lucky', 'Sunny', 'Jolly', 'Brave', 'Gentle', 'Swift', 'Clever', 'Calm', 'Bright',
+  'Hammock', 'Lantern', 'Compass', 'Anchor', 'Canoe', 'Paddle', 'Sail', 'Kite', 'Drum', 'Ukulele',
+  'Pineapple', 'Hula', 'Fairway', 'Birdie', 'Eagle', 'Putter', 'Caddie', 'Pebble', 'Shell', 'Pearl',
+  'Volcano', 'Cliff', 'Cave', 'Valley', 'Canyon', 'Glacier', 'Desert', 'Prairie', 'Forest', 'Waterfall',
+];
+function generatePassword() {
+  const words = Array.from({ length: 3 }, () => WORDS[randomInt(WORDS.length)]);
+  return `${words.join('-')}-${randomInt(10, 100)}`;
 }
 
 async function findUser(email) {
@@ -52,15 +60,15 @@ async function findUser(email) {
 }
 
 const results = [];
-for (const { email, role } of ACCOUNTS) {
+for (const { email, role, chosen } of ACCOUNTS) {
   const existing = await findUser(email);
   let password = null;
   if (!existing) {
-    password = generatePassword();
+    password = chosen || generatePassword();
     const { error } = await supabase.auth.admin.createUser({ email, password, email_confirm: true });
     if (error) throw new Error(`${email}: ${error.message}`);
   } else if (reset) {
-    password = generatePassword();
+    password = chosen || generatePassword();
     const { error } = await supabase.auth.admin.updateUserById(existing.id, { password });
     if (error) throw new Error(`${email}: ${error.message}`);
   }
