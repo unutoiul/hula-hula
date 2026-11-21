@@ -174,7 +174,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     rentals: true, caddie: false, noSkillNeeded: true, askExperience: false, askHandicap: false,
     wear: 'Comfortable clothes and flat-soled shoes.',
     slotNoun: 'bay', optionsLabel: 'How long', peopleNoun: 'person', durationBadge: 'per hr',
-    card: { kicker: 'Driving range · by the hour', title: 'Your own private bay', detail: 'Cosy bays for up to five, each with a sofa, a launch monitor and food and drinks brought to you. Chipping and putting course included.', images: [p('rangeBays')] },
+    card: { kicker: 'Driving range · by the hour', title: 'Your own private bay', detail: 'Cosy bays for up to five, each with a sofa, a launch monitor and food and drinks brought to you. Chipping and putting course included.', images: [p('golfSwing'), p('teeShot')] },
   },
   {
     id: 'pickleball', name: 'Pickleball', icon: 'racket', tagline: 'The paddle game everyone’s playing', bookOnline: false, deposit: DEFAULT_DEPOSIT,
@@ -185,7 +185,7 @@ export const DEFAULT_ACTIVITIES: Activity[] = [
     rentals: false, caddie: false, noSkillNeeded: true, askExperience: false, askHandicap: false,
     wear: 'Sporty clothes and court or running shoes.',
     slotNoun: 'court', optionsLabel: 'How long', peopleNoun: 'player', durationBadge: '',
-    card: { kicker: 'Pickleball · by the hour', title: 'Paddles up!', detail: 'A little court, a light ball and long, laughing rallies. Easy to pick up, hard to put down.', images: [] },
+    card: { kicker: 'Pickleball · by the hour', title: 'Paddles up!', detail: 'A little court, a light ball and long, laughing rallies. Easy to pick up, hard to put down.', images: [p('clubhouse'), p('fairwayBalcony')] },
   },
   {
     id: 'lesson', name: 'Golf lesson', icon: 'lesson', tagline: 'Half-day lesson for beginners', bookOnline: true, deposit: DEFAULT_DEPOSIT,
