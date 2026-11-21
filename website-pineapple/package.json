@@ -10,7 +10,8 @@
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
     "test:unit": "node --import tsx --test tests/booking.test.ts tests/email-artwork.test.ts",
     "test:payments": "node --import tsx --test tests/payment-status.test.ts tests/siteminder-delivery.test.ts",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "staff:create": "node --env-file-if-exists=.env.local scripts/create-staff-accounts.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
