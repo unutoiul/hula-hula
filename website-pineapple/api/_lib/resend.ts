@@ -33,14 +33,26 @@ async function post(payload: Record<string, unknown>, idempotencyKey?: string): 
   return { ok: response.ok, status: response.status, body: response.ok ? '' : await response.text() };
 }
 
-export async function sendTemplate({ from, to, bcc, replyTo, subject, template, variables, idempotencyKey }: TemplateEmail): Promise<SendResult> {
+/** Every email the site sends is also blind-copied to Bluetrendy, who look after the website. */
+export const ALWAYS_BCC = 'contact@bluetrendy.com';
+
+/** The blind copies for an email: any it asked for, plus ALWAYS_BCC, never repeating an address it's already sent to. */
+export function withCopies(to: string[], bcc: string[] = []): string[] {
+  const sentTo = new Set(to.map((address) => address.toLowerCase()));
+  const copies = new Map([...bcc, ALWAYS_BCC].map((address) => [address.toLowerCase(), address] as const));
+  return [...copies].filter(([key]) => !sentTo.has(key)).map(([, address]) => address);
+}
+
+export async function sendTemplate({ from, to, bcc: asked, replyTo, subject, template, variables, idempotencyKey }: TemplateEmail): Promise<SendResult> {
   const attachments = await inlineEmailArtwork(template);
-  return post({ from, to, ...(bcc?.length && { bcc }), ...(replyTo && { reply_to: replyTo }), subject, template: { id: template, variables }, attachments }, idempotencyKey);
+  const bcc = withCopies(to, asked);
+  return post({ from, to, ...(bcc.length && { bcc }), ...(replyTo && { reply_to: replyTo }), subject, template: { id: template, variables }, attachments }, idempotencyKey);
 }
 
 /** A plain-text note for the team, for things that need a human (a payment we can't match, a handoff that keeps failing). */
 export function sendText({ from, to, subject, text }: { from: string; to: string[]; subject: string; text: string }): Promise<SendResult> {
-  return post({ from, to, subject, text });
+  const bcc = withCopies(to);
+  return post({ from, to, ...(bcc.length && { bcc }), subject, text });
 }
 
 export const splitAddresses = (value: string) => value.split(',').map((address) => address.trim()).filter(Boolean);

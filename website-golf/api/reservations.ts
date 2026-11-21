@@ -3,7 +3,7 @@ import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/avail
 import { contactLinks, EXPERIENCE_LEVELS, findActivity, pickupFor, rentalsFor } from '../src/booking/config.ts';
 import type { ErrorResponse, Guest, ReservationStarted } from '../src/booking/contract.ts';
 import { isISODate } from '../src/booking/dates.ts';
-import { depositFor, priceLines, totalOf } from '../src/booking/pricing.ts';
+import { depositFor, onlineLines, totalOf } from '../src/booking/pricing.ts';
 import { normaliseRentalSelection, rentalSelectionError } from '../src/booking/rentals.ts';
 import { DbError, rest } from './_lib/db.ts';
 import { allowMethods, queryString, readJsonBody, siteUrl } from './_lib/http.ts';
@@ -91,7 +91,7 @@ async function book(req: VercelRequest, res: VercelResponse) {
     const slot = buildSheet(activity, option, date, bookings, blocks, { rules: rulesFrom(site.club) }).find((s) => s.time === time);
     if (!slot || !fits(slot, players)) return fail(409, 'Sorry — that time was just taken. Please pick another.', 'taken');
 
-    const lines = priceLines(activity, option, players, rentals, site.rentals);
+    const lines = onlineLines(activity, option, players, rentals, site.rentals);
     const total = totalOf(lines);
     const deposit = depositFor(activity, players, total);
     const needsPayment = deposit > 0;

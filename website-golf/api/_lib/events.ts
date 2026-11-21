@@ -97,7 +97,7 @@ export async function confirmOrderPayment(invoiceNo: string, source: 'webhook' |
 const CLAIM_STALE_MS = 5 * 60_000;
 
 /** The guest's confirmation and the club's alert — once, whoever gets here first. */
-export async function sendOrderEmails(order: OrderRow, siteUrl = process.env.SITE_URL || 'https://hulahula-golf.vercel.app'): Promise<OrderRow> {
+export async function sendOrderEmails(order: OrderRow, siteUrl = process.env.SITE_URL || 'https://www.hulahulagolfclub.com'): Promise<OrderRow> {
   if (order.emailed_at || !emailConfigured()) return order;
   const stale = new Date(Date.now() - CLAIM_STALE_MS).toISOString();
   const [claimed] = await updateOrders(`id=eq.${order.id}&emailed_at=is.null&or=(emails_claimed_at.is.null,emails_claimed_at.lt.${stale})`, { emails_claimed_at: new Date().toISOString() });
@@ -107,7 +107,7 @@ export async function sendOrderEmails(order: OrderRow, siteUrl = process.env.SIT
   const contact = contactLinks(site.club.contact);
   const view = await viewOf(claimed);
   const paidOrder: PaidOrder = { ...view, firstName: claimed.first_name, lastName: claimed.last_name, phone: claimed.phone, country: claimed.country, notes: claimed.notes, unitPrice: claimed.unit_price, flags: claimed.flags };
-  const from = process.env.GOLF_EMAIL_FROM || 'Hula Hula Golf Club <golf@hulahularesort.com>';
+  const from = process.env.GOLF_EMAIL_FROM || 'Hula Hula Golf Club <reservation@hulahulagolfclub.com>';
   const url = siteUrl.replace(/\/$/, '');
   const results = await Promise.allSettled([
     // A retry after one of the two failed resends both; the keys stop the one that went through going twice.

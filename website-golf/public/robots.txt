@@ -9,4 +9,4 @@ Allow: /api/events
 
 # Staff and checkout pages send an HTTP X-Robots-Tag: noindex header.
 # Allow crawling of those pages so search engines can read that directive.
-Sitemap: https://hulahula-golf.vercel.app/sitemap.xml
+Sitemap: https://www.hulahulagolfclub.com/sitemap.xml

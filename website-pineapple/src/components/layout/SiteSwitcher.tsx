@@ -21,8 +21,8 @@ import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 // The golf club and Royal Pineapple live on their Vercel addresses until they have their own domains.
 
 export const SITES = [
-  { id: 'resort', name: 'Hula Hula Resort', short: 'Resort', line: 'Tropical stays & pool villas in Ao Nang', url: 'https://hulahularesort.com', image: '/images/switcher/resort.webp', Icon: BeachAccessRounded },
-  { id: 'golf', name: 'Hula Hula Golf Club', short: 'Golf Club', line: '9 holes, FootGolf & range bays by the airport', url: 'https://hulahula-golf.vercel.app', image: '/images/switcher/golf.webp', Icon: GolfCourseRounded },
+  { id: 'resort', name: 'Hula Hula Resort', short: 'Resort', line: 'Tropical stays & pool villas in Ao Nang', url: 'https://www.hulahularesort.com', image: '/images/switcher/resort.webp', Icon: BeachAccessRounded },
+  { id: 'golf', name: 'Hula Hula Golf Club', short: 'Golf Club', line: '9 holes, FootGolf & range bays by the airport', url: 'https://www.hulahulagolfclub.com', image: '/images/switcher/golf.webp', Icon: GolfCourseRounded },
   { id: 'pineapple', name: 'Royal Pineapple Hotel', short: 'Royal Pineapple', line: 'A tropical urban resort in Krabi Town', url: 'https://www.royalpineapplehotel.com', image: '/images/switcher/pineapple.webp', Icon: ApartmentRounded },
 ] as const;
 

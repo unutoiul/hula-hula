@@ -6,7 +6,7 @@ import { useEffect, useMemo, type ReactNode } from 'react';
 import { bookHref } from '../booking/BookingFlowContext';
 import { clubRules, findActivity, hasPrices, openingHoursLines, rentalsFor, type Activity } from '../booking/config';
 import { durationLabel, timeLabel } from '../booking/dates';
-import { money, paymentNote, perPersonDepositTerms } from '../booking/pricing';
+import { money, paymentNote, perPersonDepositTerms, reservationOnly } from '../booking/pricing';
 import { ThingCard } from '../components/activities/ThingCard';
 import { ClubPhoto } from '../components/common/ClubPhoto';
 import { PaymentLogos } from '../components/common/PaymentMethods';
@@ -69,6 +69,8 @@ function ActivityPage({ activity }: { activity: Activity }) {
   const contact = useContact();
   const { club, rentals } = useSite();
   const priced = hasPrices(activity);
+  // No price set but a deposit: booked online for a reservation fee per person.
+  const reservable = !priced && activity.bookOnline && reservationOnly(activity);
   const ask = chat(contact.whatsapp, `Hi Hula Hula Golf Club! I'd like to book ${activity.name}: `);
   const book = bookHref({ activity: activity.id });
   const actions: Action[] = activity.bookOnline
@@ -93,6 +95,8 @@ function ActivityPage({ activity }: { activity: Activity }) {
     {priced ? <Stack spacing={1.5} sx={{ mt: 2 }}>
       {activity.soloPrice && <PriceRow label="1 person on their own" detail="per person" amount={activity.soloPrice} />}
       {activity.options.map((o) => <PriceRow key={o.id} label={activity.soloPrice ? `${o.label} · 2 or more` : o.label} detail={`about ${durationLabel(o.minutes)} · per ${activity.peopleNoun}`} amount={o.price} />)}
+    </Stack> : reservable ? <Stack spacing={1.5} sx={{ mt: 2 }}>
+      <PriceRow label="Reservation fee" detail={`per ${activity.peopleNoun}, paid online when you book`} amount={activity.deposit} />
     </Stack> : <Typography sx={{ mt: 1.5, color: 'text.secondary', lineHeight: 1.7 }}>Message us and we’ll send you the prices and times, usually within the hour.</Typography>}
     {activity.includes.length > 0 && <>
       <Typography sx={{ fontWeight: 700, mt: 3 }}>Included</Typography>
@@ -102,7 +106,7 @@ function ActivityPage({ activity }: { activity: Activity }) {
     </>}
     <ActionButton action={actions[0]} fullWidth sx={{ mt: 3 }} />
     {priced && <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.25, textAlign: 'center' }}>In Thai baht{activity.bookOnline ? `, ${paymentNote(activity)}` : ''}.</Typography>}
-    {priced && activity.bookOnline && <PaymentLogos size={26} sx={{ mt: 1.25, justifyContent: 'center' }} />}
+    {(priced || reservable) && activity.bookOnline && <PaymentLogos size={26} sx={{ mt: 1.25, justifyContent: 'center' }} />}
   </>;
 
   return <><Page model={{

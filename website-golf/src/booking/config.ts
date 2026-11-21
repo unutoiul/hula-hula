@@ -474,7 +474,7 @@ export function contactLinks(contact: ClubSettings['contact']) {
     whatsapp: `https://wa.me/${digits}`,
     line: contact.lineId ? `https://line.me/R/ti/p/${encodeURIComponent(contact.lineId)}` : '',
     maps: contact.mapsUrl,
-    resort: 'https://hulahularesort.com',
+    resort: 'https://www.hulahularesort.com',
   };
 }
 export type ContactLinks = ReturnType<typeof contactLinks>;

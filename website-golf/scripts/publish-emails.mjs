@@ -12,7 +12,7 @@
 import { readFile } from 'node:fs/promises';
 
 const HIDDEN = 'none;mso-hide:all';
-const SITE_URL = { key: 'SITE_URL', type: 'string', fallback_value: process.env.SITE_URL || 'https://hulahula-golf.vercel.app' };
+const SITE_URL = { key: 'SITE_URL', type: 'string', fallback_value: process.env.SITE_URL || 'https://www.hulahulagolfclub.com' };
 const CLUB = [
   { key: 'CLUB_AREA', type: 'string', fallback_value: 'near Krabi International Airport, Krabi, Thailand' },
   { key: 'CLUB_EMAIL', type: 'string' },

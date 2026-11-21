@@ -119,7 +119,7 @@ export function MeetingsPage() {
           </Box>
         </Box>
         <Box sx={{ mt: 4, p: { xs: 2.5, md: 3 }, borderRadius: '22px', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
-          <Box component="a" href="https://hulahularesort.com" target="_blank" rel="noopener" sx={{ fontFamily: fonts.playful, fontSize: 22, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Hula Hula Resort, Ao Nang</Box>
+          <Box component="a" href="https://www.hulahularesort.com" target="_blank" rel="noopener" sx={{ fontFamily: fonts.playful, fontSize: 22, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Hula Hula Resort, Ao Nang</Box>
           <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: .5 }}>Our sister resort by the beach has three more spaces.</Typography>
           {resortVenues.map((room) => <Stack key={room.name} direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={{ xs: .25, sm: 2 }} sx={{ py: 1.1, borderBottom: '1px dashed', borderColor: 'divider' }}>
             <Typography sx={{ fontSize: 15 }}>{room.name}</Typography>

@@ -26,7 +26,7 @@ export const hotelStructuredData = {
   description: HOME_DESCRIPTION,
   image: [SOCIAL_IMAGE],
   telephone: '+66 96 123 0789',
-  email: 'reservation@hulahulaholiday.com',
+  email: 'reservation@hulahularesort.com',
   address: {
     '@type': 'PostalAddress',
     streetAddress: '222 Moo 3, Klongheng Road, Ban Ao Nang',

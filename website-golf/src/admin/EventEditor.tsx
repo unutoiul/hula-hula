@@ -117,7 +117,7 @@ function Details({ event, hasOrders, onSaved }: { event: StaffEvent; hasOrders: 
       </Stack>
       <TextField label="Title" required value={form.title} onChange={(e) => set({ title: e.target.value.slice(0, 120) })} placeholder="Pro Day with Cedric" />
       <TextField label="One-line pitch" value={form.tagline} onChange={(e) => set({ tagline: e.target.value.slice(0, 200) })} placeholder="A morning clinic, nine holes with a pro, and lunch on the balcony." />
-      <TextField label="Web address" value={form.slug} onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 60) })} helperText={`hulahula-golf.vercel.app/events/${slugify(form.slug || form.title) || '…'}`} />
+      <TextField label="Web address" value={form.slug} onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 60) })} helperText={`www.hulahulagolfclub.com/events/${slugify(form.slug || form.title) || '…'}`} />
       <Grid container spacing={1.5}>
         <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Day" type="date" required value={form.starts_on} onChange={(e) => set({ starts_on: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
         <Grid size={{ xs: 12, sm: 6 }}><TextField fullWidth label="Last day (optional)" type="date" value={form.ends_on} onChange={(e) => set({ ends_on: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>

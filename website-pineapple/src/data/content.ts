@@ -215,7 +215,7 @@ export const localPicks = [
 
 /** "Is Royal Pineapple right for you?" — honest answers, from the brief. */
 export const fitQuestions = [
-  { q: 'I’m coming from Europe or further. Is Krabi Town right for me?', a: 'If you like local culture, real Thai food and a quieter base for island trips, yes. We’re in Krabi Town, about 20 minutes from Ao Nang Beach, and the tour desk books every island. If you want to stay right on the beach, our sister hotel, Hula Hula Resort in Ao Nang, may suit you better.', link: { label: 'Visit Hula Hula Resort', href: 'https://hulahularesort.com' } },
+  { q: 'I’m coming from Europe or further. Is Krabi Town right for me?', a: 'If you like local culture, real Thai food and a quieter base for island trips, yes. We’re in Krabi Town, about 20 minutes from Ao Nang Beach, and the tour desk books every island. If you want to stay right on the beach, our sister hotel, Hula Hula Resort in Ao Nang, may suit you better.', link: { label: 'Visit Hula Hula Resort', href: 'https://www.hulahularesort.com' } },
   { q: 'We’re driving from elsewhere in Thailand. Is there parking?', a: 'Plenty, and it’s free. Southern Thai food is all around us: dim sum mornings, kraprao or noodle lunches and seafood dinners, all within walking distance. Central Krabi is 5 minutes away by car.' },
   { q: 'Can we hold a meeting or a party?', a: 'Yes, from 10 people right up to 2,000. Our four meeting rooms and the pool terrace take 10 to 200, and for the big ones there’s the Hula Hula family’s Takanta Event Hall at Hula Hula Golf Club, near the airport: halls and lawns for 30 to 2,000 guests.', link: { label: 'Meetings, events & weddings', href: '/meetings' } },
 ];

@@ -10,7 +10,7 @@
 // leaves them out when the guest didn't give that detail.
 import { readFile } from 'node:fs/promises';
 
-const SITE_URL = { key: 'SITE_URL', type: 'string', fallback_value: process.env.SITE_URL || 'https://hulahularesort.com' };
+const SITE_URL = { key: 'SITE_URL', type: 'string', fallback_value: process.env.SITE_URL || 'https://www.hulahularesort.com' };
 
 const TEMPLATES = [
   {

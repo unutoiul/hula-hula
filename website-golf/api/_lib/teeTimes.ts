@@ -67,7 +67,7 @@ export async function confirmBookingPayment(invoiceNo: string, source: 'webhook'
 const CLAIM_STALE_MS = 5 * 60_000;
 
 /** The guest's confirmation and the club's alert — once, whoever gets here first. */
-export async function sendBookingEmails(booking: BookingRow, siteUrl = process.env.SITE_URL || 'https://hulahula-golf.vercel.app'): Promise<BookingRow> {
+export async function sendBookingEmails(booking: BookingRow, siteUrl = process.env.SITE_URL || 'https://www.hulahulagolfclub.com'): Promise<BookingRow> {
   if (booking.emailed_at) return booking;
   if (!emailConfigured()) { console.warn('Booking emails skipped: RESEND_API_KEY not set'); return booking; }
   const stale = new Date(Date.now() - CLAIM_STALE_MS).toISOString();
@@ -79,7 +79,7 @@ export async function sendBookingEmails(booking: BookingRow, siteUrl = process.e
   const reservation = reservationOf(claimed, site);
   const guest: Guest = { firstName: claimed.first_name, lastName: claimed.last_name, email: claimed.email, phone: claimed.phone, country: claimed.country, handicap: claimed.handicap, notes: claimed.notes };
   const url = siteUrl.replace(/\/$/, '');
-  const from = process.env.GOLF_EMAIL_FROM || 'Hula Hula Golf Club <golf@hulahularesort.com>';
+  const from = process.env.GOLF_EMAIL_FROM || 'Hula Hula Golf Club <reservation@hulahulagolfclub.com>';
   const results = await Promise.allSettled([
     // A retry after one of the two failed resends both; the keys stop the one that went through going twice.
     sendTemplate({ from, to: [claimed.email], replyTo: contact.email, ...bookingConfirmation(reservation, guest, url, site), idempotencyKey: `golf-booking-${claimed.ref}-guest` }),

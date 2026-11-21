@@ -332,13 +332,23 @@ describe('paying for a tee time', () => {
     assert.equal(patches.at(-1)!.status, 'expired');
   });
 
-  it('books something free straight away, with no payment page', async () => {
-    world({ row: { ...pending, status: 'booked', total: 0 }, activities: DEFAULT_SITE.activities.map((a) => (a.id === 'golf' ? { ...a, options: a.options.map((o) => ({ ...o, price: 0 })) } : a)) });
+  it('books something free (no price, no deposit) straight away, with no payment page', async () => {
+    world({ row: { ...pending, status: 'booked', total: 0 }, activities: DEFAULT_SITE.activities.map((a) => (a.id === 'golf' ? { ...a, deposit: 0, options: a.options.map((o) => ({ ...o, price: 0 })) } : a)) });
     const { status, body } = await book();
     assert.equal(status, 200);
     assert.equal(body.webPaymentUrl, null);
     assert.equal(rpc!.p_booking.status, undefined);
     assert.equal(paysoBody, null);
+  });
+
+  it('with no price but a deposit, charges the deposit as a reservation fee', async () => {
+    world({ activities: DEFAULT_SITE.activities.map((a) => (a.id === 'golf' ? { ...a, options: a.options.map((o) => ({ ...o, price: 0 })) } : a)) });
+    const { status, body } = await book();
+    assert.equal(status, 200);
+    assert.ok(body.webPaymentUrl);
+    assert.equal(rpc!.p_booking.status, 'pending');
+    assert.equal(rpc!.p_booking.total, rpc!.p_booking.deposit);
+    assert.ok(Number(rpc!.p_booking.deposit) > 0);
   });
 
   it('confirms the booking only once Payso’s inquiry says it’s paid', async () => {

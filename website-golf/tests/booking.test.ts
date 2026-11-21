@@ -7,7 +7,7 @@ import { describe, it } from 'node:test';
 import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/availability.ts';
 import { clubRules, DEFAULT_CLUB, DEFAULT_SITE, findActivity, isPrivateTransfer, normaliseActivity, normaliseClub, onlineActivities, openingHoursLines, pickupFor, slugify } from '../src/booking/config.ts';
 import { addDays, fromMinutes, isISODate, krabiNow, timeLabel, toMinutes } from '../src/booking/dates.ts';
-import { balanceDue, bookingDepositTerms, depositDetail, depositFor, money, onlineAmount, paymentNote, perPersonDepositTerms, priceLines, totalOf } from '../src/booking/pricing.ts';
+import { balanceDue, bookingDepositTerms, depositDetail, depositFor, money, onlineAmount, onlineLines, paymentNote, perPersonDepositTerms, priceLines, priceTag, reservationOnly, totalOf } from '../src/booking/pricing.ts';
 
 const golf = findActivity(DEFAULT_SITE, 'golf')!;
 const range = findActivity(DEFAULT_SITE, 'range')!;
@@ -36,6 +36,32 @@ describe('prices (from the club brochure)', () => {
   });
   it('formats baht without decimals', () => {
     assert.equal(money(2080), '฿2,080');
+  });
+});
+
+describe('no price set, a deposit kept (a reservation fee)', () => {
+  const free = { ...golf, soloPrice: undefined, options: golf.options.map((o) => ({ ...o, price: 0 })) };
+  it('online, the booking costs the deposit per player, paid in full online', () => {
+    const lines = onlineLines(free, option(free, '9'), 3);
+    assert.equal(lines[0].amount, 3 * 500);
+    assert.match(lines[0].detail ?? '', /Reservation fee · 3 players × ฿500/);
+    const total = totalOf(lines);
+    assert.equal(depositFor(free, 3, total), total);
+  });
+  it('rental sets still add their own lines, paid at the club', () => {
+    const lines = onlineLines(free, option(free, '9'), 2, { standard: 1 }, DEFAULT_SITE.rentals);
+    assert.equal(totalOf(lines), 2 * 500 + 500);
+    assert.equal(depositFor(free, 2, totalOf(lines)), 2 * 500);
+  });
+  it('priced activities are unchanged, and staff bookings keep plain prices', () => {
+    assert.deepEqual(onlineLines(golf, option(golf, '9'), 2), priceLines(golf, option(golf, '9'), 2));
+    assert.equal(totalOf(priceLines(free, option(free, '9'), 2)), 0);
+  });
+  it('cards say what it costs to reserve', () => {
+    assert.equal(reservationOnly(free), true);
+    assert.equal(priceTag(free), '฿500 to reserve');
+    assert.equal(priceTag(golf), 'from ฿1,600');
+    assert.equal(priceTag({ ...free, deposit: 0 }), 'Ask us');
   });
 });
 

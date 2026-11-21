@@ -63,7 +63,7 @@ export function MeetSection() {
               </Box>
             </Box>
             <Box>
-              <Box component="a" href="https://hulahularesort.com" target="_blank" rel="noopener" sx={familyLinkSx}>Hula Hula Resort, Ao Nang<East sx={{ fontSize: 16 }} /></Box>
+              <Box component="a" href="https://www.hulahularesort.com" target="_blank" rel="noopener" sx={familyLinkSx}>Hula Hula Resort, Ao Nang<East sx={{ fontSize: 16 }} /></Box>
               <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, mt: 1 }}>
                 {resortVenues.map((room) => <VenueRow key={room.name} name={room.name} detail={`${room.sqm} m² · ${room.theatre} theatre`} />)}
               </Box>

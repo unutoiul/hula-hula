@@ -4,8 +4,8 @@ import { explorePages } from './data/exploreCopy';
 // data, in one place. seoPlugin.ts writes them into each page's HTML at build
 // time (and into the sitemap).
 
-// Change this one line when the club's own domain points at this site.
-export const SITE_URL = 'https://hulahula-golf.vercel.app';
+// The club's own domain (the bare domain redirects here).
+export const SITE_URL = 'https://www.hulahulagolfclub.com';
 export const SITE_NAME = 'Hula Hula Golf Club';
 export const SOCIAL_IMAGE = `${SITE_URL}/images/share.jpg`;
 export const SOCIAL_IMAGE_ALT = 'Painted postcard: the Hula Hula pineapple in sunglasses beside a tropical golf green';

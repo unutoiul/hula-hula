@@ -55,7 +55,7 @@ export const places: Place[] = [
     about: 'Make a holiday of it at Hula Hula Resort, our sister resort in Ao Nang. The Two-Storey Pool Villa gives you your own pool terrace with loungers, a four-poster bedroom, and a living and dining room with space to spread out.\n\nThe club’s free shuttle runs twice a day, so you can swim in the morning and tee off after lunch.',
     images: [p.villaTerrace.src, p.villaBedroom.src, p.villaLiving.src, p.villaPoolBed.src, p.villaBath.src],
     facts: ['Private pool terrace with loungers', 'Four-poster bedroom', 'Living & dining room', 'Booked with Hula Hula Resort'],
-    actions: [{ label: 'Check dates at the resort', href: 'https://hulahularesort.com/book' }, { label: 'See all the rooms', href: 'https://hulahularesort.com/#hotel' }],
+    actions: [{ label: 'Check dates at the resort', href: 'https://www.hulahularesort.com/book' }, { label: 'See all the rooms', href: 'https://www.hulahularesort.com/#hotel' }],
     showHours: false,
   },
 ];

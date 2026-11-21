@@ -16,7 +16,7 @@ import { onlineActivities } from '../config';
 import { BookingSummary } from '../components/BookingSummary';
 import { DateStrip } from '../components/DateStrip';
 import { addDays, durationLabel, fromMinutes, shortDayLabel, timeLabel, toMinutes } from '../dates';
-import { fromPrice, money, paymentNote, peopleLabel, plural, pricePerPerson } from '../pricing';
+import { money, paymentNote, peopleLabel, plural, pricePerPerson, priceTag } from '../pricing';
 import { STICKY_TOP } from '../../layoutConstants';
 
 type Sheet = { status: 'loading' | 'ready'; slots: Slot[] } | { status: 'error'; slots: Slot[]; error: string };
@@ -73,7 +73,7 @@ export function TeeTimeStep() {
             }}>
               <Box aria-hidden sx={{ width: 36, height: 36, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: selected ? 'primary.main' : 'success.light', color: selected ? 'primary.contrastText' : 'success.dark', '& svg': { fontSize: 20 } }}><ActivityIcon icon={a.icon} /></Box>
               <Box component="span" sx={{ fontFamily: fonts.playful, fontSize: 17, lineHeight: 1.2 }}>{a.name}</Box>
-              <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>from {money(fromPrice(a))}</Box>
+              <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>{priceTag(a)}</Box>
             </Box>;
           })}
         </Box>
@@ -95,7 +95,7 @@ export function TeeTimeStep() {
           </Box>
         </Stack>
         <Typography sx={{ fontSize: 12.5, color: 'text.secondary', mt: 1.5 }}>
-          {activity.tagline} · {durationLabel(option.minutes)} · {money(each)} per {activity.peopleNoun}
+          {activity.tagline} · {durationLabel(option.minutes)} · {each > 0 ? `${money(each)} per ${activity.peopleNoun}` : activity.deposit > 0 ? `${money(activity.deposit)} reservation fee per ${activity.peopleNoun}` : 'price on request'}
           {activity.soloPrice ? ` (${money(activity.soloPrice)} on your own)` : ''} · up to {activity.maxPlayers} {activity.units > 1 ? `per ${activity.slotNoun}` : 'per group'}.
           {' '}Bigger group? <Link href={CONTACT.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp us</Link> and we’ll line up times together.
         </Typography>
