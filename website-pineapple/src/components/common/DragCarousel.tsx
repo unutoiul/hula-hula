@@ -67,8 +67,10 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
     setEdges({ start: node.scrollLeft <= 2, end: node.scrollLeft >= node.scrollWidth - node.clientWidth - 2 });
     canScroll.set(node.scrollWidth - node.clientWidth > 2 ? 1 : 0);
   };
+  // No update() call here: reading the row's sizes while React is still
+  // committing forces an extra layout. The observer's first callback, which
+  // the browser sends right after layout, measures it instead.
   useEffect(() => {
-    update();
     const observer = new ResizeObserver(update);
     if (viewport.current) observer.observe(viewport.current);
     return () => observer.disconnect();

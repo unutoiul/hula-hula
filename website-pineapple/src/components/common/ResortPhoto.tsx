@@ -1,12 +1,14 @@
 import { Box, type SxProps, type Theme } from '@mui/material';
 import { photoByUrl } from '../../data/photos';
 
-export function ResortPhoto({ image, alt, sizes = '(max-width: 600px) 100vw, 50vw', eager = false, sx }: {
-  image: string; alt: string; sizes?: string; eager?: boolean; sx?: SxProps<Theme>;
+// `eager` loads first and at high priority (the page's main image); `lazy={false}`
+// loads straight away at normal priority (e.g. the next photos of a carousel).
+export function ResortPhoto({ image, alt, sizes = '(max-width: 600px) 100vw, 50vw', eager = false, lazy = !eager, sx }: {
+  image: string; alt: string; sizes?: string; eager?: boolean; lazy?: boolean; sx?: SxProps<Theme>;
 }) {
   const photo = photoByUrl.get(image);
   const img = <Box component="img" src={image} srcSet={photo?.srcSet} sizes={sizes} alt={alt}
-    width={photo?.width} height={photo?.height} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchPriority={eager ? 'high' : 'auto'}
+    width={photo?.width} height={photo?.height} loading={lazy ? 'lazy' : 'eager'} decoding="async" fetchPriority={eager ? 'high' : 'auto'}
     sx={[{ display: 'block', minWidth: 0, maxWidth: '100%', width: '100%', height: '100%', objectFit: 'cover' }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]} />;
   if (!photo) return img;
   // AVIF for browsers that support it (about half the bytes), WebP otherwise.

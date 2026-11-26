@@ -5,8 +5,8 @@ import type { CSSInterpolation, CSSObject, Theme } from '@mui/material/styles';
 // then the few rules that apply to every element of a kind.
 
 const fontFaces: CSSObject[] = [
-  { '@font-face': { fontFamily: 'Fredoka', src: "url('/fonts/fredoka-variable.ttf') format('truetype')", fontStyle: 'normal', fontWeight: '300 700', fontDisplay: 'swap' } },
-  { '@font-face': { fontFamily: 'DM Sans', src: "url('/fonts/dm-sans-variable.ttf') format('truetype')", fontStyle: 'normal', fontWeight: '100 1000', fontDisplay: 'swap' } },
+  { '@font-face': { fontFamily: 'Fredoka', src: "url('/fonts/fredoka-variable.woff2') format('woff2')", fontStyle: 'normal', fontWeight: '300 700', fontDisplay: 'swap' } },
+  { '@font-face': { fontFamily: 'DM Sans', src: "url('/fonts/dm-sans-variable.woff2') format('woff2')", fontStyle: 'normal', fontWeight: '100 1000', fontDisplay: 'swap' } },
 ];
 
 const base = ({ palette }: Theme): CSSObject => ({

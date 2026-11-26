@@ -10,6 +10,8 @@ import { useMotionPreference } from '../../context/MotionPreferenceContext';
 import { brand, fonts } from '../../theme';
 import { MotionBox } from '../common/motionPrimitives';
 import { useHomepageHighlights, type Highlight } from '../sections/cmsCards';
+import { photoByUrl } from '../../data/photos';
+import { ResortPhoto } from '../common/ResortPhoto';
 import { BadgePicture } from './BadgePicture';
 import { PostcardGreeting } from './PostcardGreeting';
 import { PostcardReel, postcardScenes, wrapReelIndex } from './PostcardReel';
@@ -21,6 +23,19 @@ const reelButtonSx = {
   '@container (max-width: 300px)': { width: 40 },
   '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
 } as const;
+
+// How wide the hero's photos show; seo.ts preloads the first photo and the
+// frames at these sizes, so keep them in step.
+const SCENE_SIZES = '(max-width: 900px) 84vw, 44vw';
+const OFFER_SIZES = '(max-width: 600px) 42vw, (max-width: 900px) 30vw, 260px';
+
+// Whether this browser shows AVIF (a 1×1 test image), to warm the same copies <picture> picks.
+const supportsAvif = new Promise<boolean>(resolve => {
+  const image = new Image();
+  image.onload = () => resolve(image.width > 0);
+  image.onerror = () => resolve(false);
+  image.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A=';
+});
 
 const twoLines = { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden', overflowWrap: 'anywhere', textWrap: 'balance' } as const;
 // Keep copy in the clear centre of the frame, between the palms and above the pineapple.
@@ -84,13 +99,18 @@ export function PostcardCollage() {
   }, [target]);
 
   // Decode every photo and offer image first, so the reel never lands on a blank card.
+  // Each is fetched at the same size and format the reel will show, so the
+  // reel then finds it in the cache instead of downloading a second copy.
   useEffect(() => {
     let mounted = true;
-    const images = [...postcardScenes.map(scene => scene.image), ...offerImages.split('|')];
-    void Promise.all(images.map(source => {
-      const image = new Image(); image.src = source;
+    const images = [...postcardScenes.map(scene => [scene.image, SCENE_SIZES]), ...offerImages.split('|').map(image => [image, OFFER_SIZES])];
+    void supportsAvif.then(avif => Promise.all(images.map(([source, sizes]) => {
+      const image = new Image();
+      const photo = photoByUrl.get(source);
+      if (photo) { image.sizes = sizes; image.srcset = avif ? photo.avifSrcSet : photo.srcSet; }
+      image.src = source;
       return image.decode().catch(() => {});
-    })).then(() => { if (mounted) setReady(true); });
+    }))).then(() => { if (mounted) setReady(true); });
     return () => { mounted = false; };
   }, [offerImages]);
 
@@ -183,8 +203,8 @@ export function PostcardCollage() {
           <PostcardReel key={`photo-${index}-${target}`} sequence={sequence} moving={busy} direction={direction} onSettled={settle}>
             {item => {
               const scene = postcardScenes[wrapReelIndex(item, postcardScenes.length)];
-              return <img src={scene.image} alt="" width={1600} height={1067} fetchPriority={item === 0 ? 'high' : 'auto'}
-                decoding="async" draggable={false} style={scene.id === 'pool' ? { transform: 'scaleX(-1)' } : undefined} />;
+              return <ResortPhoto image={scene.image} alt="" sizes={SCENE_SIZES} eager={item === 0} lazy={false}
+                sx={scene.id === 'pool' ? { transform: 'scaleX(-1)' } : undefined} />;
             }}
           </PostcardReel>
         </PostcardGreeting>
@@ -197,11 +217,11 @@ export function PostcardCollage() {
         '&:hover > span': { bgcolor: '#f7dce6' },
       }}>
         <Box sx={{ width: '100%', transform: 'rotate(6deg)' }}>
-          <BadgePicture frameName="grand-arrival" eager shadow="0 10px 16px #5a24483b">
+          <BadgePicture frameName="grand-arrival" sizes={OFFER_SIZES} eager shadow="0 10px 16px #5a24483b">
             <PostcardReel key={`offer-${index}-${target}`} sequence={sequence} moving={busy} direction={direction}>
               {item => {
                 const card = highlights[wrapReelIndex(item, highlights.length)];
-                return <><img src={card.image} alt="" width={1600} height={1067} decoding="async" draggable={false} />
+                return <><ResortPhoto image={card.image} alt="" sizes={OFFER_SIZES} lazy={false} />
                   <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #4a143be6, #4a143bc7 64%, #4a143b80)' }} />
                   <OfferBadgeWords item={card} /></>;
               }}

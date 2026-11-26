@@ -4,7 +4,7 @@ import { BadgePicture } from './BadgePicture';
 
 /** A transparent frame keeps the greeting clear of every carousel photo. */
 export function PostcardGreeting({ children, label }: { children: ReactNode; label: string }) {
-  return <BadgePicture frameName="greeting-postcard" label={`Greetings from... ${label}`} eager shadow="0 12px 18px #5a244821">
+  return <BadgePicture frameName="greeting-postcard" label={`Greetings from... ${label}`} sizes="(max-width: 900px) 94vw, 50vw" eager shadow="0 12px 18px #5a244821">
     <Box sx={{ position: 'absolute', inset: 0, filter: 'sepia(.08) saturate(.94) contrast(.98)' }}>
       {children}
     </Box>

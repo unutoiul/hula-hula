@@ -58,7 +58,7 @@ export function HighlightCard({ item, alternate = false }: { item: Highlight; al
       <Box component="span" sx={{ fontSize: 8, letterSpacing: '.13em', fontWeight: 700 }}>{item.preview ? 'OFFER PREVIEW' : item.kind === 'offer' ? 'BOOK A LITTLE HAPPINESS' : 'WHAT’S ON'}</Box>
       <Box component="img" src={tone.logo} alt="Royal Pineapple Hotel" width={43} height={37} loading="lazy" sx={{ width: 43, height: 37, objectFit: 'contain' }} />
     </Box>
-    <BadgePicture frameName={alternate ? 'evening-garden' : 'pool-club'} label={item.title} shadow={tone.shadow}>
+    <BadgePicture frameName={alternate ? 'evening-garden' : 'pool-club'} label={item.title} sizes="(max-width: 600px) 90vw, 33vw" shadow={tone.shadow}>
       <ResortPhoto image={item.image} alt={item.title} sizes="(max-width: 600px) 90vw, 33vw" />
     </BadgePicture>
     <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, p: '10px 8px 4px' }}>

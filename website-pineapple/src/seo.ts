@@ -1,4 +1,7 @@
+import { artworkAssets } from './components/landing/artworkAssets';
+import { badgeFrames } from './components/landing/badgeFrames';
 import { CONTACT, rooms } from './data/content';
+import { photoAssets } from './data/photos';
 
 // Every public page's title, description, canonical address and structured
 // data, in one place. seoPlugin.ts writes them into each page's HTML at build
@@ -12,7 +15,18 @@ export const SITE_NAME = 'Royal Pineapple Hotel';
 export const SOCIAL_IMAGE = `${SITE_URL}/images/share.jpg`;
 export const SOCIAL_IMAGE_ALT = 'Royal Pineapple Hotel, a pink-and-yellow boutique hotel with a pool in Krabi Town';
 
-export interface PageHead { title: string; description: string; canonical: string | null; robots: string; structuredData?: object[] }
+export interface PageHead { title: string; description: string; canonical: string | null; robots: string; structuredData?: object[]; preloadImages?: { srcSet: string; sizes: string; type: string }[] }
+
+// The homepage's largest picture is the hero postcard: its frame and first
+// photo. Both only appear once the app's JavaScript has run, so the HTML asks
+// for them straight away (AVIF; browsers without AVIF skip these and load the
+// WebP copies as before). The sizes must match the hero's <picture> elements
+// (SCENE_SIZES and OFFER_SIZES in PostcardCollage.tsx).
+const HOME_PRELOAD = [
+  { srcSet: artworkAssets[badgeFrames['greeting-postcard'].image].avifSrcSet, sizes: '(max-width: 900px) 94vw, 50vw', type: 'image/avif' },
+  { srcSet: photoAssets.poolFlamingo.avifSrcSet, sizes: '(max-width: 900px) 84vw, 44vw', type: 'image/avif' },
+  { srcSet: artworkAssets[badgeFrames['grand-arrival'].image].avifSrcSet, sizes: '(max-width: 600px) 42vw, (max-width: 900px) 30vw, 260px', type: 'image/avif' },
+];
 
 const INDEX = 'index, follow, max-image-preview:large';
 const HOTEL_ID = `${SITE_URL}/#hotel`;
@@ -123,7 +137,7 @@ export const PUBLIC_ROUTES = ['/', ...Object.keys(pages)];
 export function pageHead(pathname: string): PageHead {
   const path = pathname === '/index.html' ? '/' : pathname === '/book.html' || pathname === '/book/' ? '/book' : pathname.replace(/(.)\/$/, '$1');
   if (path === '/') {
-    return { title: 'Royal Pineapple Hotel | Official Website | Krabi Town, Thailand', description: HOME_DESCRIPTION, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, hotelStructuredData] };
+    return { title: 'Royal Pineapple Hotel | Official Website | Krabi Town, Thailand', description: HOME_DESCRIPTION, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, hotelStructuredData], preloadImages: HOME_PRELOAD };
   }
   const page = pages[path];
   if (page) return { title: page.title, description: page.description, canonical: `${SITE_URL}${path}`, robots: INDEX, structuredData: [breadcrumbs(page.trail), ...(page.extra ?? [])] };

@@ -4,6 +4,7 @@ import { pillars } from '../../data/content';
 import { SECTION_HEADING } from '../../layoutConstants';
 import { brand, fonts } from '../../theme';
 import { Reveal } from '../common/ScrollMotion';
+import { ArtPicture } from './ArtPicture';
 import { artwork } from './artwork';
 import { eyebrowSx, RULE, serifHeadingSx } from './landingStyles';
 
@@ -26,7 +27,7 @@ export function LandingIntro() {
           position: 'relative', p: { xs: '0 0 15px', sm: '25px 0 45px' }, textAlign: 'center',
           background: 'radial-gradient(ellipse, #f9dfe7aa, transparent 70%)', ...centredOnSmallScreens, maxWidth: { xs: 540, md: 'none' },
         }}>
-          <Box component="img" src={artwork.luggage} alt="Royal Pineapple’s colonial-inspired hotel, palms and pink pineapple on a vintage travel sticker" width={1100} height={902} loading="lazy" decoding="async"
+          <ArtPicture image={artwork.luggage} alt="Royal Pineapple’s colonial-inspired hotel, palms and pink pineapple on a vintage travel sticker" sizes="(max-width: 900px) 90vw, 45vw"
             sx={{ display: 'block', width: '100%', height: 'auto', maxHeight: 510, objectFit: 'contain', transform: 'rotate(-4deg)', filter: 'drop-shadow(0 13px 15px #5a244811)' }} />
           <Box component="span" sx={{
             display: 'block', m: { xs: '24px 0 0 25px', sm: '24px 0 0 70px' }, transform: 'rotate(-4deg)',
@@ -41,10 +42,10 @@ export function LandingIntro() {
           <Button href="#rooms" color="inherit" endIcon={<East />} sx={{ fontSize: 12, px: 0 }}>Find your little corner</Button>
           <Box sx={{
             display: 'flex', alignItems: 'center', gap: '17px', mt: '20px',
-            '& > img': { width: 83, height: 100, objectFit: 'contain', transform: 'rotate(-6deg)' },
+            '& img': { width: 83, height: 100, objectFit: 'contain', transform: 'rotate(-6deg)' },
             '& > span': { fontFamily: fonts.serif, fontSize: 20, fontStyle: 'italic', lineHeight: 1.25, color: brand.plum },
             '& strong': { fontWeight: 400, color: brand.royal },
-          }}><img src={artwork.mascot} alt="" aria-hidden="true" width={480} height={480} loading="lazy" /><span>A pineapple welcome.<br /><strong>Every single time.</strong></span></Box>
+          }}><ArtPicture image={artwork.mascot} sizes="83px" /><span>A pineapple welcome.<br /><strong>Every single time.</strong></span></Box>
         </Box></Reveal>
       </Box>
 

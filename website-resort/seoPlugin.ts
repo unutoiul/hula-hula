@@ -21,6 +21,8 @@ export interface PageHead {
   canonical: string | null;
   robots: string;
   structuredData?: object[];
+  /** Images to fetch before the app's JavaScript runs: the page's main (LCP) image. */
+  preloadImages?: { srcSet: string; sizes: string; type: string }[];
 }
 
 export interface SeoSite {
@@ -58,6 +60,7 @@ export function renderHead(site: SeoSite, page: PageHead): string {
     `<meta name="twitter:title" content="${attr(page.title)}" />`,
     `<meta name="twitter:description" content="${attr(page.description)}" />`,
     `<meta name="twitter:image" content="${attr(site.image)}" />`,
+    ...(page.preloadImages ?? []).map((image) => `<link rel="preload" as="image" type="${attr(image.type)}" imagesrcset="${attr(image.srcSet)}" imagesizes="${attr(image.sizes)}" fetchpriority="high" />`),
     ...(page.structuredData ?? []).map((data) => `<script type="application/ld+json" data-seo>${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`),
   ];
   return [START, ...tags, END].join('\n    ');

@@ -13,7 +13,7 @@ export const wrapReelIndex = (index: number, count: number) => ((index % count) 
 
 const tileSx = {
   position: 'relative', flex: '0 0 100%', minWidth: '100%', width: '100%', height: '100%', overflow: 'hidden',
-  '& > img': { display: 'block', width: '100%', height: '100%', objectFit: 'cover', userSelect: 'none' },
+  '& img': { display: 'block', width: '100%', height: '100%', objectFit: 'cover', userSelect: 'none' },
 } as const;
 
 /** Homepage-only reel: a quick run, horizontal blur, then a slow, clear landing. */

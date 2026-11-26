@@ -18,6 +18,7 @@ import { facilities, type FacilityIcon } from '../../data/content';
 import { SECTION_HEADING, SECTION_SCROLL_OFFSET, SECTION_Y } from '../../layoutConstants';
 import { sectionLink, useLocation } from '../../router';
 import { fonts } from '../../theme';
+import { ArtPicture } from '../landing/ArtPicture';
 import { artwork } from '../landing/artwork';
 import { Reveal } from '../common/ScrollMotion';
 
@@ -38,7 +39,7 @@ export function FacilitiesSection() {
           <Typography variant="overline" color="primary.main">Facilities & services</Typography>
           <Typography variant="h2" sx={{ fontSize: SECTION_HEADING, lineHeight: 1.08, mt: 1.5 }}>All the little extras.</Typography>
           <Typography sx={{ mt: 2.5, color: 'text.secondary', lineHeight: 1.8, maxWidth: 440, mx: { xs: 'auto', lg: 0 } }}>A swim, a workout, a place to work, and a helping hand getting around. We’ve thought of a few things.</Typography>
-          <Box component="img" src={artwork.mascot} alt="" aria-hidden="true" width={480} height={480} loading="lazy" sx={{ mt: 3, width: 180, height: 200, objectFit: 'contain', mx: 'auto', display: { xs: 'none', lg: 'block' } }} />
+          <ArtPicture image={artwork.mascot} sizes="180px" sx={{ mt: 3, width: 180, height: 200, objectFit: 'contain', mx: 'auto', display: { xs: 'none', lg: 'block' } }} />
         </Reveal>
         <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, minWidth: 0, display: 'grid', gridTemplateColumns: { xs: 'minmax(0,1fr)', sm: 'repeat(2,minmax(0,1fr))', md: 'repeat(3,minmax(0,1fr))', lg: 'repeat(2,minmax(0,1fr))' }, gap: { xs: 1.25, md: 1.75 } }}>
           {facilities.map((item) => {
