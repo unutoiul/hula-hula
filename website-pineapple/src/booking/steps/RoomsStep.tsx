@@ -6,8 +6,6 @@ import BedOutlined from '@mui/icons-material/BedOutlined';
 import BlockRounded from '@mui/icons-material/BlockRounded';
 import CardGiftcardRounded from '@mui/icons-material/CardGiftcardRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
-import ChevronLeft from '@mui/icons-material/ChevronLeft';
-import ChevronRight from '@mui/icons-material/ChevronRight';
 import East from '@mui/icons-material/East';
 import EventAvailableRounded from '@mui/icons-material/EventAvailableRounded';
 import FreeBreakfastOutlined from '@mui/icons-material/FreeBreakfastOutlined';
@@ -17,7 +15,6 @@ import SquareFootRounded from '@mui/icons-material/SquareFootRounded';
 import { Alert, Box, Button, Chip, IconButton, LinearProgress, Link, Popover, Skeleton, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import type { RateOffer, RoomTypeOffer } from '../../../shared/bookingContract';
-import { ResortPhoto } from '../../components/common/ResortPhoto';
 import { GuestStepper } from '../../components/booking/GuestStepper';
 import { RangeCalendar } from '../../components/booking/RangeCalendar';
 import { toBookHref, toISODate, useBookingSearch } from '../../context/BookingSearchContext';
@@ -26,6 +23,7 @@ import { navigate } from '../../router';
 import { fonts } from '../../theme';
 import { useBookingFlow } from '../BookingFlowContext';
 import { CartSummary, stickyCartSx } from '../components/CartSummary';
+import { RoomPhotos } from '../components/RoomPhotos';
 import { dayMonthLabel, guestsLabel, mealsLabel, money, nightsLabel, plural, stayLabel, weekdayLabel } from '../format';
 import { roomContent } from '../roomContent';
 
@@ -190,15 +188,10 @@ function SearchBar() {
 
 function RoomTypeCard({ roomType, nights, currency }: { roomType: RoomTypeOffer; nights: number; currency: string }) {
   const { title, listedAs, images, blurb } = roomContent(roomType.roomTypeUuid, roomType.name);
-  const [index, setIndex] = useState(0);
   return <Box component="article" sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 22px rgba(90,36,72,.06)' }}>
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: '220px minmax(0, 1fr)', md: 'minmax(0, 1fr)', lg: '240px minmax(0, 1fr)' } }}>
       <Box sx={{ position: 'relative', aspectRatio: { xs: '16 / 10', sm: 'auto', md: '16 / 10', lg: 'auto' }, minHeight: { sm: 220 } }}>
-        <ResortPhoto image={images[index]} alt={`${title}, photo ${index + 1}`} sizes="(max-width: 600px) 100vw, 260px" sx={{ position: { sm: 'absolute' }, inset: 0 }} />
-        {images.length > 1 && <>
-          <IconButton aria-label={`Previous photo of ${title}`} onClick={() => setIndex((i) => (i - 1 + images.length) % images.length)} sx={{ position: 'absolute', left: 8, top: 'calc(50% - 20px)', bgcolor: '#fffaf6', width: 40, height: 40, '&:hover': { bgcolor: 'secondary.main' } }}><ChevronLeft fontSize="small" /></IconButton>
-          <IconButton aria-label={`Next photo of ${title}`} onClick={() => setIndex((i) => (i + 1) % images.length)} sx={{ position: 'absolute', right: 8, top: 'calc(50% - 20px)', bgcolor: '#fffaf6', width: 40, height: 40, '&:hover': { bgcolor: 'secondary.main' } }}><ChevronRight fontSize="small" /></IconButton>
-        </>}
+        <RoomPhotos images={images} title={title} sizes="(max-width: 600px) 100vw, (max-width: 1200px) 60vw, 240px" />
       </Box>
       <Box sx={{ p: { xs: 2.5, md: 3 } }}>
         <Typography variant="h2" sx={{ fontSize: { xs: 24, md: 28 }, lineHeight: 1.15 }}>{title}</Typography>
