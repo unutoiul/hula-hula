@@ -2,6 +2,7 @@ import East from '@mui/icons-material/East';
 import { Box, Button, Container } from '@mui/material';
 import { brand, fonts } from '../../theme';
 import { BookingSearchBar } from '../booking/BookingSearchBar';
+import { HeroReviews } from './HeroReviews';
 import { KrabiNow } from './KrabiNow';
 import { eyebrowSx, RULE, textLinkSx } from './landingStyles';
 import { PostcardCollage } from './PostcardCollage';
@@ -32,6 +33,7 @@ export function LandingHero() {
             <Button href="#booking-search" variant="contained" endIcon={<East />} sx={{ minHeight: '48px', px: { xs: '18px', sm: '24px' }, fontSize: { xs: 12, sm: 13 } }}>Check availability</Button>
             <Box component="a" href="#rooms" sx={{ ...textLinkSx, display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: { xs: 12, sm: 13 } }}>Explore rooms <span aria-hidden="true">↓</span></Box>
           </Box>
+          <Box sx={{ mt: { xs: '18px', md: '22px' } }}><HeroReviews /></Box>
           <KrabiNow />
         </Box>
         <PostcardCollage />

@@ -79,3 +79,12 @@ export const galleryPhotos: GalleryPhoto[] = [
   { image: p.sunnyFairway.src, title: 'Freshly striped fairways', category: 'The course' },
   { image: p.footgolfFairway.src, title: 'Chasing it down the fairway', category: 'FootGolf' },
 ];
+
+// The club's Google rating, shown in the hero. Copied from Google Maps by hand
+// (26 Nov 2026), so update it now and then; the link opens the club's listing.
+export const GOOGLE_REVIEWS = {
+  rating: 4.7,
+  count: 780,
+  label: 'Golf course',
+  url: 'https://www.google.com/maps/search/?api=1&query=Hula%20Hula%20Golf%20Club%20Krabi',
+};

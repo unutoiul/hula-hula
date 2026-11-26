@@ -12,6 +12,7 @@ import { PineappleGolfer } from '../common/PineappleGolfer';
 import { ScrollTilt } from '../common/ScrollMotion';
 import { Polaroid, Sticker } from '../common/VacationDecor';
 import { HeroHeadline } from './HeroHeadline';
+import { HeroReviews } from './HeroReviews';
 
 export function Hero({ nextEvent }: { nextEvent?: PublicEvent }) {
   return <Box component="section" aria-label="Welcome to Hula Hula Golf Club" sx={{ position: 'relative', pt: { xs: 4, md: 6 }, pb: { xs: 3, md: 4 }, overflow: 'hidden' }}>
@@ -32,6 +33,7 @@ export function Hero({ nextEvent }: { nextEvent?: PublicEvent }) {
               <Button href="/activities" variant="contained" endIcon={<ArrowOutward />}>See everything to do</Button>
               <Button href="/prices" color="inherit">Check the prices</Button>
             </Stack>
+            <Box sx={{ mt: 2.5, display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}><HeroReviews /></Box>
           </Box>
           <Box sx={{ mt: { xs: 0, md: 4 }, maxWidth: 560, mx: { xs: 'auto', md: 0 }, width: '100%', order: 3 }}>
             <Typography variant="overline" sx={{ display: 'block', mb: 1, textAlign: { xs: 'center', md: 'left' } }}>Grab a tee time in a minute</Typography>

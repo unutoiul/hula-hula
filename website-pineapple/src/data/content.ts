@@ -320,3 +320,12 @@ export const CONTACT: ContactInfo = {
   events: { phone: '+66 61 123 6456', tel: 'tel:+66611236456', whatsapp: 'https://wa.me/66611236456', email: 'event@hulahulaholiday.com' },
   weddings: { phone: '+66 62 062 4456', tel: 'tel:+66620624456', email: 'sales@hulahulaholiday.com' },
 };
+
+// The hotel's Google rating, shown in the hero. Copied from Google Maps by hand
+// (26 Nov 2026), so update it now and then; the link opens the hotel's listing.
+export const GOOGLE_REVIEWS = {
+  rating: 4.5,
+  count: 1524,
+  label: '4-star hotel',
+  url: 'https://www.google.com/maps/search/?api=1&query=Royal%20Pineapple%20Hotel%20Krabi',
+};
