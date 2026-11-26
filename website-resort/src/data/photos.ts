@@ -114,6 +114,22 @@ export const photoAssets = {
     "height": 842,
     "source": "photos/02 Rooms and Villas/Deluxe Garden Street View/hula-hula-deluxe-garden-street-view-bathroom-walk-in-shower-and-vanity.jpg"
   },
+  "seaTownBedroom": {
+    "src": "/images/hula-hula/seaTownBedroom-1600.webp",
+    "srcSet": "/images/hula-hula/seaTownBedroom-480.webp 480w, /images/hula-hula/seaTownBedroom-960.webp 960w, /images/hula-hula/seaTownBedroom-1600.webp 1536w",
+    "avifSrcSet": "/images/hula-hula/seaTownBedroom-480.avif 480w, /images/hula-hula/seaTownBedroom-960.avif 960w, /images/hula-hula/seaTownBedroom-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "photos/02 Rooms and Villas/Deluxe Sea Town View/hula-hula-deluxe-sea-town-view-king-bed-and-entrance-hallway.jpg"
+  },
+  "seaTownRoom": {
+    "src": "/images/hula-hula/seaTownRoom-1600.webp",
+    "srcSet": "/images/hula-hula/seaTownRoom-480.webp 480w, /images/hula-hula/seaTownRoom-960.webp 960w, /images/hula-hula/seaTownRoom-1600.webp 1535w",
+    "avifSrcSet": "/images/hula-hula/seaTownRoom-480.avif 480w, /images/hula-hula/seaTownRoom-960.avif 960w, /images/hula-hula/seaTownRoom-1600.avif 1535w",
+    "width": 1535,
+    "height": 1024,
+    "source": "photos/02 Rooms and Villas/Deluxe Sea Town View/hula-hula-deluxe-sea-town-view-bedroom-dressing-table-and-glass-bathroom.jpg"
+  },
   "premierBedroom": {
     "src": "/images/hula-hula/premierBedroom-1600.webp",
     "srcSet": "/images/hula-hula/premierBedroom-480.webp 480w, /images/hula-hula/premierBedroom-960.webp 960w, /images/hula-hula/premierBedroom-1600.webp 1600w",

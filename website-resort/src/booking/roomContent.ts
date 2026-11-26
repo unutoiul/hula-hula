@@ -5,9 +5,9 @@ import { photoAssets as p } from '../data/photos';
 // room cards (content.ts → rooms), matched on siteminderRoomTypeUuid, then on
 // the name. A room type with no card still shows, with a resort photo.
 
-// Deluxe Sea Town View shares the Deluxe interiors; there's no sea-view photo yet.
+// Room types with no homepage card, but their own photos.
 const EXTRA_PHOTOS: Record<string, string[]> = {
-  gjzz2w06atklvkoz: [p.deluxeBedroom.src, p.deluxeRoom.src, p.deluxeBathroom.src],
+  gjzz2w06atklvkoz: [p.seaTownBedroom.src, p.seaTownRoom.src], // Deluxe Sea Town View
 };
 
 const normalise = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');

@@ -29,6 +29,8 @@ SELECTION = {
     'deluxeBedroom': 'hula-hula-deluxe-garden-street-view-bedroom-and-garden-balcony',
     'deluxeRoom': 'hula-hula-deluxe-garden-street-view-bedroom-television-and-dressing-table',
     'deluxeBathroom': 'hula-hula-deluxe-garden-street-view-bathroom-walk-in-shower-and-vanity',
+    'seaTownBedroom': 'hula-hula-deluxe-sea-town-view-king-bed-and-entrance-hallway',
+    'seaTownRoom': 'hula-hula-deluxe-sea-town-view-bedroom-dressing-table-and-glass-bathroom',
     'premierBedroom': 'hula-hula-premier-pool-mountain-view-bedroom-wide-view-and-balcony',
     'premierRoom': 'hula-hula-premier-pool-mountain-view-bedroom-wooden-headboard-and-dressing-table',
     'signatureBedroom': 'hula-hula-signature-spa-villa-bedroom-front-view-and-green-bed-runner',
