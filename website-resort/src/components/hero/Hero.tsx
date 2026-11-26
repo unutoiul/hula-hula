@@ -8,6 +8,7 @@ import { useHighlights } from '../sections/cmsCards';
 import { HeroHeadline } from './HeroHeadline';
 import { HeroHighlights } from './HeroHighlights';
 import { HeroMetaCompact } from './HeroMetaCompact';
+import { HeroReviews } from './HeroReviews';
 import { HeroVideo } from './HeroVideo';
 import { ScrollTilt } from '../common/ScrollMotion';
 
@@ -31,6 +32,7 @@ export function Hero() {
             <Button href="#hotel" variant="contained" endIcon={<ArrowOutward />}>Find your happy place</Button>
             <Button href="#floating-breakfast" color="inherit">Make breakfast float</Button>
           </Stack>
+          <Box sx={{ mt: 2.5, display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}><HeroReviews /></Box>
           </Box>
           <Box sx={{ mt: { xs: 0, md: 4 }, maxWidth: 530, order: 3 }}>
             <Typography variant="overline" sx={{ display: 'block', mb: 1, textAlign: { xs: 'center', md: 'left' } }}>Good times start with a date</Typography>

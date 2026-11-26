@@ -60,3 +60,12 @@ export const CONTACT: ContactInfo = {
   facebook: 'https://www.facebook.com/hulahulagolfclub', instagram: 'https://www.instagram.com/hulahulagolfclub',
   line: 'http://line.me/ti/p/@hulahulagolfclub', whatsapp: 'https://wa.me/66961230789',
 };
+
+// The resort's Google rating, shown in the hero. Copied from Google by hand,
+// so update it now and then; the link opens the resort's Google listing.
+export const GOOGLE_REVIEWS = {
+  rating: 4.2,
+  count: 2841,
+  hotelClass: '4-star hotel',
+  url: 'https://www.google.com/maps/search/?api=1&query=Hula%20Hula%20Resort%20Ao%20Nang%20Krabi',
+};

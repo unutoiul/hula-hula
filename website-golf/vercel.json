@@ -1,10 +1,58 @@
 {
-  "regions": ["sin1"],
-  "rewrites": [{ "source": "/((?!api/|@|src/|node_modules/)[^.]*)", "destination": "/" }],
-  "headers": [
-    { "source": "/admin(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
-    { "source": "/book/(.+)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }] },
-    { "source": "/api/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }
+  "regions": [
+    "sin1"
   ],
-  "crons": [{ "path": "/api/cron/reconcile", "schedule": "0 21 * * *" }]
+  "redirects": [
+    {
+      "source": "/hulahularesort",
+      "destination": "https://www.hulahularesort.com/",
+      "permanent": true
+    },
+    {
+      "source": "/hulahularesort/(.*)",
+      "destination": "https://www.hulahularesort.com/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api/|@|src/|node_modules/)[^.]*)",
+      "destination": "/"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/admin(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/book/(.+)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/reconcile",
+      "schedule": "0 21 * * *"
+    }
+  ]
 }
