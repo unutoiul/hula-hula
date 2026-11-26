@@ -232,8 +232,8 @@ export const photoByUrl = new Map<string, PhotoAsset>(Object.values(photoAssets)
 
 export const pineappleGolfer: PhotoAsset = {
   "src": "/images/mascot/pineapple-golfer-480.webp",
-  "srcSet": "/images/mascot/pineapple-golfer-240.webp 240w, /images/mascot/pineapple-golfer-480.webp 480w",
-  "avifSrcSet": "/images/mascot/pineapple-golfer-240.avif 240w, /images/mascot/pineapple-golfer-480.avif 480w",
+  "srcSet": "/images/mascot/pineapple-golfer-240.webp 240w, /images/mascot/pineapple-golfer-360.webp 360w, /images/mascot/pineapple-golfer-480.webp 480w",
+  "avifSrcSet": "/images/mascot/pineapple-golfer-240.avif 240w, /images/mascot/pineapple-golfer-360.avif 360w, /images/mascot/pineapple-golfer-480.avif 480w",
   "width": 480,
   "height": 687,
   "source": "marketing/06-hula-hula-pineapple-golfer-transparent.png"

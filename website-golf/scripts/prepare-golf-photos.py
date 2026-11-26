@@ -114,7 +114,7 @@ alpha = mascot.getchannel('A')
 mascot = mascot.crop(alpha.point(lambda v: 255 if v > 8 else 0).getbbox())
 mascot.putalpha(mascot.getchannel('A').point(lambda v: 255 if v >= 245 else v))
 mascot_variants = []
-for width in (240, 480):
+for width in (240, 360, 480):
     copy = mascot.copy()
     copy.thumbnail((width, 2400), Image.Resampling.LANCZOS)
     copy.save(MASCOT_OUTPUT / f'pineapple-golfer-{width}.webp', 'WEBP', quality=82, method=6)

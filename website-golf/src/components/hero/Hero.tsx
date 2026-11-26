@@ -54,7 +54,7 @@ export function Hero({ nextEvent }: { nextEvent?: PublicEvent }) {
           </Box>
           {/* The club's pineapple, thumbs up at the foot of the photo. */}
           <ScrollTilt amount={3} sx={{ position: 'absolute', zIndex: 1, width: { xs: 112, sm: 140, md: 190 }, right: { xs: -8, md: -34 }, bottom: { xs: -40, md: -56 } }}>
-            <PineappleGolfer eager sizes="(max-width: 900px) 140px, 190px" />
+            <PineappleGolfer eager sizes="(min-width: 900px) 190px, (min-width: 600px) 140px, 112px" />
           </ScrollTilt>
         </Box>
       </Box>
