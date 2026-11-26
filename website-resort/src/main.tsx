@@ -2,6 +2,7 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { Analytics, type BeforeSendEvent } from '@vercel/analytics/react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { startClarity } from './clarity';
 import theme from './theme';
 
 const rootElement = document.getElementById('root');
@@ -16,6 +17,8 @@ function beforeSend(event: BeforeSendEvent): BeforeSendEvent | null {
   url.searchParams.delete('key');
   return { ...event, url: url.toString() };
 }
+
+startClarity();
 
 createRoot(rootElement).render(
   <ThemeProvider theme={theme}>

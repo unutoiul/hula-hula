@@ -214,7 +214,7 @@ function OrderPage() {
     return () => { cancelled = true; window.clearTimeout(timer); };
   }, [ref, key]);
 
-  const card = (children: ReactNode) => <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 }, py: { xs: 5, md: 8 } }}>
+  const card = (children: ReactNode) => <Container maxWidth="sm" data-clarity-mask="true" sx={{ px: { xs: 2, sm: 3 }, py: { xs: 5, md: 8 } }}>
     <Box sx={{ position: 'relative', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '28px', p: { xs: 3, md: 4.5 }, boxShadow: '0 18px 55px rgba(23,60,44,.07)' }}>{children}</Box>
   </Container>;
 

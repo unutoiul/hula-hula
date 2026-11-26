@@ -96,7 +96,7 @@ export function ConfirmationStep() {
   const calendarItem = { uid: reservation.ref, title: `${reservation.activityName} · ${reservation.optionLabel}`, date: reservation.date, time: reservation.time, minutes: reservation.minutes, note: `Booking ${reservation.ref}. Please arrive 20–30 minutes early.` };
   const whatsappText = encodeURIComponent(`Hi Hula Hula Golf Club! About my booking ${reservation.ref} on ${dayLabel(reservation.date)} at ${timeLabel(reservation.time)}: `);
 
-  return <Box sx={{ maxWidth: 720, mx: 'auto' }}>
+  return <Box sx={{ maxWidth: 720, mx: 'auto' }} data-clarity-mask="true">
     <Box sx={{ position: 'relative', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: '28px', p: { xs: 3, md: 4.5 }, boxShadow: '0 18px 55px rgba(23,60,44,.07)' }}>
       <PineappleGolfer sizes="110px" sx={CARD_PEEK} />
       <Stack direction="row" spacing={1.5} alignItems="center"><CheckCircleRounded sx={{ color: 'success.main', fontSize: 40 }} /><Typography variant="overline" sx={{ color: 'success.dark' }}>Booked · {reservation.ref}</Typography></Stack>

@@ -1,9 +1,8 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { COOKIE_CONSENT_KEY, setClarityConsent } from '../../clarity';
 import { scrim } from '../../theme';
 import { ClubMark } from '../common/ClubMark';
-
-const COOKIE_CONSENT_KEY = 'rp-cookie-consent';
 
 export function CookieConsent() {
   const [open, setOpen] = useState(false);
@@ -16,6 +15,7 @@ export function CookieConsent() {
 
   const resolve = (choice: string) => {
     try { window.localStorage.setItem(COOKIE_CONSENT_KEY, choice); } catch { /* storage blocked */ }
+    setClarityConsent(choice === 'accepted');
     setOpen(false);
   };
 

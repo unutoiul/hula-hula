@@ -115,7 +115,7 @@ export function ConfirmationStep() {
   const adults = status.lines.reduce((sum, line) => sum + line.adults * line.quantity, 0);
   const children = status.lines.reduce((sum, line) => sum + line.children * line.quantity, 0);
   const paid = status.paidAmount ?? status.deposit;
-  return <Box sx={card}>
+  return <Box sx={card} data-clarity-mask="true">
     <Stack direction="row" spacing={1.5} alignItems="center"><CheckCircleRounded sx={{ color: 'success.main', fontSize: 40 }} /><Typography variant="overline" sx={{ color: 'success.dark' }}>Booking confirmed · {status.ref}</Typography></Stack>
     <Typography variant="h1" sx={{ fontSize: { xs: 34, md: 46 }, mt: 1 }}>You’re booked. Hello, holiday!</Typography>
     <Typography sx={{ color: 'text.secondary', mt: 1 }}>{email ? `We’ve sent the confirmation to ${email}.` : 'Your confirmation is on its way by email.'} Quote <strong>{status.ref}</strong> if you get in touch.</Typography>
