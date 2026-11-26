@@ -19,7 +19,9 @@ const base = ({ palette }: Theme): CSSObject => ({
   'h1, h2, h3': { textWrap: 'balance', overflowWrap: 'break-word' },
   p: { textWrap: 'pretty' },
   'button, a': { WebkitTapHighlightColor: 'transparent' },
-  'button:active, a.MuiButton-root:active': { transform: 'translateY(1px)' },
+  // `translate` adds to a button's own transform (e.g. translateY(-50%) centring)
+  // instead of replacing it, so centred arrows don't jump when pressed.
+  'button:active, a.MuiButton-root:active': { translate: '0 1px' },
   '@media (prefers-reduced-motion: reduce)': {
     html: { scrollBehavior: 'auto' },
     '*, *::before, *::after': { animationDuration: '.01ms !important', transitionDuration: '.01ms !important' },
