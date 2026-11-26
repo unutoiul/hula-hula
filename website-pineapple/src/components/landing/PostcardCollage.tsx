@@ -163,9 +163,12 @@ export function PostcardCollage() {
     setDragging(false);
   };
 
+  // Rise in, but never fade from invisible: the postcard photo is the page's
+  // largest paint, and Chrome doesn't count a picture that first paints at
+  // opacity 0 — LCP then waited for the reel's first autoplay (~10 s on phones).
   return <MotionBox ref={scope} role="region" aria-roledescription="carousel"
     aria-label="Hotel postcards and offers" aria-busy={busy} tabIndex={0}
-    initial={reduced ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduced ? 0 : .8 }}
+    initial={reduced ? false : { y: 20 }} animate={{ y: 0 }} transition={{ duration: reduced ? 0 : .8 }}
     onPointerEnter={event => { if (event.pointerType === 'mouse') setHovered(true); }} onPointerLeave={() => setHovered(false)}
     onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
     onKeyDown={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); request(event.key === 'ArrowRight' ? 1 : -1); } }}

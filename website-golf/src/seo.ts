@@ -1,4 +1,5 @@
 import { explorePages } from './data/exploreCopy';
+import { photoAssets } from './data/photos';
 
 // Every public page's title, description, canonical address and structured
 // data, in one place. seoPlugin.ts writes them into each page's HTML at build
@@ -10,7 +11,13 @@ export const SITE_NAME = 'Hula Hula Golf Club';
 export const SOCIAL_IMAGE = `${SITE_URL}/images/share.jpg`;
 export const SOCIAL_IMAGE_ALT = 'Painted postcard: the Hula Hula pineapple in sunglasses beside a tropical golf green';
 
-export interface PageHead { title: string; description: string; canonical: string | null; robots: string; structuredData?: object[] }
+export interface PageHead { title: string; description: string; canonical: string | null; robots: string; structuredData?: object[]; preloadImages?: { srcSet: string; sizes: string; type: string }[] }
+
+// The homepage's largest picture is the hero fairway photo. It only appears
+// once the app's JavaScript has run, so the HTML asks for it straight away
+// (AVIF; browsers without AVIF skip this and load the WebP as before). The
+// sizes must match the hero's ClubPhoto in components/hero/Hero.tsx.
+const HOME_PRELOAD = [{ srcSet: photoAssets.fairwaySign.avifSrcSet, sizes: '(max-width: 900px) 95vw, 55vw', type: 'image/avif' }];
 
 const INDEX = 'index, follow, max-image-preview:large';
 const CLUB_ID = `${SITE_URL}/#club`;
@@ -99,7 +106,7 @@ export const PUBLIC_ROUTES = ['/', ...Object.keys(pages)];
 export function pageHead(pathname: string): PageHead {
   const path = pathname === '/index.html' ? '/' : pathname.replace(/(.)\/$/, '$1');
   if (path === '/') {
-    return { title: 'Hula Hula Golf Club | Tropical Golf & FootGolf near Krabi Airport', description: HOME_DESCRIPTION, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, clubStructuredData] };
+    return { title: 'Hula Hula Golf Club | Tropical Golf & FootGolf near Krabi Airport', description: HOME_DESCRIPTION, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, clubStructuredData], preloadImages: HOME_PRELOAD };
   }
   const page = pages[path];
   if (page) return { title: page.title, description: page.description, canonical: `${SITE_URL}${path}`, robots: INDEX, structuredData: [breadcrumbs(page.trail)] };

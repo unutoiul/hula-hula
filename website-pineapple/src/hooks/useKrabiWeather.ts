@@ -35,9 +35,23 @@ export function useKrabiWeather(): number | null {
         .catch(() => { if (!cancelled) setTemperature(null); })
         .finally(() => { clearTimeout(requestTimeout); if (timeout === requestTimeout) timeout = undefined; });
     };
-    fetchWeather();
-    const id = setInterval(fetchWeather, 15 * 60 * 1000);
-    return () => { cancelled = true; clearInterval(id); if (timeout) clearTimeout(timeout); request?.abort(); };
+    // The temperature is a nicety: ask for it only once the page has loaded
+    // and the browser is idle, so it never competes with the hero images.
+    let idle: number | undefined;
+    let id: ReturnType<typeof setInterval> | undefined;
+    const start = () => {
+      const run = () => { if (cancelled) return; fetchWeather(); id = setInterval(fetchWeather, 15 * 60 * 1000); };
+      // Safari has no requestIdleCallback.
+      idle = typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(run, { timeout: 3000 }) : window.setTimeout(run, 1000);
+    };
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+    return () => {
+      cancelled = true;
+      window.removeEventListener('load', start);
+      if (idle !== undefined) { if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(idle); else window.clearTimeout(idle); }
+      clearInterval(id); if (timeout) clearTimeout(timeout); request?.abort();
+    };
   }, []);
 
   return temperature;

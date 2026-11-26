@@ -43,6 +43,7 @@ export function Hero({ nextEvent }: { nextEvent?: PublicEvent }) {
         <Box sx={{ position: 'relative', ml: { xs: 1, md: 2 }, mb: { xs: 4, md: 3 }, order: 2 }}>
           <ScrollTilt amount={1.5}>
             <Box sx={{ border: '6px solid white', borderRadius: '100px 100px 24px 24px', height: { xs: 340, sm: 440, md: 550 }, overflow: 'hidden', transform: 'rotate(1deg)', boxShadow: '0 18px 55px rgba(23,60,44,.10)', bgcolor: 'primary.dark' }}>
+              {/* seo.ts preloads this photo at these sizes; keep the two in step. */}
               <ClubPhoto image={p.fairwaySign.src} alt="Freshly striped fairway with the Hula Hula sign, palms and blue sky" eager sizes="(max-width: 900px) 95vw, 55vw" sx={{ objectPosition: '40% center' }} />
             </Box>
           </ScrollTilt>

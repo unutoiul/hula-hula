@@ -1,26 +1,12 @@
-import { Box, CircularProgress, Container } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { lazy, Suspense, useEffect, useMemo, useRef } from 'react';
 import { navItems } from './data/content';
 import type { NavItem } from './types';
 import { BookingSearchProvider } from './context/BookingSearchContext';
 import { ContactFormProvider } from './context/ContactFormContext';
 import { CookieConsent } from './components/layout/CookieConsent';
-import { Footer } from './components/layout/Footer';
 import { Header } from './components/layout/Header';
 import { LandingHero as Hero } from './components/landing/LandingHero';
-import { ArrivalSection } from './components/sections/ArrivalSection';
-import { ContactSection } from './components/sections/ContactSection';
-import { DineSection } from './components/sections/DineSection';
-import { ExploreSection } from './components/sections/ExploreSection';
-import { FacilitiesSection } from './components/sections/FacilitiesSection';
-import { GallerySection } from './components/sections/GallerySection';
-import { HighlightsSection } from './components/sections/HighlightsSection';
-import { MeetSection } from './components/sections/MeetSection';
-import { ProgrammeSection } from './components/sections/ProgrammeSection';
-import { RoomsSection } from './components/sections/RoomsSection';
-import { TickTockSection } from './components/sections/TickTockSection';
-import { LandingIntro as WelcomeSection } from './components/landing/LandingIntro';
-import { WellnessSection } from './components/sections/WellnessSection';
 import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
 import { SiteContentProvider, useSiteContent } from './context/SiteContentContext';
 import { useLocation } from './router';
@@ -40,6 +26,13 @@ function HotelHeader() {
   return <Header navItems={items} />;
 }
 
+// The homepage below the hero is a separate bundle, so the hero paints before
+// that code has downloaded and run. On the homepage the download starts as
+// soon as this file runs, at the same time as the hero renders, not after it.
+const loadHomeSections = () => import('./pages/HomeSections');
+if (window.location.pathname === '/') void loadHomeSections();
+const HomeSections = lazy(loadHomeSections);
+
 function HotelPage() {
   // Nothing tilted or bobbing near an edge may widen the page: clip sideways
   // overflow here (clip, unlike hidden, doesn't create a scroll container).
@@ -53,20 +46,8 @@ function HotelPage() {
     <CookieConsent />
     <HotelHeader />
     <Hero />
-    <WelcomeSection />
-    <RoomsSection />
-    <Container maxWidth="xl"><HighlightsSection /></Container>
-    <TickTockSection />
-    <DineSection />
-    <WellnessSection />
-    <ProgrammeSection />
-    <FacilitiesSection />
-    <MeetSection />
-    <ExploreSection />
-    <GallerySection />
-    <ArrivalSection />
-    <ContactSection />
-    <Footer />
+    {/* Holds the space below the hero while the sections arrive, so the page doesn't end at the hero. */}
+    <Suspense fallback={<Box aria-hidden="true" sx={{ minHeight: '100vh' }} />}><HomeSections /></Suspense>
   </Box>;
 }
 

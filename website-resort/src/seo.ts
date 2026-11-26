@@ -8,7 +8,12 @@ export const SITE_NAME = 'Hula Hula Resort';
 export const SOCIAL_IMAGE = `${SITE_URL}/video/hero-poster.webp`;
 export const SOCIAL_IMAGE_ALT = 'Hula Hula Resort in Ao Nang, Krabi';
 
-export interface PageHead { title: string; description: string; canonical: string | null; robots: string; structuredData?: object[] }
+export interface PageHead { title: string; description: string; canonical: string | null; robots: string; structuredData?: object[]; preloadImages?: { srcSet: string; sizes: string; type: string }[] }
+
+// The homepage hero is a video whose poster is the first picture painted, and
+// the video element only exists once the app's JavaScript has run, so the
+// HTML asks for the poster straight away (see HeroVideo.tsx).
+const HOME_PRELOAD = [{ srcSet: '/video/hero-poster.webp 854w', sizes: '(max-width: 900px) 95vw, 50vw', type: 'image/webp' }];
 
 const INDEX = 'index, follow, max-image-preview:large';
 const HOTEL_ID = `${SITE_URL}/#hotel`;
@@ -134,7 +139,7 @@ export function pageHead(pathname: string): PageHead {
     return { title: text.bookTitle, description: text.bookDescription, canonical: `${SITE_URL}/book`, robots: INDEX, structuredData: [bookingBreadcrumbs] };
   }
   if (['/', '/index.html'].includes(pathname)) {
-    return { title: text.homeTitle, description: text.homeDescription, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, hotelStructuredData()] };
+    return { title: text.homeTitle, description: text.homeDescription, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, hotelStructuredData()], preloadImages: HOME_PRELOAD };
   }
   // Staff pages, checkout steps and unknown addresses stay out of search results.
   return {
