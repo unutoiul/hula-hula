@@ -14,7 +14,7 @@ export const navItems: NavItem[] = [
 /** "Stay. Recharge. Connect. Meet. Explore." — the five reasons to stay, each a door into the page. */
 export const pillars = [
   { word: 'Stay', line: 'Rooms made for a good night’s sleep', href: '#rooms' },
-  { word: 'Recharge', line: 'Hair, beauty & massage at On Cloud', href: '#wellness' },
+  { word: 'Recharge', line: 'Hair, beauty & massage at On Cloud, opening soon', href: '#wellness' },
   { word: 'Connect', line: 'Poolside, any hour, at Tick Tock 24/7', href: '#tick-tock' },
   { word: 'Meet', line: 'Rooms for 10 to 200 people', href: '#meet' },
   { word: 'Explore', line: 'Real Krabi, beyond the tourist trail', href: '#explore' },
@@ -114,8 +114,8 @@ export const facilities: { icon: FacilityIcon; title: string; detail: string; ho
   { icon: 'pool', title: 'Pool & sun deck', detail: 'Pink loungers, a shallow end and one famous flamingo.', href: '#tick-tock' },
   { icon: 'cafe', title: 'Tick Tock 24/7', detail: 'The poolside café and social hub.', hours: '24 hours', href: '#tick-tock' },
   { icon: 'restaurant', title: 'Chaba Restaurant', detail: 'Breakfast, lunch and dinner.', hours: 'From 6:30 am', href: '#dine' },
-  { icon: 'spa', title: 'On Cloud Wellness', detail: 'Aveda salon & beauty spa.', href: '#wellness' },
-  { icon: 'massage', title: 'Thai massage', detail: 'Body, coconut-oil and facial massage.', href: '#wellness' },
+  { icon: 'spa', title: 'On Cloud Wellness', detail: 'Aveda salon & beauty spa.', hours: 'Opening soon', href: '#wellness' },
+  { icon: 'massage', title: 'Thai massage', detail: 'Body, coconut-oil and facial massage.', hours: 'Opening soon', href: '#wellness' },
   { icon: 'cowork', title: 'Co-working space', detail: 'Free Wi-Fi, water, coffee, tea and biscuits.', hours: '24 hours' },
   { icon: 'gym', title: 'Gym', detail: 'Cardio machines, weights and a cable station.', hours: '24 hours' },
   { icon: 'laundry', title: 'Laundry', detail: 'Wash and dry, whenever you need it.', hours: '24 hours' },

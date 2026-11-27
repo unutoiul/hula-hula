@@ -37,9 +37,11 @@ export function WellnessSection() {
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: { xs: '5px 12px', sm: '16px' }, fontSize: { xs: 9, sm: 10 },
             '& > span:first-of-type': { display: 'flex', alignItems: 'center', gap: '8px', color: '#bc2b64', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.12em', '& > svg': { fontSize: 22 } },
             '& > span:last-of-type': { color: muted },
-          }}><span><CloudOutlined aria-hidden="true" />On Cloud Wellness</span><span>Official Aveda salon partner</span></Box>
+          }}><span><CloudOutlined aria-hidden="true" />On Cloud Wellness
+            <Box component="span" sx={{ ml: '4px', p: '3px 9px', borderRadius: '999px', bgcolor: '#c6306d', color: '#fff', fontSize: { xs: 9, sm: 10 }, letterSpacing: '.1em' }}>Opening soon</Box>
+          </span><span>Official Aveda salon partner</span></Box>
           <Box component="h2" id="wellness-heading" sx={{ m: '12px 0 9px', fontFamily: fonts.serif, fontWeight: 400, fontSize: { xs: 33, sm: 'clamp(31px, 3.2vw, 44px)' }, lineHeight: 1.12, letterSpacing: '-.035em', color: brand.plum }}>A little time, just for you.</Box>
-          <Box component="p" sx={{ m: 0, color: '#806271', fontSize: { xs: 12, sm: 13 }, lineHeight: 1.7 }}>A sanctuary for self-care and sustainable beauty, with Aveda’s naturally derived rituals. Before a big night, after an island day, or just because.</Box>
+          <Box component="p" sx={{ m: 0, color: '#806271', fontSize: { xs: 12, sm: 13 }, lineHeight: 1.7 }}>Our salon and spa are still being built. Soon: a sanctuary for self-care and sustainable beauty, with Aveda’s naturally derived rituals. Here’s a first look at the menu.</Box>
           <Box component="ul" aria-label="Wellness treatments" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: { xs: '8px', sm: '10px' }, listStyle: 'none', m: { xs: '17px 0 0', sm: '21px 0 0' }, p: 0 }}>
             {onCloudMenu.map(item => <Box component="li" key={item.icon} sx={{
               display: 'grid', alignItems: 'center', gridTemplateColumns: { xs: '32px minmax(0, 1fr)', sm: '30px minmax(0, 1fr)', lg: '36px minmax(0, 1fr)' }, gap: { xs: '10px', sm: '8px', lg: '11px' },
@@ -62,8 +64,8 @@ export function WellnessSection() {
             display: 'flex', flexDirection: { xs: 'column-reverse', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' }, justifyContent: 'space-between',
             gap: { xs: '12px', sm: '16px' }, mt: { xs: '18px', sm: '20px' }, textAlign: { xs: 'center', sm: 'left' },
           }}>
-            <Box component="p" sx={{ m: 0, color: muted, fontSize: { xs: 10, sm: 11 }, lineHeight: 1.6 }}>Not sure what to choose?<br />Our team can help you find your little pause.</Box>
-            <Button onClick={() => openContact({ topic: 'On Cloud salon & spa', message: 'Hello Royal Pineapple! I’d like to book a treatment at On Cloud.', page: 'On Cloud Wellness' })} variant="contained" sx={{ flexShrink: 0 }}>Book a treatment</Button>
+            <Box component="p" sx={{ m: 0, color: muted, fontSize: { xs: 10, sm: 11 }, lineHeight: 1.6 }}>Want to know when we open?<br />Leave us a note and we’ll tell you first.</Box>
+            <Button onClick={() => openContact({ topic: 'On Cloud salon & spa', message: 'Hello Royal Pineapple! Please let me know when On Cloud opens.', page: 'On Cloud Wellness' })} variant="contained" sx={{ flexShrink: 0 }}>Tell me when it opens</Button>
           </Box>
         </Box>
       </Box>

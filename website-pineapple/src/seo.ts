@@ -47,7 +47,7 @@ export const hotelStructuredData = {
   telephone: '+66 75 622 622',
   email: CONTACT.email,
   numberOfRooms: 72,
-  amenityFeature: ['Outdoor pool', '24-hour gym', '24-hour co-working space', '24-hour café', 'Restaurant', 'Spa and salon', 'Meeting rooms', 'Free parking', 'Free Wi-Fi', 'Shuttle bus'].map((name) => ({ '@type': 'LocationFeatureSpecification', name, value: true })),
+  amenityFeature: ['Outdoor pool', '24-hour gym', '24-hour co-working space', '24-hour café', 'Restaurant','Meeting rooms', 'Free parking', 'Free Wi-Fi', 'Shuttle bus'].map((name) => ({ '@type': 'LocationFeatureSpecification', name, value: true })),
   address: {
     '@type': 'PostalAddress',
     streetAddress: '339/9 Maharaj Road, Paknam',
