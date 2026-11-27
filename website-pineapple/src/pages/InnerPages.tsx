@@ -1,4 +1,5 @@
 import { useLocation } from '../router';
+import { EventPage } from './EventPage';
 import { ExperiencesPage } from './ExperiencesPage';
 import { MeetingsPage } from './MeetingsPage';
 import { RoomPage } from './RoomPage';
@@ -8,6 +9,7 @@ import { TakantaPage } from './TakantaPage';
 export default function InnerPages() {
   const { pathname } = useLocation();
   if (pathname.startsWith('/rooms/')) return <RoomPage key={pathname} id={pathname.slice('/rooms/'.length).replace(/\/$/, '')} />;
+  if (pathname.startsWith('/events/')) return <EventPage />;
   if (pathname.startsWith('/meetings/takanta')) return <TakantaPage />;
   if (pathname.startsWith('/meetings')) return <MeetingsPage />;
   return <ExperiencesPage />;

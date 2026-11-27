@@ -31,8 +31,10 @@ export interface Highlight {
   /** Small print: an offer's stay dates, minimum stay and last booking day, or when an event is on. */
   note: string | null;
   image: string;
-  /** An event's cover and its other photos and videos, for the full-screen viewer. */
+  /** An event's cover and its other photos and videos. */
   media?: string[];
+  /** A page on this site the card and its button open (an event's own page). */
+  link?: string;
   ctaLabel?: string; onCta?: () => void; ctaHref?: string; ctaIcon?: ReactNode;
 }
 
@@ -62,6 +64,15 @@ function offerTerms({ stayFrom, stayTo, minNights, minAdvanceDays, validTo }: Of
   const bookBy = validTo ? `book by ${dayMonth.format(asDay(validTo))}` : '';
   const terms = [arrivals, nights, ahead, bookBy].filter(Boolean).join(' · ');
   return terms ? terms[0].toUpperCase() + terms.slice(1) : null;
+}
+
+const longDay = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+const longStart = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+
+/** For an event's page: "Saturday 24 January 2027", "Fri 23 Jan – Sunday 25 January 2027", or null when it's ongoing. */
+export function eventDatesLong({ startsOn, endsOn }: SiteEvent): string | null {
+  if (startsOn && endsOn && endsOn !== startsOn) return `${longStart.format(asDay(startsOn))} – ${longDay.format(asDay(endsOn))}`;
+  return startsOn || endsOn ? longDay.format(asDay((startsOn ?? endsOn)!)) : null;
 }
 
 export function eventWhen(event: SiteEvent): string {
@@ -105,64 +116,93 @@ export function offerHighlight(offer: Offer): Highlight {
   };
 }
 
-/** What an event's card shows (the /admin preview uses this too). */
+const slugify = (text: string) => text.normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '');
+
+/** An event's own page: "/events/full-moon-pool-party-1a2b3c4d" — the title for people, the start of its id to find it (so a renamed event's old links still work). */
+export const eventPath = (event: Pick<SiteEvent, 'id' | 'title'>) => `/events/${[slugify(event.title), event.id.slice(0, 8)].filter(Boolean).join('-')}`;
+
+/** The event a /events/… address is for, among those running. */
+export function eventAt(pathname: string, events: SiteEvent[]): SiteEvent | null {
+  const key = /^\/events\/(?:.*-)?([0-9a-f]{8})\/?$/i.exec(pathname)?.[1]?.toLowerCase();
+  return key ? events.find((event) => event.id.toLowerCase().startsWith(key)) ?? null : null;
+}
+
+/** What an event's card shows (the /admin preview uses this too): its button opens the event's own page. */
 export function eventHighlight(event: SiteEvent): Highlight {
   const dates = eventDates(event);
   const gallery = event.gallery ?? [];
-  const base: Highlight = {
+  return {
     id: event.id, kind: 'event', label: 'What’s on', tag: dates || null,
     title: event.title, description: event.summary, perks: [],
     note: [dates, event.timeLabel].filter(Boolean).join(' · ') || null,
-    // No cover picked: the first photo from the gallery, then a resort photo.
+    // No cover picked: the first photo from the gallery, then a hotel photo.
     image: event.imageUrl ?? gallery.find(isPicture) ?? p.meetingBanquet.src,
     media: [...new Set([...(event.imageUrl ? [event.imageUrl] : []), ...gallery])],
+    link: eventPath(event), ctaLabel: 'See details', ctaIcon: bookIcon,
   };
+}
+
+/** The button on an event's page, as set at /admin: ask us, book a stay, a link, or none. */
+export interface EventAction { label: string; icon: ReactNode; onClick?: () => void; href?: string }
+
+export function useEventAction(event: SiteEvent | null): EventAction | null {
+  const openContact = useContactForm();
+  const search = useBookingSearch();
+  if (!event) return null;
   switch (event.cta.type) {
-    case 'none': return base;
-    case 'link': return event.cta.url ? { ...base, ctaLabel: event.cta.label || 'Find out more', ctaHref: event.cta.url, ctaIcon: <ArrowOutward sx={{ fontSize: 17 }} /> } : base;
-    case 'book': return { ...base, ctaLabel: event.cta.label || 'Book your stay', ctaIcon: bookIcon };
-    default: return { ...base, ctaLabel: event.cta.label || 'Ask about this', ctaIcon: askIcon };
+    case 'none': return null;
+    case 'link': return event.cta.url ? { label: event.cta.label || 'Find out more', icon: <ArrowOutward sx={{ fontSize: 17 }} />, href: event.cta.url } : null;
+    case 'book': return ONSITE_BOOKING
+      ? { label: event.cta.label || 'Book your stay', icon: bookIcon, onClick: () => navigate(toBookHref(search.checkIn, search.checkOut, search.adults, search.children, search.promoCode)) }
+      : { label: event.cta.label || 'Book your stay', icon: bookIcon, href: search.siteMinderUrl };
+    default: return { label: event.cta.label || 'Ask about this', icon: askIcon, onClick: () => openContact({ topic: event.title, message: `Hi Royal Pineapple! I’d love to hear more about “${event.title}” (${eventWhen(event)}).`, page: 'What’s on' }) };
   }
 }
 
-/**
- * What the homepage shows, in the "Offers & what's on" section and on the
- * hero's offer badge alike: everything published at /admin, or, until
- * something is, the two sample offers (whose buttons ask the team).
- */
-export function useHomepageHighlights(): Highlight[] {
-  const published = useHighlights();
+/** The running offers, in the order set at /admin — with their buttons wired up. */
+export function useOfferHighlights(): Highlight[] {
+  const { offers } = useSiteContent();
   const openContact = useContactForm();
-  if (published.length) return published;
+  const search = useBookingSearch();
+  return offers.map((offer): Highlight => {
+    const card = offerHighlight(offer);
+    if (!ONSITE_BOOKING) return { ...card, onCta: () => openContact({ topic: offer.title, message: `Hi Royal Pineapple! I’d like to book the “${offer.title}” offer.`, page: 'Offers' }) };
+    const code = offer.promoCode ?? '';
+    const [from, to] = offerDates(offer, search.checkIn, search.checkOut);
+    return { ...card, onCta: () => { search.setPromoCode(code); navigate(toBookHref(from, to, search.adults, search.children, code)); } };
+  });
+}
+
+/** The running events, in the order set at /admin; each opens its own page. */
+export function useEventHighlights(): Highlight[] {
+  return useSiteContent().events.map(eventHighlight);
+}
+
+/** Offers, then events — the hero's postcard shows both. */
+export function useHighlights(): Highlight[] {
+  return [...useOfferHighlights(), ...useEventHighlights()];
+}
+
+/** The two sample offers, shown until anything is published at /admin (their buttons ask the team). */
+function usePreviewOffers(): Highlight[] {
+  const openContact = useContactForm();
   return previewOffers.map((item) => ({ ...item, onCta: () => openContact({
     topic: item.title, page: 'Offer preview',
     message: `Hello Royal Pineapple! I saw the “${item.title}” sample offer. Could you confirm the available dates, prices and inclusions?`,
   }) }));
 }
 
-/** The running offers, then the events, in the order set at /admin — with their buttons wired up. */
-export function useHighlights(): Highlight[] {
-  const { offers, events } = useSiteContent();
-  const openContact = useContactForm();
-  const search = useBookingSearch();
-  const bookStay = ([from, to]: [Date, Date], code: string) => () => {
-    search.setPromoCode(code);
-    navigate(toBookHref(from, to, search.adults, search.children, code));
-  };
-  return [
-    ...offers.map((offer): Highlight => {
-      const card = offerHighlight(offer);
-      return ONSITE_BOOKING
-        ? { ...card, onCta: bookStay(offerDates(offer, search.checkIn, search.checkOut), offer.promoCode ?? '') }
-        : { ...card, onCta: () => openContact({ topic: offer.title, message: `Hi Royal Pineapple! I’d like to book the “${offer.title}” offer.`, page: 'Offers' }) };
-    }),
-    ...events.map((event): Highlight => {
-      const card = eventHighlight(event);
-      switch (event.cta.type) {
-        case 'none': case 'link': return card;
-        case 'book': return ONSITE_BOOKING ? { ...card, onCta: bookStay([search.checkIn, search.checkOut], search.promoCode) } : { ...card, ctaHref: search.siteMinderUrl };
-        default: return { ...card, onCta: () => openContact({ topic: event.title, message: `Hi Royal Pineapple! I’d love to hear more about “${event.title}” (${eventWhen(event)}).`, page: 'What’s on' }) };
-      }
-    }),
-  ];
+/** The hero's postcard: every running offer and event, or, until something is published, the sample offers. */
+export function useHomepageHighlights(): Highlight[] {
+  const published = useHighlights();
+  const previews = usePreviewOffers();
+  return published.length ? published : previews;
+}
+
+/** The offers section: the running offers — or the sample offers while nothing at all (offer or event) is published. */
+export function useHomepageOffers(): Highlight[] {
+  const offers = useOfferHighlights();
+  const events = useEventHighlights();
+  const previews = usePreviewOffers();
+  return offers.length || events.length ? offers : previews;
 }

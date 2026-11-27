@@ -13,16 +13,15 @@ import { useLocation } from './router';
 import { PageMetadata } from './PageMetadata';
 import { brand, fonts } from './theme';
 
-// "Offers" (or "What's on" when there are only events) joins the menu while
-// the offers section has something to show.
+// "Offers" (also while the sample offers show) and "What's on" join the menu
+// while their sections have something to show.
 function HotelHeader() {
-  const { offers, events } = useSiteContent();
-  const label = offers.length || !events.length ? 'Offers' : 'What’s on';
+  const { events } = useSiteContent();
+  const hasEvents = events.length > 0;
   const items = useMemo<NavItem[]>(() => {
-    if (!label) return navItems;
     const at = navItems.findIndex(([, href]) => href === '#contact');
-    return [...navItems.slice(0, at), [label, '#offers'], ...navItems.slice(at)];
-  }, [label]);
+    return [...navItems.slice(0, at), ['Offers', '#offers'], ...(hasEvents ? [['What’s on', '#whats-on'] as NavItem] : []), ...navItems.slice(at)];
+  }, [hasEvents]);
   return <Header navItems={items} />;
 }
 
@@ -51,13 +50,13 @@ function HotelPage() {
   </Box>;
 }
 
-// The booking pages, the room/meeting/experience pages and the CMS are separate bundles, fetched only when someone goes there.
+// The booking pages, the room/meeting/experience/event pages and the CMS are separate bundles, fetched only when someone goes there.
 const BookingApp = lazy(() => import('./booking/BookingApp'));
 const InnerPages = lazy(() => import('./pages/InnerPages'));
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 
 const loading = <Box sx={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}><CircularProgress aria-label="Loading" /></Box>;
-const isInnerPage = (pathname: string) => pathname.startsWith('/rooms/') || pathname.startsWith('/meetings') || pathname.startsWith('/experiences');
+const isInnerPage = (pathname: string) => pathname.startsWith('/rooms/') || pathname.startsWith('/meetings') || pathname.startsWith('/experiences') || pathname.startsWith('/events/');
 
 function Routes() {
   const { pathname, hash } = useLocation();

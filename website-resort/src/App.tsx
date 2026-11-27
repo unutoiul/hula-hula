@@ -17,22 +17,23 @@ import { GallerySection } from './components/sections/GallerySection';
 import { RestaurantSection } from './components/sections/RestaurantSection';
 import { FloatingBreakfastSection } from './components/sections/FloatingBreakfastSection';
 import { ResortPromotionsSection } from './components/sections/ResortPromotionsSection';
+import { WhatsOnSection } from './components/sections/HighlightsSection';
 import { MotionPreferenceProvider } from './context/MotionPreferenceContext';
 import { SiteContentProvider, useSiteContent } from './context/SiteContentContext';
 import { useLocation } from './router';
 import { PageMetadata } from './PageMetadata';
 import { BeachBall, Bubbles, Gulls, Longtail, PaperBoat, RisingSun, SEAM, SectionSeam, SwimRing } from './components/common/SectionSeam';
 
-// "Offers" (or "What's on" when there are only events) joins the menu, before
-// Celebrate, while the "Offers & what's on" section has something to show.
+// "Offers" and "What's on" join the menu, before Celebrate, while their
+// sections have something to show.
 function ResortHeader() {
   const { offers, events } = useSiteContent();
-  const label = offers.length ? 'Offers' : events.length ? 'What’s on' : null;
+  const hasOffers = offers.length > 0, hasEvents = events.length > 0;
   const items = useMemo<NavItem[]>(() => {
-    if (!label) return navItems;
+    const extra: NavItem[] = [...(hasOffers ? [['Offers', '#offers'] as NavItem] : []), ...(hasEvents ? [['What’s on', '#whats-on'] as NavItem] : [])];
     const at = navItems.findIndex(([, href]) => href === '#events');
-    return [...navItems.slice(0, at), [label, '#offers'], ...navItems.slice(at)];
-  }, [label]);
+    return [...navItems.slice(0, at), ...extra, ...navItems.slice(at)];
+  }, [hasOffers, hasEvents]);
   return <Header navItems={items} />;
 }
 
@@ -41,35 +42,48 @@ function ResortPage() {
   // overflow here (clip, unlike hidden, doesn't create a scroll container).
   return <Box component="main" id="top" sx={{ overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' } }}>
     <CookieConsent />
-    <SiteContentProvider>
-      <ResortHeader />
-      <Hero />
-      <HotelSection />
-      {/* Every change of section colour gets the same wave; a few of them carry
-          one bobbing sticker each, every sticker used once down the page. */}
-      <SectionSeam from={SEAM.cream} to={SEAM.pool}><Bubbles /></SectionSeam>
-      <FloatingBreakfastSection />
-      <SectionSeam from={SEAM.pool} to={SEAM.lime} mirror><SwimRing left="80%" /></SectionSeam>
-      <RestaurantSection meals={meals} />
-      <SectionSeam from={SEAM.lime} to={SEAM.sea}><Longtail left="10%" /></SectionSeam>
-      <ActivitiesSection />
-      <SectionSeam from={SEAM.sea} to={SEAM.lime} mirror><BeachBall left="74%" /></SectionSeam>
-      <ResortPromotionsSection />
-      <SectionSeam from={SEAM.lime} to={SEAM.cream}><Gulls left="70%" /></SectionSeam>
-      <GallerySection />
-      <EventsSection eventFacts={eventFacts} />
-      <SectionSeam from={SEAM.cream} to={SEAM.pool} mirror><PaperBoat left="82%" /></SectionSeam>
-      <ArrivalSection />
-      <SectionSeam from={SEAM.pool} to={SEAM.cream} />
-      <ContactSection />
-      <SectionSeam from={SEAM.cream} to={SEAM.sun} mirror behind={<RisingSun left="78%" />} />
-      <Footer />
-    </SiteContentProvider>
+    <ResortHeader />
+    <Hero />
+    <HotelSection />
+    {/* Every change of section colour gets the same wave; a few of them carry
+        one bobbing sticker each, every sticker used once down the page. */}
+    <SectionSeam from={SEAM.cream} to={SEAM.pool}><Bubbles /></SectionSeam>
+    <FloatingBreakfastSection />
+    <SectionSeam from={SEAM.pool} to={SEAM.lime} mirror><SwimRing left="80%" /></SectionSeam>
+    <RestaurantSection meals={meals} />
+    <SectionSeam from={SEAM.lime} to={SEAM.sea}><Longtail left="10%" /></SectionSeam>
+    <ActivitiesSection />
+    <SectionSeam from={SEAM.sea} to={SEAM.lime} mirror><BeachBall left="74%" /></SectionSeam>
+    <ResortPromotionsSection />
+    <SectionSeam from={SEAM.lime} to={SEAM.cream}><Gulls left="70%" /></SectionSeam>
+    <WhatsOnSection />
+    <GallerySection />
+    <EventsSection eventFacts={eventFacts} />
+    <SectionSeam from={SEAM.cream} to={SEAM.pool} mirror><PaperBoat left="82%" /></SectionSeam>
+    <ArrivalSection />
+    <SectionSeam from={SEAM.pool} to={SEAM.cream} />
+    <ContactSection />
+    <SectionSeam from={SEAM.cream} to={SEAM.sun} mirror behind={<RisingSun left="78%" />} />
+    <Footer />
+  </Box>;
+}
+
+// An event's own page: the same header and footer as the homepage around it.
+function EventLayout() {
+  return <Box component="main" id="top" sx={{ minHeight: '100svh', overflowX: 'hidden', '@supports (overflow: clip)': { overflowX: 'clip' } }}>
+    <CookieConsent />
+    <ResortHeader />
+    {/* Clears the fixed header at its full (unscrolled) height. */}
+    <Box aria-hidden sx={{ height: { xs: 134, md: 172 } }} />
+    <Suspense fallback={loading}><EventPage /></Suspense>
+    <SectionSeam from={SEAM.cream} to={SEAM.sun} mirror behind={<RisingSun left="78%" />} />
+    <Footer />
   </Box>;
 }
 
 // The booking pages and the CMS are separate bundles, fetched only when someone goes there.
 const BookingApp = lazy(() => import('./booking/BookingApp'));
+const EventPage = lazy(() => import('./pages/EventPage'));
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 
 const loading = <Box sx={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}><CircularProgress aria-label="Loading" /></Box>;
@@ -83,14 +97,15 @@ function Routes() {
     if (firstLoad.current) { firstLoad.current = false; return; }
     const target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null;
     if (target) target.scrollIntoView();
-    else if (pathname === '/') window.scrollTo({ top: 0, behavior: 'instant' });
+    else if (pathname === '/' || pathname.startsWith('/events/')) window.scrollTo({ top: 0, behavior: 'instant' });
   }, [pathname]);
 
   if (pathname.startsWith('/admin')) return <Suspense fallback={loading}><AdminApp /></Suspense>;
-  // The search (dates, guests) and the contact popup carry across the homepage and /book.
-  return <BookingSearchProvider><ContactFormProvider>
-    {pathname.startsWith('/book') ? <Suspense fallback={loading}><BookingApp /></Suspense> : <ResortPage />}
-  </ContactFormProvider></BookingSearchProvider>;
+  // The search (dates, guests), the CMS content and the contact popup carry across every page.
+  return <BookingSearchProvider><ContactFormProvider><SiteContentProvider>
+    {pathname.startsWith('/book') ? <Suspense fallback={loading}><BookingApp /></Suspense>
+      : pathname.startsWith('/events/') ? <EventLayout /> : <ResortPage />}
+  </SiteContentProvider></ContactFormProvider></BookingSearchProvider>;
 }
 
 function App() { return <MotionPreferenceProvider><PageMetadata /><Routes /></MotionPreferenceProvider>; }

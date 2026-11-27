@@ -6,6 +6,7 @@ import GolfCourseRounded from '@mui/icons-material/GolfCourseRounded';
 import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
 import { Box, Popover, Stack, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
+import { linkClick, useLocation } from '../../router';
 import { fonts } from '../../theme';
 import { ClubMarkArt, type MarkSize } from '../common/ClubMark';
 
@@ -73,8 +74,11 @@ export function SiteList({ onHere }: { onHere?: () => void }) {
  */
 export function HomeLogo({ size }: { size: MarkSize }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  // The top of the homepage, from the homepage or from an event's page.
+  const { pathname } = useLocation();
+  const homeLink = pathname === '/' ? { href: '#top' } : { href: '/', onClick: linkClick('/') };
   return <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-    <Box component="a" href="#top" aria-label={`${here.name} home`} sx={{
+    <Box component="a" {...homeLink} aria-label={`${here.name} home`} sx={{
       display: 'inline-flex', lineHeight: 0, borderRadius: '16px', transition: 'transform .25s ease', '&:hover': { transform: 'translateY(-1px) scale(1.02)' },
     }}>
       <ClubMarkArt size={size} />

@@ -141,6 +141,11 @@ export function pageHead(pathname: string): PageHead {
   if (['/', '/index.html'].includes(pathname)) {
     return { title: text.homeTitle, description: text.homeDescription, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, hotelStructuredData()], preloadImages: HOME_PRELOAD };
   }
+  // An event's own page (/events/<name>): EventPage.tsx fills in its title and
+  // description once the event has loaded from /admin's content.
+  if (/^\/events\/[a-z0-9-]+\/?$/i.test(pathname)) {
+    return { title: `What’s on — ${SITE_NAME}`, description: `Events and good times at ${SITE_NAME} in Ao Nang, Krabi: dates, details, photos and videos.`, canonical: `${SITE_URL}${pathname.replace(/\/$/, '')}`, robots: INDEX };
+  }
   // Staff pages, checkout steps and unknown addresses stay out of search results.
   return {
     title: pathname.startsWith('/admin') ? 'Website admin — Hula Hula Resort' : 'Book your stay — Hula Hula Resort',

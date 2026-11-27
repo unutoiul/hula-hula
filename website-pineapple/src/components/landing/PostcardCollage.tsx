@@ -7,6 +7,7 @@ import { Box } from '@mui/material';
 import { useInView } from 'motion/react';
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
+import { linkClick } from '../../router';
 import { brand, fonts } from '../../theme';
 import { MotionBox } from '../common/motionPrimitives';
 import { useHomepageHighlights, type Highlight } from '../sections/cmsCards';
@@ -213,7 +214,7 @@ export function PostcardCollage() {
         </PostcardGreeting>
       </Box>
 
-      <Box component="a" href="#offers" aria-label={`${offerAction}: ${offer.title}`} sx={{
+      <Box component="a" {...(offer.link ? { href: offer.link, onClick: linkClick(offer.link) } : { href: offer.kind === 'event' ? '#whats-on' : '#offers' })} aria-label={`${offerAction}: ${offer.title}`} sx={{
         position: 'relative', zIndex: 1, gridColumn: 2, gridRow: 2, alignSelf: 'start',
         mt: 'clamp(-112px, -14.5cqw, -68px)', containerType: 'inline-size', textDecoration: 'none', color: brand.plum,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', borderRadius: '12px',

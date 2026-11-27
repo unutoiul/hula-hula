@@ -1,11 +1,11 @@
 import { Link } from '@mui/material';
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 
 interface NavLinkProps {
   href: string;
   active: boolean;
   children: ReactNode;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export function NavLink({ href, active, children, onClick }: NavLinkProps) {

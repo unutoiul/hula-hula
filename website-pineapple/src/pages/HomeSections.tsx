@@ -24,7 +24,9 @@ export default function HomeSections() {
   return <>
     <WelcomeSection />
     <RoomsSection />
-    <Container maxWidth="xl"><HighlightsSection /></Container>
+    {/* Offers, then what's on: two sections of their own. */}
+    <Container maxWidth="xl"><HighlightsSection kind="offer" /></Container>
+    <Container maxWidth="xl"><HighlightsSection kind="event" /></Container>
     <TickTockSection />
     <DineSection />
     <WellnessSection />

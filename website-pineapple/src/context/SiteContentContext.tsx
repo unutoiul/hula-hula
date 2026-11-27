@@ -14,19 +14,23 @@ const FALLBACK_ACTIVITIES: Activity[] = programme.map(({ id, weekday, kicker, ti
 }));
 const FALLBACK: SiteContent = { activities: FALLBACK_ACTIVITIES, events: [], offers: [] };
 
-const SiteContentContext = createContext<SiteContent>(FALLBACK);
+/** `loaded` once /api/content has answered (or failed): an event's page waits for it. */
+type SiteContentValue = SiteContent & { loaded: boolean };
+
+const SiteContentContext = createContext<SiteContentValue>({ ...FALLBACK, loaded: false });
 
 // One request per page load, shared if the provider mounts again.
 let request: Promise<SiteContent | null> | null = null;
 const loadContent = () => (request ??= fetch('/api/content').then((r) => (r.ok ? r.json() as Promise<SiteContent> : null)).catch(() => null));
 
 export function SiteContentProvider({ children }: { children: ReactNode }) {
-  const [content, setContent] = useState<SiteContent>(FALLBACK);
+  const [content, setContent] = useState<SiteContentValue>({ ...FALLBACK, loaded: false });
   useEffect(() => {
     let active = true;
     void loadContent().then((loaded) => {
-      if (!active || !loaded) return;
-      setContent({ activities: loaded.activities.length ? loaded.activities : FALLBACK_ACTIVITIES, events: loaded.events, offers: loaded.offers });
+      if (!active) return;
+      if (!loaded) { setContent((current) => ({ ...current, loaded: true })); return; }
+      setContent({ activities: loaded.activities.length ? loaded.activities : FALLBACK_ACTIVITIES, events: loaded.events, offers: loaded.offers, loaded: true });
     });
     return () => { active = false; };
   }, []);

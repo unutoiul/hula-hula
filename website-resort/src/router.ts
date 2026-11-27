@@ -1,6 +1,6 @@
 import { useMemo, useSyncExternalStore } from 'react';
 
-// Just enough routing for three areas — the homepage (/), the booking pages
+// Just enough routing for the homepage (/), an event's page (/events/<name>), the booking pages
 // (/book/...) and the CMS (/admin) — without a router dependency. vercel.json
 // serves the booking HTML for /book and the main HTML for other app paths,
 // so these are plain history.pushState navigations.
@@ -40,4 +40,15 @@ export function linkClick(to: string) {
     event.preventDefault();
     navigate(to);
   };
+}
+
+/**
+ * A link to a homepage section ("#arrival") or a page ("/events/…") that works
+ * from every page: on the homepage a section is a plain anchor, elsewhere it
+ * goes home first and lands on the section.
+ */
+export function sectionLink(target: string, pathname: string): { href: string; onClick?: ReturnType<typeof linkClick> } {
+  if (target.startsWith('#')) return pathname === '/' ? { href: target } : { href: `/${target}`, onClick: linkClick(`/${target}`) };
+  if (target.startsWith('/')) return { href: target, onClick: linkClick(target) };
+  return { href: target };
 }

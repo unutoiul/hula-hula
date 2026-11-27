@@ -141,6 +141,11 @@ export function pageHead(pathname: string): PageHead {
   }
   const page = pages[path];
   if (page) return { title: page.title, description: page.description, canonical: `${SITE_URL}${path}`, robots: INDEX, structuredData: [breadcrumbs(page.trail), ...(page.extra ?? [])] };
+  // An event's own page (/events/<name>): EventPage.tsx fills in its title and
+  // description once the event has loaded from /admin's content.
+  if (/^\/events\/[a-z0-9-]+$/i.test(path)) {
+    return { title: `What’s on — ${SITE_NAME}`, description: `Events and good times at ${SITE_NAME} in Krabi Town: dates, details, photos and videos.`, canonical: `${SITE_URL}${path}`, robots: INDEX };
+  }
   // Staff pages, checkout steps and unknown addresses stay out of search results.
   return {
     title: path.startsWith('/admin') ? 'Website admin — Royal Pineapple Hotel' : 'Book your stay — Royal Pineapple Hotel',

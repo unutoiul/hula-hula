@@ -234,6 +234,6 @@ function RoomTypesField({ label, helper, value, onChange }: { label: string; hel
 }
 
 function PreviewCard({ card }: { card: (CarouselCardData & { ctaLabel?: string }) | Highlight }) {
-  if ('kind' in card) return <HighlightCard item={{ ...card, onCta: () => {}, ctaHref: undefined }} />;
+  if ('kind' in card) return <HighlightCard item={{ ...card, onCta: () => {}, ctaHref: undefined, link: undefined }} />;
   return <CarouselCard {...card} images={card.images.length ? card.images : ['/images/pineapple/poolFlamingo-1600.webp']} active onClick={() => {}} onCta={() => {}} />;
 }

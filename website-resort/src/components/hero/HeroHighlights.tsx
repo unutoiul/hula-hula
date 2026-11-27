@@ -2,6 +2,7 @@ import { Box, Button, ButtonBase, Link, Stack, Typography } from '@mui/material'
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
+import { linkClick } from '../../router';
 import { fonts } from '../../theme';
 import { ResortPhoto } from '../common/ResortPhoto';
 import type { Highlight } from '../sections/cmsCards';
@@ -12,7 +13,8 @@ const ROTATE_MS = 6000;
 // time as a tilted polaroid (picture, its discount or date, its name and its
 // button), moving on by itself every few seconds — never while the pointer or
 // keyboard is on it, or when the visitor prefers less motion. The dots pick
-// one; "See all" goes to the "Offers & what's on" section. Hero.tsx shows the
+// one; "See all" goes to the offers section (or "What's on", for an event); an
+// event's button opens its own page. Hero.tsx shows the
 // "Make a splash!" photo when there's nothing running.
 export function HeroHighlights({ items }: { items: Highlight[] }) {
   const { reduced } = useMotionPreference();
@@ -48,7 +50,7 @@ export function HeroHighlights({ items }: { items: Highlight[] }) {
         <Typography variant="overline" noWrap sx={{ display: 'block', color: 'success.main', fontSize: { xs: 9.5, md: 10.5 }, lineHeight: 1.4 }}>{item.label}</Typography>
         <Typography noWrap sx={{ fontFamily: fonts.playful, fontSize: { xs: 17, md: 21 }, lineHeight: 1.15, mt: .25 }}>{item.title}</Typography>
         {item.ctaLabel && <Button fullWidth size="small" variant="contained" color="secondary" endIcon={item.ctaIcon}
-          {...(item.onCta ? { onClick: item.onCta } : { href: item.ctaHref })} sx={{ mt: { xs: 1, md: 1.25 }, minHeight: { xs: 34, md: 40 }, fontSize: { xs: 12, md: 13 } }}>
+          {...(item.link ? { href: item.link, onClick: linkClick(item.link) } : item.onCta ? { onClick: item.onCta } : { href: item.ctaHref })} sx={{ mt: { xs: 1, md: 1.25 }, minHeight: { xs: 34, md: 40 }, fontSize: { xs: 12, md: 13 } }}>
           {item.ctaLabel}
         </Button>}
       </Box>
@@ -58,7 +60,7 @@ export function HeroHighlights({ items }: { items: Highlight[] }) {
         {count > 1 && items.map((other, i) => <ButtonBase key={other.id} onClick={() => setIndex(i)} aria-label={`Show ${other.title}`} aria-current={i === index % count}
           sx={{ p: .5, borderRadius: 99, '&::after': { content: '""', display: 'block', height: 6, width: i === index % count ? 18 : 6, borderRadius: 99, bgcolor: i === index % count ? 'success.main' : 'rgba(23,60,44,.22)', transition: 'width .3s ease, background-color .3s ease' } }} />)}
       </Stack>
-      <Link href="#offers" underline="hover" sx={{ fontSize: { xs: 11, md: 12 }, fontWeight: 700, color: 'text.secondary' }}>See all →</Link>
+      <Link href={item.kind === 'event' ? '#whats-on' : '#offers'} underline="hover" sx={{ fontSize: { xs: 11, md: 12 }, fontWeight: 700, color: 'text.secondary' }}>See all →</Link>
     </Stack>
   </Box>;
 }

@@ -2,29 +2,45 @@ import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import PhotoLibraryOutlined from '@mui/icons-material/PhotoLibraryOutlined';
 import { Box, ButtonBase } from '@mui/material';
-import { useState } from 'react';
+import { linkClick } from '../../router';
 import { SECTION_HEADING } from '../../layoutConstants';
 import { fonts } from '../../theme';
-import { MediaViewer, mediaKind } from '../common/EventMedia';
+import { mediaKind } from '../common/EventMedia';
 import { ResortPhoto } from '../common/ResortPhoto';
 import { Reveal } from '../common/ScrollMotion';
 import { BadgePicture } from '../landing/BadgePicture';
 import { eyebrowSx, serifHeadingSx } from '../landing/landingStyles';
-import { useHomepageHighlights, type Highlight } from './cmsCards';
+import { useEventHighlights, useHomepageOffers, type Highlight } from './cmsCards';
 
-export function HighlightsSection() {
-  const items = useHomepageHighlights();
+const COPY = {
+  offer: {
+    id: 'offers', eyebrow: 'A little extra, just for you', heading: <>Your stay.<br /><em>Even sweeter.</em></>,
+    intro: 'Good days, lovely little extras, and one more reason to make it a Royal Pineapple holiday.',
+  },
+  event: {
+    id: 'whats-on', eyebrow: 'What’s on at Royal Pineapple', heading: <>What’s on.<br /><em>Come and join in.</em></>,
+    intro: 'A few good things happening at the hotel while you’re here. Open one for the photos, videos and details.',
+  },
+} as const;
+
+/** The offers section (`offer`) or the "What's on" section (`event`), each on its own; hidden when it has nothing to show. */
+export function HighlightsSection({ kind }: { kind: 'offer' | 'event' }) {
+  const offers = useHomepageOffers();
+  const events = useEventHighlights();
+  const items = kind === 'offer' ? offers : events;
   const preview = items.some(item => item.preview);
+  const copy = COPY[kind];
+  if (!items.length) return null;
 
-  return <Box component="section" id="offers" aria-labelledby="offers-heading" sx={{
-    display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '.68fr 2fr' }, alignItems: 'center', gap: { xs: '32px', lg: '44px' },
+  return <Box component="section" id={copy.id} aria-labelledby={`${copy.id}-heading`} sx={{
+    display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '.68fr 2fr' }, alignItems: { xs: 'center', lg: items.length > 2 ? 'start' : 'center' }, gap: { xs: '32px', lg: '44px' },
     pt: { xs: '32px', md: '48px' }, pb: { xs: '56px', md: '80px' }, scrollMarginTop: '110px',
   }}>
     <Box sx={{ textAlign: { xs: 'center', lg: 'left' } }}>
       <Reveal>
-        <Box component="p" sx={{ ...eyebrowSx, justifyContent: { xs: 'center', lg: 'flex-start' } }}><span />A little extra, just for you</Box>
-        <Box component="h2" id="offers-heading" sx={{ ...serifHeadingSx, fontSize: SECTION_HEADING, lineHeight: 1.08, letterSpacing: '-.04em', m: '21px 0', '& > br': { display: { xs: 'none', lg: 'initial' } } }}>Your stay.<br /><em>Even sweeter.</em></Box>
-        <Box component="p" sx={{ color: '#806271', fontSize: 14, lineHeight: 1.9, maxWidth: { xs: 460, lg: 300 }, mx: { xs: 'auto', lg: 0 } }}>Good days, lovely little extras, and one more reason to make it a Royal Pineapple holiday.</Box>
+        <Box component="p" sx={{ ...eyebrowSx, justifyContent: { xs: 'center', lg: 'flex-start' } }}><span />{copy.eyebrow}</Box>
+        <Box component="h2" id={`${copy.id}-heading`} sx={{ ...serifHeadingSx, fontSize: SECTION_HEADING, lineHeight: 1.08, letterSpacing: '-.04em', m: '21px 0', '& > br': { display: { xs: 'none', lg: 'initial' } } }}>{copy.heading}</Box>
+        <Box component="p" sx={{ color: '#806271', fontSize: 14, lineHeight: 1.9, maxWidth: { xs: 460, lg: 300 }, mx: { xs: 'auto', lg: 0 } }}>{copy.intro}</Box>
         {preview && <Box component="span" sx={{ display: 'inline-block', mt: '16px', pb: '6px', fontSize: 10, color: '#936b80', borderBottom: '1px solid #e4c2d1' }}>Two offer ideas to explore</Box>}
       </Reveal>
     </Box>
@@ -47,13 +63,10 @@ const TONES = {
 export function HighlightCard({ item, alternate = false }: { item: Highlight; alternate?: boolean }) {
   const tone = alternate ? TONES.plum : TONES.cream;
   const discount = item.tag?.includes('%');
-  // An event with more photos or videos than its cover opens them full screen.
+  // An event opens its own page (photos, videos, the full story); the card says how many photos and videos wait there.
   const media = item.media ?? [];
-  const hasGallery = media.some((src) => src !== item.image);
   const videos = media.filter((src) => mediaKind(src) !== 'image').length;
-  const [viewing, setViewing] = useState<number | null>(null);
-  const openGallery = () => setViewing(Math.max(0, media.indexOf(item.image)));
-  const galleryLabel = `${media.length} photos${videos ? ' & videos' : ''}`;
+  const page = item.link ? { href: item.link, onClick: linkClick(item.link) } : null;
   const ctaSx = {
     mt: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', width: '100%', minHeight: 46, py: '13px', px: 0,
     border: 0, borderTop: `1px dashed ${tone.line}`, borderBottom: `1px dashed ${tone.line}`, bgcolor: 'transparent', color: tone.ink, cursor: 'pointer',
@@ -70,8 +83,8 @@ export function HighlightCard({ item, alternate = false }: { item: Highlight; al
     </Box>
     <BadgePicture frameName={alternate ? 'evening-garden' : 'pool-club'} label={item.title} sizes="(max-width: 600px) 90vw, 33vw" shadow={tone.shadow}>
       <ResortPhoto image={item.image} alt={item.title} sizes="(max-width: 600px) 90vw, 33vw" />
-      {/* The picture opens them too (for pointers; the link below is the accessible way in). */}
-      {hasGallery && <ButtonBase onClick={openGallery} tabIndex={-1} aria-hidden sx={{ position: 'absolute', inset: 0 }} />}
+      {/* The picture opens the event's page too (for pointers; its button is the accessible way in). */}
+      {page && <ButtonBase component="a" {...page} tabIndex={-1} aria-hidden sx={{ position: 'absolute', inset: 0 }} />}
     </BadgePicture>
     <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, p: '10px 8px 4px' }}>
       {item.tag && <Box component="span" sx={{
@@ -81,21 +94,21 @@ export function HighlightCard({ item, alternate = false }: { item: Highlight; al
       <Box component="p" sx={{ color: tone.muted, fontSize: 8, letterSpacing: '.1em', textTransform: 'uppercase', lineHeight: 1.6, m: '0 0 7px' }}>{item.label}</Box>
       <Box component="h3" sx={{ fontFamily: fonts.serif, fontWeight: 400, fontSize: { xs: 31, sm: 29 }, lineHeight: 1.08, letterSpacing: '-.025em', color: tone.ink, m: 0 }}>{item.title}</Box>
       {item.description && <Box component="p" sx={{ color: tone.muted, fontSize: { xs: 13, sm: 12 }, lineHeight: 1.8, m: '14px 0' }}>{item.description}</Box>}
-      {hasGallery && <Box component="button" type="button" onClick={openGallery} sx={{
-        alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '7px', m: '0 0 18px', p: '2px 0', border: 0, bgcolor: 'transparent', cursor: 'pointer',
-        color: tone.ink, fontFamily: 'inherit', fontSize: { xs: 12, sm: 11 }, fontWeight: 700, textDecoration: 'underline', textDecorationColor: tone.line, textUnderlineOffset: '4px',
-        '& > svg': { fontSize: 16, color: tone.accent }, '&:hover': { textDecorationColor: tone.accent }, '&:focus-visible': { outline: '3px solid #ce3672', outlineOffset: 3 },
-      }}><PhotoLibraryOutlined aria-hidden="true" />See {galleryLabel}</Box>}
+      {page && media.length > 1 && <Box component="p" sx={{
+        display: 'flex', alignItems: 'center', gap: '7px', m: '0 0 18px', color: tone.muted, fontSize: { xs: 12, sm: 11 }, fontWeight: 700,
+        '& > svg': { fontSize: 16, color: tone.accent },
+      }}><PhotoLibraryOutlined aria-hidden="true" />{media.length} photos{videos ? ' & videos' : ''}</Box>}
       {item.perks.length > 0 && <Box component="ul" sx={{
         listStyle: 'none', p: 0, m: '0 0 22px',
         '& > li': { display: 'flex', alignItems: 'flex-start', gap: '8px', mt: '7px', color: tone.muted, fontSize: { xs: 12, sm: 11 }, lineHeight: 1.6 },
         '& > li > svg': { color: tone.accent, fontSize: 15, flexShrink: 0 },
       }}>{item.perks.slice(0, 3).map(perk => <li key={perk}><CheckRounded aria-hidden="true" />{perk}</li>)}</Box>}
-      {item.ctaLabel && (item.onCta
+      {item.ctaLabel && (page
+        ? <Box component="a" {...page} sx={ctaSx}>{item.ctaLabel}<ArrowForwardRounded aria-hidden="true" /></Box>
+        : item.onCta
         ? <Box component="button" type="button" onClick={item.onCta} sx={ctaSx}>{item.ctaLabel}<ArrowForwardRounded aria-hidden="true" /></Box>
         : <Box component="a" href={item.ctaHref} sx={ctaSx}>{item.ctaLabel}<ArrowForwardRounded aria-hidden="true" /></Box>)}
       {item.note && <Box component="p" sx={{ color: tone.muted, fontSize: { xs: 10, sm: 9 }, lineHeight: 1.7, m: '13px 0 0' }}>{item.note}</Box>}
-      {hasGallery && <MediaViewer items={media} title={item.title} index={viewing} onIndex={setViewing} />}
     </Box>
   </Box>;
 }
