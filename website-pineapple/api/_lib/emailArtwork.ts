@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const files = [
   ['royal-pineapple-logo', 'royal-pineapple-logo.png', 'image/png'],
@@ -19,10 +20,34 @@ const USED_BY: Record<string, ArtworkId[]> = {
   'rp-booking-confirmation': ['royal-pineapple-logo', 'royal-pineapple-riviera'],
 };
 
+// Where public/email ends up depends on how the function runs. On Vercel the
+// repo's folders are kept, so with this site in website-pineapple/ the files
+// (included by vercel.json) sit in /var/task/website-pineapple/public/email —
+// not /var/task/public/email, which is what looking only beside process.cwd()
+// found, and why every email failed with ENOENT. `vercel dev` and the tests run
+// from the site's own folder. Each place is tried in turn, then the live website.
+function folders(): string[] {
+  const candidates = [resolve(process.cwd(), 'public/email'), resolve(process.cwd(), 'website-pineapple/public/email')];
+  try { candidates.push(resolve(dirname(fileURLToPath(import.meta.url)), '../../public/email')); } catch { /* not a file URL once bundled */ }
+  return [...new Set(candidates)];
+}
+
+const siteUrl = () => (process.env.SITE_URL || 'https://www.royalpineapplehotel.com').replace(/\/$/, '');
+
+async function readPicture(filename: string): Promise<Buffer> {
+  for (const folder of folders()) {
+    try { return await readFile(resolve(folder, filename)); } catch { /* try the next place */ }
+  }
+  // The same files are published with the website, at /email/<file>.
+  const response = await fetch(`${siteUrl()}/email/${filename}`);
+  if (!response.ok) throw new Error(`Email picture ${filename} not found on disk or at ${siteUrl()}/email/ (HTTP ${response.status})`);
+  return Buffer.from(await response.arrayBuffer());
+}
+
 async function loadArtwork() {
   return Promise.all(files.map(async ([content_id, filename, content_type]) => ({
     filename, content_id, content_type,
-    content: (await readFile(resolve(process.cwd(), 'public/email', filename))).toString('base64'),
+    content: (await readPicture(filename)).toString('base64'),
   })));
 }
 

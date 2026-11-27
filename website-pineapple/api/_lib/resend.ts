@@ -55,10 +55,15 @@ export function withCopies(to: string[], bcc: string[] = []): string[] {
 }
 
 export async function sendTemplate({ from, to: recipients, bcc: asked, replyTo, subject, template, variables, idempotencyKey }: TemplateEmail): Promise<SendResult> {
-  const attachments = await inlineEmailArtwork(template);
+  // The pictures are decoration: if they can't be loaded the email still goes
+  // (with empty picture boxes) — a booking must never fail to reach the team over a logo.
+  const attachments = await inlineEmailArtwork(template).catch((error) => {
+    console.error('Email pictures unavailable — sending without them', template, error);
+    return [];
+  });
   const to = visibleTo(recipients);
   const bcc = withCopies(to, asked);
-  return post({ from, to, ...(bcc.length && { bcc }), ...(replyTo && { reply_to: replyTo }), subject, template: { id: template, variables }, attachments }, idempotencyKey);
+  return post({ from, to, ...(bcc.length && { bcc }), ...(replyTo && { reply_to: replyTo }), subject, template: { id: template, variables }, ...(attachments.length && { attachments }) }, idempotencyKey);
 }
 
 /** A plain-text note for the team, for things that need a human (a payment we can't match, a handoff that keeps failing). */

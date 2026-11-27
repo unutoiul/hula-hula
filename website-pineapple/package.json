@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b tsconfig.node.json && tsc --noEmit -p tsconfig.json",
     "typecheck:api": "tsc --noEmit -p tsconfig.api.json",
-    "test:unit": "node --import tsx --test tests/booking.test.ts tests/email-artwork.test.ts tests/email-copy.test.ts",
+    "test:unit": "node --import tsx --test tests/booking.test.ts tests/email-artwork.test.ts tests/email-artwork-deployed.test.ts tests/email-copy.test.ts",
     "test:payments": "node --import tsx --test tests/payment-status.test.ts tests/siteminder-delivery.test.ts",
     "preview": "vite preview"
   },
