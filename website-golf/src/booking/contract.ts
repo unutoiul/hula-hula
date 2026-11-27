@@ -100,6 +100,8 @@ export interface PublicEvent {
   highlights: string[];
   schedule: ScheduleItem[];
   coverImage: string | null;
+  /** More photos, video files and YouTube links for the event's page, in order. */
+  gallery: string[];
   salesOpen: boolean;
   packages: PublicPackage[];
 }

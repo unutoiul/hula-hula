@@ -1,9 +1,12 @@
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import EventAvailableRounded from '@mui/icons-material/EventAvailableRounded';
-import { Box, Button, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import PhotoLibraryRounded from '@mui/icons-material/PhotoLibraryRounded';
+import { Box, Button, ButtonBase, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { useState } from 'react';
 import { SECTION_SCROLL_OFFSET } from '../../layoutConstants';
 import { fonts } from '../../theme';
 import { DragCarousel } from '../common/DragCarousel';
+import { MediaViewer, mediaKind } from '../common/EventMedia';
 import { ResortPhoto } from '../common/ResortPhoto';
 import { Reveal } from '../common/ScrollMotion';
 import { useHighlights, type Highlight } from './cmsCards';
@@ -50,6 +53,11 @@ export function HighlightsSection() {
 export function HighlightCard({ item }: { item: Highlight }) {
   const isOffer = item.kind === 'offer';
   const morePerks = item.perks.length - PERKS_SHOWN;
+  // An event with more photos or videos than its cover opens them full screen.
+  const media = item.media ?? [];
+  const hasGallery = media.some((src) => src !== item.image);
+  const videos = media.filter((src) => mediaKind(src) !== 'image').length;
+  const [viewing, setViewing] = useState<number | null>(null);
   return <Box component="article" sx={{ width: '100%', display: 'flex', flexDirection: 'column', p: .9, bgcolor: 'background.paper', borderRadius: '22px', border: '1px solid rgba(23,60,44,.10)', boxShadow: '0 8px 22px rgba(23,60,44,.07)' }}>
     <Box sx={{ position: 'relative', aspectRatio: '5 / 4', borderRadius: '15px', overflow: 'hidden' }}>
       <ResortPhoto image={item.image} alt={item.title} sizes="(max-width: 600px) 78vw, (max-width: 1200px) 33vw, 25vw" />
@@ -61,7 +69,15 @@ export function HighlightCard({ item }: { item: Highlight }) {
         bgcolor: isOffer ? 'secondary.main' : '#fffef8', border: '2px solid #fffef8', boxShadow: '0 3px 10px rgba(23,60,44,.18)',
         fontFamily: fonts.playful, fontSize: 18, lineHeight: 1.25,
       }}>{item.tag}</Box>}
+      {hasGallery && <ButtonBase onClick={() => setViewing(Math.max(0, media.indexOf(item.image)))}
+        aria-label={`See all ${media.length} photos${videos ? ' and videos' : ''} of ${item.title}`}
+        sx={{ position: 'absolute', inset: 0, justifyContent: 'flex-end', alignItems: 'flex-start', p: 1.25, '&:hover .gallery-chip, &:focus-visible .gallery-chip': { bgcolor: 'secondary.main' } }}>
+        <Box className="gallery-chip" sx={{ display: 'flex', alignItems: 'center', gap: .5, px: 1, py: .35, borderRadius: 99, bgcolor: '#fffef8', color: 'text.primary', fontSize: 12, fontWeight: 700, boxShadow: '0 2px 8px rgba(23,60,44,.15)', transition: 'background-color .2s ease' }}>
+          <PhotoLibraryRounded sx={{ fontSize: 15 }} />{media.length}
+        </Box>
+      </ButtonBase>}
     </Box>
+    {hasGallery && <MediaViewer items={media} title={item.title} index={viewing} onIndex={setViewing} />}
     <Box sx={{ px: { xs: 1.25, md: 1.5 }, pt: 1.75, pb: 1.25, display: 'flex', flexDirection: 'column', flex: 1 }}>
       <Typography variant="overline" noWrap sx={{ color: 'success.main', fontSize: 10.5, lineHeight: 1.5 }}>{item.label}</Typography>
       <Typography variant="h3" sx={{ fontSize: { xs: 22, md: 23 }, lineHeight: 1.15, mt: .5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.title}</Typography>

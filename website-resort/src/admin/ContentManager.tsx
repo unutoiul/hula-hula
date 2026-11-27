@@ -10,6 +10,7 @@ import { photoByUrl } from '../data/photos';
 import type { CarouselCardData } from '../types';
 import { ImageField } from './ImageField';
 import { InfoButton } from './InfoButton';
+import { MediaField } from './MediaField';
 import { supabase } from './supabase';
 
 // One editor for every CMS table: a list (show/hide, edit, delete; new items
@@ -22,6 +23,8 @@ export type Field =
   | { key: string; label: string; kind: 'text' | 'multiline' | 'date' | 'code'; max?: number; required?: boolean; helper?: string; showIf?: (row: Row) => boolean }
   | { key: string; label: string; kind: 'select'; options: { value: string; label: string }[]; helper?: string; showIf?: (row: Row) => boolean }
   | { key: string; label: string; kind: 'images' | 'image'; helper?: string; showIf?: (row: Row) => boolean }
+  /** Photos, video files and YouTube links (an event's gallery). */
+  | { key: string; label: string; kind: 'media'; helper?: string; showIf?: (row: Row) => boolean }
   | { key: string; label: string; kind: 'number'; min: number; max: number; unit?: string; helper?: string; showIf?: (row: Row) => boolean }
   | { key: string; label: string; kind: 'tags'; suggestions: string[]; helper?: string; showIf?: (row: Row) => boolean }
   | { key: string; label: string; kind: 'roomTypes' | 'switch'; helper?: string; showIf?: (row: Row) => boolean }
@@ -169,6 +172,9 @@ function EditDialog({ config, initial, onClose, onSaved }: { config: ContentConf
                 return <ImageField key={field.key} label={field.label} multiple={field.kind === 'images'} folder={config.table}
                   value={field.kind === 'images' ? (value as string[] | undefined) ?? [] : value ? [value as string] : []}
                   onChange={(next) => set(field.key, field.kind === 'images' ? next : next[0] ?? null)} />;
+              case 'media':
+                return <MediaField key={field.key} label={field.label} helper={field.helper} folder={config.table}
+                  value={(value as string[] | undefined) ?? []} onChange={(next) => set(field.key, next)} />;
               case 'select':
                 return <TextField key={field.key} select label={field.label} value={(value as string) ?? ''} onChange={(e) => set(field.key, e.target.value)} helperText={field.helper}>
                   {field.options.map((option) => <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>)}

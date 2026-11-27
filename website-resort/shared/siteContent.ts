@@ -17,6 +17,8 @@ export interface SiteEvent {
   title: string;
   summary: string;
   imageUrl: string | null;
+  /** More photos, video files and YouTube links, in order (shown after the cover). */
+  gallery: string[];
   /** YYYY-MM-DD; both null = an ongoing thing ("Every Friday", "On request"). */
   startsOn: string | null;
   endsOn: string | null;

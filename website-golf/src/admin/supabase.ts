@@ -77,6 +77,8 @@ export interface StaffEvent {
   highlights: string[];
   schedule: { time: string; text: string }[];
   cover_image: string | null;
+  /** Missing until supabase/event-gallery.sql has run. */
+  gallery?: string[] | null;
   published: boolean;
   sales_open: boolean;
 }

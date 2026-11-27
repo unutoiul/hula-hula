@@ -17,6 +17,8 @@ export interface EventRow {
   id: string; slug: string; title: string; tagline: string; starts_on: string; ends_on: string | null;
   start_time: string | null; end_time: string | null; description: string; highlights: string[]; schedule: ScheduleItem[];
   cover_image: string | null; published: boolean; sales_open: boolean;
+  /** Missing until supabase/event-gallery.sql has run. */
+  gallery?: string[] | null;
 }
 export interface PackageRow { id: string; event_id: string; name: string; description: string; includes: string[]; price: number; capacity: number; max_per_order: number; sort_order: number; active: boolean }
 export interface OrderRow {
@@ -52,7 +54,7 @@ export async function loadPublicEvents(slug?: string): Promise<PublicEvent[]> {
     const past = (e.ends_on ?? e.starts_on) < today;
     return {
       slug: e.slug, title: e.title, tagline: e.tagline, startsOn: e.starts_on, endsOn: e.ends_on, startTime: hhmm(e.start_time), endTime: hhmm(e.end_time),
-      description: e.description, highlights: e.highlights, schedule: e.schedule, coverImage: e.cover_image, salesOpen: e.sales_open && !past,
+      description: e.description, highlights: e.highlights, schedule: e.schedule, coverImage: e.cover_image, gallery: e.gallery ?? [], salesOpen: e.sales_open && !past,
       packages: packages.filter((p) => p.event_id === e.id).map((p) => ({
         id: p.id, name: p.name, description: p.description, includes: p.includes, price: p.price, maxPerOrder: p.max_per_order,
         left: Math.max(0, p.capacity - (taken.get(p.id) ?? 0)),

@@ -7,6 +7,7 @@ import { ONSITE_BOOKING, toBookHref, toISODate, useBookingSearch } from '../../c
 import { useContactForm } from '../../context/ContactFormContext';
 import { useSiteContent } from '../../context/SiteContentContext';
 import { photoAssets as p } from '../../data/photos';
+import { isPicture } from '../common/EventMedia';
 import { navigate } from '../../router';
 import { previewOffers } from './previewOffers';
 
@@ -30,6 +31,8 @@ export interface Highlight {
   /** Small print: an offer's stay dates, minimum stay and last booking day, or when an event is on. */
   note: string | null;
   image: string;
+  /** An event's cover and its other photos and videos, for the full-screen viewer. */
+  media?: string[];
   ctaLabel?: string; onCta?: () => void; ctaHref?: string; ctaIcon?: ReactNode;
 }
 
@@ -99,11 +102,14 @@ export function offerHighlight(offer: Offer): Highlight {
 /** What an event's card shows (the /admin preview uses this too). */
 export function eventHighlight(event: SiteEvent): Highlight {
   const dates = eventDates(event);
+  const gallery = event.gallery ?? [];
   const base: Highlight = {
     id: event.id, kind: 'event', label: 'What’s on', tag: dates || null,
     title: event.title, description: event.summary, perks: [],
     note: [dates, event.timeLabel].filter(Boolean).join(' · ') || null,
-    image: event.imageUrl ?? p.meetingBanquet.src,
+    // No cover picked: the first photo from the gallery, then a resort photo.
+    image: event.imageUrl ?? gallery.find(isPicture) ?? p.meetingBanquet.src,
+    media: [...new Set([...(event.imageUrl ? [event.imageUrl] : []), ...gallery])],
   };
   switch (event.cta.type) {
     case 'none': return base;

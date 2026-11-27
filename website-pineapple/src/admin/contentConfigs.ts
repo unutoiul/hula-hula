@@ -1,5 +1,6 @@
 import type { SiteEvent } from '../../shared/siteContent';
 import { eventHighlight, eventWhen, offerHighlight } from '../components/sections/cmsCards';
+import { isPicture } from '../components/common/EventMedia';
 import type { ContentConfig, Row } from './ContentManager';
 
 // What staff can edit for each kind of content, and how it previews. Column
@@ -42,8 +43,10 @@ export const activitiesConfig: ContentConfig = {
   firstImage: (row) => (row.images as string[] | undefined)?.[0] ?? null,
 };
 
+const galleryOf = (row: Row) => (row.gallery as string[] | null | undefined) ?? [];
+
 const asEvent = (row: Row): SiteEvent => ({
-  id: 'preview', title: text(row, 'title'), summary: text(row, 'summary'), imageUrl: text(row, 'image_url') || null,
+  id: 'preview', title: text(row, 'title'), summary: text(row, 'summary'), imageUrl: text(row, 'image_url') || null, gallery: galleryOf(row),
   startsOn: text(row, 'starts_on') || null, endsOn: text(row, 'ends_on') || null, timeLabel: text(row, 'time_label') || null,
   cta: { type: (text(row, 'cta_type') || 'contact') as SiteEvent['cta']['type'], label: text(row, 'cta_label') || null, url: text(row, 'cta_url') || null },
 });
@@ -56,7 +59,8 @@ export const eventsConfig: ContentConfig = {
   fields: [
     { key: 'title', label: 'Title', kind: 'text', max: 120, required: true },
     { key: 'summary', label: 'Description', kind: 'multiline', max: 600 },
-    { key: 'image_url', label: 'Picture', kind: 'image' },
+    { key: 'image_url', label: 'Cover picture (on the card)', kind: 'image' },
+    { key: 'gallery', label: 'More photos & videos', kind: 'media', helper: 'Guests open them from the event’s card. Add as many photos as you like, video files up to 50 MB, or a YouTube link for longer videos. The arrow moves one earlier.' },
     { key: 'starts_on', label: 'First day', kind: 'date', helper: 'Leave both dates empty for something ongoing' },
     { key: 'ends_on', label: 'Last day', kind: 'date', helper: 'Only for events over several days' },
     { key: 'time_label', label: 'When (in words)', kind: 'text', max: 60, helper: 'e.g. 7 pm – late, or Every Friday' },
@@ -70,9 +74,9 @@ export const eventsConfig: ContentConfig = {
     { key: 'cta_url', label: 'Link address', kind: 'text', max: 300, helper: 'https://…', showIf: (row) => row.cta_type === 'link' },
   ],
   blank: () => ({ title: '', summary: '', image_url: null, starts_on: null, ends_on: null, time_label: '', cta_type: 'contact', cta_label: '', cta_url: '', published: false }),
-  subtitle: (row) => eventWhen(asEvent(row)),
+  subtitle: (row) => [eventWhen(asEvent(row)), galleryOf(row).length ? `${galleryOf(row).length} more photo${galleryOf(row).length === 1 ? '' : 's'}/video${galleryOf(row).length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · '),
   preview: (row) => eventHighlight({ ...asEvent(row), title: text(row, 'title') || 'Title' }),
-  firstImage: (row) => text(row, 'image_url') || null,
+  firstImage: (row) => text(row, 'image_url') || galleryOf(row).find(isPicture) || null,
 };
 
 // Perks guests often get with a direct-booking offer — staff can also type their own.

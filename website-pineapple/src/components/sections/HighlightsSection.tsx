@@ -1,8 +1,11 @@
 import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
-import { Box } from '@mui/material';
+import PhotoLibraryOutlined from '@mui/icons-material/PhotoLibraryOutlined';
+import { Box, ButtonBase } from '@mui/material';
+import { useState } from 'react';
 import { SECTION_HEADING } from '../../layoutConstants';
 import { fonts } from '../../theme';
+import { MediaViewer, mediaKind } from '../common/EventMedia';
 import { ResortPhoto } from '../common/ResortPhoto';
 import { Reveal } from '../common/ScrollMotion';
 import { BadgePicture } from '../landing/BadgePicture';
@@ -44,6 +47,13 @@ const TONES = {
 export function HighlightCard({ item, alternate = false }: { item: Highlight; alternate?: boolean }) {
   const tone = alternate ? TONES.plum : TONES.cream;
   const discount = item.tag?.includes('%');
+  // An event with more photos or videos than its cover opens them full screen.
+  const media = item.media ?? [];
+  const hasGallery = media.some((src) => src !== item.image);
+  const videos = media.filter((src) => mediaKind(src) !== 'image').length;
+  const [viewing, setViewing] = useState<number | null>(null);
+  const openGallery = () => setViewing(Math.max(0, media.indexOf(item.image)));
+  const galleryLabel = `${media.length} photos${videos ? ' & videos' : ''}`;
   const ctaSx = {
     mt: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', width: '100%', minHeight: 46, py: '13px', px: 0,
     border: 0, borderTop: `1px dashed ${tone.line}`, borderBottom: `1px dashed ${tone.line}`, bgcolor: 'transparent', color: tone.ink, cursor: 'pointer',
@@ -60,6 +70,8 @@ export function HighlightCard({ item, alternate = false }: { item: Highlight; al
     </Box>
     <BadgePicture frameName={alternate ? 'evening-garden' : 'pool-club'} label={item.title} sizes="(max-width: 600px) 90vw, 33vw" shadow={tone.shadow}>
       <ResortPhoto image={item.image} alt={item.title} sizes="(max-width: 600px) 90vw, 33vw" />
+      {/* The picture opens them too (for pointers; the link below is the accessible way in). */}
+      {hasGallery && <ButtonBase onClick={openGallery} tabIndex={-1} aria-hidden sx={{ position: 'absolute', inset: 0 }} />}
     </BadgePicture>
     <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, p: '10px 8px 4px' }}>
       {item.tag && <Box component="span" sx={{
@@ -69,6 +81,11 @@ export function HighlightCard({ item, alternate = false }: { item: Highlight; al
       <Box component="p" sx={{ color: tone.muted, fontSize: 8, letterSpacing: '.1em', textTransform: 'uppercase', lineHeight: 1.6, m: '0 0 7px' }}>{item.label}</Box>
       <Box component="h3" sx={{ fontFamily: fonts.serif, fontWeight: 400, fontSize: { xs: 31, sm: 29 }, lineHeight: 1.08, letterSpacing: '-.025em', color: tone.ink, m: 0 }}>{item.title}</Box>
       {item.description && <Box component="p" sx={{ color: tone.muted, fontSize: { xs: 13, sm: 12 }, lineHeight: 1.8, m: '14px 0' }}>{item.description}</Box>}
+      {hasGallery && <Box component="button" type="button" onClick={openGallery} sx={{
+        alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '7px', m: '0 0 18px', p: '2px 0', border: 0, bgcolor: 'transparent', cursor: 'pointer',
+        color: tone.ink, fontFamily: 'inherit', fontSize: { xs: 12, sm: 11 }, fontWeight: 700, textDecoration: 'underline', textDecorationColor: tone.line, textUnderlineOffset: '4px',
+        '& > svg': { fontSize: 16, color: tone.accent }, '&:hover': { textDecorationColor: tone.accent }, '&:focus-visible': { outline: '3px solid #ce3672', outlineOffset: 3 },
+      }}><PhotoLibraryOutlined aria-hidden="true" />See {galleryLabel}</Box>}
       {item.perks.length > 0 && <Box component="ul" sx={{
         listStyle: 'none', p: 0, m: '0 0 22px',
         '& > li': { display: 'flex', alignItems: 'flex-start', gap: '8px', mt: '7px', color: tone.muted, fontSize: { xs: 12, sm: 11 }, lineHeight: 1.6 },
@@ -78,6 +95,7 @@ export function HighlightCard({ item, alternate = false }: { item: Highlight; al
         ? <Box component="button" type="button" onClick={item.onCta} sx={ctaSx}>{item.ctaLabel}<ArrowForwardRounded aria-hidden="true" /></Box>
         : <Box component="a" href={item.ctaHref} sx={ctaSx}>{item.ctaLabel}<ArrowForwardRounded aria-hidden="true" /></Box>)}
       {item.note && <Box component="p" sx={{ color: tone.muted, fontSize: { xs: 10, sm: 9 }, lineHeight: 1.7, m: '13px 0 0' }}>{item.note}</Box>}
+      {hasGallery && <MediaViewer items={media} title={item.title} index={viewing} onIndex={setViewing} />}
     </Box>
   </Box>;
 }

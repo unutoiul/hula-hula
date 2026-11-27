@@ -15,6 +15,7 @@ import { GuestStepper } from '../components/booking/GuestStepper';
 import { notifyContentChanged } from '../data/contentSync';
 import { linkClick, navigate } from '../router';
 import { ImagePicker } from './ImagePicker';
+import { MediaField } from './MediaField';
 import { supabase, takenPlaces, type OrderStatus, type StaffEvent, type StaffOrder, type StaffPackage } from './supabase';
 import { linesToList, listToLines, Section, toInt } from './ui';
 
@@ -74,7 +75,7 @@ export function EventEditor({ id }: { id: string }) {
 function Details({ event, hasOrders, onSaved }: { event: StaffEvent; hasOrders: boolean; onSaved: () => Promise<void> }) {
   const [form, setForm] = useState({
     ...event, start_time: event.start_time?.slice(0, 5) ?? '', end_time: event.end_time?.slice(0, 5) ?? '', ends_on: event.ends_on ?? '',
-    highlights: listToLines(event.highlights), schedule: scheduleToText(event.schedule),
+    highlights: listToLines(event.highlights), schedule: scheduleToText(event.schedule), gallery: event.gallery ?? [],
   });
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
@@ -92,6 +93,8 @@ function Details({ event, hasOrders, onSaved }: { event: StaffEvent; hasOrders: 
       title: form.title.trim(), slug, tagline: form.tagline.trim(), starts_on: form.starts_on, ends_on: form.ends_on || null,
       start_time: form.start_time || null, end_time: form.end_time || null, description: form.description.trim(),
       highlights: linesToList(form.highlights), schedule: textToSchedule(form.schedule), cover_image: form.cover_image || null,
+      // Sent only once the column exists (supabase/event-gallery.sql), so saving works before it runs.
+      ...('gallery' in event || form.gallery.length ? { gallery: form.gallery } : {}),
       published: form.published, sales_open: form.sales_open,
     }).eq('id', event.id).select('id').single();
     setBusy(false);
@@ -125,6 +128,8 @@ function Details({ event, hasOrders, onSaved }: { event: StaffEvent; hasOrders: 
         <Grid size={6}><TextField fullWidth label="Ends" type="time" value={form.end_time} onChange={(e) => set({ end_time: e.target.value })} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
       </Grid>
       <ImagePicker value={form.cover_image ? [form.cover_image] : []} onChange={(images) => set({ cover_image: images[0] ?? null })} label="Cover photo" />
+      <MediaField label="More photos & videos" value={form.gallery} onChange={(gallery) => set({ gallery })}
+        helper="Shown in a gallery on the event’s page. Add as many photos as you like, video files up to 50 MB, or a YouTube link for longer videos. The arrow moves one earlier." />
       <TextField label="About the day" multiline minRows={5} value={form.description} onChange={(e) => set({ description: e.target.value.slice(0, 5000) })} helperText="Leave an empty line between paragraphs." />
       <TextField label="Highlights (one per line)" multiline minRows={3} value={form.highlights} onChange={(e) => set({ highlights: e.target.value })} placeholder={'Swing clinic with Cedric\n9 holes with the pro\nLunch & drinks on the balcony'} />
       <TextField label="Schedule (one per line: time, then what happens)" multiline minRows={3} value={form.schedule} onChange={(e) => set({ schedule: e.target.value })} placeholder={'08:30 Registration & coffee\n09:00 Swing clinic\n12:30 Lunch'} />

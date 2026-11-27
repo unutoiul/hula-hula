@@ -21,6 +21,7 @@ import { linkClick, navigate, useLocation } from '../router';
 import { fonts } from '../theme';
 import { EventApiError, eventWhen, fetchEvent, fetchOrder, startOrder } from './api';
 import { EventDetails } from './EventDetails';
+import { EventGallery } from './EventGallery';
 
 // /events/<slug> — an event's own page: the poster, the story, the schedule
 // and its packages, each bought through Payso's secure payment page.
@@ -98,6 +99,7 @@ function EventPage({ slug }: { slug: string }) {
     <Container maxWidth="xl" sx={{ mt: { xs: 4, md: 7 } }}>
       {loadError && <Alert severity="warning" sx={{ mb: 3 }}>{loadError}</Alert>}
       <EventDetails event={event} phone={contact.phone} onBuy={(pack, quantity) => setBuying({ pack, quantity })} />
+      <EventGallery title={event.title} media={event.gallery ?? []} />
     </Container>
 
     {buying && <CheckoutDialog event={event} pack={buying.pack} quantity={buying.quantity} testPayments={testPayments} onClose={() => setBuying(null)} />}
