@@ -9,10 +9,14 @@ import { dbConfigured, rest } from './db.js';
 interface OfferRow {
   id: string; title: string; badge: string | null; discount_percent: number | string; perks: string[]; promo_code: string | null;
   valid_from: string | null; valid_to: string | null; stay_from: string | null; stay_to: string | null; min_nights: number | null;
+  /** Missing until supabase/migrations/0010_offer_book_ahead.sql has run. */
+  min_advance_days?: number | null;
   room_type_uuids: string[]; sort_order: number;
 }
 
-const COLUMNS = 'id,title,badge,discount_percent,perks,promo_code,valid_from,valid_to,stay_from,stay_to,min_nights,room_type_uuids,sort_order';
+// Every column (not a list), so pricing keeps working whether or not a newer
+// column like min_advance_days exists yet — a failed read would drop every offer.
+const COLUMNS = '*';
 const TTL_MS = 60_000;
 let cache: { loadedAt: number; deals: Deal[] } | null = null;
 
@@ -24,7 +28,7 @@ export async function loadDeals(): Promise<Deal[]> {
     const deals = rows.map((row): Deal => ({
       id: row.id, title: row.title, badge: row.badge, discountPercent: Number(row.discount_percent) || 0, perks: row.perks ?? [],
       promoCode: row.promo_code, validFrom: row.valid_from, validTo: row.valid_to, stayFrom: row.stay_from, stayTo: row.stay_to,
-      minNights: row.min_nights, roomTypeUuids: row.room_type_uuids ?? [], sortOrder: row.sort_order,
+      minNights: row.min_nights, minAdvanceDays: row.min_advance_days ?? null, roomTypeUuids: row.room_type_uuids ?? [], sortOrder: row.sort_order,
     }));
     cache = { loadedAt: Date.now(), deals };
     return deals;

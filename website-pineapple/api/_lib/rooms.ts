@@ -95,7 +95,7 @@ export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<stri
     if (rate.promotionOnly && !(promo && promoDiscount > 0)) continue;
     const available = quote.availability - (holds.get(quote.roomTypeUuid) ?? 0);
     if (available <= 0) continue;
-    // The best special offer for this room and stay, taken off the nights it covers.
+    // The best special offer for this room and stay (by check-in day), taken off every night.
     const originalTotal = toSatang(quote.price.gross);
     const deal = bestDeal(deals, { today, nightDates: nights.map((night) => night.date), roomTypeUuid: quote.roomTypeUuid, promo });
     let savings = 0;

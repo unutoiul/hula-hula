@@ -66,10 +66,10 @@ describe('who sleeps where', () => {
 });
 
 describe('special offers', async () => {
-  const { bestDeal, isEligible, nightlyDiscounts } = await import('../api/_lib/dealRules.ts');
+  const { bestDeal, daysAhead, isEligible, nightlyDiscounts } = await import('../api/_lib/dealRules.ts');
   const base = {
     id: 'a', title: 'Book direct', badge: 'Special offer', discountPercent: 10, perks: [], promoCode: null,
-    validFrom: null, validTo: null, stayFrom: null, stayTo: null, minNights: null, roomTypeUuids: [], sortOrder: 0,
+    validFrom: null, validTo: null, stayFrom: null, stayTo: null, minNights: null, minAdvanceDays: null, roomTypeUuids: [], sortOrder: 0,
   };
   const ctx = { today: '2026-11-01', nightDates: ['2026-12-10', '2026-12-11', '2026-12-12'], roomTypeUuid: 'deluxe' };
 
@@ -85,7 +85,11 @@ describe('special offers', async () => {
     assert.ok(!isEligible({ ...base, validFrom: '2026-11-02' }, ctx));
     assert.ok(isEligible({ ...base, validFrom: '2026-11-01', validTo: '2026-11-01' }, ctx)); // both days count
     assert.ok(!isEligible({ ...base, stayFrom: '2027-01-01' }, ctx));
-    assert.ok(isEligible({ ...base, stayFrom: '2026-12-12' }, ctx)); // covers the last night
+    // Decided by the check-in day, not by any night of the stay.
+    assert.ok(!isEligible({ ...base, stayFrom: '2026-12-12' }, ctx)); // arrives the day before
+    assert.ok(isEligible({ ...base, stayFrom: '2026-12-10' }, ctx));
+    assert.ok(isEligible({ ...base, stayTo: '2026-12-10' }, ctx)); // arrives on the last day: the whole stay counts
+    assert.ok(!isEligible({ ...base, stayTo: '2026-12-09' }, ctx));
     assert.ok(!isEligible({ ...base, minNights: 4 }, ctx));
     assert.ok(isEligible({ ...base, minNights: 3 }, ctx));
     assert.ok(!isEligible({ ...base, roomTypeUuids: ['villa'] }, ctx));
@@ -99,12 +103,62 @@ describe('special offers', async () => {
     assert.equal(bestDeal([], ctx), null);
   });
 
-  it('discounts only the nights inside the stay dates, in whole baht', () => {
+  it('discounts every night of the stay alike, in whole baht', () => {
     const nights = ctx.nightDates.map((date) => ({ date, amount: 845000 }));
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10 }, nights), [84500, 84500, 84500]);
-    assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10, stayTo: '2026-12-11' }, nights), [84500, 84500, 0]);
+    // Even past its last check-in day: the offer covers the stay it was chosen for.
+    assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 10, stayTo: '2026-12-10' }, nights), [84500, 84500, 84500]);
     // 75% of ฿8,450 is ฿6,337.50 — rounded to ฿6,338 so prices stay in whole baht.
     assert.deepEqual(nightlyDiscounts({ ...base, discountPercent: 75 }, [{ date: '2026-12-10', amount: 845000 }]), [633800]);
+  });
+
+  it('counts days ahead from today to check-in', () => {
+    assert.equal(daysAhead('2026-11-27', '2027-01-26'), 60);
+    assert.equal(daysAhead('2026-11-27', '2026-11-28'), 1);
+    assert.ok(isEligible({ ...base, minAdvanceDays: 60 }, { ...ctx, today: '2026-10-11' })); // 60 days before 10 Dec
+    assert.ok(!isEligible({ ...base, minAdvanceDays: 60 }, { ...ctx, today: '2026-10-12' })); // 59
+  });
+
+  // The priority the hotel asked for: Early Bird 55% when booked 60+ days
+  // ahead, else Minimum 4 Nights 53% for 4+ nights, else Direct 50% — one
+  // only, on every night, and a bigger offer never blocks a smaller one.
+  describe('Early Bird / Minimum 4 Nights / Direct Promotion', () => {
+    const offers = [
+      { ...base, id: 'direct', title: 'Direct Promotion', discountPercent: 50, minNights: 1, stayFrom: '2026-11-09', stayTo: '2027-04-01', sortOrder: 40 },
+      { ...base, id: 'min4', title: 'Minimum 4 Nights', discountPercent: 53, minNights: 4, stayFrom: '2026-11-27', stayTo: '2027-04-30', sortOrder: 50 },
+      { ...base, id: 'early', title: 'Early Bird', discountPercent: 55, minAdvanceDays: 60, stayTo: '2027-04-30', sortOrder: 60 },
+    ];
+    const stay = (checkIn: string, nights: number) => Array.from({ length: nights }, (_, i) => {
+      const d = new Date(`${checkIn}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + i); return d.toISOString().slice(0, 10);
+    });
+    const pick = (today: string, checkIn: string, nights: number) => bestDeal(offers, { today, nightDates: stay(checkIn, nights), roomTypeUuid: 'deluxe' });
+
+    it('26–28 Jan booked on 27 Nov: Early Bird on both nights', () => {
+      const deal = pick('2026-11-27', '2027-01-26', 2);
+      assert.equal(deal?.id, 'early');
+      assert.deepEqual(nightlyDiscounts(deal!, stay('2027-01-26', 2).map((date) => ({ date, amount: 400000 }))), [220000, 220000]);
+    });
+
+    it('the same stay booked later: Direct 50% on both nights, not blocked', () => {
+      const deal = pick('2026-12-01', '2027-01-26', 2);
+      assert.equal(deal?.id, 'direct');
+      assert.deepEqual(nightlyDiscounts(deal!, stay('2027-01-26', 2).map((date) => ({ date, amount: 400000 }))), [200000, 200000]);
+    });
+
+    it('4+ nights without the 60 days: Minimum 4 Nights', () => {
+      assert.equal(pick('2026-12-20', '2027-01-26', 4)?.id, 'min4');
+      assert.equal(pick('2026-12-20', '2027-01-26', 3)?.id, 'direct');
+    });
+
+    it('4+ nights booked 60+ days ahead: Early Bird beats Minimum 4 Nights', () => {
+      assert.equal(pick('2026-11-27', '2027-02-10', 5)?.id, 'early');
+    });
+
+    it('the old fixed-date Early Bird (from 27 Jan) no longer cuts a stay in two', () => {
+      const fixed = offers.map((o) => (o.id === 'early' ? { ...o, minAdvanceDays: null, stayFrom: '2027-01-27' } : o));
+      const deal = bestDeal(fixed, { today: '2026-11-27', nightDates: stay('2027-01-26', 2), roomTypeUuid: 'deluxe' });
+      assert.equal(deal?.id, 'direct'); // arrives 26 Jan, before it starts: Direct 50% on both nights
+    });
   });
 });
 

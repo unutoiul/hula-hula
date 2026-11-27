@@ -49,29 +49,35 @@ function eventDates({ startsOn, endsOn }: SiteEvent): string {
   return startsOn || endsOn ? day.format(asDay((startsOn ?? endsOn)!)) : '';
 }
 
-/** "Stays 20 Dec – 5 Jan · min. 3 nights · book by 15 Dec" */
-function offerTerms({ stayFrom, stayTo, minNights, validTo }: Offer): string | null {
-  const stays = stayFrom && stayTo ? `Stays ${dayRange(stayFrom, stayTo)}`
-    : stayFrom ? `Stays from ${dayMonth.format(asDay(stayFrom))}`
-      : stayTo ? `Stays until ${dayMonth.format(asDay(stayTo))}` : '';
-  const nights = minNights && minNights > 1 ? (stays ? `min. ${minNights} nights` : `Minimum stay ${minNights} nights`) : '';
-  const bookBy = validTo ? `${stays || nights ? 'book' : 'Book'} by ${dayMonth.format(asDay(validTo))}` : '';
-  return [stays, nights, bookBy].filter(Boolean).join(' · ') || null;
+/** "Check-in 20 Dec – 5 Jan · min. 3 nights · book 60+ days ahead · book by 15 Dec" */
+function offerTerms({ stayFrom, stayTo, minNights, minAdvanceDays, validTo }: Offer): string | null {
+  const arrivals = stayFrom && stayTo ? `check-in ${dayRange(stayFrom, stayTo)}`
+    : stayFrom ? `check-in from ${dayMonth.format(asDay(stayFrom))}`
+      : stayTo ? `check-in until ${dayMonth.format(asDay(stayTo))}` : '';
+  const nights = minNights && minNights > 1 ? `min. ${minNights} nights` : '';
+  const ahead = minAdvanceDays ? `book ${minAdvanceDays}+ days ahead` : '';
+  const bookBy = validTo ? `book by ${dayMonth.format(asDay(validTo))}` : '';
+  const terms = [arrivals, nights, ahead, bookBy].filter(Boolean).join(' · ');
+  return terms ? terms[0].toUpperCase() + terms.slice(1) : null;
 }
 
 export function eventWhen(event: SiteEvent): string {
   return [eventDates(event), event.timeLabel].filter(Boolean).join(' · ') || 'Ongoing';
 }
 
-// Dates that qualify for an offer: the guest's dates if they already fit,
-// otherwise the first stay inside the offer's stay dates that's long enough.
+// Dates that qualify for an offer (the same rules as api/_lib/dealRules.ts):
+// the guest's dates if they already fit, otherwise the first long-enough stay
+// arriving inside the offer's check-in dates, far enough ahead for an early bird.
 function offerDates(offer: Offer, checkIn: Date, checkOut: Date): [Date, Date] {
   const nights = Math.max(1, Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000));
   const minNights = offer.minNights ?? 1;
-  const fits = nights >= minNights && (!offer.stayTo || toISODate(checkIn) <= offer.stayTo) && (!offer.stayFrom || toISODate(checkOut) > offer.stayFrom);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const earliest = new Date(today); earliest.setDate(earliest.getDate() + Math.max(1, offer.minAdvanceDays ?? 0));
+  const arrival = toISODate(checkIn);
+  const fits = nights >= minNights && (!offer.minAdvanceDays || checkIn >= earliest)
+    && (!offer.stayFrom || arrival >= offer.stayFrom) && (!offer.stayTo || arrival <= offer.stayTo);
   if (fits) return [checkIn, checkOut];
-  const tomorrow = new Date(); tomorrow.setHours(0, 0, 0, 0); tomorrow.setDate(tomorrow.getDate() + 1);
-  const start = offer.stayFrom && asDay(offer.stayFrom) > tomorrow ? asDay(offer.stayFrom) : tomorrow;
+  const start = offer.stayFrom && asDay(offer.stayFrom) > earliest ? asDay(offer.stayFrom) : earliest;
   const end = new Date(start); end.setDate(end.getDate() + Math.max(nights, minNights));
   return [start, end];
 }

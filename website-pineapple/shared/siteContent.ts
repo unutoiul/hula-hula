@@ -44,13 +44,15 @@ export interface Offer {
   /** When it can be booked (and shows); null = no limit. */
   validFrom: string | null;
   validTo: string | null;
-  /** Off the room price, on the nights between stayFrom and stayTo. 0 = perks only (a package). */
+  /** Off the room price, on every night of a stay that checks in between stayFrom and stayTo. 0 = perks only (a package). */
   discountPercent: number;
   badge: string | null;
   perks: string[];
   stayFrom: string | null;
   stayTo: string | null;
   minNights: number | null;
+  /** Early bird: only for bookings made at least this many days before check-in. */
+  minAdvanceDays: number | null;
   ctaLabel: string | null;
 }
 
