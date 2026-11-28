@@ -833,6 +833,22 @@ export const photoAssets = {
     "width": 1536,
     "height": 1024,
     "source": "assets/RP WEBSITE PHOTOS UPDATE/Spa/s1.png"
+  },
+  "chabaLunch": {
+    "src": "/images/pineapple/chabaLunch-1600.webp",
+    "srcSet": "/images/pineapple/chabaLunch-480.webp 480w, /images/pineapple/chabaLunch-960.webp 960w, /images/pineapple/chabaLunch-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/chabaLunch-480.avif 480w, /images/pineapple/chabaLunch-960.avif 960w, /images/pineapple/chabaLunch-1600.avif 1600w",
+    "width": 1600,
+    "height": 900,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Lunch/L2.png"
+  },
+  "chabaDinner": {
+    "src": "/images/pineapple/chabaDinner-1600.webp",
+    "srcSet": "/images/pineapple/chabaDinner-480.webp 480w, /images/pineapple/chabaDinner-960.webp 960w, /images/pineapple/chabaDinner-1600.webp 1448w",
+    "avifSrcSet": "/images/pineapple/chabaDinner-480.avif 480w, /images/pineapple/chabaDinner-960.avif 960w, /images/pineapple/chabaDinner-1600.avif 1448w",
+    "width": 1448,
+    "height": 1086,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Dinner/D2.png"
   }
 } satisfies Record<string, PhotoAsset>;
 

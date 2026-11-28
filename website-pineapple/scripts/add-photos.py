@@ -7,7 +7,9 @@ the repo's root assets/ folder, which isn't in git, so `source` records where
 each one came from.
 
     python scripts/add-photos.py
+    python scripts/add-photos.py chabaLunch chabaDinner
 """
+import argparse
 import json
 import re
 from pathlib import Path
@@ -47,6 +49,8 @@ SELECTION = {
     'breakfastRoom': (f'{UPDATE}/Breakfast/b2.png', None),
     'breakfastBuffet': (f'{UPDATE}/Breakfast/b3.png', None),
     'breakfastCollage': (f'{UPDATE}/Breakfast/b4.png', None),
+    'chabaLunch': (f'{UPDATE}/Lunch/L2.png', None),
+    'chabaDinner': (f'{UPDATE}/Dinner/D2.png', None),
     'meetingChaba': (f'{UPDATE}/Meeting Room/Chaba/F1.png', None),
     'meetingChabaClassroom': (f'{UPDATE}/Meeting Room/Chaba/F1.1.png', None),
     'meetingSandSea': (f'{UPDATE}/Meeting Room/Sandsea/F2.png', None),
@@ -61,16 +65,25 @@ SELECTION = {
 # The first meeting-room shoot (green tablecloths), replaced by the new one.
 REMOVE = ['meetingBanquet', 'meetingClassroom', 'meetingSmall', 'meetingBoard']
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('keys', nargs='*', help='Only import the named photos')
+keys = parser.parse_args().keys
+for key in keys:
+    if key not in SELECTION:
+        parser.error(f'unknown photo: {key}')
+
 text = PHOTOS_TS.read_text(encoding='utf-8')
 match = re.search(r'export const photoAssets = (\{.*?\n\}) satisfies', text, re.S)
 photos = json.loads(match.group(1))
 
-for key in REMOVE:
-    photos.pop(key, None)
-    for old in OUTPUT.glob(f'{key}-*'):
-        old.unlink()
+if not keys:
+    for key in REMOVE:
+        photos.pop(key, None)
+        for old in OUTPUT.glob(f'{key}-*'):
+            old.unlink()
 
-for key, (source, crop) in SELECTION.items():
+for key in keys or SELECTION:
+    source, crop = SELECTION[key]
     image = ImageOps.exif_transpose(Image.open(REPO / source)).convert('RGB')
     if crop:
         image = image.crop(crop)

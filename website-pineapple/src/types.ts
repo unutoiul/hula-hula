@@ -43,6 +43,7 @@ export interface Meal {
   /** Which part of the photo to keep when it's cropped to the frame. */
   objectPosition?: string;
   image: string;
+  imageAlt: string;
 }
 
 /** [label, href] — href is an in-page anchor like "#rooms" (or a page, "/meetings"). */

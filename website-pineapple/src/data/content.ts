@@ -274,18 +274,21 @@ export const meals: Meal[] = [
     detail: 'Thai favourites, international classics and fresh fruit, served in the arched dining room.',
     objectPosition: 'center 62%',
     image: p.breakfastBuffet.src,
+    imageAlt: 'Breakfast buffet beneath the pink flamingo murals at Chaba Restaurant',
   },
   {
     name: 'Lunch',
     hours: '10:00 am – 4:00 pm',
     detail: 'Freshly made Thai and international dishes, with Indian, vegetarian and vegan choices too.',
-    image: p.chaba.src,
+    image: p.chabaLunch.src,
+    imageAlt: 'Wooden lunch table set with green plates and fresh flowers beside the windows at Chaba',
   },
   {
     name: 'Dinner',
     hours: 'Evenings',
-    detail: 'A relaxed dinner after a day out in Krabi, under the painted flamingos.',
-    image: p.chabaMurals.src,
+    detail: 'A relaxed dinner after a day out in Krabi.',
+    image: p.chabaDinner.src,
+    imageAlt: 'Candlelit dinner table beside the illuminated Royal Pineapple pool',
   },
 ];
 
