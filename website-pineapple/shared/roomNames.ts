@@ -17,3 +17,14 @@ export const WEBSITE_ROOM_NAMES: Record<string, string> = {
 };
 
 export const guestRoomName = (roomTypeUuid: string, siteMinderName: string) => WEBSITE_ROOM_NAMES[roomTypeUuid] ?? siteMinderName;
+
+/**
+ * SiteMinder room types the website doesn't sell, by SiteMinder room code:
+ * they're dropped as soon as the room list is read, so they never show on
+ * /book and can't be booked. ONE_BEDROOM_VILLA is the hotel's unnamed
+ * placeholder, to be replaced by ONE_BEDROOM_IN_VILLA and TWO_BEDROOM_IN_VILLA.
+ * Take a code out of this list to start selling that room.
+ */
+export const HIDDEN_ROOM_CODES: ReadonlySet<string> = new Set(['ONE_BEDROOM_VILLA']);
+
+export const isSoldOnline = (roomType: { code?: string | null }) => !HIDDEN_ROOM_CODES.has(roomType.code ?? '');

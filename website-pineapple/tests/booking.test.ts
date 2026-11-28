@@ -395,3 +395,13 @@ describe('room types without a name in SiteMinder', async () => {
     assert.equal(roomTypeName({ name: '', code: null }), 'Room');
   });
 });
+
+describe('room types the website does not sell', async () => {
+  const { isSoldOnline } = await import('../shared/roomNames.ts');
+  it('hides the placeholder villa but not the villas replacing it', () => {
+    assert.equal(isSoldOnline({ code: 'ONE_BEDROOM_VILLA' }), false);
+    assert.equal(isSoldOnline({ code: 'ONE_BEDROOM_IN_VILLA' }), true);
+    assert.equal(isSoldOnline({ code: 'TWO_BEDROOM_IN_VILLA' }), true);
+    assert.equal(isSoldOnline({ code: null }), true);
+  });
+});

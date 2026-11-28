@@ -1,3 +1,4 @@
+import { isSoldOnline } from '../../shared/roomNames.js';
 import { roomTypeName } from './roomTypeName.js';
 // SiteMinder's Direct Booking API (read-only): property, room types, room
 // rates and live quotes. Server-side only — the key must never reach a
@@ -142,7 +143,7 @@ async function loadCatalog(): Promise<Catalog> {
   const detailed = await Promise.all(rates.map((rate) => smGet<SmRoomRate>(`/room-rates/${rate.uuid}`).catch(() => rate)));
   return {
     property,
-    roomTypes: new Map(roomTypes.map((roomType) => [roomType.uuid, { ...roomType, name: roomTypeName(roomType) }])),
+    roomTypes: new Map(roomTypes.filter(isSoldOnline).map((roomType) => [roomType.uuid, { ...roomType, name: roomTypeName(roomType) }])),
     rates: new Map(detailed.map((rate) => [rate.uuid, { ...rate, name: rate.name?.trim() || 'Room rate' }])),
   };
 }
