@@ -140,6 +140,18 @@ const activityPages: [string, string, string, string][] = [
     'H Café & Restaurant | Hula Hula Golf Club, Krabi',
     'Lattes and pastries before you tee off, plates to share and cold shakes after, looking straight down the fairways. Open to everyone, no tee time needed.',
   ],
+  [
+    '/activities/one-bedroom-villa',
+    '1-Bedroom Pool Villa',
+    '1-Bedroom Pool Villa at the Club | Hula Hula Golf Club, Krabi',
+    'Stay where you play: a 1-bedroom villa by a shared pool at Hula Hula Golf Club near Krabi Airport, with a living room and a freestanding bathtub.',
+  ],
+  [
+    '/activities/two-bedroom-villa',
+    '2-Bedroom Pool Villa',
+    '2-Bedroom Pool Villa at the Club | Hula Hula Golf Club, Krabi',
+    'Room for four by a shared pool at Hula Hula Golf Club near Krabi Airport: a living and dining room, a main bedroom and a twin room.',
+  ],
 ];
 
 const pages: Record<string, Page> = {

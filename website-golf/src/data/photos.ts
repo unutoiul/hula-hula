@@ -225,6 +225,110 @@ export const photoAssets = {
     "width": 1600,
     "height": 1067,
     "source": "website/photos/02 Rooms and Villas/Two-Storey Pool Villa/hula-hula-two-storey-pool-villa-rose-petal-bath-and-four-poster-bedroom.jpg"
+  },
+  "clubVillaPool": {
+    "src": "/images/golf/clubVillaPool-1600.webp",
+    "srcSet": "/images/golf/clubVillaPool-480.webp 480w, /images/golf/clubVillaPool-960.webp 960w, /images/golf/clubVillaPool-1600.webp 1280w",
+    "avifSrcSet": "/images/golf/clubVillaPool-480.avif 480w, /images/golf/clubVillaPool-960.avif 960w, /images/golf/clubVillaPool-1600.avif 1280w",
+    "width": 1280,
+    "height": 836,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/OTAs-Activity.png"
+  },
+  "clubVilla1Living": {
+    "src": "/images/golf/clubVilla1Living-1600.webp",
+    "srcSet": "/images/golf/clubVilla1Living-480.webp 480w, /images/golf/clubVilla1Living-960.webp 960w, /images/golf/clubVilla1Living-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla1Living-480.avif 480w, /images/golf/clubVilla1Living-960.avif 960w, /images/golf/clubVilla1Living-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_5.jpg"
+  },
+  "clubVilla1Bedroom": {
+    "src": "/images/golf/clubVilla1Bedroom-1600.webp",
+    "srcSet": "/images/golf/clubVilla1Bedroom-480.webp 480w, /images/golf/clubVilla1Bedroom-960.webp 960w, /images/golf/clubVilla1Bedroom-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla1Bedroom-480.avif 480w, /images/golf/clubVilla1Bedroom-960.avif 960w, /images/golf/clubVilla1Bedroom-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_10.jpg"
+  },
+  "clubVilla1Bath": {
+    "src": "/images/golf/clubVilla1Bath-1600.webp",
+    "srcSet": "/images/golf/clubVilla1Bath-480.webp 480w, /images/golf/clubVilla1Bath-960.webp 960w, /images/golf/clubVilla1Bath-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla1Bath-480.avif 480w, /images/golf/clubVilla1Bath-960.avif 960w, /images/golf/clubVilla1Bath-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_1.jpg"
+  },
+  "clubVilla1Lounge": {
+    "src": "/images/golf/clubVilla1Lounge-1600.webp",
+    "srcSet": "/images/golf/clubVilla1Lounge-480.webp 480w, /images/golf/clubVilla1Lounge-960.webp 960w, /images/golf/clubVilla1Lounge-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla1Lounge-480.avif 480w, /images/golf/clubVilla1Lounge-960.avif 960w, /images/golf/clubVilla1Lounge-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_9.jpg"
+  },
+  "clubVilla1Basin": {
+    "src": "/images/golf/clubVilla1Basin-1600.webp",
+    "srcSet": "/images/golf/clubVilla1Basin-480.webp 480w, /images/golf/clubVilla1Basin-960.webp 960w, /images/golf/clubVilla1Basin-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla1Basin-480.avif 480w, /images/golf/clubVilla1Basin-960.avif 960w, /images/golf/clubVilla1Basin-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_4.jpg"
+  },
+  "clubVilla2Master": {
+    "src": "/images/golf/clubVilla2Master-1600.webp",
+    "srcSet": "/images/golf/clubVilla2Master-480.webp 480w, /images/golf/clubVilla2Master-960.webp 960w, /images/golf/clubVilla2Master-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla2Master-480.avif 480w, /images/golf/clubVilla2Master-960.avif 960w, /images/golf/clubVilla2Master-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051414_0.jpg"
+  },
+  "clubVilla2Living": {
+    "src": "/images/golf/clubVilla2Living-1600.webp",
+    "srcSet": "/images/golf/clubVilla2Living-480.webp 480w, /images/golf/clubVilla2Living-960.webp 960w, /images/golf/clubVilla2Living-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla2Living-480.avif 480w, /images/golf/clubVilla2Living-960.avif 960w, /images/golf/clubVilla2Living-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051409.jpg"
+  },
+  "clubVilla2Dining": {
+    "src": "/images/golf/clubVilla2Dining-1600.webp",
+    "srcSet": "/images/golf/clubVilla2Dining-480.webp 480w, /images/golf/clubVilla2Dining-960.webp 960w, /images/golf/clubVilla2Dining-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla2Dining-480.avif 480w, /images/golf/clubVilla2Dining-960.avif 960w, /images/golf/clubVilla2Dining-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051410_0.jpg"
+  },
+  "clubVilla2Bedroom": {
+    "src": "/images/golf/clubVilla2Bedroom-1600.webp",
+    "srcSet": "/images/golf/clubVilla2Bedroom-480.webp 480w, /images/golf/clubVilla2Bedroom-960.webp 960w, /images/golf/clubVilla2Bedroom-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla2Bedroom-480.avif 480w, /images/golf/clubVilla2Bedroom-960.avif 960w, /images/golf/clubVilla2Bedroom-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051412_0.jpg"
+  },
+  "clubVilla2MasterBed": {
+    "src": "/images/golf/clubVilla2MasterBed-1600.webp",
+    "srcSet": "/images/golf/clubVilla2MasterBed-480.webp 480w, /images/golf/clubVilla2MasterBed-960.webp 960w, /images/golf/clubVilla2MasterBed-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla2MasterBed-480.avif 480w, /images/golf/clubVilla2MasterBed-960.avif 960w, /images/golf/clubVilla2MasterBed-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051415_0.jpg"
+  },
+  "clubVilla2Twin": {
+    "src": "/images/golf/clubVilla2Twin-1600.webp",
+    "srcSet": "/images/golf/clubVilla2Twin-480.webp 480w, /images/golf/clubVilla2Twin-960.webp 960w, /images/golf/clubVilla2Twin-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla2Twin-480.avif 480w, /images/golf/clubVilla2Twin-960.avif 960w, /images/golf/clubVilla2Twin-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051418.jpg"
+  },
+  "clubVilla2Lounge": {
+    "src": "/images/golf/clubVilla2Lounge-1600.webp",
+    "srcSet": "/images/golf/clubVilla2Lounge-480.webp 480w, /images/golf/clubVilla2Lounge-960.webp 960w, /images/golf/clubVilla2Lounge-1600.webp 1600w",
+    "avifSrcSet": "/images/golf/clubVilla2Lounge-480.avif 480w, /images/golf/clubVilla2Lounge-960.avif 960w, /images/golf/clubVilla2Lounge-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051411_0.jpg"
   }
 } satisfies Record<string, PhotoAsset>;
 

@@ -80,8 +80,8 @@ export const postcards: Postcard[] = [
   },
 ];
 
-// The two things to do that aren't on the tee sheet: the clubhouse café and
-// a villa at the resort. They sit in the activities list after whatever staff
+// The things to do that aren't on the tee sheet: the clubhouse café, the
+// two pool villas here at the club and a villa at the resort. They sit in the activities list after whatever staff
 // have switched on in /admin, each with its own page at /activities/<id>.
 // An action's href of 'whatsapp' becomes a WhatsApp chat with `message`.
 export interface PlaceAction {
@@ -102,7 +102,19 @@ export interface Place {
   facts: string[];
   actions: PlaceAction[];
   showHours: boolean;
+  /** The little note on its card in the activities list; else "Open to all" (café) or "At the resort" (villa). */
+  note?: string;
 }
+
+// The two pool villas here at the club share a pool. They're sold by our
+// sister hotel Royal Pineapple (its SiteMinder), so "book" goes to its
+// booking page; questions come to the club on WhatsApp. Photos are the ones
+// on royalpineapplehotel.com/rooms/…-pool-villa.
+const ROYAL_PINEAPPLE_BOOK = 'https://www.royalpineapplehotel.com/book';
+const clubVillaActions = (villa: string): PlaceAction[] => [
+  { label: 'Check dates & book', href: ROYAL_PINEAPPLE_BOOK },
+  { label: 'Ask us on WhatsApp', href: 'whatsapp', message: `Hi Hula Hula Golf Club! I’d like to ask about the ${villa}: ` },
+];
 export const places: Place[] = [
   {
     id: 'cafe',
@@ -121,6 +133,54 @@ export const places: Place[] = [
       { label: 'See the clubhouse', href: '/clubhouse' },
     ],
     showHours: true,
+  },
+  {
+    id: 'one-bedroom-villa',
+    name: '1-Bedroom Pool Villa',
+    kind: 'villa',
+    kicker: 'Stay at the club',
+    tagline: 'A villa for two by the pool, a short walk from the first tee',
+    title: 'Sleep by the fairways',
+    detail: 'A bedroom, a living room looking onto the shared pool, and a freestanding bathtub, right here at the club.',
+    about:
+      'Stay where you play. The 1-bedroom villa is here at Hula Hula Golf Club: a bedroom, a living room whose big window looks onto the villas’ shared pool, a fridge and microwave, and a bathroom with a freestanding tub.\n\nWake up, have breakfast, and be on the first tee before the heat. The villa is booked through our sister hotel, Royal Pineapple.',
+    images: [
+      p.clubVilla1Living.src,
+      p.clubVillaPool.src,
+      p.clubVilla1Bedroom.src,
+      p.clubVilla1Bath.src,
+      p.clubVilla1Lounge.src,
+      p.clubVilla1Basin.src,
+    ],
+    facts: ['42 m², sleeps 2', 'Bedroom and separate living room', 'Shared pool with loungers', 'Freestanding bathtub', 'Booked with Royal Pineapple Hotel'],
+    actions: clubVillaActions('1-bedroom pool villa'),
+    showHours: false,
+    note: 'Stay at the club',
+  },
+  {
+    id: 'two-bedroom-villa',
+    name: '2-Bedroom Pool Villa',
+    kind: 'villa',
+    kicker: 'Stay at the club',
+    tagline: 'Room for four by the pool, here at the club',
+    title: 'Bring the whole four-ball',
+    detail: 'A living and dining room, a big main bedroom, a twin room and a shared pool, right here at the club.',
+    about:
+      'Bring the family or your playing partners. The 2-bedroom villa is here at Hula Hula Golf Club, by the villas’ shared pool: a living room with a big TV, a dining table under a carved wooden arch, a main bedroom with its own wardrobes and desk, and a twin room.\n\nThe villa is booked through our sister hotel, Royal Pineapple.',
+    images: [
+      p.clubVillaPool.src,
+      p.clubVilla2Master.src,
+      p.clubVilla2Living.src,
+      p.clubVilla2Dining.src,
+      p.clubVilla2Bedroom.src,
+      p.clubVilla2MasterBed.src,
+      p.clubVilla2Twin.src,
+      p.clubVilla2Lounge.src,
+    ],
+    facts: ['Sleeps 4', 'Living room and dining table', 'Main bedroom and a twin room', 'Shared pool with loungers', 'Booked with Royal Pineapple Hotel'],
+    actions: clubVillaActions('2-bedroom pool villa'),
+    showHours: false,
+    note: 'Stay at the club',
   },
   {
     id: 'pool-villa',

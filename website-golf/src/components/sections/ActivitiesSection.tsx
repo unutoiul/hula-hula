@@ -54,7 +54,7 @@ export function ActivitiesSection() {
               </Typography>
             </Box>
             <Typography sx={{ maxWidth: 380, color: 'rgba(255,255,255,.86)', lineHeight: 1.8 }}>
-              Golf, games for every level, a café with a view and a pool villa to stay in. Pick one to see what it’s like, what it costs and
+              Golf, games for every level, a café with a view and pool villas to stay in. Pick one to see what it’s like, what it costs and
               how to book.
             </Typography>
           </Stack>

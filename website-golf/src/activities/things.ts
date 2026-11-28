@@ -45,7 +45,7 @@ export function thingsToDo(site: Pick<SiteData, 'activities'>): ThingToDo[] {
       image: pl.images[0],
       icon: pl.kind,
       href: thingHref(pl.id),
-      note: pl.kind === 'cafe' ? 'Open to all' : 'At the resort',
+      note: pl.note ?? (pl.kind === 'cafe' ? 'Open to all' : 'At the resort'),
     })),
   ];
 }
