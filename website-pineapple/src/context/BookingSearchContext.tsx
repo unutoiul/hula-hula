@@ -53,35 +53,55 @@ export function toSiteMinderUrl(checkIn: Date, checkOut: Date, adults: number, c
     return `${WHATSAPP}?text=${encodeURIComponent(text)}`;
   }
   const params = new URLSearchParams({
-    locale: 'en', currency: 'THB',
-    checkInDate: toISODate(checkIn), checkOutDate: toISODate(checkOut),
-    'items[0][adults]': String(adults), 'items[0][children]': String(children), 'items[0][infants]': '0',
+    locale: 'en',
+    currency: 'THB',
+    checkInDate: toISODate(checkIn),
+    checkOutDate: toISODate(checkOut),
+    'items[0][adults]': String(adults),
+    'items[0][children]': String(children),
+    'items[0][infants]': '0',
   });
   if (promoCode) params.set('promocode', promoCode);
   return `${SITEMINDER_BOOKING_URL}?${params}`;
 }
 
 export function toBookHref(checkIn: Date, checkOut: Date, adults: number, children: number, promoCode: string, path = '/book'): string {
-  const params = new URLSearchParams({ checkIn: toISODate(checkIn), checkOut: toISODate(checkOut), adults: String(adults), children: String(children) });
+  const params = new URLSearchParams({
+    checkIn: toISODate(checkIn),
+    checkOut: toISODate(checkOut),
+    adults: String(adults),
+    children: String(children),
+  });
   if (promoCode) params.set('promo', promoCode);
   return `${path}?${params}`;
 }
 
 export function BookingSearchProvider({ children: providerChildren }: { children: ReactNode }) {
   const today = new Date();
-  const defaultCheckIn = new Date(today); defaultCheckIn.setDate(defaultCheckIn.getDate() + 1);
-  const defaultCheckOut = new Date(today); defaultCheckOut.setDate(defaultCheckOut.getDate() + 8);
+  const defaultCheckIn = new Date(today);
+  defaultCheckIn.setDate(defaultCheckIn.getDate() + 1);
+  const defaultCheckOut = new Date(today);
+  defaultCheckOut.setDate(defaultCheckOut.getDate() + 8);
   const dateRange = useDateRange(defaultCheckIn, defaultCheckOut);
 
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [promoCode, setPromoCode] = useState('');
 
-  const value = useMemo<BookingSearchState>(() => ({
-    ...dateRange, adults, setAdults, children, setChildren, promoCode, setPromoCode,
-    bookHref: toBookHref(dateRange.checkIn, dateRange.checkOut, adults, children, promoCode),
-    siteMinderUrl: toSiteMinderUrl(dateRange.checkIn, dateRange.checkOut, adults, children, promoCode),
-  }), [dateRange, adults, children, promoCode]);
+  const value = useMemo<BookingSearchState>(
+    () => ({
+      ...dateRange,
+      adults,
+      setAdults,
+      children,
+      setChildren,
+      promoCode,
+      setPromoCode,
+      bookHref: toBookHref(dateRange.checkIn, dateRange.checkOut, adults, children, promoCode),
+      siteMinderUrl: toSiteMinderUrl(dateRange.checkIn, dateRange.checkOut, adults, children, promoCode),
+    }),
+    [dateRange, adults, children, promoCode],
+  );
 
   return <BookingSearchContext.Provider value={value}>{providerChildren}</BookingSearchContext.Provider>;
 }

@@ -35,7 +35,14 @@ export function useLocation(): { pathname: string; query: URLSearchParams } {
 
 /** onClick for an <a href> that should navigate in-app — but still lets ctrl/⌘-click open a new tab. */
 export function linkClick(to: string) {
-  return (event: { preventDefault: () => void; button: number; metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey: boolean }) => {
+  return (event: {
+    preventDefault: () => void;
+    button: number;
+    metaKey: boolean;
+    ctrlKey: boolean;
+    shiftKey: boolean;
+    altKey: boolean;
+  }) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     navigate(to);

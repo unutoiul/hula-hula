@@ -28,7 +28,8 @@ export function useDateRange(initialCheckIn: Date, initialCheckOut: Date, onRang
   const selectDay = (day: Date) => {
     if (!selectingCheckout || day <= checkIn) {
       setCheckIn(day);
-      const dayAfter = new Date(day); dayAfter.setDate(dayAfter.getDate() + 1);
+      const dayAfter = new Date(day);
+      dayAfter.setDate(dayAfter.getDate() + 1);
       setCheckOut(dayAfter);
       setSelectingCheckout(true);
     } else {

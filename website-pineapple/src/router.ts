@@ -41,11 +41,22 @@ export function useLocation(): { pathname: string; query: URLSearchParams; hash:
 
 /** onClick for an <a href> that should navigate in-app — but still lets ctrl/⌘-click open a new tab. */
 export function linkClick(to: string) {
-  return (event: { preventDefault: () => void; button: number; metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey: boolean }) => {
+  return (event: {
+    preventDefault: () => void;
+    button: number;
+    metaKey: boolean;
+    ctrlKey: boolean;
+    shiftKey: boolean;
+    altKey: boolean;
+  }) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     // Home again from the homepage itself: back to the top.
-    if (to === '/' && window.location.pathname === '/') { window.history.replaceState(null, '', '/'); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (to === '/' && window.location.pathname === '/') {
+      window.history.replaceState(null, '', '/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     navigate(to);
   };
 }

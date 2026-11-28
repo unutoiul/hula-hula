@@ -4,11 +4,16 @@ export type PaymentStatus = 'approved' | 'settled' | 'voided' | 'refunded';
 
 export function paymentStatus(code: string | null | undefined): PaymentStatus | null {
   switch (code) {
-    case '0000': return 'approved';
-    case '4110': return 'settled';
-    case '4047': return 'voided';
-    case '4120': return 'refunded';
-    default: return null;
+    case '0000':
+      return 'approved';
+    case '4110':
+      return 'settled';
+    case '4047':
+      return 'voided';
+    case '4120':
+      return 'refunded';
+    default:
+      return null;
   }
 }
 

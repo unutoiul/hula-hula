@@ -24,7 +24,10 @@ export function useKrabiWeather(): number | null {
     };
     fetchWeather();
     const id = setInterval(fetchWeather, 15 * 60 * 1000);
-    return () => { cancelled = true; clearInterval(id); };
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, []);
 
   return temperature;

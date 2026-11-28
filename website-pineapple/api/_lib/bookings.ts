@@ -82,9 +82,27 @@ export interface BookingRow {
   created_at: string;
 }
 
-export type NewBooking = Pick<BookingRow,
-  'ref' | 'invoice_no' | 'access_key_hash' | 'check_in' | 'check_out' | 'promo_code' | 'items' | 'currency' | 'total_amount' | 'deposit_amount'
-  | 'guest_first_name' | 'guest_last_name' | 'guest_email' | 'guest_phone' | 'guest_country' | 'arrival_time' | 'special_requests' | 'expires_at'>;
+export type NewBooking = Pick<
+  BookingRow,
+  | 'ref'
+  | 'invoice_no'
+  | 'access_key_hash'
+  | 'check_in'
+  | 'check_out'
+  | 'promo_code'
+  | 'items'
+  | 'currency'
+  | 'total_amount'
+  | 'deposit_amount'
+  | 'guest_first_name'
+  | 'guest_last_name'
+  | 'guest_email'
+  | 'guest_phone'
+  | 'guest_country'
+  | 'arrival_time'
+  | 'special_requests'
+  | 'expires_at'
+>;
 
 const RETURN_ROWS = 'return=representation';
 
@@ -122,8 +140,10 @@ export async function deleteWhere(filter: string): Promise<number> {
 export async function softHolds(checkIn: string, checkOut: string): Promise<Map<string, number>> {
   const now = new Date().toISOString();
   const since = new Date(Date.now() - 72 * 3600_000).toISOString();
-  const rows = await listWhere(`select=items&check_in=lt.${checkOut}&check_out=gt.${checkIn}`
-    + `&or=(and(status.eq.pending,expires_at.gt.${now}),and(status.in.(paid,delivered),keyed_at.is.null,paid_at.gt.${since}))`);
+  const rows = await listWhere(
+    `select=items&check_in=lt.${checkOut}&check_out=gt.${checkIn}` +
+      `&or=(and(status.eq.pending,expires_at.gt.${now}),and(status.in.(paid,delivered),keyed_at.is.null,paid_at.gt.${since}))`,
+  );
   const holds = new Map<string, number>();
   for (const row of rows) for (const item of row.items) holds.set(item.roomTypeUuid, (holds.get(item.roomTypeUuid) ?? 0) + item.quantity);
   return holds;

@@ -17,7 +17,13 @@ export const COOKIE_CONSENT_KEY = 'hulahula-golf-cookie-consent';
 
 let started = false;
 
-const consentChoice = () => { try { return window.localStorage.getItem(COOKIE_CONSENT_KEY); } catch { return null; } };
+const consentChoice = () => {
+  try {
+    return window.localStorage.getItem(COOKIE_CONSENT_KEY);
+  } catch {
+    return null;
+  }
+};
 
 /** Tells Clarity whether the visitor accepted cookies. Safe to call when Clarity is off. */
 export function setClarityConsent(granted: boolean) {

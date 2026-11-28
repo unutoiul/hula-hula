@@ -7,12 +7,16 @@ import { sendTemplate, splitAddresses } from './resend.js';
 // This function only emails the booking details to the reservations inbox;
 // it does not create or update a reservation in SiteMinder.
 
-export interface DeliveryResult { method: 'email' }
+export interface DeliveryResult {
+  method: 'email';
+}
 
 // Mail is sent from royalpineapplehotel.com (the domain verified in Resend) and
 // goes to, and is answered at, the hotel's reservations inbox (BOOKING_ADMIN_TO).
-export const bookingFrom = () => process.env.BOOKING_FROM || process.env.CONTACT_FROM || 'Royal Pineapple Hotel <reservation@royalpineapplehotel.com>';
-export const bookingAdminTo = () => splitAddresses(process.env.BOOKING_ADMIN_TO || process.env.CONTACT_TO || 'reservation@royalpineapplehotel.com');
+export const bookingFrom = () =>
+  process.env.BOOKING_FROM || process.env.CONTACT_FROM || 'Royal Pineapple Hotel <reservation@royalpineapplehotel.com>';
+export const bookingAdminTo = () =>
+  splitAddresses(process.env.BOOKING_ADMIN_TO || process.env.CONTACT_TO || 'reservation@royalpineapplehotel.com');
 export const bookingAdminBcc = () => splitAddresses(process.env.BOOKING_ADMIN_BCC ?? process.env.CONTACT_BCC ?? 'contact@bluetrendy.com');
 
 export async function deliverReservation(row: BookingRow): Promise<DeliveryResult> {

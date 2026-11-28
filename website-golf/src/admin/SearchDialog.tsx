@@ -1,5 +1,23 @@
 import SearchRounded from '@mui/icons-material/SearchRounded';
-import { Alert, Box, Button, Card, CardActionArea, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardActionArea,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { activityName } from '../booking/config';
 import { useSite } from '../context/SiteDataContext';
@@ -20,39 +38,88 @@ export function SearchDialog({ open, onClose, onPick }: { open: boolean; onClose
   useEffect(() => {
     // Keep only characters that can't break PostgREST's or() filter syntax.
     const term = query.trim().replace(/[^\p{L}\p{N}@.+\- ]/gu, '');
-    if (term.length < 2) { setResults(null); return; }
+    if (term.length < 2) {
+      setResults(null);
+      return;
+    }
     let cancelled = false;
     const id = window.setTimeout(async () => {
       const like = `"*${term}*"`;
-      const { data, error: searchError } = await supabase!.from('golf_bookings').select('*').not('status', 'in', '(pending,expired)')
+      const { data, error: searchError } = await supabase!
+        .from('golf_bookings')
+        .select('*')
+        .not('status', 'in', '(pending,expired)')
         .or(`ref.ilike.${like},first_name.ilike.${like},last_name.ilike.${like},phone.ilike.${like},email.ilike.${like}`)
-        .order('play_date', { ascending: false }).limit(20);
+        .order('play_date', { ascending: false })
+        .limit(20);
       if (cancelled) return;
-      if (searchError) setError(searchError.message); else { setError(null); setResults(data as StaffBooking[]); }
+      if (searchError) setError(searchError.message);
+      else {
+        setError(null);
+        setResults(data as StaffBooking[]);
+      }
     }, 300);
-    return () => { cancelled = true; window.clearTimeout(id); };
+    return () => {
+      cancelled = true;
+      window.clearTimeout(id);
+    };
   }, [query]);
 
-  return <Dialog open={open} onClose={onClose} fullScreen={phone} fullWidth maxWidth="sm">
-    <DialogTitle>Find a booking</DialogTitle>
-    <DialogContent dividers>
-      <TextField autoFocus fullWidth placeholder="Reference, name, phone or email" value={query} onChange={(e) => setQuery(e.target.value)}
-        slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchRounded /></InputAdornment> } }} />
-      {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-      <Stack spacing={1} sx={{ mt: 2 }}>
-        {query.trim().length >= 2 && results === null && <Box sx={{ textAlign: 'center', py: 3 }}><CircularProgress size={24} /></Box>}
-        {results?.length === 0 && <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 3 }}>No bookings match “{query.trim()}”.</Typography>}
-        {results?.map((b) => <Card key={b.id} variant="outlined" sx={{ borderRadius: '14px', flexShrink: 0 }}>
-          <CardActionArea onClick={() => onPick(b.play_date)} sx={{ p: 1.5 }}>
-            <Stack direction="row" justifyContent="space-between" spacing={1}>
-              <Typography sx={{ fontWeight: 700 }}>{b.first_name} {b.last_name}</Typography>
-              {b.status !== 'booked' && <Chip size="small" label={b.status.replace('_', ' ')} />}
-            </Stack>
-            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{shortDayLabel(b.play_date)} · {timeLabel(hhmm(b.start_time))} · {activityName(site, b.activity)} · {plural(b.players, 'person', 'people')} · {b.ref}</Typography>
-          </CardActionArea>
-        </Card>)}
-      </Stack>
-    </DialogContent>
-    <DialogActions sx={{ px: 3, py: 1.5 }}><Button onClick={onClose}>Close</Button></DialogActions>
-  </Dialog>;
+  return (
+    <Dialog open={open} onClose={onClose} fullScreen={phone} fullWidth maxWidth="sm">
+      <DialogTitle>Find a booking</DialogTitle>
+      <DialogContent dividers>
+        <TextField
+          autoFocus
+          fullWidth
+          placeholder="Reference, name, phone or email"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRounded />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+        <Stack spacing={1} sx={{ mt: 2 }}>
+          {query.trim().length >= 2 && results === null && (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <CircularProgress size={24} />
+            </Box>
+          )}
+          {results?.length === 0 && (
+            <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 3 }}>No bookings match “{query.trim()}”.</Typography>
+          )}
+          {results?.map((b) => (
+            <Card key={b.id} variant="outlined" sx={{ borderRadius: '14px', flexShrink: 0 }}>
+              <CardActionArea onClick={() => onPick(b.play_date)} sx={{ p: 1.5 }}>
+                <Stack direction="row" justifyContent="space-between" spacing={1}>
+                  <Typography sx={{ fontWeight: 700 }}>
+                    {b.first_name} {b.last_name}
+                  </Typography>
+                  {b.status !== 'booked' && <Chip size="small" label={b.status.replace('_', ' ')} />}
+                </Stack>
+                <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+                  {shortDayLabel(b.play_date)} · {timeLabel(hhmm(b.start_time))} · {activityName(site, b.activity)} ·{' '}
+                  {plural(b.players, 'person', 'people')} · {b.ref}
+                </Typography>
+              </CardActionArea>
+            </Card>
+          ))}
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 1.5 }}>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
 }

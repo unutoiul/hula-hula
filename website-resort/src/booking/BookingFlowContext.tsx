@@ -13,25 +13,47 @@ import { guessCountry } from './countries';
 // Before that, a reload starts
 // with nothing picked; and it's forgotten once confirmed or two hours later.
 
-export interface CartLine { roomTypeUuid: string; roomRateUuid: string; quantity: number }
+export interface CartLine {
+  roomTypeUuid: string;
+  roomRateUuid: string;
+  quantity: number;
+}
 
 export interface GuestForm {
-  firstName: string; lastName: string; email: string; emailConfirm: string; phone: string; country: string;
-  arrivalTime: string; specialRequests: string; acceptedPolicies: boolean;
+  firstName: string;
+  lastName: string;
+  email: string;
+  emailConfirm: string;
+  phone: string;
+  country: string;
+  arrivalTime: string;
+  specialRequests: string;
+  acceptedPolicies: boolean;
 }
 
 export interface PaymentSession {
-  ref: string; accessKey: string; currency: string;
+  ref: string;
+  accessKey: string;
+  currency: string;
   /** Retained in session storage for compatibility with earlier clients. */
   webPaymentUrl: null;
   stripe?: StripeCheckout;
-  total: number; deposit: number; balance: number; expiresAt: string;
-  email: string; signature: string; testPayment?: boolean;
+  total: number;
+  deposit: number;
+  balance: number;
+  expiresAt: string;
+  email: string;
+  signature: string;
+  testPayment?: boolean;
   /** Missing in older saved sessions. */
   provider?: PaymentProvider;
 }
 
-export interface ResolvedLine { line: CartLine; roomType: RoomTypeOffer; rate: RateOffer }
+export interface ResolvedLine {
+  line: CartLine;
+  roomType: RoomTypeOffer;
+  rate: RateOffer;
+}
 
 type AvailabilityState = { status: 'loading' | 'ready' | 'error'; data: AvailabilityResponse | null; error: string | null; key: string };
 
@@ -62,9 +84,24 @@ interface BookingFlow {
 }
 
 const STORAGE_KEY = 'hh-booking';
-const EMPTY_GUEST: GuestForm = { firstName: '', lastName: '', email: '', emailConfirm: '', phone: '', country: '', arrivalTime: '', specialRequests: '', acceptedPolicies: false };
+const EMPTY_GUEST: GuestForm = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  emailConfirm: '',
+  phone: '',
+  country: '',
+  arrivalTime: '',
+  specialRequests: '',
+  acceptedPolicies: false,
+};
 
-interface Stored { searchKey: string; cart: CartLine[]; guest: GuestForm; payment: PaymentSession | null }
+interface Stored {
+  searchKey: string;
+  cart: CartLine[];
+  guest: GuestForm;
+  payment: PaymentSession | null;
+}
 
 const KEEP_AFTER_HOLD_MS = 2 * 3600_000;
 
@@ -73,7 +110,9 @@ function readStored(): Stored | null {
     const stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null') as Stored | null;
     // Only a booking that went to payment, and not an old one.
     return stored?.payment && Date.parse(stored.payment.expiresAt) > Date.now() - KEEP_AFTER_HOLD_MS ? stored : null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 /** The search the stored cart belongs to — so a page with no search in its URL
  * (the confirmation page after a bank redirect) can pick the stay back up. */
@@ -83,13 +122,30 @@ export function storedSearch(): URLSearchParams | null {
 }
 
 function writeStored(value: Stored | null) {
-  try { if (value) sessionStorage.setItem(STORAGE_KEY, JSON.stringify(value)); else sessionStorage.removeItem(STORAGE_KEY); } catch { /* private mode: just don't persist */ }
+  try {
+    if (value) sessionStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+    else sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* private mode: just don't persist */
+  }
 }
 
 /** The private key for a booking's status, kept per reference for the confirmation page. */
 export const accessKeyStore = {
-  get: (ref: string) => { try { return sessionStorage.getItem(`hh-booking-key:${ref}`); } catch { return null; } },
-  set: (ref: string, key: string) => { try { sessionStorage.setItem(`hh-booking-key:${ref}`, key); } catch { /* ignore */ } },
+  get: (ref: string) => {
+    try {
+      return sessionStorage.getItem(`hh-booking-key:${ref}`);
+    } catch {
+      return null;
+    }
+  },
+  set: (ref: string, key: string) => {
+    try {
+      sessionStorage.setItem(`hh-booking-key:${ref}`, key);
+    } catch {
+      /* ignore */
+    }
+  },
 };
 
 const BookingFlowContext = createContext<BookingFlow | null>(null);
@@ -118,7 +174,12 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
   const { checkIn, checkOut, adults, children: kids, promoCode, selectingCheckout } = useBookingSearch();
   const { pathname } = useLocation();
   const searchParams = useMemo(() => {
-    const params = new URLSearchParams({ checkIn: toISODate(checkIn), checkOut: toISODate(checkOut), adults: String(adults), children: String(kids) });
+    const params = new URLSearchParams({
+      checkIn: toISODate(checkIn),
+      checkOut: toISODate(checkOut),
+      adults: String(adults),
+      children: String(kids),
+    });
     if (promoCode) params.set('promo', promoCode);
     return params;
   }, [checkIn, checkOut, adults, kids, promoCode]);
@@ -160,85 +221,149 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, [needsRooms, selectingCheckout, searchParams, searchKey, reloads]);
 
-  useEffect(() => { writeStored(payment ? { searchKey: cartKey, cart: lines, guest, payment } : null); }, [cartKey, lines, guest, payment]);
+  useEffect(() => {
+    writeStored(payment ? { searchKey: cartKey, cart: lines, guest, payment } : null);
+  }, [cartKey, lines, guest, payment]);
 
   const data = availability.data;
-  const cart = useMemo<ResolvedLine[]>(() => lines.flatMap((line) => {
-    const roomType = data?.roomTypes.find((rt) => rt.roomTypeUuid === line.roomTypeUuid);
-    const rate = roomType?.rates.find((r) => r.roomRateUuid === line.roomRateUuid);
-    return roomType && rate ? [{ line, roomType, rate }] : [];
-  }), [lines, data]);
+  const cart = useMemo<ResolvedLine[]>(
+    () =>
+      lines.flatMap((line) => {
+        const roomType = data?.roomTypes.find((rt) => rt.roomTypeUuid === line.roomTypeUuid);
+        const rate = roomType?.rates.find((r) => r.roomRateUuid === line.roomRateUuid);
+        return roomType && rate ? [{ line, roomType, rate }] : [];
+      }),
+    [lines, data],
+  );
 
   const totals = useMemo(() => {
     const total = cart.reduce((sum, { line, rate }) => sum + rate.total * line.quantity, 0);
     const dueNow = cart.reduce((sum, { line, rate }) => sum + rate.deposit.dueNow * line.quantity, 0);
-    return { rooms: cart.reduce((sum, { line }) => sum + line.quantity, 0), total, dueNow, balance: total - dueNow, currency: data?.currency ?? 'THB' };
+    return {
+      rooms: cart.reduce((sum, { line }) => sum + line.quantity, 0),
+      total,
+      dueNow,
+      balance: total - dueNow,
+      currency: data?.currency ?? 'THB',
+    };
   }, [cart, data]);
 
-  const expanded = useMemo(() => cart.flatMap(({ line, roomType, rate }) => Array.from({ length: line.quantity }, () => ({ roomType, rate }))), [cart]);
+  const expanded = useMemo(
+    () => cart.flatMap(({ line, roomType, rate }) => Array.from({ length: line.quantity }, () => ({ roomType, rate }))),
+    [cart],
+  );
   // Every room is booked for at least one adult, so picking more rooms than
   // adults simply counts one adult per room (two rooms for one person searching
   // = two adults), like SiteMinder's own engine — rather than refusing.
-  const plan = useMemo(() => distributeGuests(expanded.map(({ roomType }) => roomType.capacity), Math.max(adults, expanded.length), kids), [expanded, adults, kids]);
+  const plan = useMemo(
+    () =>
+      distributeGuests(
+        expanded.map(({ roomType }) => roomType.capacity),
+        Math.max(adults, expanded.length),
+        kids,
+      ),
+    [expanded, adults, kids],
+  );
 
-  const quantityOf = useCallback((roomRateUuid: string) => lines.find((line) => line.roomRateUuid === roomRateUuid)?.quantity ?? 0, [lines]);
+  const quantityOf = useCallback(
+    (roomRateUuid: string) => lines.find((line) => line.roomRateUuid === roomRateUuid)?.quantity ?? 0,
+    [lines],
+  );
 
-  const roomsLeft = useCallback((roomType: RoomTypeOffer) => {
-    const inType = lines.filter((line) => line.roomTypeUuid === roomType.roomTypeUuid).reduce((sum, line) => sum + line.quantity, 0);
-    const inCart = lines.reduce((sum, line) => sum + line.quantity, 0);
-    return Math.max(0, Math.min(roomType.available - inType, (data?.maxRooms ?? 5) - inCart));
-  }, [lines, data]);
+  const roomsLeft = useCallback(
+    (roomType: RoomTypeOffer) => {
+      const inType = lines.filter((line) => line.roomTypeUuid === roomType.roomTypeUuid).reduce((sum, line) => sum + line.quantity, 0);
+      const inCart = lines.reduce((sum, line) => sum + line.quantity, 0);
+      return Math.max(0, Math.min(roomType.available - inType, (data?.maxRooms ?? 5) - inCart));
+    },
+    [lines, data],
+  );
 
-  const setQuantity = useCallback((roomType: RoomTypeOffer, rate: RateOffer, quantity: number) => {
-    setPayment(null);
-    setLines((current) => {
-      const others = current.filter((line) => line.roomRateUuid !== rate.roomRateUuid);
-      const inType = others.filter((line) => line.roomTypeUuid === roomType.roomTypeUuid).reduce((sum, line) => sum + line.quantity, 0);
-      const inCart = others.reduce((sum, line) => sum + line.quantity, 0);
-      const allowed = Math.max(0, Math.min(quantity, rate.maxQuantity, roomType.available - inType, (data?.maxRooms ?? 5) - inCart));
-      const existing = current.find((line) => line.roomRateUuid === rate.roomRateUuid);
-      if (allowed === 0) return others;
-      if (existing) return current.map((line) => (line === existing ? { ...line, quantity: allowed } : line));
-      return [...current, { roomTypeUuid: roomType.roomTypeUuid, roomRateUuid: rate.roomRateUuid, quantity: allowed }];
-    });
-  }, [data]);
+  const setQuantity = useCallback(
+    (roomType: RoomTypeOffer, rate: RateOffer, quantity: number) => {
+      setPayment(null);
+      setLines((current) => {
+        const others = current.filter((line) => line.roomRateUuid !== rate.roomRateUuid);
+        const inType = others.filter((line) => line.roomTypeUuid === roomType.roomTypeUuid).reduce((sum, line) => sum + line.quantity, 0);
+        const inCart = others.reduce((sum, line) => sum + line.quantity, 0);
+        const allowed = Math.max(0, Math.min(quantity, rate.maxQuantity, roomType.available - inType, (data?.maxRooms ?? 5) - inCart));
+        const existing = current.find((line) => line.roomRateUuid === rate.roomRateUuid);
+        if (allowed === 0) return others;
+        if (existing) return current.map((line) => (line === existing ? { ...line, quantity: allowed } : line));
+        return [...current, { roomTypeUuid: roomType.roomTypeUuid, roomRateUuid: rate.roomRateUuid, quantity: allowed }];
+      });
+    },
+    [data],
+  );
 
   const updateGuest = useCallback((patch: Partial<GuestForm>) => setGuest((current) => ({ ...current, ...patch })), []);
 
-  const startPayment = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }): Promise<{ ok: true } | { error: string }> => {
-    if (!plan || expanded.length === 0) return { error: 'Please choose rooms that fit everyone first.' };
-    const rooms = expanded.map(({ rate }, index) => ({ roomRateUuid: rate.roomRateUuid, adults: plan[index].adults, children: plan[index].children }));
-    const details = {
-      firstName: guest.firstName.trim(), lastName: guest.lastName.trim(), email: guest.email.trim(), phone: guest.phone.trim(), country: guest.country,
-      arrivalTime: guest.arrivalTime || undefined, specialRequests: guest.specialRequests.trim() || undefined,
-    };
-    // Going back and forth without changing anything keeps the same payment
-    // (and the same hold on the rooms) instead of starting a second one.
-    const signature = JSON.stringify({ searchKey, rooms, details });
-    if (payment?.stripe && payment.signature === signature && Date.parse(payment.expiresAt) - Date.now() > 3 * 60_000) return { ok: true };
+  const startPayment = useCallback(
+    async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }): Promise<{ ok: true } | { error: string }> => {
+      if (!plan || expanded.length === 0) return { error: 'Please choose rooms that fit everyone first.' };
+      const rooms = expanded.map(({ rate }, index) => ({
+        roomRateUuid: rate.roomRateUuid,
+        adults: plan[index].adults,
+        children: plan[index].children,
+      }));
+      const details = {
+        firstName: guest.firstName.trim(),
+        lastName: guest.lastName.trim(),
+        email: guest.email.trim(),
+        phone: guest.phone.trim(),
+        country: guest.country,
+        arrivalTime: guest.arrivalTime || undefined,
+        specialRequests: guest.specialRequests.trim() || undefined,
+      };
+      // Going back and forth without changing anything keeps the same payment
+      // (and the same hold on the rooms) instead of starting a second one.
+      const signature = JSON.stringify({ searchKey, rooms, details });
+      if (payment?.stripe && payment.signature === signature && Date.parse(payment.expiresAt) - Date.now() > 3 * 60_000)
+        return { ok: true };
 
-    const response = await createBooking({
-      checkIn: searchParams.get('checkIn')!, checkOut: searchParams.get('checkOut')!, promo: promoCode || undefined,
-      rooms, guest: details, acceptedPolicies: true, hp_ref: hp, elapsedMs,
-    });
-    if (!response.ok) {
-      if (response.code === 'SOLD_OUT') setReloads((n) => n + 1);
-      return { error: response.message };
-    }
-    accessKeyStore.set(response.ref, response.accessKey);
-    const session: PaymentSession = {
-      ref: response.ref, accessKey: response.accessKey, webPaymentUrl: response.webPaymentUrl, stripe: response.stripe, currency: response.currency,
-      total: response.total, deposit: response.deposit, balance: response.balance, expiresAt: response.expiresAt,
-      email: details.email, signature, testPayment: response.testPayment, provider: response.paymentProvider,
-    };
-    setPayment(session);
-    // Save before navigating so a reload or bank check keeps the booking.
-    writeStored({ searchKey: cartKey, cart: lines, guest, payment: session });
-    return { ok: true };
-  }, [plan, expanded, guest, searchKey, searchParams, promoCode, payment, cartKey, lines]);
+      const response = await createBooking({
+        checkIn: searchParams.get('checkIn')!,
+        checkOut: searchParams.get('checkOut')!,
+        promo: promoCode || undefined,
+        rooms,
+        guest: details,
+        acceptedPolicies: true,
+        hp_ref: hp,
+        elapsedMs,
+      });
+      if (!response.ok) {
+        if (response.code === 'SOLD_OUT') setReloads((n) => n + 1);
+        return { error: response.message };
+      }
+      accessKeyStore.set(response.ref, response.accessKey);
+      const session: PaymentSession = {
+        ref: response.ref,
+        accessKey: response.accessKey,
+        webPaymentUrl: response.webPaymentUrl,
+        stripe: response.stripe,
+        currency: response.currency,
+        total: response.total,
+        deposit: response.deposit,
+        balance: response.balance,
+        expiresAt: response.expiresAt,
+        email: details.email,
+        signature,
+        testPayment: response.testPayment,
+        provider: response.paymentProvider,
+      };
+      setPayment(session);
+      // Save before navigating so a reload or bank check keeps the booking.
+      writeStored({ searchKey: cartKey, cart: lines, guest, payment: session });
+      return { ok: true };
+    },
+    [plan, expanded, guest, searchKey, searchParams, promoCode, payment, cartKey, lines],
+  );
 
   const resetPayment = useCallback(() => setPayment(null), []);
-  const clearCart = useCallback(() => { setLines([]); setPayment(null); }, []);
+  const clearCart = useCallback(() => {
+    setLines([]);
+    setPayment(null);
+  }, []);
 
   const forgetBooking = useCallback(() => {
     setLines([]);
@@ -246,11 +371,46 @@ export function BookingFlowProvider({ children }: { children: ReactNode }) {
     setGuest({ ...EMPTY_GUEST, country: guessCountry() });
   }, []);
 
-  const value = useMemo<BookingFlow>(() => ({
-    searchKey, availability, reload: () => setReloads((n) => n + 1),
-    cart, hasRooms: lines.length > 0, quantityOf, roomsLeft, setQuantity, totals, plan: expanded.length ? plan : null,
-    guest, updateGuest, payment, startPayment, resetPayment, clearCart, forgetBooking,
-  }), [searchKey, availability, cart, lines, quantityOf, roomsLeft, setQuantity, totals, plan, expanded, guest, updateGuest, payment, startPayment, resetPayment, clearCart, forgetBooking]);
+  const value = useMemo<BookingFlow>(
+    () => ({
+      searchKey,
+      availability,
+      reload: () => setReloads((n) => n + 1),
+      cart,
+      hasRooms: lines.length > 0,
+      quantityOf,
+      roomsLeft,
+      setQuantity,
+      totals,
+      plan: expanded.length ? plan : null,
+      guest,
+      updateGuest,
+      payment,
+      startPayment,
+      resetPayment,
+      clearCart,
+      forgetBooking,
+    }),
+    [
+      searchKey,
+      availability,
+      cart,
+      lines,
+      quantityOf,
+      roomsLeft,
+      setQuantity,
+      totals,
+      plan,
+      expanded,
+      guest,
+      updateGuest,
+      payment,
+      startPayment,
+      resetPayment,
+      clearCart,
+      forgetBooking,
+    ],
+  );
 
   return <BookingFlowContext.Provider value={value}>{children}</BookingFlowContext.Provider>;
 }

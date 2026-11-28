@@ -27,7 +27,10 @@ export function StripeEmbeddedCheckout({ checkout }: { checkout: StripeCheckout 
         if (!stripe) throw new Error('Stripe.js did not load');
         if (cancelled) return;
         const created = await stripe.createEmbeddedCheckoutPage({ fetchClientSecret: async () => checkout.clientSecret });
-        if (cancelled || !host.current) { created.destroy(); return; }
+        if (cancelled || !host.current) {
+          created.destroy();
+          return;
+        }
         form = created;
         created.mount(host.current);
         setState('ready');
@@ -36,18 +39,35 @@ export function StripeEmbeddedCheckout({ checkout }: { checkout: StripeCheckout 
         if (!cancelled) setState('error');
       }
     });
-    return () => { cancelled = true; form?.destroy(); form = null; };
+    return () => {
+      cancelled = true;
+      form?.destroy();
+      form = null;
+    };
   }, [checkout.clientSecret, checkout.publishableKey]);
 
-  return <Box>
-    {state === 'loading' && <Box aria-busy="true" aria-label="Loading the payment form">
-      <Skeleton variant="rounded" height={48} sx={{ borderRadius: '12px', mb: 1.5 }} />
-      <Skeleton variant="rounded" height={160} sx={{ borderRadius: '12px', mb: 1.5 }} />
-      <Skeleton variant="rounded" height={48} sx={{ borderRadius: '12px' }} />
-    </Box>}
-    {state === 'error' && <Alert severity="error" action={<Button color="inherit" size="small" onClick={() => window.location.reload()}>Try again</Button>}>
-      The payment form didn’t load. Check your connection and try again — your rooms are still held.
-    </Alert>}
-    <Box ref={host} />
-  </Box>;
+  return (
+    <Box>
+      {state === 'loading' && (
+        <Box aria-busy="true" aria-label="Loading the payment form">
+          <Skeleton variant="rounded" height={48} sx={{ borderRadius: '12px', mb: 1.5 }} />
+          <Skeleton variant="rounded" height={160} sx={{ borderRadius: '12px', mb: 1.5 }} />
+          <Skeleton variant="rounded" height={48} sx={{ borderRadius: '12px' }} />
+        </Box>
+      )}
+      {state === 'error' && (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => window.location.reload()}>
+              Try again
+            </Button>
+          }
+        >
+          The payment form didn’t load. Check your connection and try again — your rooms are still held.
+        </Alert>
+      )}
+      <Box ref={host} />
+    </Box>
+  );
 }

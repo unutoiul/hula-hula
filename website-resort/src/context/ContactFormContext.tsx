@@ -19,11 +19,16 @@ export function ContactFormProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   // Kept after closing so the popup's content doesn't vanish mid-animation.
   const [request, setRequest] = useState<ContactRequest>({ topic: 'General question' });
-  const openContact = useCallback((next: ContactRequest) => { setRequest(next); setOpen(true); }, []);
-  return <ContactFormContext.Provider value={openContact}>
-    {children}
-    <ContactDialog open={open} request={request} onClose={() => setOpen(false)} />
-  </ContactFormContext.Provider>;
+  const openContact = useCallback((next: ContactRequest) => {
+    setRequest(next);
+    setOpen(true);
+  }, []);
+  return (
+    <ContactFormContext.Provider value={openContact}>
+      {children}
+      <ContactDialog open={open} request={request} onClose={() => setOpen(false)} />
+    </ContactFormContext.Provider>
+  );
 }
 
 export const useContactForm = () => useContext(ContactFormContext);

@@ -47,24 +47,41 @@ export function capacityOf(roomType: SmRoomType, rate: SmRoomRate): RoomCapacity
 
 function describePenalty(rule: { penaltyType: string; amount: number | null }, currency: string): string {
   switch (rule.penaltyType) {
-    case 'full-amount': return 'the full stay is charged';
-    case 'first-night': return 'the first night is charged';
-    case 'percentage': return `${rule.amount ?? 100}% of the stay is charged`;
-    case 'fixed-amount': return `${currency} ${rule.amount ?? 0} is charged`;
-    default: return 'a cancellation fee applies';
+    case 'full-amount':
+      return 'the full stay is charged';
+    case 'first-night':
+      return 'the first night is charged';
+    case 'percentage':
+      return `${rule.amount ?? 100}% of the stay is charged`;
+    case 'fixed-amount':
+      return `${currency} ${rule.amount ?? 0} is charged`;
+    default:
+      return 'a cancellation fee applies';
   }
 }
 
 // SiteMinder describes cancellation as penalty rules ("from N days before
 // check-in, charge X"); the rate's own rules win over the property default.
-export function cancellationTerms(ratePenalties: SmPenalty[] | undefined, propertyPenalties: SmPenalty[] | undefined, checkIn: string, currency: string): { refundable: boolean | null; summary: string } {
+export function cancellationTerms(
+  ratePenalties: SmPenalty[] | undefined,
+  propertyPenalties: SmPenalty[] | undefined,
+  checkIn: string,
+  currency: string,
+): { refundable: boolean | null; summary: string } {
   const pick = (list: SmPenalty[] | undefined) => {
     if (!list?.length) return undefined;
-    return list.find((p) => !p.isDefault && (!p.startDate || p.startDate.slice(0, 10) <= checkIn) && (!p.endDate || p.endDate.slice(0, 10) >= checkIn))
-      ?? list.find((p) => p.isDefault) ?? list[0];
+    return (
+      list.find(
+        (p) => !p.isDefault && (!p.startDate || p.startDate.slice(0, 10) <= checkIn) && (!p.endDate || p.endDate.slice(0, 10) >= checkIn),
+      ) ??
+      list.find((p) => p.isDefault) ??
+      list[0]
+    );
   };
   const penalty = pick(ratePenalties) ?? pick(propertyPenalties);
-  const rules = [...(penalty?.penaltyRules ?? [])].filter((r) => r.penaltyType !== 'no-penalty').sort((a, b) => b.daysPriorCheckIn - a.daysPriorCheckIn);
+  const rules = [...(penalty?.penaltyRules ?? [])]
+    .filter((r) => r.penaltyType !== 'no-penalty')
+    .sort((a, b) => b.daysPriorCheckIn - a.daysPriorCheckIn);
   if (!rules.length) return { refundable: null, summary: 'Cancellation terms are confirmed by the hotel with your booking.' };
   const first = rules[0];
   if (first.daysPriorCheckIn >= 365) {
@@ -73,10 +90,21 @@ export function cancellationTerms(ratePenalties: SmPenalty[] | undefined, proper
       : { refundable: false, summary: `If you cancel, ${describePenalty(first, currency)}.` };
   }
   const days = first.daysPriorCheckIn;
-  return { refundable: true, summary: `Free cancellation until ${days === 0 ? 'the day of arrival' : `${days} day${days === 1 ? '' : 's'} before arrival`}; after that ${describePenalty(first, currency)}.` };
+  return {
+    refundable: true,
+    summary: `Free cancellation until ${days === 0 ? 'the day of arrival' : `${days} day${days === 1 ? '' : 's'} before arrival`}; after that ${describePenalty(first, currency)}.`,
+  };
 }
 
-export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<string, number>, checkIn: string, promo: string | undefined, fallback: DefaultDeposit, deals: Deal[] = []): PricedRate[] {
+export function priceQuotes(
+  quotes: SmQuote[],
+  catalog: Catalog,
+  holds: Map<string, number>,
+  checkIn: string,
+  promo: string | undefined,
+  fallback: DefaultDeposit,
+  deals: Deal[] = [],
+): PricedRate[] {
   const currency = catalog.property.currencyIsoCode || 'THB';
   const priced: PricedRate[] = [];
   const today = todayInBangkok();
@@ -101,16 +129,34 @@ export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<stri
     let savings = 0;
     if (deal) {
       const off = nights.length
-        ? nightlyDiscounts(deal, nights.map((night) => ({ date: night.date, amount: night.gross - night.discount - night.promoDiscount })))
+        ? nightlyDiscounts(
+            deal,
+            nights.map((night) => ({ date: night.date, amount: night.gross - night.discount - night.promoDiscount })),
+          )
         : [];
-      off.forEach((amount, i) => { nights[i].discount += amount; });
-      savings = nights.length ? off.reduce((sum, n) => sum + n, 0) : Math.round(originalTotal * deal.discountPercent / 100);
+      off.forEach((amount, i) => {
+        nights[i].discount += amount;
+      });
+      savings = nights.length ? off.reduce((sum, n) => sum + n, 0) : Math.round((originalTotal * deal.discountPercent) / 100);
     }
     const total = originalTotal - savings;
-    const deposit = depositFor({ total, nights }, { depositType: rate.depositType ?? quote.depositType, depositAmount: rate.depositAmount ?? quote.depositAmount }, fallback);
+    const deposit = depositFor(
+      { total, nights },
+      { depositType: rate.depositType ?? quote.depositType, depositAmount: rate.depositAmount ?? quote.depositAmount },
+      fallback,
+    );
     priced.push({
-      roomType, rate, available, total, originalTotal, dueNow: deposit.dueNow, depositType: deposit.type, promoDiscount,
-      offer: deal ? { title: deal.title, badge: deal.badge, percent: deal.discountPercent, perks: deal.perks, savings, byCode: !!deal.promoCode } : null,
+      roomType,
+      rate,
+      available,
+      total,
+      originalTotal,
+      dueNow: deposit.dueNow,
+      depositType: deposit.type,
+      promoDiscount,
+      offer: deal
+        ? { title: deal.title, badge: deal.badge, percent: deal.discountPercent, perks: deal.perks, savings, byCode: !!deal.promoCode }
+        : null,
       capacity: capacityOf(roomType, rate),
       nightly: nights.map((night) => ({ date: night.date, amount: night.gross - night.discount - night.promoDiscount })),
       cancellation: cancellationTerms(rate.cancellationPenalties, catalog.property.cancellationPenalties, checkIn, currency),
@@ -124,18 +170,38 @@ export function priceQuotes(quotes: SmQuote[], catalog: Catalog, holds: Map<stri
 // right choice, so the page shows the cheaper. SiteMinder sends Royal
 // Pineapple's OTA rate plan this way, next to its own direct rate.
 const sameDeal = (cheaper: RateOffer, rate: RateOffer) =>
-  cheaper.name === rate.name && !cheaper.offer && !rate.offer
-  && cheaper.meals.breakfast === rate.meals.breakfast && cheaper.meals.lunch === rate.meals.lunch && cheaper.meals.dinner === rate.meals.dinner
-  && cheaper.cancellation.summary === rate.cancellation.summary && cheaper.cancellation.refundable === rate.cancellation.refundable
-  && cheaper.deposit.type === rate.deposit.type && cheaper.maxQuantity >= rate.maxQuantity;
+  cheaper.name === rate.name &&
+  !cheaper.offer &&
+  !rate.offer &&
+  cheaper.meals.breakfast === rate.meals.breakfast &&
+  cheaper.meals.lunch === rate.meals.lunch &&
+  cheaper.meals.dinner === rate.meals.dinner &&
+  cheaper.cancellation.summary === rate.cancellation.summary &&
+  cheaper.cancellation.refundable === rate.cancellation.refundable &&
+  cheaper.deposit.type === rate.deposit.type &&
+  cheaper.maxQuantity >= rate.maxQuantity;
 
-const stripTags = (html: string | null) => html?.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim() || null;
+const stripTags = (html: string | null) =>
+  html
+    ?.replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .trim() || null;
 
-export function buildAvailability(priced: PricedRate[], catalog: Catalog, search: { checkIn: string; checkOut: string; nights: number; adults: number; children: number; promo?: string }): AvailabilityResponse {
+export function buildAvailability(
+  priced: PricedRate[],
+  catalog: Catalog,
+  search: { checkIn: string; checkOut: string; nights: number; adults: number; children: number; promo?: string },
+): AvailabilityResponse {
   const maxRooms = maxRoomsPerBooking();
   const byType = new Map<string, RoomTypeOffer>();
   for (const p of priced) {
-    const shown = guestRate(p.rate.name, { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded });
+    const shown = guestRate(p.rate.name, {
+      breakfast: p.rate.breakfastIncluded,
+      lunch: p.rate.lunchIncluded,
+      dinner: p.rate.dinnerIncluded,
+    });
     const rate: RateOffer = {
       roomRateUuid: p.rate.uuid,
       name: shown.name,
@@ -144,14 +210,25 @@ export function buildAvailability(priced: PricedRate[], catalog: Catalog, search
       cancellation: p.cancellation,
       total: fromSatang(p.total),
       originalTotal: fromSatang(p.originalTotal),
-      offer: p.offer ? { title: p.offer.title, badge: p.offer.badge, percent: p.offer.percent, perks: p.offer.perks, savings: fromSatang(p.offer.savings) } : null,
+      offer: p.offer
+        ? {
+            title: p.offer.title,
+            badge: p.offer.badge,
+            percent: p.offer.percent,
+            perks: p.offer.perks,
+            savings: fromSatang(p.offer.savings),
+          }
+        : null,
       nightly: p.nightly.map((n) => ({ date: n.date, amount: fromSatang(n.amount) })),
       promoDiscount: fromSatang(p.promoDiscount),
       deposit: { type: p.depositType, dueNow: fromSatang(p.dueNow), balance: fromSatang(p.total - p.dueNow) },
       maxQuantity: Math.min(p.available, p.rate.maxNumberOfRooms ?? maxRooms, maxRooms),
     };
     const existing = byType.get(p.roomType.uuid);
-    if (existing) { existing.rates.push(rate); continue; }
+    if (existing) {
+      existing.rates.push(rate);
+      continue;
+    }
     byType.set(p.roomType.uuid, {
       roomTypeUuid: p.roomType.uuid,
       name: p.roomType.name,
@@ -178,7 +255,11 @@ export function buildAvailability(priced: PricedRate[], catalog: Catalog, search
     occupancy: { adults: search.adults, children: search.children },
     promo: search.promo ? { code: search.promo, applied: priced.some((p) => p.promoDiscount > 0 || p.offer?.byCode) } : null,
     roomTypes,
-    policies: { terms: stripTags(catalog.property.termsAndConditions), checkInTime: times?.checkInStartTime ?? null, checkOutTime: times?.checkOutEndTime ?? null },
+    policies: {
+      terms: stripTags(catalog.property.termsAndConditions),
+      checkInTime: times?.checkInStartTime ?? null,
+      checkOutTime: times?.checkOutEndTime ?? null,
+    },
     maxRooms,
     testPayments: isTestMode(),
     paymentProvider: paymentProvider(),

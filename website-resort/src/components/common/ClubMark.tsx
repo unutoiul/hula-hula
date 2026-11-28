@@ -23,16 +23,25 @@ export type MarkSize = keyof typeof MARK_SIZES;
 // fixed size. Just the artwork: the header wraps it in its home link
 // (HomeLogo), everywhere else in ClubMark's.
 export function ClubMarkArt({ size = 'default' }: { size?: MarkSize }) {
-  return <Box component="img" src="/logo/hula-hula.svg" alt="" sx={{
-    height: MARK_SIZES[size],
-    width: 'auto',
-    aspectRatio: '159 / 137.25',
-    transition: 'height .35s ease',
-  }} />;
+  return (
+    <Box
+      component="img"
+      src="/logo/hula-hula.svg"
+      alt=""
+      sx={{
+        height: MARK_SIZES[size],
+        width: 'auto',
+        aspectRatio: '159 / 137.25',
+        transition: 'height .35s ease',
+      }}
+    />
+  );
 }
 
 export function ClubMark({ size = 'default' }: { size?: MarkSize }) {
-  return <Link href="#top" aria-label="Hula Hula Resort home" sx={{ display: 'inline-flex', lineHeight: 0 }}>
-    <ClubMarkArt size={size} />
-  </Link>;
+  return (
+    <Link href="#top" aria-label="Hula Hula Resort home" sx={{ display: 'inline-flex', lineHeight: 0 }}>
+      <ClubMarkArt size={size} />
+    </Link>
+  );
 }

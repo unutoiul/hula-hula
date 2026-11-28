@@ -9,12 +9,17 @@ import { photoAssets as p } from '../data/photos';
 // it differs, which is the one on the reservation. A room type with no card
 // still shows, under SiteMinder's name, with a hotel photo.
 
-const normalise = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Tolerates a missing name (SiteMinder can send a room type without one).
+const normalise = (name: string | null | undefined) => (name ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-export function roomContent(roomTypeUuid: string, name: string): { title: string; listedAs: string | null; images: string[]; blurb: string | null } {
+export function roomContent(
+  roomTypeUuid: string,
+  name: string | null,
+): { title: string; listedAs: string | null; images: string[]; blurb: string | null } {
   const wanted = normalise(name);
-  const card = rooms.find((room) => room.siteminderRoomTypeUuid === roomTypeUuid)
-    ?? rooms.find((room) => normalise(room.title) === wanted || normalise(room.otaName) === wanted);
+  const card =
+    rooms.find((room) => room.siteminderRoomTypeUuid === roomTypeUuid) ??
+    rooms.find((room) => normalise(room.title) === wanted || normalise(room.otaName) === wanted);
   if (card) return { title: card.title, listedAs: normalise(card.title) === wanted ? null : name, images: card.images, blurb: card.detail };
-  return { title: name, listedAs: null, images: [p.poolFlamingo.src, p.poolLoungers.src], blurb: null };
+  return { title: name || 'Room', listedAs: null, images: [p.poolFlamingo.src, p.poolLoungers.src], blurb: null };
 }

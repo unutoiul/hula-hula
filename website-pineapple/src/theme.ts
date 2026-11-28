@@ -14,9 +14,19 @@ export const fonts = {
 };
 
 export const brand = {
-  pink: '#f06598', royal: '#c92f6b', blush: '#fde6ee', plum: '#5a2448', ink: '#3a1830',
-  pineapple: '#f5c04a', butter: '#fdf1cf', pool: '#27a5b5', poolLight: '#dff6f7', leaf: '#3d7a4a', leafLight: '#e3f1e4',
-  cream: '#fff9f2', paper: '#fffdf9',
+  pink: '#f06598',
+  royal: '#c92f6b',
+  blush: '#fde6ee',
+  plum: '#5a2448',
+  ink: '#3a1830',
+  pineapple: '#f5c04a',
+  butter: '#fdf1cf',
+  pool: '#27a5b5',
+  poolLight: '#dff6f7',
+  leaf: '#3d7a4a',
+  leafLight: '#e3f1e4',
+  cream: '#fff9f2',
+  paper: '#fffdf9',
 };
 
 const theme = createTheme({
@@ -50,7 +60,10 @@ const theme = createTheme({
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: {
-          borderRadius: 999, minHeight: 48, padding: '12px 24px', lineHeight: 1.5,
+          borderRadius: 999,
+          minHeight: 48,
+          padding: '12px 24px',
+          lineHeight: 1.5,
           variants: [
             { props: { variant: 'outlined' }, style: { padding: '11px 23px' } },
             { props: { size: 'small' }, style: { minHeight: 40, padding: '8px 18px', fontSize: '0.8rem' } },
@@ -58,8 +71,13 @@ const theme = createTheme({
             {
               props: { variant: 'text' },
               style: {
-                minWidth: 0, padding: '12px 2px', borderRadius: 0,
-                textDecoration: 'underline', textDecorationColor: brand.pink, textDecorationThickness: 2, textUnderlineOffset: 8,
+                minWidth: 0,
+                padding: '12px 2px',
+                borderRadius: 0,
+                textDecoration: 'underline',
+                textDecorationColor: brand.pink,
+                textDecorationThickness: 2,
+                textUnderlineOffset: 8,
                 '&:hover': { backgroundColor: 'transparent', textDecorationColor: 'currentColor' },
               },
             },

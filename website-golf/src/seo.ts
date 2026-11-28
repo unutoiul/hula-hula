@@ -11,7 +11,14 @@ export const SITE_NAME = 'Hula Hula Golf Club';
 export const SOCIAL_IMAGE = `${SITE_URL}/images/share.jpg`;
 export const SOCIAL_IMAGE_ALT = 'Painted postcard: the Hula Hula pineapple in sunglasses beside a tropical golf green';
 
-export interface PageHead { title: string; description: string; canonical: string | null; robots: string; structuredData?: object[]; preloadImages?: { srcSet: string; sizes: string; type: string }[] }
+export interface PageHead {
+  title: string;
+  description: string;
+  canonical: string | null;
+  robots: string;
+  structuredData?: object[];
+  preloadImages?: { srcSet: string; sizes: string; type: string }[];
+}
 
 // The homepage's largest picture is the hero fairway photo. It only appears
 // once the app's JavaScript has run, so the HTML asks for it straight away
@@ -21,7 +28,8 @@ const HOME_PRELOAD = [{ srcSet: photoAssets.fairwaySign.avifSrcSet, sizes: '(max
 
 const INDEX = 'index, follow, max-image-preview:large';
 const CLUB_ID = `${SITE_URL}/#club`;
-const HOME_DESCRIPTION = 'A tropical 9-hole course near Krabi Airport, with FootGolf, Fling Golf, pickleball, private driving range bays, beginner lessons and H Café & Restaurant. Book your tee time online at Hula Hula Golf Club.';
+const HOME_DESCRIPTION =
+  'A tropical 9-hole course near Krabi Airport, with FootGolf, Fling Golf, pickleball, private driving range bays, beginner lessons and H Café & Restaurant. Book your tee time online at Hula Hula Golf Club.';
 
 const clubStructuredData = {
   '@context': 'https://schema.org',
@@ -54,10 +62,19 @@ const websiteStructuredData = {
 const breadcrumbs = (trail: [string, string][]) => ({
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
-  itemListElement: [['Home', '/'] as [string, string], ...trail].map(([name, path], index) => ({ '@type': 'ListItem', position: index + 1, name, item: `${SITE_URL}${path}` })),
+  itemListElement: [['Home', '/'] as [string, string], ...trail].map(([name, path], index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name,
+    item: `${SITE_URL}${path}`,
+  })),
 });
 
-interface Page { title: string; description: string; trail: [string, string][] }
+interface Page {
+  title: string;
+  description: string;
+  trail: [string, string][];
+}
 
 // The explore pages' search titles; their descriptions are the pages' own intros.
 const exploreTitles: Record<string, string> = {
@@ -75,29 +92,85 @@ const exploreTitles: Record<string, string> = {
 // and data/content.ts (staff can rename activities in /admin; the page itself
 // then shows the new name, while search keeps these until the next build).
 const activityPages: [string, string, string, string][] = [
-  ['/course', 'Golf', 'Golf Course: 9 Holes, Par 36 | Hula Hula Golf Club, Krabi', 'Narrow fairways, water to carry and quick greens, with Phanom Bencha mountain on the horizon. Green fee, caddie and cart included. Book your tee time online.'],
-  ['/activities/footgolf', 'FootGolf', 'FootGolf in Krabi: 18 Holes | Hula Hula Golf Club', '18 holes of FootGolf on real fairways, oversized cups and a caddie to show the way. All ages, all abilities, plenty of laughs. Book online.'],
-  ['/activities/fling-golf', 'Fling Golf', 'Fling Golf in Krabi | Hula Hula Golf Club', 'Scoop, swing and fling a golf ball down our fairways with a lacrosse-style Flingstick. Easy to learn, huge fun in a group.'],
-  ['/activities/puttgolf', 'Putt-Golf', 'Putt-Golf: Mini-Golf on Real Greens | Hula Hula Golf Club, Krabi', 'Ride a cart from green to green while your caddie sets fun starting points. Mini-golf on real greens, perfect for families and first-timers.'],
-  ['/activities/range', 'Driving range', 'Driving Range with Private Bays | Hula Hula Golf Club, Krabi', 'Cosy private bays for up to five, each with a sofa, a launch monitor and food and drinks brought to you. Chipping and putting course included.'],
-  ['/activities/pickleball', 'Pickleball', 'Pickleball in Krabi | Hula Hula Golf Club', 'A little court, a light ball and long, laughing rallies. Pickleball at Hula Hula Golf Club near Krabi Airport: easy to pick up, hard to put down.'],
-  ['/activities/lesson', 'Golf lesson', 'Beginner Golf Lessons in Krabi | Hula Hula Golf Club', 'A relaxed 3.5-hour golf lesson for complete beginners, with coaching, range time and all the equipment. Not too serious — just fun.'],
-  ['/activities/cafe', 'H Café & Restaurant', 'H Café & Restaurant | Hula Hula Golf Club, Krabi', 'Lattes and pastries before you tee off, plates to share and cold shakes after, looking straight down the fairways. Open to everyone, no tee time needed.'],
+  [
+    '/course',
+    'Golf',
+    'Golf Course: 9 Holes, Par 36 | Hula Hula Golf Club, Krabi',
+    'Narrow fairways, water to carry and quick greens, with Phanom Bencha mountain on the horizon. Green fee, caddie and cart included. Book your tee time online.',
+  ],
+  [
+    '/activities/footgolf',
+    'FootGolf',
+    'FootGolf in Krabi: 18 Holes | Hula Hula Golf Club',
+    '18 holes of FootGolf on real fairways, oversized cups and a caddie to show the way. All ages, all abilities, plenty of laughs. Book online.',
+  ],
+  [
+    '/activities/fling-golf',
+    'Fling Golf',
+    'Fling Golf in Krabi | Hula Hula Golf Club',
+    'Scoop, swing and fling a golf ball down our fairways with a lacrosse-style Flingstick. Easy to learn, huge fun in a group.',
+  ],
+  [
+    '/activities/puttgolf',
+    'Putt-Golf',
+    'Putt-Golf: Mini-Golf on Real Greens | Hula Hula Golf Club, Krabi',
+    'Ride a cart from green to green while your caddie sets fun starting points. Mini-golf on real greens, perfect for families and first-timers.',
+  ],
+  [
+    '/activities/range',
+    'Driving range',
+    'Driving Range with Private Bays | Hula Hula Golf Club, Krabi',
+    'Cosy private bays for up to five, each with a sofa, a launch monitor and food and drinks brought to you. Chipping and putting course included.',
+  ],
+  [
+    '/activities/pickleball',
+    'Pickleball',
+    'Pickleball in Krabi | Hula Hula Golf Club',
+    'A little court, a light ball and long, laughing rallies. Pickleball at Hula Hula Golf Club near Krabi Airport: easy to pick up, hard to put down.',
+  ],
+  [
+    '/activities/lesson',
+    'Golf lesson',
+    'Beginner Golf Lessons in Krabi | Hula Hula Golf Club',
+    'A relaxed 3.5-hour golf lesson for complete beginners, with coaching, range time and all the equipment. Not too serious — just fun.',
+  ],
+  [
+    '/activities/cafe',
+    'H Café & Restaurant',
+    'H Café & Restaurant | Hula Hula Golf Club, Krabi',
+    'Lattes and pastries before you tee off, plates to share and cold shakes after, looking straight down the fairways. Open to everyone, no tee time needed.',
+  ],
 ];
 
 const pages: Record<string, Page> = {
   '/book': {
     title: 'Book a Tee Time Online | Hula Hula Golf Club, Krabi',
-    description: 'Book golf, FootGolf, Putt-Golf, driving range bays and beginner lessons at Hula Hula Golf Club near Krabi Airport. Pick your day and time, and pay a deposit online.',
+    description:
+      'Book golf, FootGolf, Putt-Golf, driving range bays and beginner lessons at Hula Hula Golf Club near Krabi Airport. Pick your day and time, and pay a deposit online.',
     trail: [['Book', '/book']],
   },
-  ...Object.fromEntries(Object.entries(exploreTitles).map(([path, title]): [string, Page] => {
-    const [, intro, , eyebrow] = explorePages[path];
-    return [path, { title, description: intro, trail: [[eyebrow, path]] }];
-  })),
-  ...Object.fromEntries(activityPages.map(([path, name, title, description]): [string, Page] => [path, {
-    title, description, trail: path === '/course' ? [[name, path]] : [['Activities', '/activities'], [name, path]],
-  }])),
+  ...Object.fromEntries(
+    Object.entries(exploreTitles).map(([path, title]): [string, Page] => {
+      const [, intro, , eyebrow] = explorePages[path];
+      return [path, { title, description: intro, trail: [[eyebrow, path]] }];
+    }),
+  ),
+  ...Object.fromEntries(
+    activityPages.map(([path, name, title, description]): [string, Page] => [
+      path,
+      {
+        title,
+        description,
+        trail:
+          path === '/course'
+            ? [[name, path]]
+            : [
+                ['Activities', '/activities'],
+                [name, path],
+              ],
+      },
+    ]),
+  ),
 };
 
 /** Every public page, for the per-page HTML files and the sitemap. */
@@ -106,10 +179,24 @@ export const PUBLIC_ROUTES = ['/', ...Object.keys(pages)];
 export function pageHead(pathname: string): PageHead {
   const path = pathname === '/index.html' ? '/' : pathname.replace(/(.)\/$/, '$1');
   if (path === '/') {
-    return { title: 'Hula Hula Golf Club | Tropical Golf & FootGolf near Krabi Airport', description: HOME_DESCRIPTION, canonical: `${SITE_URL}/`, robots: INDEX, structuredData: [websiteStructuredData, clubStructuredData], preloadImages: HOME_PRELOAD };
+    return {
+      title: 'Hula Hula Golf Club | Tropical Golf & FootGolf near Krabi Airport',
+      description: HOME_DESCRIPTION,
+      canonical: `${SITE_URL}/`,
+      robots: INDEX,
+      structuredData: [websiteStructuredData, clubStructuredData],
+      preloadImages: HOME_PRELOAD,
+    };
   }
   const page = pages[path];
-  if (page) return { title: page.title, description: page.description, canonical: `${SITE_URL}${path}`, robots: INDEX, structuredData: [breadcrumbs(page.trail)] };
+  if (page)
+    return {
+      title: page.title,
+      description: page.description,
+      canonical: `${SITE_URL}${path}`,
+      robots: INDEX,
+      structuredData: [breadcrumbs(page.trail)],
+    };
   // Event pages and anything else the app answers: the homepage's head, which
   // points search engines at the homepage.
   return { ...pageHead('/'), structuredData: [] };

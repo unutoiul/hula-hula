@@ -14,7 +14,7 @@ export const Scene = styled(Box, { shouldForwardProp: (prop) => prop !== 'image'
   alignItems: 'flex-end',
   overflow: 'hidden',
   color: theme.palette.primary.contrastText,
-  backgroundImage: `linear-gradient(0deg, ${scrim(.88)}, ${scrim(0)} 62%), url(${image})`,
+  backgroundImage: `linear-gradient(0deg, ${scrim(0.88)}, ${scrim(0)} 62%), url(${image})`,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   [theme.breakpoints.down('md')]: { minHeight: 390 },

@@ -1,5 +1,13 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { animate, useMotionTemplate, useMotionValue, useScroll, useSpring, useTransform, type AnimationPlaybackControls } from 'motion/react';
+import {
+  animate,
+  useMotionTemplate,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+  type AnimationPlaybackControls,
+} from 'motion/react';
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { useMotionPreference } from '../../context/MotionPreferenceContext';
 import { CarouselArrow } from './CarouselArrow';
@@ -8,8 +16,12 @@ import { MotionBox } from './motionPrimitives';
 import { Reveal } from './ScrollMotion';
 
 interface DragCarouselProps<T> {
-  sectionKicker: string; heading: ReactNode; items: T[]; itemLabel: string;
-  slotWidth?: { xs: number; sm: number; md: number }; onDark?: boolean;
+  sectionKicker: string;
+  heading: ReactNode;
+  items: T[];
+  itemLabel: string;
+  slotWidth?: { xs: number; sm: number; md: number };
+  onDark?: boolean;
   /** Smaller heading and narrower cards: four to a row on wide screens. */
   compact?: boolean;
   renderCard: (item: T, active: boolean, onClick: () => void) => ReactNode;
@@ -22,7 +34,14 @@ const ITEM_NOUNS: Record<string, string> = { room: 'places to stay', 'offer or e
 const SLOT = { xs: '0 0 84%', sm: '0 0 calc(50% - 12px)', lg: '0 0 calc(33.333% - 16px)' };
 const COMPACT_SLOT = { xs: '0 0 78%', sm: '0 0 calc(50% - 12px)', md: '0 0 calc(33.333% - 16px)', lg: '0 0 calc(25% - 18px)' };
 
-interface MouseDrag { startX: number; startLeft: number; moved: boolean; lastX: number; lastT: number; velocity: number }
+interface MouseDrag {
+  startX: number;
+  startLeft: number;
+  moved: boolean;
+  lastX: number;
+  lastT: number;
+  velocity: number;
+}
 
 // A horizontally scrolling card row built on the browser's own scrolling, so
 // touch swipes, trackpad two-finger swipes and Shift+wheel all feel native,
@@ -32,7 +51,15 @@ interface MouseDrag { startX: number; startLeft: number; moved: boolean; lastX: 
 // position — soft edge fades that only appear where more cards are hiding,
 // and a progress bar that fills as you go. The row itself never moves when
 // the page scrolls.
-export function DragCarousel<T extends { id: string }>({ sectionKicker, heading, items, itemLabel, onDark = true, compact = false, renderCard }: DragCarouselProps<T>) {
+export function DragCarousel<T extends { id: string }>({
+  sectionKicker,
+  heading,
+  items,
+  itemLabel,
+  onDark = true,
+  compact = false,
+  renderCard,
+}: DragCarouselProps<T>) {
   const { reduced } = useMotionPreference();
   const viewport = useRef<HTMLDivElement>(null);
   const drag = useRef<MouseDrag | null>(null);
@@ -51,11 +78,14 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
     const max = row.scrollWidth - row.clientWidth;
     return Array.from(row.children).map((child) => {
       const card = child as HTMLElement;
-      const left = getComputedStyle(card).scrollSnapAlign.includes('center') ? card.offsetLeft + card.offsetWidth / 2 - row.clientWidth / 2 : card.offsetLeft;
+      const left = getComputedStyle(card).scrollSnapAlign.includes('center')
+        ? card.offsetLeft + card.offsetWidth / 2 - row.clientWidth / 2
+        : card.offsetLeft;
       return Math.max(0, Math.min(max, left));
     });
   };
-  const nearestCard = (left: number) => cardStarts().reduce((best, start, i, all) => Math.abs(start - left) < Math.abs(all[best] - left) ? i : best, 0);
+  const nearestCard = (left: number) =>
+    cardStarts().reduce((best, start, i, all) => (Math.abs(start - left) < Math.abs(all[best] - left) ? i : best), 0);
 
   const update = () => {
     const node = viewport.current;
@@ -78,17 +108,32 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
   // for the glide: the browser's own smooth scroll gets cut short by the next
   // wheel event and mandatory snapping then pulls it back to where it started.
   const glide = useRef<AnimationPlaybackControls | null>(null);
-  const stopGlide = () => { glide.current?.stop(); glide.current = null; if (viewport.current) viewport.current.style.scrollSnapType = ''; };
+  const stopGlide = () => {
+    glide.current?.stop();
+    glide.current = null;
+    if (viewport.current) viewport.current.style.scrollSnapType = '';
+  };
   const glideTo = (left: number) => {
     const node = viewport.current;
     if (!node) return;
     stopGlide();
-    if (reduced) { node.scrollLeft = left; return; }
+    if (reduced) {
+      node.scrollLeft = left;
+      return;
+    }
     node.style.scrollSnapType = 'none';
     glide.current = animate(node.scrollLeft, left, {
-      type: 'spring', stiffness: 170, damping: 26, restDelta: 0.5,
-      onUpdate: (value) => { node.scrollLeft = value; },
-      onComplete: () => { node.style.scrollSnapType = ''; glide.current = null; },
+      type: 'spring',
+      stiffness: 170,
+      damping: 26,
+      restDelta: 0.5,
+      onUpdate: (value) => {
+        node.scrollLeft = value;
+      },
+      onComplete: () => {
+        node.style.scrollSnapType = '';
+        glide.current = null;
+      },
     });
   };
   const scrollToCard = (index: number) => {
@@ -108,14 +153,18 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
   useEffect(() => {
     const node = viewport.current;
     if (!node) return;
-    let travelled = 0, lockedUntil = 0;
+    let travelled = 0,
+      lockedUntil = 0;
     const onWheel = (event: WheelEvent) => {
       const { scrollToCard, nearestCard, count } = latest.current;
       const dx = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.shiftKey ? event.deltaY : 0;
       if (!dx) return;
       event.preventDefault();
       const now = performance.now();
-      if (now < lockedUntil) { lockedUntil = now + 220; return; }
+      if (now < lockedUntil) {
+        lockedUntil = now + 220;
+        return;
+      }
       travelled += dx;
       if (Math.abs(travelled) < 24) return;
       // Step from where the row is heading (mid-glide) or resting.
@@ -134,10 +183,18 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     stopGlide();
     if (event.pointerType !== 'mouse' || event.button !== 0 || !viewport.current) return;
-    drag.current = { startX: event.clientX, startLeft: viewport.current.scrollLeft, moved: false, lastX: event.clientX, lastT: event.timeStamp, velocity: 0 };
+    drag.current = {
+      startX: event.clientX,
+      startLeft: viewport.current.scrollLeft,
+      moved: false,
+      lastX: event.clientX,
+      lastT: event.timeStamp,
+      velocity: 0,
+    };
   };
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    const d = drag.current, node = viewport.current;
+    const d = drag.current,
+      node = viewport.current;
     if (!d || !node) return;
     const dx = event.clientX - d.startX;
     if (!d.moved) {
@@ -150,10 +207,12 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
     node.scrollLeft = d.startLeft - dx;
     const dt = event.timeStamp - d.lastT;
     if (dt > 0) d.velocity = (event.clientX - d.lastX) / dt;
-    d.lastX = event.clientX; d.lastT = event.timeStamp;
+    d.lastX = event.clientX;
+    d.lastT = event.timeStamp;
   };
   const endDrag = () => {
-    const d = drag.current, node = viewport.current;
+    const d = drag.current,
+      node = viewport.current;
     drag.current = null;
     if (!d?.moved || !node) return;
     lastDragEnd.current = performance.now();
@@ -171,51 +230,147 @@ export function DragCarousel<T extends { id: string }>({ sectionKicker, heading,
   // Edge opacity: 1 = fully visible. Only fades while there's more to scroll
   // to on that side; a row that fits reports "at the end" and must not fade.
   const leftEdge = useTransform([scrollXProgress, canScroll], ([p, can]: number[]) => (can ? Math.max(0, 1 - p / 0.05) : 1));
-  const rightEdge = useTransform([scrollXProgress, canScroll], ([p, can]: number[]) => (can ? Math.min(1, Math.max(0, (p - 0.95) / 0.05)) : 1));
+  const rightEdge = useTransform([scrollXProgress, canScroll], ([p, can]: number[]) =>
+    can ? Math.min(1, Math.max(0, (p - 0.95) / 0.05)) : 1,
+  );
   const mask = useMotionTemplate`linear-gradient(90deg, rgba(0,0,0,${leftEdge}) 0, #000 56px, #000 calc(100% - 56px), rgba(0,0,0,${rightEdge}) 100%)`;
   const scrolls = !(edges.start && edges.end);
 
-  return <>
-    <Reveal><Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'center', sm: 'flex-end' }} gap={3} sx={{ mb: compact ? 3.5 : 5, textAlign: { xs: 'center', sm: 'left' } }}>
-      <Box>{(onDark || compact) && <MetaLabel>{sectionKicker}</MetaLabel>}<Typography variant="h2" sx={{ fontSize: compact ? { xs: 34, md: 46 } : { xs: 40, md: 62 }, lineHeight: 1.04, mt: compact ? 1 : 1.5 }}>{heading}</Typography></Box>
-      <Stack direction="row" spacing={1.2}>
-        {scrolls && <>
-          <CarouselArrow direction="prev" onDark={onDark} disabled={edges.start} label={`Previous ${itemLabel}`} onClick={() => scrollToCard(active - 1)} />
-          <CarouselArrow direction="next" onDark={onDark} disabled={edges.end} label={`Next ${itemLabel}`} onClick={() => scrollToCard(active + 1)} />
-        </>}
-      </Stack>
-    </Stack></Reveal>
-    <MotionBox ref={viewport} role="region" aria-label={`${itemLabel} gallery`} tabIndex={0}
-      onKeyDown={(event) => { if (event.target !== event.currentTarget) return; if (event.key === 'ArrowRight') { event.preventDefault(); scrollToCard(active + 1); } if (event.key === 'ArrowLeft') { event.preventDefault(); scrollToCard(active - 1); } }}
-      onScroll={update}
-      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}
-      // No native image/link drag ghosts, and no click on a card's link or
-      // photo arrows right after a mouse drag.
-      onDragStart={(event) => event.preventDefault()}
-      onClickCapture={(event) => { if (performance.now() - lastDragEnd.current < 250) { event.preventDefault(); event.stopPropagation(); } }}
-      style={{ maskImage: mask, WebkitMaskImage: mask }}
-      sx={{
-        // On phones the current card sits centred with a peek either side; the
-        // side padding lets the first and last cards centre too.
-        position: 'relative', display: 'flex', alignItems: 'stretch', gap: { xs: 2, sm: 3 }, pb: 1, px: { xs: '8%', sm: 0 },
-        // Sideways only: overflowY must be hidden, or the cards waiting to
-        // rise in make the row a few px vertically scrollable and it swallows
-        // the page's vertical wheel/trackpad scrolling.
-        overflowX: 'auto', overflowY: 'hidden', overscrollBehaviorX: 'contain', scrollSnapType: 'x mandatory',
-        scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' },
-        '@media (pointer: fine)': { cursor: 'grab', userSelect: 'none' },
-        '&:focus-visible': { outlineOffset: 6 },
-      }}>
-      {items.map((item, i) => <Box key={item.id} sx={{ flex: compact ? COMPACT_SLOT : SLOT, scrollSnapAlign: { xs: 'center', sm: 'start' }, minWidth: 0, display: 'flex' }}>
-        <Reveal delay={Math.min(i, 3) * 0.1} sx={{ display: 'flex', width: '100%' }}>{renderCard(item, i === active, () => scrollToCard(i))}</Reveal>
-      </Box>)}
-    </MotionBox>
-    {/* Only when there's more to see than fits. */}
-    {scrolls && <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" gap={{ xs: 1.5, sm: 2 }} sx={{ mt: 3, textAlign: { xs: 'center', sm: 'left' } }}>
-      <Typography sx={{ fontSize: 12, opacity: .7 }}>Drag, swipe, or use the arrows to explore {items.length} {ITEM_NOUNS[itemLabel] ?? 'ways to enjoy your holiday'}.</Typography>
-      <Box aria-hidden sx={{ flex: '0 0 auto', width: { xs: 96, sm: 120 }, height: 4, ml: { xs: 0, sm: 'auto' }, borderRadius: 2, overflow: 'hidden', bgcolor: onDark ? 'rgba(255,255,255,.22)' : 'rgba(23,60,44,.12)' }}>
-        <MotionBox style={{ scaleX: progress, originX: 0 }} sx={{ height: '100%', bgcolor: onDark ? 'secondary.main' : 'primary.main' }} />
-      </Box>
-    </Stack>}
-  </>;
+  return (
+    <>
+      <Reveal>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'center', sm: 'flex-end' }}
+          gap={3}
+          sx={{ mb: compact ? 3.5 : 5, textAlign: { xs: 'center', sm: 'left' } }}
+        >
+          <Box>
+            {(onDark || compact) && <MetaLabel>{sectionKicker}</MetaLabel>}
+            <Typography
+              variant="h2"
+              sx={{ fontSize: compact ? { xs: 34, md: 46 } : { xs: 40, md: 62 }, lineHeight: 1.04, mt: compact ? 1 : 1.5 }}
+            >
+              {heading}
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={1.2}>
+            {scrolls && (
+              <>
+                <CarouselArrow
+                  direction="prev"
+                  onDark={onDark}
+                  disabled={edges.start}
+                  label={`Previous ${itemLabel}`}
+                  onClick={() => scrollToCard(active - 1)}
+                />
+                <CarouselArrow
+                  direction="next"
+                  onDark={onDark}
+                  disabled={edges.end}
+                  label={`Next ${itemLabel}`}
+                  onClick={() => scrollToCard(active + 1)}
+                />
+              </>
+            )}
+          </Stack>
+        </Stack>
+      </Reveal>
+      <MotionBox
+        ref={viewport}
+        role="region"
+        aria-label={`${itemLabel} gallery`}
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            scrollToCard(active + 1);
+          }
+          if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            scrollToCard(active - 1);
+          }
+        }}
+        onScroll={update}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        // No native image/link drag ghosts, and no click on a card's link or
+        // photo arrows right after a mouse drag.
+        onDragStart={(event) => event.preventDefault()}
+        onClickCapture={(event) => {
+          if (performance.now() - lastDragEnd.current < 250) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }}
+        style={{ maskImage: mask, WebkitMaskImage: mask }}
+        sx={{
+          // On phones the current card sits centred with a peek either side; the
+          // side padding lets the first and last cards centre too.
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'stretch',
+          gap: { xs: 2, sm: 3 },
+          pb: 1,
+          px: { xs: '8%', sm: 0 },
+          // Sideways only: overflowY must be hidden, or the cards waiting to
+          // rise in make the row a few px vertically scrollable and it swallows
+          // the page's vertical wheel/trackpad scrolling.
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          overscrollBehaviorX: 'contain',
+          scrollSnapType: 'x mandatory',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+          '@media (pointer: fine)': { cursor: 'grab', userSelect: 'none' },
+          '&:focus-visible': { outlineOffset: 6 },
+        }}
+      >
+        {items.map((item, i) => (
+          <Box
+            key={item.id}
+            sx={{ flex: compact ? COMPACT_SLOT : SLOT, scrollSnapAlign: { xs: 'center', sm: 'start' }, minWidth: 0, display: 'flex' }}
+          >
+            <Reveal delay={Math.min(i, 3) * 0.1} sx={{ display: 'flex', width: '100%' }}>
+              {renderCard(item, i === active, () => scrollToCard(i))}
+            </Reveal>
+          </Box>
+        ))}
+      </MotionBox>
+      {/* Only when there's more to see than fits. */}
+      {scrolls && (
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems="center"
+          gap={{ xs: 1.5, sm: 2 }}
+          sx={{ mt: 3, textAlign: { xs: 'center', sm: 'left' } }}
+        >
+          <Typography sx={{ fontSize: 12, opacity: 0.7 }}>
+            Drag, swipe, or use the arrows to explore {items.length} {ITEM_NOUNS[itemLabel] ?? 'ways to enjoy your holiday'}.
+          </Typography>
+          <Box
+            aria-hidden
+            sx={{
+              flex: '0 0 auto',
+              width: { xs: 96, sm: 120 },
+              height: 4,
+              ml: { xs: 0, sm: 'auto' },
+              borderRadius: 2,
+              overflow: 'hidden',
+              bgcolor: onDark ? 'rgba(255,255,255,.22)' : 'rgba(23,60,44,.12)',
+            }}
+          >
+            <MotionBox
+              style={{ scaleX: progress, originX: 0 }}
+              sx={{ height: '100%', bgcolor: onDark ? 'secondary.main' : 'primary.main' }}
+            />
+          </Box>
+        </Stack>
+      )}
+    </>
+  );
 }

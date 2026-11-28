@@ -27,7 +27,10 @@ export function EventsPage() {
       supabase!.from('golf_event_orders').select('*').in('status', ['paid', 'pending']),
     ]).then(([e, pk, o]) => {
       const failed = e.error ?? pk.error ?? o.error;
-      if (failed) { setError(failed.message); return; }
+      if (failed) {
+        setError(failed.message);
+        return;
+      }
       setEvents(e.data as StaffEvent[]);
       setPackages(pk.data as StaffPackage[]);
       setOrders(o.data as StaffOrder[]);
@@ -36,14 +39,29 @@ export function EventsPage() {
 
   const create = async () => {
     setCreating(true);
-    const { data, error: createError } = await supabase!.from('golf_events').insert({
-      slug: `event-${Date.now().toString(36)}`, title: 'New event', starts_on: addDays(krabiNow().date, 21), published: false,
-    }).select('id').single();
+    const { data, error: createError } = await supabase!
+      .from('golf_events')
+      .insert({
+        slug: `event-${Date.now().toString(36)}`,
+        title: 'New event',
+        starts_on: addDays(krabiNow().date, 21),
+        published: false,
+      })
+      .select('id')
+      .single();
     setCreating(false);
-    if (createError) setError(createError.message); else navigate(`/admin/events/${data.id}`);
+    if (createError) setError(createError.message);
+    else navigate(`/admin/events/${data.id}`);
   };
 
-  if (!events) return error ? <Alert severity="error">{error}</Alert> : <Box sx={{ textAlign: 'center', py: 6 }}><CircularProgress /></Box>;
+  if (!events)
+    return error ? (
+      <Alert severity="error">{error}</Alert>
+    ) : (
+      <Box sx={{ textAlign: 'center', py: 6 }}>
+        <CircularProgress />
+      </Box>
+    );
   const today = krabiNow().date;
   const upcoming = events.filter((e) => (e.ends_on ?? e.starts_on) >= today).reverse();
   const past = events.filter((e) => (e.ends_on ?? e.starts_on) < today);
@@ -52,33 +70,68 @@ export function EventsPage() {
     const own = packages.filter((pk) => pk.event_id === event.id);
     const capacity = own.reduce((sum, pk) => sum + pk.capacity, 0);
     const taken = own.reduce((sum, pk) => sum + takenPlaces(orders, pk.id), 0);
-    const takings = orders.filter((o) => o.event_id === event.id && o.status === 'paid' && !o.test_payment).reduce((sum, o) => sum + o.total, 0);
+    const takings = orders
+      .filter((o) => o.event_id === event.id && o.status === 'paid' && !o.test_payment)
+      .reduce((sum, o) => sum + o.total, 0);
     const href = `/admin/events/${event.id}`;
-    return <Card key={event.id} variant="outlined" sx={{ borderRadius: '18px', '&:hover': { borderColor: 'primary.main' } }}>
-      <CardActionArea component="a" href={href} onClick={linkClick(href)} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25 }}>
-        <Box sx={{ width: { xs: 72, sm: 96 }, height: 72, flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}><ClubPhoto image={event.cover_image || p.fairwayBalcony.src} alt="" sizes="100px" /></Box>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography noWrap sx={{ fontWeight: 700 }}>{event.title}</Typography>
-          <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>{shortDayLabel(event.starts_on)} · {taken}/{capacity} places · {money(takings)} taken</Typography>
-          <Stack direction="row" flexWrap="wrap" useFlexGap gap={.75} sx={{ mt: .5 }}>
-            <Chip size="small" label={event.published ? 'On the website' : 'Draft'} color={event.published ? 'success' : 'default'} />
-            {event.published && !event.sales_open && <Chip size="small" label="Sales closed" />}
-          </Stack>
-        </Box>
-        <ChevronRightRounded sx={{ color: 'text.secondary' }} />
-      </CardActionArea>
-    </Card>;
+    return (
+      <Card key={event.id} variant="outlined" sx={{ borderRadius: '18px', '&:hover': { borderColor: 'primary.main' } }}>
+        <CardActionArea
+          component="a"
+          href={href}
+          onClick={linkClick(href)}
+          sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.25 }}
+        >
+          <Box sx={{ width: { xs: 72, sm: 96 }, height: 72, flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
+            <ClubPhoto image={event.cover_image || p.fairwayBalcony.src} alt="" sizes="100px" />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography noWrap sx={{ fontWeight: 700 }}>
+              {event.title}
+            </Typography>
+            <Typography noWrap sx={{ fontSize: 13, color: 'text.secondary' }}>
+              {shortDayLabel(event.starts_on)} · {taken}/{capacity} places · {money(takings)} taken
+            </Typography>
+            <Stack direction="row" flexWrap="wrap" useFlexGap gap={0.75} sx={{ mt: 0.5 }}>
+              <Chip size="small" label={event.published ? 'On the website' : 'Draft'} color={event.published ? 'success' : 'default'} />
+              {event.published && !event.sales_open && <Chip size="small" label="Sales closed" />}
+            </Stack>
+          </Box>
+          <ChevronRightRounded sx={{ color: 'text.secondary' }} />
+        </CardActionArea>
+      </Card>
+    );
   };
 
-  return <Box>
-    <PageTitle title="Events" hint="Published upcoming events appear automatically on Home and Events & offers. Past events leave the highlights; their published pages remain available." action={<Button variant="contained" startIcon={<AddRounded />} disabled={creating} onClick={() => void create()}>New event</Button>} />
-    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-    {upcoming.length > 0
-      ? <Stack spacing={1.25}>{upcoming.map(card)}</Stack>
-      : <EmptyState title="No upcoming events">Make one with “New event” — it stays a draft until you put it on the website.</EmptyState>}
-    {past.length > 0 && <>
-      <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', mt: 4, mb: 1 }}>Past events</Typography>
-      <Stack spacing={1.25}>{past.map(card)}</Stack>
-    </>}
-  </Box>;
+  return (
+    <Box>
+      <PageTitle
+        title="Events"
+        hint="Published upcoming events appear automatically on Home and Events & offers. Past events leave the highlights; their published pages remain available."
+        action={
+          <Button variant="contained" startIcon={<AddRounded />} disabled={creating} onClick={() => void create()}>
+            New event
+          </Button>
+        }
+      />
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {upcoming.length > 0 ? (
+        <Stack spacing={1.25}>{upcoming.map(card)}</Stack>
+      ) : (
+        <EmptyState title="No upcoming events">Make one with “New event” — it stays a draft until you put it on the website.</EmptyState>
+      )}
+      {past.length > 0 && (
+        <>
+          <Typography variant="overline" sx={{ display: 'block', color: 'text.secondary', mt: 4, mb: 1 }}>
+            Past events
+          </Typography>
+          <Stack spacing={1.25}>{past.map(card)}</Stack>
+        </>
+      )}
+    </Box>
+  );
 }

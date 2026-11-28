@@ -4,7 +4,10 @@
 // the API loads this file at runtime too, so type imports are all it may have.
 import type { RoomCapacity } from './bookingContract';
 
-export interface Occupancy { adults: number; children: number }
+export interface Occupancy {
+  adults: number;
+  children: number;
+}
 
 /** Every room needs an adult; children count against the room's total, and
  * against its adult places when it has no separate child places. */
@@ -27,7 +30,10 @@ export function distributeGuests(rooms: RoomCapacity[], adults: number, children
       plan.forEach((occ, index) => {
         const next = { ...occ, [kind]: occ[kind] + 1 };
         const space = rooms[index].guests - occ.adults - occ.children;
-        if (fits(rooms[index], next.adults, next.children) && space > bestSpace) { best = index; bestSpace = space; }
+        if (fits(rooms[index], next.adults, next.children) && space > bestSpace) {
+          best = index;
+          bestSpace = space;
+        }
       });
       if (best < 0) return false;
       plan[best][kind] += 1;

@@ -3,13 +3,23 @@
 // time zone.
 
 /** What a guest needs to know when Stripe test keys are configured. */
-export const testPaymentNote = () => 'Test mode: payments go through Stripe’s test mode, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4242 4242 4242 4242 with any future expiry date and any CVC.';
+export const testPaymentNote = () =>
+  'Test mode: payments go through Stripe’s test mode, so nothing is charged — you pay the full amount at the hotel. To try it, use card 4242 4242 4242 4242 with any future expiry date and any CVC.';
 
 export function money(amount: number, currency = 'THB'): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: Number.isInteger(amount) ? 0 : 2 }).format(amount);
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'narrowSymbol',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+  }).format(amount);
 }
 
-const asDay = (iso: string) => { const [y, m, d] = iso.slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d); };
+const asDay = (iso: string) => {
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
 const longDay = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 const shortDay = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
@@ -25,7 +35,8 @@ export const stayLabel = (checkIn: string, checkOut: string) => `${shortDayLabel
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 export const nightsLabel = (n: number) => plural(n, 'night');
-export const guestsLabel = (adults: number, children: number) => `${plural(adults, 'adult')}${children ? ` · ${plural(children, 'child', 'children')}` : ''}`;
+export const guestsLabel = (adults: number, children: number) =>
+  `${plural(adults, 'adult')}${children ? ` · ${plural(children, 'child', 'children')}` : ''}`;
 
 export function mealsLabel(meals: { breakfast: boolean; lunch: boolean; dinner: boolean }): string {
   const included = [meals.breakfast && 'Breakfast', meals.lunch && 'lunch', meals.dinner && 'dinner'].filter(Boolean) as string[];

@@ -15,54 +15,156 @@ import { ScrollTilt } from '../common/ScrollMotion';
 export function Hero() {
   // While offers or events are running, the hero's instant photo shows them.
   const highlights = useHighlights();
-  return <Box component="section" aria-label="Welcome to Hula Hula Resort" sx={{ position: 'relative', pt: { xs: 19, md: 25 }, pb: { xs: 6, md: 9 }, overflow: 'hidden' }}>
-    <Container maxWidth="xl">
-      <Box sx={{ display: 'grid', gridTemplateColumns: { md: '1fr 1.12fr' }, alignItems: 'center', gap: { xs: 5, md: 6 }, minHeight: { md: 700 } }}>
-        <Box sx={{ position: 'relative', zIndex: 2, display: { xs: 'contents', md: 'block' } }}>
-          <Box sx={{ order: 1, textAlign: { xs: 'center', md: 'left' } }}>
-          <Stack direction="row" alignItems="center" justifyContent={{ xs: 'center', md: 'flex-start' }} spacing={1.3} sx={{ mb: 2.5 }}>
-            <Box sx={{ width: 28, height: 3, bgcolor: 'info.main', borderRadius: 2 }} />
-            <Typography variant="overline" color="success.main">Your happy place in Ao Nang</Typography>
-          </Stack>
-          <HeroHeadline />
-          <Typography sx={{ fontSize: { xs: 16, md: 18 }, lineHeight: 1.75, color: 'text.secondary', maxWidth: 390, mx: { xs: 'auto', md: 0 }, mt: 3 }}>
-            Pool dips. Pineapple sips. Good times with your favourite people. This is Hula Hula, Krabi.
-          </Typography>
-          <Stack direction="row" justifyContent={{ xs: 'center', md: 'flex-start' }} spacing={1.8} flexWrap="wrap" useFlexGap sx={{ mt: 3.5 }}>
-            <Button href="#hotel" variant="contained" endIcon={<ArrowOutward />}>Find your happy place</Button>
-            <Button href="#floating-breakfast" color="inherit">Make breakfast float</Button>
-          </Stack>
-          <Box sx={{ mt: 2.5, display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}><HeroReviews /></Box>
+  return (
+    <Box
+      component="section"
+      aria-label="Welcome to Hula Hula Resort"
+      sx={{ position: 'relative', pt: { xs: 19, md: 25 }, pb: { xs: 6, md: 9 }, overflow: 'hidden' }}
+    >
+      <Container maxWidth="xl">
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { md: '1fr 1.12fr' },
+            alignItems: 'center',
+            gap: { xs: 5, md: 6 },
+            minHeight: { md: 700 },
+          }}
+        >
+          <Box sx={{ position: 'relative', zIndex: 2, display: { xs: 'contents', md: 'block' } }}>
+            <Box sx={{ order: 1, textAlign: { xs: 'center', md: 'left' } }}>
+              <Stack direction="row" alignItems="center" justifyContent={{ xs: 'center', md: 'flex-start' }} spacing={1.3} sx={{ mb: 2.5 }}>
+                <Box sx={{ width: 28, height: 3, bgcolor: 'info.main', borderRadius: 2 }} />
+                <Typography variant="overline" color="success.main">
+                  Your happy place in Ao Nang
+                </Typography>
+              </Stack>
+              <HeroHeadline />
+              <Typography
+                sx={{
+                  fontSize: { xs: 16, md: 18 },
+                  lineHeight: 1.75,
+                  color: 'text.secondary',
+                  maxWidth: 390,
+                  mx: { xs: 'auto', md: 0 },
+                  mt: 3,
+                }}
+              >
+                Pool dips. Pineapple sips. Good times with your favourite people. This is Hula Hula, Krabi.
+              </Typography>
+              <Stack
+                direction="row"
+                justifyContent={{ xs: 'center', md: 'flex-start' }}
+                spacing={1.8}
+                flexWrap="wrap"
+                useFlexGap
+                sx={{ mt: 3.5 }}
+              >
+                <Button href="#hotel" variant="contained" endIcon={<ArrowOutward />}>
+                  Find your happy place
+                </Button>
+                <Button href="#floating-breakfast" color="inherit">
+                  Make breakfast float
+                </Button>
+              </Stack>
+              <Box sx={{ mt: 2.5, display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                <HeroReviews />
+              </Box>
+            </Box>
+            <Box sx={{ mt: { xs: 0, md: 4 }, maxWidth: 530, order: 3 }}>
+              <Typography variant="overline" sx={{ display: 'block', mb: 1, textAlign: { xs: 'center', md: 'left' } }}>
+                Good times start with a date
+              </Typography>
+              <BookingSearchBar />
+              <Box sx={{ mt: 2 }}>
+                <HeroMetaCompact />
+              </Box>
+            </Box>
           </Box>
-          <Box sx={{ mt: { xs: 0, md: 4 }, maxWidth: 530, order: 3 }}>
-            <Typography variant="overline" sx={{ display: 'block', mb: 1, textAlign: { xs: 'center', md: 'left' } }}>Good times start with a date</Typography>
-            <BookingSearchBar />
-            <Box sx={{ mt: 2 }}><HeroMetaCompact /></Box>
+          <Box sx={{ position: 'relative', ml: { xs: 1, md: 2 }, mb: { xs: 4, md: 3 }, order: 2 }}>
+            <ScrollTilt amount={1.5}>
+              <Box
+                sx={{
+                  border: '8px solid white',
+                  borderRadius: '140px 140px 30px 30px',
+                  height: { xs: 460, sm: 580, md: 680 },
+                  overflow: 'hidden',
+                  transform: 'rotate(2deg)',
+                  boxShadow: '0 18px 55px rgba(23,60,44,.10)',
+                  bgcolor: 'primary.dark',
+                }}
+              >
+                <HeroVideo />
+              </Box>
+            </ScrollTilt>
+            <Sticker
+              color="#e7f4cc"
+              rotate={9}
+              sx={{
+                position: 'absolute',
+                top: { xs: 5, md: 22 },
+                right: { xs: -6, md: -18 },
+                width: { xs: 95, md: 122 },
+                height: { xs: 95, md: 122 },
+                fontSize: { xs: 20, md: 23 },
+              }}
+            >
+              Less worry.
+              <br />
+              More Hula.
+            </Sticker>
+            {highlights.length > 0 ? (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  zIndex: 2,
+                  width: { xs: 196, md: 272 },
+                  left: { xs: -14, md: -54 },
+                  bottom: { xs: -48, md: -56 },
+                }}
+              >
+                <ScrollTilt amount={-4}>
+                  <HeroHighlights items={highlights} />
+                </ScrollTilt>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  width: { xs: 150, md: 202 },
+                  height: { xs: 180, md: 232 },
+                  left: { xs: -18, md: -46 },
+                  bottom: { xs: -26, md: -33 },
+                }}
+              >
+                <ScrollTilt amount={-4} sx={{ height: '100%' }}>
+                  <Polaroid
+                    image={photoAssets.breakfastPortrait.src}
+                    alt="Guest enjoying a floating breakfast in a Hula Hula private pool"
+                    caption="Make a splash!"
+                    rotate={-9}
+                    sizes="210px"
+                    objectPosition="center 60%"
+                  />
+                </ScrollTilt>
+              </Box>
+            )}
           </Box>
         </Box>
-        <Box sx={{ position: 'relative', ml: { xs: 1, md: 2 }, mb: { xs: 4, md: 3 }, order: 2 }}>
-          <ScrollTilt amount={1.5}>
-            <Box sx={{ border: '8px solid white', borderRadius: '140px 140px 30px 30px', height: { xs: 460, sm: 580, md: 680 }, overflow: 'hidden', transform: 'rotate(2deg)', boxShadow: '0 18px 55px rgba(23,60,44,.10)', bgcolor: 'primary.dark' }}>
-              <HeroVideo />
-            </Box>
-          </ScrollTilt>
-          <Sticker color="#e7f4cc" rotate={9} sx={{ position: 'absolute', top: { xs: 5, md: 22 }, right: { xs: -6, md: -18 }, width: { xs: 95, md: 122 }, height: { xs: 95, md: 122 }, fontSize: { xs: 20, md: 23 } }}>Less worry.<br />More Hula.</Sticker>
-          {highlights.length > 0
-            ? <Box sx={{ position: 'absolute', zIndex: 2, width: { xs: 196, md: 272 }, left: { xs: -14, md: -54 }, bottom: { xs: -48, md: -56 } }}>
-              <ScrollTilt amount={-4}><HeroHighlights items={highlights} /></ScrollTilt>
-            </Box>
-            : <Box sx={{ position: 'absolute', width: { xs: 150, md: 202 }, height: { xs: 180, md: 232 }, left: { xs: -18, md: -46 }, bottom: { xs: -26, md: -33 } }}>
-              <ScrollTilt amount={-4} sx={{ height: '100%' }}>
-                <Polaroid image={photoAssets.breakfastPortrait.src} alt="Guest enjoying a floating breakfast in a Hula Hula private pool" caption="Make a splash!" rotate={-9} sizes="210px" objectPosition="center 60%" />
-              </ScrollTilt>
-            </Box>}
-        </Box>
+      </Container>
+      <Box sx={{ mt: { xs: 5, md: 7 }, py: 2.1, bgcolor: 'secondary.main', transform: 'rotate(-1deg)', width: '102%', ml: '-1%' }}>
+        <Stack
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+          spacing={{ xs: 2, md: 5 }}
+          sx={{ fontFamily: fonts.playful, fontSize: { xs: 18, md: 25 }, whiteSpace: 'nowrap', overflow: 'hidden' }}
+        >
+          {['Tropical stays', '✳', 'Happy days', '✳', 'Pineapple ways', '✳', 'Hula always'].map((text, i) => (
+            <Box key={i}>{text}</Box>
+          ))}
+        </Stack>
       </Box>
-    </Container>
-    <Box sx={{ mt: { xs: 5, md: 7 }, py: 2.1, bgcolor: 'secondary.main', transform: 'rotate(-1deg)', width: '102%', ml: '-1%' }}>
-      <Stack direction="row" justifyContent="center" alignItems="center" spacing={{ xs: 2, md: 5 }} sx={{ fontFamily: fonts.playful, fontSize: { xs: 18, md: 25 }, whiteSpace: 'nowrap', overflow: 'hidden' }}>
-        {['Tropical stays', '✳', 'Happy days', '✳', 'Pineapple ways', '✳', 'Hula always'].map((text, i) => <Box key={i}>{text}</Box>)}
-      </Stack>
     </Box>
-  </Box>;
+  );
 }

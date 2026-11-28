@@ -80,7 +80,7 @@ function pendingRefresh(t: TestContext) {
 }
 
 describe('watchContent', () => {
-  it('fetches immediately and polls at 30-second intervals', async t => {
+  it('fetches immediately and polls at 30-second intervals', async (t) => {
     const browser = harness(t);
     const refresh = t.mock.fn(async () => {});
     browser.watch('site', refresh);
@@ -98,7 +98,7 @@ describe('watchContent', () => {
     assert.equal(refresh.mock.callCount(), 3);
   });
 
-  it('fetches initially even when hidden, then polls only while visible', async t => {
+  it('fetches initially even when hidden, then polls only while visible', async (t) => {
     const browser = harness(t, 'hidden');
     const refresh = t.mock.fn(async () => {});
     browser.watch('events', refresh);
@@ -116,7 +116,7 @@ describe('watchContent', () => {
   });
 
   for (const event of ['focus', 'online', 'visibilitychange']) {
-    it(`refreshes on ${event} only when the document is visible`, async t => {
+    it(`refreshes on ${event} only when the document is visible`, async (t) => {
       const browser = harness(t);
       const refresh = t.mock.fn(async () => {});
       browser.watch('site', refresh);
@@ -137,7 +137,7 @@ describe('watchContent', () => {
     });
   }
 
-  it('notifies same-tab subscribers only for the saved scope and writes an invalidation marker', async t => {
+  it('notifies same-tab subscribers only for the saved scope and writes an invalidation marker', async (t) => {
     const browser = harness(t);
     const site = t.mock.fn(async () => {});
     const events = t.mock.fn(async () => {});
@@ -167,7 +167,7 @@ describe('watchContent', () => {
     }
   });
 
-  it('filters cross-tab storage by key and scope and ignores missing or malformed markers', async t => {
+  it('filters cross-tab storage by key and scope and ignores missing or malformed markers', async (t) => {
     const browser = harness(t);
     const site = t.mock.fn(async () => {});
     const events = t.mock.fn(async () => {});
@@ -209,7 +209,7 @@ describe('watchContent', () => {
     await flushRefreshes();
   });
 
-  it('applies same-tab and cross-tab invalidations even while hidden', async t => {
+  it('applies same-tab and cross-tab invalidations even while hidden', async (t) => {
     const browser = harness(t, 'hidden');
     const refresh = t.mock.fn(async () => {});
     browser.watch('site', refresh);
@@ -226,9 +226,11 @@ describe('watchContent', () => {
   });
 
   for (const blocked of ['getter', 'setItem'] as const) {
-    it(`keeps notifications, focus and polling working when the localStorage ${blocked} throws`, async t => {
+    it(`keeps notifications, focus and polling working when the localStorage ${blocked} throws`, async (t) => {
       const browser = harness(t);
-      const denied = t.mock.fn(() => { throw new Error('Storage access blocked'); });
+      const denied = t.mock.fn(() => {
+        throw new Error('Storage access blocked');
+      });
       if (blocked === 'getter') {
         Object.defineProperty(browser.window, 'localStorage', { get: denied });
       } else {
@@ -250,7 +252,7 @@ describe('watchContent', () => {
     });
   }
 
-  it('coalesces all triggers during a pending fetch into one follow-up without overlapping fetches', async t => {
+  it('coalesces all triggers during a pending fetch into one follow-up without overlapping fetches', async (t) => {
     const browser = harness(t);
     const { requests, refresh } = pendingRefresh(t);
     browser.watch('site', refresh);
@@ -273,7 +275,7 @@ describe('watchContent', () => {
     assert.equal(requests.length, 2, 'the trigger burst does not create more follow-ups');
   });
 
-  it('does not queue a follow-up for an unrelated scope during a pending fetch', async t => {
+  it('does not queue a follow-up for an unrelated scope during a pending fetch', async (t) => {
     const browser = harness(t);
     const { requests, refresh } = pendingRefresh(t);
     browser.watch('site', refresh);
@@ -285,7 +287,7 @@ describe('watchContent', () => {
     assert.equal(requests.length, 1);
   });
 
-  it('preserves invalidations that arrive during the follow-up fetch', async t => {
+  it('preserves invalidations that arrive during the follow-up fetch', async (t) => {
     const browser = harness(t);
     const { requests, refresh } = pendingRefresh(t);
     browser.watch('events', refresh);
@@ -305,7 +307,7 @@ describe('watchContent', () => {
     assert.equal(requests.length, 3);
   });
 
-  it('keeps in-flight state and cleanup independent for subscribers to the same scope', async t => {
+  it('keeps in-flight state and cleanup independent for subscribers to the same scope', async (t) => {
     const browser = harness(t);
     const first = pendingRefresh(t);
     const second = pendingRefresh(t);
@@ -331,7 +333,7 @@ describe('watchContent', () => {
   });
 
   for (const failure of ['rejection', 'synchronous throw'] as const) {
-    it(`recovers from a refresh ${failure} on later polling and events`, async t => {
+    it(`recovers from a refresh ${failure} on later polling and events`, async (t) => {
       const browser = harness(t);
       let attempts = 0;
       const refresh = t.mock.fn(() => {
@@ -354,7 +356,7 @@ describe('watchContent', () => {
     });
   }
 
-  it('honors a queued invalidation after rejection and can recover after the follow-up also fails', async t => {
+  it('honors a queued invalidation after rejection and can recover after the follow-up also fails', async (t) => {
     const browser = harness(t);
     const { requests, refresh } = pendingRefresh(t);
     browser.watch('site', refresh);
@@ -376,7 +378,7 @@ describe('watchContent', () => {
     await flushRefreshes();
   });
 
-  it('clears the interval, removes every listener and tolerates repeated cleanup', async t => {
+  it('clears the interval, removes every listener and tolerates repeated cleanup', async (t) => {
     const browser = harness(t);
     const addWindow = t.mock.method(browser.window, 'addEventListener');
     const removeWindow = t.mock.method(browser.window, 'removeEventListener');
@@ -388,13 +390,22 @@ describe('watchContent', () => {
     const stop = browser.watch('site', refresh);
     await flushRefreshes();
 
-    assert.deepEqual(addWindow.mock.calls.map(call => call.arguments[0]).sort(), ['focus', 'hhg:content-change', 'online', 'storage']);
-    assert.deepEqual(addDocument.mock.calls.map(call => call.arguments[0]), ['visibilitychange']);
+    assert.deepEqual(addWindow.mock.calls.map((call) => call.arguments[0]).sort(), ['focus', 'hhg:content-change', 'online', 'storage']);
+    assert.deepEqual(
+      addDocument.mock.calls.map((call) => call.arguments[0]),
+      ['visibilitychange'],
+    );
     assert.equal(interval.mock.callCount(), 1);
     assert.equal(interval.mock.calls[0].arguments[1], 30_000);
     stop();
-    assert.deepEqual(removeWindow.mock.calls.map(call => call.arguments), addWindow.mock.calls.map(call => call.arguments));
-    assert.deepEqual(removeDocument.mock.calls.map(call => call.arguments), addDocument.mock.calls.map(call => call.arguments));
+    assert.deepEqual(
+      removeWindow.mock.calls.map((call) => call.arguments),
+      addWindow.mock.calls.map((call) => call.arguments),
+    );
+    assert.deepEqual(
+      removeDocument.mock.calls.map((call) => call.arguments),
+      addDocument.mock.calls.map((call) => call.arguments),
+    );
     assert.equal(clear.mock.callCount(), 1);
     assert.equal(clear.mock.calls[0].arguments[0], interval.mock.calls[0].result);
     assert.doesNotThrow(stop);
@@ -409,7 +420,7 @@ describe('watchContent', () => {
   });
 
   for (const outcome of ['resolve', 'reject'] as const) {
-    it(`discards queued work when disposed before the in-flight fetch can ${outcome}`, async t => {
+    it(`discards queued work when disposed before the in-flight fetch can ${outcome}`, async (t) => {
       const browser = harness(t);
       const { requests, refresh } = pendingRefresh(t);
       const stop = browser.watch('site', refresh);
@@ -437,8 +448,16 @@ describe('watchContent', () => {
 
 const today = '2026-11-02';
 const offer = (overrides: Partial<ClubOffer> = {}): ClubOffer => ({
-  id: 'test-offer', title: 'November golf', description: '', priceLabel: '',
-  image: '', active: true, startsOn: '', endsOn: '', message: '', ...overrides,
+  id: 'test-offer',
+  title: 'November golf',
+  description: '',
+  priceLabel: '',
+  image: '',
+  active: true,
+  startsOn: '',
+  endsOn: '',
+  message: '',
+  ...overrides,
 });
 
 describe('offerValidation', () => {
@@ -464,7 +483,20 @@ describe('offerValidation', () => {
 
   for (const field of ['startsOn', 'endsOn'] as const) {
     it(`rejects malformed and impossible ${field} dates`, () => {
-      for (const date of ['tomorrow', ' ', '2026-2-03', '03/11/2026', '2026-11-02T00:00:00Z', '2026-02-29', '2026-02-30', '2026-04-31', '2026-00-01', '2026-13-01', '2026-11-00', '2026-11-32']) {
+      for (const date of [
+        'tomorrow',
+        ' ',
+        '2026-2-03',
+        '03/11/2026',
+        '2026-11-02T00:00:00Z',
+        '2026-02-29',
+        '2026-02-30',
+        '2026-04-31',
+        '2026-00-01',
+        '2026-13-01',
+        '2026-11-00',
+        '2026-11-32',
+      ]) {
         const invalid = offer({ [field]: date });
         assert.match(offerValidation(invalid)!, /valid start and end date/i, `${field}: ${date}`);
         assert.equal(offerStatus(invalid, today), 'invalid');
@@ -505,7 +537,7 @@ describe('offerStatus', () => {
     });
   }
 
-  it('defaults to the club date at Krabi midnight, before the UTC date changes', t => {
+  it('defaults to the club date at Krabi midnight, before the UTC date changes', (t) => {
     t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-11-01T17:00:00Z') });
     assert.equal(offerStatus(offer({ startsOn: today, endsOn: today })), 'live');
     assert.equal(offerStatus(offer({ endsOn: '2026-11-01' })), 'expired');
@@ -516,10 +548,14 @@ describe('offerStatus', () => {
     const oneDay = offer({ id: 'one-day', startsOn: today, endsOn: today });
     const undated = offer({ id: 'undated' });
     const offers = [
-      offer({ active: false }), oneDay,
-      offer({ startsOn: '2026-11-03' }), offer({ endsOn: '2026-11-01' }),
-      offer({ title: '' }), offer({ startsOn: '2026-02-30' }),
-      offer({ startsOn: '2026-11-03', endsOn: '2026-11-01' }), undated,
+      offer({ active: false }),
+      oneDay,
+      offer({ startsOn: '2026-11-03' }),
+      offer({ endsOn: '2026-11-01' }),
+      offer({ title: '' }),
+      offer({ startsOn: '2026-02-30' }),
+      offer({ startsOn: '2026-11-03', endsOn: '2026-11-01' }),
+      undated,
     ];
     assert.deepEqual(activeOffers(offers, today), [oneDay, undated]);
     assert.deepEqual(activeOffers([], today), []);

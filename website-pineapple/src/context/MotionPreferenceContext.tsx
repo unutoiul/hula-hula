@@ -9,14 +9,27 @@ const MotionPreferenceContext = createContext({ reduced: false, systemReduced: f
 export function MotionPreferenceProvider({ children }: { children: ReactNode }) {
   const systemReduced = useMediaQuery('(prefers-reduced-motion: reduce)');
   const [paused, setPaused] = useState(() => {
-    try { return localStorage.getItem('rp-motion') === 'off'; } catch { return false; }
+    try {
+      return localStorage.getItem('rp-motion') === 'off';
+    } catch {
+      return false;
+    }
   });
-  const toggle = () => setPaused(current => {
-    const next = !current;
-    try { localStorage.setItem('rp-motion', next ? 'off' : 'on'); } catch { /* Preference still works for this visit. */ }
-    return next;
-  });
-  return <MotionPreferenceContext.Provider value={{ reduced: systemReduced || paused, systemReduced, toggle }}>{children}</MotionPreferenceContext.Provider>;
+  const toggle = () =>
+    setPaused((current) => {
+      const next = !current;
+      try {
+        localStorage.setItem('rp-motion', next ? 'off' : 'on');
+      } catch {
+        /* Preference still works for this visit. */
+      }
+      return next;
+    });
+  return (
+    <MotionPreferenceContext.Provider value={{ reduced: systemReduced || paused, systemReduced, toggle }}>
+      {children}
+    </MotionPreferenceContext.Provider>
+  );
 }
 
 export const useMotionPreference = () => useContext(MotionPreferenceContext);

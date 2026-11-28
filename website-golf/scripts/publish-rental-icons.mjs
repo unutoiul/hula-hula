@@ -7,16 +7,19 @@ import { createClient } from '@supabase/supabase-js';
 // Optional arguments select specific icon basenames from public/images/rentals/.
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!url || !key || new URL(url).hostname !== 'axazsljvxwdusntcnrev.supabase.co') throw new Error('Expected the golf club Supabase project.');
+if (!url || !key || new URL(url).hostname !== 'axazsljvxwdusntcnrev.supabase.co')
+  throw new Error('Expected the golf club Supabase project.');
 const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 const names = process.argv.length > 2 ? process.argv.slice(2) : ['premium-set-a', 'premium-set-b', 'normal-set-a', 'normal-set-b'];
-if (names.some(name => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name))) throw new Error('Expected simple icon basenames.');
+if (names.some((name) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name))) throw new Error('Expected simple icon basenames.');
 const images = {};
 for (const name of names) {
   const data = await readFile(new URL(`../public/images/rentals/${name}.webp`, import.meta.url));
   const hash = createHash('sha256').update(data).digest('hex').slice(0, 12);
   const path = `rentals/${name}-${hash}.webp`;
-  const { error } = await client.storage.from('club-images').upload(path, data, { contentType: 'image/webp', cacheControl: '31536000', upsert: false });
+  const { error } = await client.storage
+    .from('club-images')
+    .upload(path, data, { contentType: 'image/webp', cacheControl: '31536000', upsert: false });
   if (error && String(error.statusCode) !== '409' && !/already exists/i.test(error.message)) throw error;
   const publicUrl = client.storage.from('club-images').getPublicUrl(path).data.publicUrl;
   const response = await fetch(publicUrl);

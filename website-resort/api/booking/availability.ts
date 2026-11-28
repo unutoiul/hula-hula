@@ -24,13 +24,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       getQuotes(stay),
       getCatalog(),
       // Before Supabase is set up there's nothing of ours to hold back.
-      dbConfigured() ? softHolds(stay.checkIn, stay.checkOut).catch((error) => { console.error('Could not read soft holds', error); return new Map<string, number>(); }) : new Map<string, number>(),
+      dbConfigured()
+        ? softHolds(stay.checkIn, stay.checkOut).catch((error) => {
+            console.error('Could not read soft holds', error);
+            return new Map<string, number>();
+          })
+        : new Map<string, number>(),
       loadDeals(),
     ]);
     const priced = priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit(), deals);
     return res.status(200).json(buildAvailability(priced, catalog, stay));
   } catch (error) {
-    if (error instanceof SiteMinderError && error.status === 429) return res.status(429).json({ error: 'We’re a little busy — please try again in a minute.' });
+    if (error instanceof SiteMinderError && error.status === 429)
+      return res.status(429).json({ error: 'We’re a little busy — please try again in a minute.' });
     console.error('Availability lookup failed', error);
     return res.status(502).json({ error: 'Could not check availability right now — please try again.' });
   }

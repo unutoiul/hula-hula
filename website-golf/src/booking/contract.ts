@@ -63,19 +63,33 @@ export interface Reservation {
 }
 
 /** POST /api/reservations: the page to pay on, or null when there's nothing to pay and it's already booked. */
-export interface ReservationStarted { ref: string; key: string; webPaymentUrl: string | null }
+export interface ReservationStarted {
+  ref: string;
+  key: string;
+  webPaymentUrl: string | null;
+}
 
 /** GET /api/reservations?ref&key */
-export interface ReservationView extends Reservation { status: 'pending' | 'confirmed' | 'expired' | 'cancelled' }
+export interface ReservationView extends Reservation {
+  status: 'pending' | 'confirmed' | 'expired' | 'cancelled';
+}
 
 /** GET /api/tee-sheet */
-export interface TeeSheetResponse { slots: Slot[] }
+export interface TeeSheetResponse {
+  slots: Slot[];
+}
 
-export interface ErrorResponse { error: string; code?: 'taken' | 'invalid' | 'sold_out' | 'unavailable' }
+export interface ErrorResponse {
+  error: string;
+  code?: 'taken' | 'invalid' | 'sold_out' | 'unavailable';
+}
 
 // ── Events ─────────────────────────────────────────────────────────────────
 
-export interface ScheduleItem { time: string; text: string }
+export interface ScheduleItem {
+  time: string;
+  text: string;
+}
 
 export interface PublicPackage {
   id: string;
@@ -107,7 +121,10 @@ export interface PublicEvent {
 }
 
 /** GET /api/events (list) or /api/events?slug=… (one). `testPayments`: Payso is on a demo account, nothing is charged. */
-export interface EventsResponse { events: PublicEvent[]; testPayments: boolean }
+export interface EventsResponse {
+  events: PublicEvent[];
+  testPayments: boolean;
+}
 
 /** POST /api/event-order */
 export interface EventOrderRequest {
@@ -118,7 +135,11 @@ export interface EventOrderRequest {
   hp: string;
   elapsedMs: number;
 }
-export interface EventOrderStarted { ref: string; key: string; webPaymentUrl: string }
+export interface EventOrderStarted {
+  ref: string;
+  key: string;
+  webPaymentUrl: string;
+}
 
 export type EventOrderStatus = 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled' | 'refunded';
 /** GET /api/event-order?ref&key */

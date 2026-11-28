@@ -10,7 +10,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { roomTypes } = await getCatalog();
     res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
-    return res.status(200).json([...roomTypes.values()].map((rt) => ({ uuid: rt.uuid, name: rt.name })).sort((a, b) => a.name.localeCompare(b.name)));
+    return res
+      .status(200)
+      .json([...roomTypes.values()].map((rt) => ({ uuid: rt.uuid, name: rt.name })).sort((a, b) => a.name.localeCompare(b.name)));
   } catch (error) {
     console.error('Room types lookup failed', error);
     res.setHeader('Cache-Control', 'no-store');

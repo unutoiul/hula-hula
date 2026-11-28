@@ -12,7 +12,11 @@ export function allowMethods(req: VercelRequest, res: VercelResponse, methods: s
 
 export function readJsonBody(req: VercelRequest): Record<string, unknown> {
   if (typeof req.body === 'string') {
-    try { return JSON.parse(req.body) as Record<string, unknown>; } catch { return {}; }
+    try {
+      return JSON.parse(req.body) as Record<string, unknown>;
+    } catch {
+      return {};
+    }
   }
   return (req.body ?? {}) as Record<string, unknown>;
 }

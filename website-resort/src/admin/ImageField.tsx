@@ -21,10 +21,24 @@ async function shrink(file: File): Promise<Blob> {
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Could not convert the image'))), 'image/webp', 0.82));
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Could not convert the image'))), 'image/webp', 0.82),
+  );
 }
 
-export function ImageField({ label, value, onChange, multiple, folder }: { label: string; value: string[]; onChange: (next: string[]) => void; multiple: boolean; folder: string }) {
+export function ImageField({
+  label,
+  value,
+  onChange,
+  multiple,
+  folder,
+}: {
+  label: string;
+  value: string[];
+  onChange: (next: string[]) => void;
+  multiple: boolean;
+  folder: string;
+}) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,11 +47,14 @@ export function ImageField({ label, value, onChange, multiple, folder }: { label
 
   const upload = async (file: File | undefined) => {
     if (!file || !supabase) return;
-    setBusy(true); setError(null);
+    setBusy(true);
+    setError(null);
     try {
       const blob = await shrink(file);
       const path = `${folder}/${crypto.randomUUID()}.webp`;
-      const { error: uploadError } = await supabase.storage.from(CONTENT_BUCKET).upload(path, blob, { contentType: 'image/webp', cacheControl: '31536000' });
+      const { error: uploadError } = await supabase.storage
+        .from(CONTENT_BUCKET)
+        .upload(path, blob, { contentType: 'image/webp', cacheControl: '31536000' });
       if (uploadError) throw uploadError;
       add(supabase.storage.from(CONTENT_BUCKET).getPublicUrl(path).data.publicUrl);
     } catch (e) {
@@ -48,31 +65,93 @@ export function ImageField({ label, value, onChange, multiple, folder }: { label
     }
   };
 
-  return <Box>
-    <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 1 }}>{label}</Typography>
-    <Stack direction="row" flexWrap="wrap" useFlexGap gap={1.5}>
-      {value.map((src, i) => <Box key={`${src}-${i}`} sx={{ position: 'relative', width: 120, height: 90, borderRadius: '12px', overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-        <Box component="img" src={thumbOf(src)} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <IconButton size="small" aria-label="Remove picture" onClick={() => onChange(value.filter((_, j) => j !== i))} sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'rgba(255,255,255,.9)', '&:hover': { bgcolor: 'white' } }}><CloseRounded sx={{ fontSize: 16 }} /></IconButton>
-      </Box>)}
-    </Stack>
-    {(multiple || value.length === 0) && <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
-      <Button size="small" variant="outlined" startIcon={busy ? <CircularProgress size={14} /> : <AddPhotoAlternateRounded />} disabled={busy} onClick={() => input.current?.click()}>Upload</Button>
-      <Button size="small" startIcon={<CollectionsRounded />} onClick={() => setPicking(true)}>Resort photos</Button>
-      <input ref={input} type="file" accept="image/*" hidden onChange={(e) => void upload(e.target.files?.[0])} />
-    </Stack>}
-    {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
+  return (
+    <Box>
+      <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 1 }}>{label}</Typography>
+      <Stack direction="row" flexWrap="wrap" useFlexGap gap={1.5}>
+        {value.map((src, i) => (
+          <Box
+            key={`${src}-${i}`}
+            sx={{
+              position: 'relative',
+              width: 120,
+              height: 90,
+              borderRadius: '12px',
+              overflow: 'hidden',
+              border: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Box component="img" src={thumbOf(src)} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <IconButton
+              size="small"
+              aria-label="Remove picture"
+              onClick={() => onChange(value.filter((_, j) => j !== i))}
+              sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'rgba(255,255,255,.9)', '&:hover': { bgcolor: 'white' } }}
+            >
+              <CloseRounded sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Box>
+        ))}
+      </Stack>
+      {(multiple || value.length === 0) && (
+        <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={busy ? <CircularProgress size={14} /> : <AddPhotoAlternateRounded />}
+            disabled={busy}
+            onClick={() => input.current?.click()}
+          >
+            Upload
+          </Button>
+          <Button size="small" startIcon={<CollectionsRounded />} onClick={() => setPicking(true)}>
+            Resort photos
+          </Button>
+          <input ref={input} type="file" accept="image/*" hidden onChange={(e) => void upload(e.target.files?.[0])} />
+        </Stack>
+      )}
+      {error && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {error}
+        </Alert>
+      )}
 
-    <Dialog open={picking} onClose={() => setPicking(false)} maxWidth="md" fullWidth>
-      <DialogTitle>Choose a resort photo</DialogTitle>
-      <DialogContent dividers>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 1.5 }}>
-          {Object.entries(photoAssets).map(([name, photo]) => <Box key={name} component="button" type="button" onClick={() => { add(photo.src); setPicking(false); }}
-            sx={{ p: 0, border: '2px solid transparent', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', bgcolor: 'transparent', '&:hover, &:focus-visible': { borderColor: 'primary.main' } }}>
-            <Box component="img" src={thumbOf(photo.src)} alt={name} loading="lazy" sx={{ display: 'block', width: '100%', aspectRatio: '4 / 3', objectFit: 'cover' }} />
-          </Box>)}
-        </Box>
-      </DialogContent>
-    </Dialog>
-  </Box>;
+      <Dialog open={picking} onClose={() => setPicking(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Choose a resort photo</DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 1.5 }}>
+            {Object.entries(photoAssets).map(([name, photo]) => (
+              <Box
+                key={name}
+                component="button"
+                type="button"
+                onClick={() => {
+                  add(photo.src);
+                  setPicking(false);
+                }}
+                sx={{
+                  p: 0,
+                  border: '2px solid transparent',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  bgcolor: 'transparent',
+                  '&:hover, &:focus-visible': { borderColor: 'primary.main' },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={thumbOf(photo.src)}
+                  alt={name}
+                  loading="lazy"
+                  sx={{ display: 'block', width: '100%', aspectRatio: '4 / 3', objectFit: 'cover' }}
+                />
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+      </Dialog>
+    </Box>
+  );
 }

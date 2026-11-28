@@ -32,17 +32,24 @@ export interface Highlight {
   media?: string[];
   /** A page on this site the card and its button open (an event's own page). */
   link?: string;
-  ctaLabel?: string; onCta?: () => void; ctaHref?: string; ctaIcon?: ReactNode;
+  ctaLabel?: string;
+  onCta?: () => void;
+  ctaHref?: string;
+  ctaIcon?: ReactNode;
 }
 
 const day = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 const dayOnly = new Intl.DateTimeFormat('en-GB', { day: 'numeric' });
 const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' });
-const asDay = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const asDay = (iso: string) => {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
 
 /** "24 – 26 Dec", "30 Dec – 2 Jan" */
 const dayRange = (from: string, to: string) => {
-  const a = asDay(from), b = asDay(to);
+  const a = asDay(from),
+    b = asDay(to);
   return a.getMonth() === b.getMonth() ? `${dayOnly.format(a)} – ${dayMonth.format(b)}` : `${dayMonth.format(a)} – ${dayMonth.format(b)}`;
 };
 
@@ -53,9 +60,14 @@ function eventDates({ startsOn, endsOn }: SiteEvent): string {
 
 /** "Check-in 20 Dec – 5 Jan · min. 3 nights · book 60+ days ahead · book by 15 Dec" */
 function offerTerms({ stayFrom, stayTo, minNights, minAdvanceDays, validTo }: Offer): string | null {
-  const arrivals = stayFrom && stayTo ? `check-in ${dayRange(stayFrom, stayTo)}`
-    : stayFrom ? `check-in from ${dayMonth.format(asDay(stayFrom))}`
-      : stayTo ? `check-in until ${dayMonth.format(asDay(stayTo))}` : '';
+  const arrivals =
+    stayFrom && stayTo
+      ? `check-in ${dayRange(stayFrom, stayTo)}`
+      : stayFrom
+        ? `check-in from ${dayMonth.format(asDay(stayFrom))}`
+        : stayTo
+          ? `check-in until ${dayMonth.format(asDay(stayTo))}`
+          : '';
   const nights = minNights && minNights > 1 ? `min. ${minNights} nights` : '';
   const ahead = minAdvanceDays ? `book ${minAdvanceDays}+ days ahead` : '';
   const bookBy = validTo ? `book by ${dayMonth.format(asDay(validTo))}` : '';
@@ -82,14 +94,20 @@ export function eventWhen(event: SiteEvent): string {
 function offerDates(offer: Offer, checkIn: Date, checkOut: Date): [Date, Date] {
   const nights = Math.max(1, Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000));
   const minNights = offer.minNights ?? 1;
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const earliest = new Date(today); earliest.setDate(earliest.getDate() + Math.max(1, offer.minAdvanceDays ?? 0));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const earliest = new Date(today);
+  earliest.setDate(earliest.getDate() + Math.max(1, offer.minAdvanceDays ?? 0));
   const arrival = toISODate(checkIn);
-  const fits = nights >= minNights && (!offer.minAdvanceDays || checkIn >= earliest)
-    && (!offer.stayFrom || arrival >= offer.stayFrom) && (!offer.stayTo || arrival <= offer.stayTo);
+  const fits =
+    nights >= minNights &&
+    (!offer.minAdvanceDays || checkIn >= earliest) &&
+    (!offer.stayFrom || arrival >= offer.stayFrom) &&
+    (!offer.stayTo || arrival <= offer.stayTo);
   if (fits) return [checkIn, checkOut];
   const start = offer.stayFrom && asDay(offer.stayFrom) > earliest ? asDay(offer.stayFrom) : earliest;
-  const end = new Date(start); end.setDate(end.getDate() + Math.max(nights, minNights));
+  const end = new Date(start);
+  end.setDate(end.getDate() + Math.max(nights, minNights));
   return [start, end];
 }
 
@@ -100,9 +118,13 @@ const askIcon = <ChatBubbleOutlineRounded sx={{ fontSize: 17 }} />;
 export function offerHighlight(offer: Offer): Highlight {
   const code = offer.promoCode ?? '';
   return {
-    id: offer.id, kind: 'offer', label: offer.kicker || offer.badge || 'Special offer',
+    id: offer.id,
+    kind: 'offer',
+    label: offer.kicker || offer.badge || 'Special offer',
     tag: offer.discountPercent > 0 ? `−${offer.discountPercent}%` : null,
-    title: offer.title, description: offer.description, perks: offer.perks,
+    title: offer.title,
+    description: offer.description,
+    perks: offer.perks,
     note: offerTerms(offer),
     image: offer.imageUrl ?? p.poolOverview.src,
     // Offers are priced by our own booking page; while that's switched off
@@ -113,15 +135,24 @@ export function offerHighlight(offer: Offer): Highlight {
   };
 }
 
-const slugify = (text: string) => text.normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '');
+const slugify = (text: string) =>
+  text
+    .normalize('NFKD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+    .replace(/-+$/, '');
 
 /** An event's own page: "/events/full-moon-pool-party-1a2b3c4d" — the title for people, the start of its id to find it (so a renamed event's old links still work). */
-export const eventPath = (event: Pick<SiteEvent, 'id' | 'title'>) => `/events/${[slugify(event.title), event.id.slice(0, 8)].filter(Boolean).join('-')}`;
+export const eventPath = (event: Pick<SiteEvent, 'id' | 'title'>) =>
+  `/events/${[slugify(event.title), event.id.slice(0, 8)].filter(Boolean).join('-')}`;
 
 /** The event a /events/… address is for, among those running. */
 export function eventAt(pathname: string, events: SiteEvent[]): SiteEvent | null {
   const key = /^\/events\/(?:.*-)?([0-9a-f]{8})\/?$/i.exec(pathname)?.[1]?.toLowerCase();
-  return key ? events.find((event) => event.id.toLowerCase().startsWith(key)) ?? null : null;
+  return key ? (events.find((event) => event.id.toLowerCase().startsWith(key)) ?? null) : null;
 }
 
 /** What an event's card shows (the /admin preview uses this too): its button opens the event's own page. */
@@ -129,30 +160,61 @@ export function eventHighlight(event: SiteEvent): Highlight {
   const dates = eventDates(event);
   const gallery = event.gallery ?? [];
   return {
-    id: event.id, kind: 'event', label: 'What’s on', tag: dates || null,
-    title: event.title, description: event.summary, perks: [],
+    id: event.id,
+    kind: 'event',
+    label: 'What’s on',
+    tag: dates || null,
+    title: event.title,
+    description: event.summary,
+    perks: [],
     note: [dates, event.timeLabel].filter(Boolean).join(' · ') || null,
     // No cover picked: the first photo from the gallery, then a resort photo.
     image: event.imageUrl ?? gallery.find(isPicture) ?? p.banquet.src,
     media: [...new Set([...(event.imageUrl ? [event.imageUrl] : []), ...gallery])],
-    link: eventPath(event), ctaLabel: 'See details', ctaIcon: bookIcon,
+    link: eventPath(event),
+    ctaLabel: 'See details',
+    ctaIcon: bookIcon,
   };
 }
 
 /** The button on an event's page, as set at /admin: ask us, book a stay, a link, or none. */
-export interface EventAction { label: string; icon: ReactNode; onClick?: () => void; href?: string }
+export interface EventAction {
+  label: string;
+  icon: ReactNode;
+  onClick?: () => void;
+  href?: string;
+}
 
 export function useEventAction(event: SiteEvent | null): EventAction | null {
   const openContact = useContactForm();
   const search = useBookingSearch();
   if (!event) return null;
   switch (event.cta.type) {
-    case 'none': return null;
-    case 'link': return event.cta.url ? { label: event.cta.label || 'Find out more', icon: <ArrowOutward sx={{ fontSize: 17 }} />, href: event.cta.url } : null;
-    case 'book': return ONSITE_BOOKING
-      ? { label: event.cta.label || 'Book your stay', icon: bookIcon, onClick: () => navigate(toBookHref(search.checkIn, search.checkOut, search.adults, search.children, search.promoCode)) }
-      : { label: event.cta.label || 'Book your stay', icon: bookIcon, href: search.siteMinderUrl };
-    default: return { label: event.cta.label || 'Ask about this', icon: askIcon, onClick: () => openContact({ topic: event.title, message: `Hi Hula Hula! I’d love to hear more about “${event.title}” (${eventWhen(event)}).`, page: 'What’s on' }) };
+    case 'none':
+      return null;
+    case 'link':
+      return event.cta.url
+        ? { label: event.cta.label || 'Find out more', icon: <ArrowOutward sx={{ fontSize: 17 }} />, href: event.cta.url }
+        : null;
+    case 'book':
+      return ONSITE_BOOKING
+        ? {
+            label: event.cta.label || 'Book your stay',
+            icon: bookIcon,
+            onClick: () => navigate(toBookHref(search.checkIn, search.checkOut, search.adults, search.children, search.promoCode)),
+          }
+        : { label: event.cta.label || 'Book your stay', icon: bookIcon, href: search.siteMinderUrl };
+    default:
+      return {
+        label: event.cta.label || 'Ask about this',
+        icon: askIcon,
+        onClick: () =>
+          openContact({
+            topic: event.title,
+            message: `Hi Hula Hula! I’d love to hear more about “${event.title}” (${eventWhen(event)}).`,
+            page: 'What’s on',
+          }),
+      };
   }
 }
 
@@ -163,10 +225,21 @@ export function useOfferHighlights(): Highlight[] {
   const search = useBookingSearch();
   return offers.map((offer): Highlight => {
     const card = offerHighlight(offer);
-    if (!ONSITE_BOOKING) return { ...card, onCta: () => openContact({ topic: offer.title, message: `Hi Hula Hula! I’d like to book the “${offer.title}” offer.`, page: 'Offers' }) };
+    if (!ONSITE_BOOKING)
+      return {
+        ...card,
+        onCta: () =>
+          openContact({ topic: offer.title, message: `Hi Hula Hula! I’d like to book the “${offer.title}” offer.`, page: 'Offers' }),
+      };
     const code = offer.promoCode ?? '';
     const [from, to] = offerDates(offer, search.checkIn, search.checkOut);
-    return { ...card, onCta: () => { search.setPromoCode(code); navigate(toBookHref(from, to, search.adults, search.children, code)); } };
+    return {
+      ...card,
+      onCta: () => {
+        search.setPromoCode(code);
+        navigate(toBookHref(from, to, search.adults, search.children, code));
+      },
+    };
   });
 }
 

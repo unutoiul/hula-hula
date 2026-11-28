@@ -10,10 +10,12 @@ const EXTRA_PHOTOS: Record<string, string[]> = {
   gjzz2w06atklvkoz: [p.seaTownBedroom.src, p.seaTownRoom.src], // Deluxe Sea Town View
 };
 
-const normalise = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Tolerates a missing name (SiteMinder can send a room type without one).
+const normalise = (name: string | null | undefined) => (name ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-export function roomContent(roomTypeUuid: string, name: string): { images: string[]; blurb: string | null } {
-  const card = rooms.find((room) => room.siteminderRoomTypeUuid === roomTypeUuid) ?? rooms.find((room) => normalise(room.title) === normalise(name));
+export function roomContent(roomTypeUuid: string, name: string | null): { images: string[]; blurb: string | null } {
+  const card =
+    rooms.find((room) => room.siteminderRoomTypeUuid === roomTypeUuid) ?? rooms.find((room) => normalise(room.title) === normalise(name));
   if (card) return { images: card.images, blurb: card.detail };
   return { images: EXTRA_PHOTOS[roomTypeUuid] ?? [p.poolOverview.src, p.garden.src], blurb: null };
 }

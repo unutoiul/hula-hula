@@ -17,7 +17,10 @@ export const STRIPE_CODES = { paid: '0000', refunded: '4120', notFinal: '2001' }
 // tests can load this file with Node's own type stripping.
 export class StripeError extends Error {
   readonly status: number;
-  constructor(status: number, message: string) { super(message); this.status = status; }
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
 }
 
 const secretKey = () => process.env.STRIPE_SECRET_KEY ?? '';
@@ -26,7 +29,8 @@ export const isStripeConfigured = () => /^(sk|rk)_(live|test)_/.test(secretKey()
 /** Test keys: Stripe's test cards only, nothing is charged. */
 export const isStripeTestMode = () => /^(sk|rk)_test_/.test(secretKey());
 /** The public key the browser shows Stripe's form with (safe to hand out). */
-export const stripePublishableKey = () => (/^pk_(live|test)_/.test(process.env.STRIPE_PUBLISHABLE_KEY ?? '') ? process.env.STRIPE_PUBLISHABLE_KEY! : '');
+export const stripePublishableKey = () =>
+  /^pk_(live|test)_/.test(process.env.STRIPE_PUBLISHABLE_KEY ?? '') ? process.env.STRIPE_PUBLISHABLE_KEY! : '';
 
 /** Stripe's form encoding: nested objects and arrays become key[sub][0]=value. */
 export function formEncode(value: Record<string, unknown>, prefix = '', out = new URLSearchParams()): URLSearchParams {
@@ -56,8 +60,12 @@ async function call<T>(method: 'GET' | 'POST', path: string, body?: Record<strin
     body: body ? formEncode(body).toString() : undefined,
     signal: AbortSignal.timeout(15_000),
   });
-  const data = await response.json().catch(() => ({})) as T & { error?: { message?: string } };
-  if (!response.ok) throw new StripeError(response.status, `Stripe ${method} ${path.split('?')[0]} failed: ${response.status} ${data.error?.message ?? ''}`.trim());
+  const data = (await response.json().catch(() => ({}))) as T & { error?: { message?: string } };
+  if (!response.ok)
+    throw new StripeError(
+      response.status,
+      `Stripe ${method} ${path.split('?')[0]} failed: ${response.status} ${data.error?.message ?? ''}`.trim(),
+    );
   return data;
 }
 
@@ -69,7 +77,10 @@ interface StripeCharge {
   payment_method_details?: { type?: string; card?: { brand?: string | null; wallet?: { type?: string } | null } | null } | null;
 }
 
-interface StripePaymentIntent { id: string; latest_charge?: StripeCharge | string | null }
+interface StripePaymentIntent {
+  id: string;
+  latest_charge?: StripeCharge | string | null;
+}
 
 export interface StripeCheckoutSession {
   id: string;
@@ -104,24 +115,46 @@ export async function createCheckoutSession(request: CheckoutRequest): Promise<{
   // hotels' payments apart in the dashboard, and card statements read
   // "HULA HULA* PINEAPPLE" (the account's prefix plus this suffix, 22 max).
   const metadata = { ref: request.ref, invoice_no: request.invoiceNo, site: 'royal-pineapple' };
-  const session = await call<StripeCheckoutSession>('POST', '/checkout/sessions', {
-    mode: 'payment',
-    ui_mode: 'embedded_page',
-    line_items: [{ quantity: 1, price_data: { currency: request.currencyCode.toLowerCase(), unit_amount: Math.round(request.amount * 100), product_data: { name: description } } }],
-    customer_email: request.email,
-    client_reference_id: request.ref,
-    metadata,
-    payment_intent_data: { description, metadata, statement_descriptor_suffix: 'PINEAPPLE' },
-    expires_at: Math.floor(request.expiresAt.getTime() / 1000),
-    return_url: request.returnUrl,
-    submit_type: 'book',
-    locale: 'auto',
-  }, `checkout-${request.invoiceNo}`);
+  const session = await call<StripeCheckoutSession>(
+    'POST',
+    '/checkout/sessions',
+    {
+      mode: 'payment',
+      ui_mode: 'embedded_page',
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: request.currencyCode.toLowerCase(),
+            unit_amount: Math.round(request.amount * 100),
+            product_data: { name: description },
+          },
+        },
+      ],
+      customer_email: request.email,
+      client_reference_id: request.ref,
+      metadata,
+      payment_intent_data: { description, metadata, statement_descriptor_suffix: 'PINEAPPLE' },
+      expires_at: Math.floor(request.expiresAt.getTime() / 1000),
+      return_url: request.returnUrl,
+      submit_type: 'book',
+      locale: 'auto',
+    },
+    `checkout-${request.invoiceNo}`,
+  );
   if (!session.client_secret) throw new StripeError(502, 'Stripe returned no payment form');
   return { id: session.id, clientSecret: session.client_secret };
 }
 
-const BRANDS: Record<string, string> = { visa: 'Visa', mastercard: 'Mastercard', amex: 'American Express', jcb: 'JCB', unionpay: 'UnionPay', diners: 'Diners Club', discover: 'Discover' };
+const BRANDS: Record<string, string> = {
+  visa: 'Visa',
+  mastercard: 'Mastercard',
+  amex: 'American Express',
+  jcb: 'JCB',
+  unionpay: 'UnionPay',
+  diners: 'Diners Club',
+  discover: 'Discover',
+};
 const WALLETS: Record<string, string> = { apple_pay: 'Apple Pay', google_pay: 'Google Pay', samsung_pay: 'Samsung Pay' };
 
 // Readable as it is wherever the payment channel shows: "Stripe · Visa",
@@ -130,8 +163,8 @@ function channelOf(charge: StripeCharge | null): string | undefined {
   const details = charge?.payment_method_details;
   if (!details?.type) return undefined;
   if (details.type === 'card') {
-    const brand = details.card?.brand ? BRANDS[details.card.brand] ?? details.card.brand : 'Card';
-    const wallet = details.card?.wallet?.type ? WALLETS[details.card.wallet.type] ?? details.card.wallet.type : null;
+    const brand = details.card?.brand ? (BRANDS[details.card.brand] ?? details.card.brand) : 'Card';
+    const wallet = details.card?.wallet?.type ? (WALLETS[details.card.wallet.type] ?? details.card.wallet.type) : null;
     return `Stripe · ${wallet ? `${wallet} (${brand})` : brand}`;
   }
   return `Stripe · ${details.type === 'promptpay' ? 'PromptPay' : details.type}`;
@@ -152,22 +185,39 @@ export function inquiryFromSession(session: StripeCheckoutSession, invoiceNo: st
   };
   if (session.payment_status === 'paid') {
     if (charge && charge.amount_refunded > 0) {
-      return { ...base, respCode: STRIPE_CODES.refunded, respDesc: charge.refunded ? 'Refunded in Stripe' : `Partly refunded in Stripe (${charge.currency.toUpperCase()} ${charge.amount_refunded / 100})` };
+      return {
+        ...base,
+        respCode: STRIPE_CODES.refunded,
+        respDesc: charge.refunded
+          ? 'Refunded in Stripe'
+          : `Partly refunded in Stripe (${charge.currency.toUpperCase()} ${charge.amount_refunded / 100})`,
+      };
     }
     return { ...base, respCode: STRIPE_CODES.paid, respDesc: 'Paid' };
   }
   // Stripe's page lets the guest retry a declined card there and then, so
   // there's no final "declined": only waiting, or a page that ran out.
-  return { ...base, respCode: STRIPE_CODES.notFinal, respDesc: session.status === 'expired' ? 'The Stripe payment page expired unpaid' : 'Waiting for payment on Stripe' };
+  return {
+    ...base,
+    respCode: STRIPE_CODES.notFinal,
+    respDesc: session.status === 'expired' ? 'The Stripe payment page expired unpaid' : 'Waiting for payment on Stripe',
+  };
 }
 
 /** Stripe's own answer to "was this booking paid?", by its Checkout session. */
 export async function stripeInquiry(sessionId: string, invoiceNo: string): Promise<PaymentInquiry> {
-  const session = await call<StripeCheckoutSession>('GET', `/checkout/sessions/${encodeURIComponent(sessionId)}?expand%5B%5D=payment_intent.latest_charge`);
+  const session = await call<StripeCheckoutSession>(
+    'GET',
+    `/checkout/sessions/${encodeURIComponent(sessionId)}?expand%5B%5D=payment_intent.latest_charge`,
+  );
   return inquiryFromSession(session, invoiceNo);
 }
 
-export interface StripeEvent { id: string; type: string; data: { object: { metadata?: Record<string, string> | null } } }
+export interface StripeEvent {
+  id: string;
+  type: string;
+  data: { object: { metadata?: Record<string, string> | null } };
+}
 
 /** Fetches an event back from Stripe with our own key, which proves it's real. */
 export const retrieveEvent = (id: string) => call<StripeEvent>('GET', `/events/${encodeURIComponent(id)}`);

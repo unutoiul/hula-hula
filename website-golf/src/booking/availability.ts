@@ -18,12 +18,23 @@ export interface Slot {
 }
 
 /** A booking already on the sheet (not cancelled): its start, how long it runs and how many people. */
-export interface SheetBooking { time: string; minutes: number; players: number }
+export interface SheetBooking {
+  time: string;
+  minutes: number;
+  players: number;
+}
 /** Staff-blocked starts, from `start` up to (not including) `end`. */
-export interface SheetBlock { start: string; end: string }
+export interface SheetBlock {
+  start: string;
+  end: string;
+}
 
 /** The booking rules from the club settings that shape the sheet. */
-export interface SheetRules { windowDays: number; minLeadMinutes: number; closedWeekdays: number[] }
+export interface SheetRules {
+  windowDays: number;
+  minLeadMinutes: number;
+  closedWeekdays: number[];
+}
 export const rulesFrom = (club: ClubSettings): SheetRules => ({
   windowDays: club.booking.windowDays,
   minLeadMinutes: club.booking.minLeadMinutes,
@@ -45,7 +56,14 @@ export function isBookableDay(date: string, windowDays: number, now = krabiNow()
  * or too soon, and days the club is closed, are left out; staff
  * (`includePast`) see the whole day whatever it is.
  */
-export function buildSheet(activity: Activity, option: ActivityOption, date: string, bookings: SheetBooking[], blocks: SheetBlock[], { rules, now = krabiNow(), includePast = false }: { rules: SheetRules; now?: { date: string; minutes: number }; includePast?: boolean }): Slot[] {
+export function buildSheet(
+  activity: Activity,
+  option: ActivityOption,
+  date: string,
+  bookings: SheetBooking[],
+  blocks: SheetBlock[],
+  { rules, now = krabiNow(), includePast = false }: { rules: SheetRules; now?: { date: string; minutes: number }; includePast?: boolean },
+): Slot[] {
   if (!includePast && (!isBookableDay(date, rules.windowDays, now) || rules.closedWeekdays.includes(weekdayIndex(date)))) return [];
   const earliest = !includePast && date === now.date ? now.minutes + rules.minLeadMinutes : 0;
   const slots: Slot[] = [];
@@ -57,7 +75,9 @@ export function buildSheet(activity: Activity, option: ActivityOption, date: str
     if (activity.units > 1) {
       // A bay is free for the booking only if one is free in every hour it covers.
       const hours = Array.from({ length: Math.ceil(option.minutes / 60) }, (_, i) => start + i * 60);
-      const busiest = Math.max(...hours.map((hour) => bookings.filter((b) => toMinutes(b.time) <= hour && hour < toMinutes(b.time) + b.minutes).length));
+      const busiest = Math.max(
+        ...hours.map((hour) => bookings.filter((b) => toMinutes(b.time) <= hour && hour < toMinutes(b.time) + b.minutes).length),
+      );
       const baysLeft = blocked ? 0 : Math.max(0, activity.units - busiest);
       slots.push({ time, capacity: activity.capacity, spotsLeft: baysLeft * activity.capacity, baysLeft, ...(blocked && { blocked }) });
       continue;
@@ -66,7 +86,12 @@ export function buildSheet(activity: Activity, option: ActivityOption, date: str
     const here = bookings.filter((b) => b.time === time);
     const booked = here.reduce((sum, b) => sum + b.players, 0);
     const full = blocked || (activity.privateGroup ? here.length > 0 : booked >= activity.capacity);
-    slots.push({ time, capacity: activity.capacity, spotsLeft: full ? 0 : Math.max(0, activity.capacity - booked), ...(blocked && { blocked }) });
+    slots.push({
+      time,
+      capacity: activity.capacity,
+      spotsLeft: full ? 0 : Math.max(0, activity.capacity - booked),
+      ...(blocked && { blocked }),
+    });
   }
   return slots;
 }

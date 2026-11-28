@@ -3,19 +3,48 @@ import { photoByUrl } from '../../data/photos';
 
 // `eager` loads first and at high priority (the page's main image); `lazy={false}`
 // loads straight away at normal priority (e.g. the next photos of a carousel).
-export function ResortPhoto({ image, alt, sizes = '(max-width: 600px) 100vw, 50vw', eager = false, lazy = !eager, sx }: {
-  image: string; alt: string; sizes?: string; eager?: boolean; lazy?: boolean; sx?: SxProps<Theme>;
+export function ResortPhoto({
+  image,
+  alt,
+  sizes = '(max-width: 600px) 100vw, 50vw',
+  eager = false,
+  lazy = !eager,
+  sx,
+}: {
+  image: string;
+  alt: string;
+  sizes?: string;
+  eager?: boolean;
+  lazy?: boolean;
+  sx?: SxProps<Theme>;
 }) {
   const photo = photoByUrl.get(image);
-  const img = <Box component="img" src={image} srcSet={photo?.srcSet} sizes={sizes} alt={alt}
-    width={photo?.width} height={photo?.height} loading={lazy ? 'lazy' : 'eager'} decoding="async" fetchPriority={eager ? 'high' : 'auto'}
-    sx={[{ display: 'block', minWidth: 0, maxWidth: '100%', width: '100%', height: '100%', objectFit: 'cover' }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]} />;
+  const img = (
+    <Box
+      component="img"
+      src={image}
+      srcSet={photo?.srcSet}
+      sizes={sizes}
+      alt={alt}
+      width={photo?.width}
+      height={photo?.height}
+      loading={lazy ? 'lazy' : 'eager'}
+      decoding="async"
+      fetchPriority={eager ? 'high' : 'auto'}
+      sx={[
+        { display: 'block', minWidth: 0, maxWidth: '100%', width: '100%', height: '100%', objectFit: 'cover' },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
+    />
+  );
   if (!photo) return img;
   // AVIF for browsers that support it (about half the bytes), WebP otherwise.
   // display: contents keeps <picture> out of layout, so the img sizes itself
   // against the same parent as before.
-  return <Box component="picture" sx={{ display: 'contents' }}>
-    <source type="image/avif" srcSet={photo.avifSrcSet} sizes={sizes} />
-    {img}
-  </Box>;
+  return (
+    <Box component="picture" sx={{ display: 'contents' }}>
+      <source type="image/avif" srcSet={photo.avifSrcSet} sizes={sizes} />
+      {img}
+    </Box>
+  );
 }

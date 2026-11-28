@@ -39,7 +39,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Oldest checked first so subsequent runs progress through every booking,
   // including archived stays. Portal changes need not trigger a webhook.
-  for (const row of await listWhere(`status=in.(paid,delivered)&payment_token=like.${stripeCheckoutPrefix()}*&or=(resp_code.is.null,resp_code.not.in.(4047,4120))&order=last_inquiry_at.asc.nullsfirst,created_at.asc&limit=100`)) {
+  for (const row of await listWhere(
+    `status=in.(paid,delivered)&payment_token=like.${stripeCheckoutPrefix()}*&or=(resp_code.is.null,resp_code.not.in.(4047,4120))&order=last_inquiry_at.asc.nullsfirst,created_at.asc&limit=100`,
+  )) {
     counts.checked++;
     try {
       await updateWhere(`id=eq.${row.id}`, { last_inquiry_at: new Date().toISOString() });
@@ -52,7 +54,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  counts.deleted += await deleteWhere(`status=in.(expired,failed)&created_at=lt.${new Date(Date.now() - KEEP_DAYS * 86_400_000).toISOString()}`);
+  counts.deleted += await deleteWhere(
+    `status=in.(expired,failed)&created_at=lt.${new Date(Date.now() - KEEP_DAYS * 86_400_000).toISOString()}`,
+  );
 
   console.info('Cron reconcile', counts);
   return res.status(200).json(counts);

@@ -27,7 +27,10 @@ export function HeroVideo() {
     if (!video) return;
     if (reduced || !inView) video.pause();
     // Autoplay refused (e.g. data saver / low-power mode): the poster stays up.
-    else video.play().catch((error: DOMException) => { if (error.name === 'NotAllowedError') setFailed(true); });
+    else
+      video.play().catch((error: DOMException) => {
+        if (error.name === 'NotAllowedError') setFailed(true);
+      });
   }, [reduced, inView]);
 
   const trackBuffer = () => {
@@ -36,13 +39,30 @@ export function HeroVideo() {
     buffered.set(Math.min(1, video.buffered.end(video.buffered.length - 1) / video.duration));
   };
 
-  return <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
-    {/* disablePictureInPicture / disableRemotePlayback also stop browsers from
+  return (
+    <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+      {/* disablePictureInPicture / disableRemotePlayback also stop browsers from
         laying their own pop-out or cast buttons over it. */}
-    <Box component="video" ref={videoRef} aria-hidden muted loop playsInline autoPlay={!reduced} disablePictureInPicture disableRemotePlayback
-      preload={reduced ? 'metadata' : 'auto'} poster={HERO_POSTER_SRC} src={HERO_VIDEO_SRC}
-      onPlaying={() => setStarted(true)} onProgress={trackBuffer} onLoadedMetadata={trackBuffer} onError={() => setFailed(true)}
-      sx={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }} />
-    <AnimatePresence>{!reduced && !started && !failed && <HeroVideoLoader key="loader" progress={buffered} />}</AnimatePresence>
-  </Box>;
+      <Box
+        component="video"
+        ref={videoRef}
+        aria-hidden
+        muted
+        loop
+        playsInline
+        autoPlay={!reduced}
+        disablePictureInPicture
+        disableRemotePlayback
+        preload={reduced ? 'metadata' : 'auto'}
+        poster={HERO_POSTER_SRC}
+        src={HERO_VIDEO_SRC}
+        onPlaying={() => setStarted(true)}
+        onProgress={trackBuffer}
+        onLoadedMetadata={trackBuffer}
+        onError={() => setFailed(true)}
+        sx={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+      <AnimatePresence>{!reduced && !started && !failed && <HeroVideoLoader key="loader" progress={buffered} />}</AnimatePresence>
+    </Box>
+  );
 }

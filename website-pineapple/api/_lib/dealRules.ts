@@ -41,10 +41,12 @@ export interface DealContext {
 }
 
 /** Whether a check-in day falls inside the offer's stay dates (both ends count). */
-export const coversCheckIn = (deal: Deal, checkIn: string) => (!deal.stayFrom || checkIn >= deal.stayFrom) && (!deal.stayTo || checkIn <= deal.stayTo);
+export const coversCheckIn = (deal: Deal, checkIn: string) =>
+  (!deal.stayFrom || checkIn >= deal.stayFrom) && (!deal.stayTo || checkIn <= deal.stayTo);
 
 /** Whole days from `today` to `checkIn` (both calendar days at the hotel): booking on 27 Nov for 26 Jan is 60. */
-export const daysAhead = (today: string, checkIn: string) => Math.round((Date.parse(`${checkIn}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+export const daysAhead = (today: string, checkIn: string) =>
+  Math.round((Date.parse(`${checkIn}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
 
 export function isEligible(deal: Deal, ctx: DealContext): boolean {
   if (deal.discountPercent <= 0 && deal.perks.length === 0) return false;
@@ -68,5 +70,5 @@ export function bestDeal(deals: Deal[], ctx: DealContext): Deal | null {
 
 /** The discount on each night (satang), rounded to whole baht like hotel prices — the same percentage on every night of the stay. */
 export function nightlyDiscounts(deal: Deal, nights: { date: string; amount: number }[]): number[] {
-  return nights.map((night) => (deal.discountPercent > 0 ? Math.round(night.amount * deal.discountPercent / 10_000) * 100 : 0));
+  return nights.map((night) => (deal.discountPercent > 0 ? Math.round((night.amount * deal.discountPercent) / 10_000) * 100 : 0));
 }

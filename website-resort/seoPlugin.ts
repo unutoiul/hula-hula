@@ -60,20 +60,28 @@ export function renderHead(site: SeoSite, page: PageHead): string {
     `<meta name="twitter:title" content="${attr(page.title)}" />`,
     `<meta name="twitter:description" content="${attr(page.description)}" />`,
     `<meta name="twitter:image" content="${attr(site.image)}" />`,
-    ...(page.preloadImages ?? []).map((image) => `<link rel="preload" as="image" type="${attr(image.type)}" imagesrcset="${attr(image.srcSet)}" imagesizes="${attr(image.sizes)}" fetchpriority="high" />`),
-    ...(page.structuredData ?? []).map((data) => `<script type="application/ld+json" data-seo>${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`),
+    ...(page.preloadImages ?? []).map(
+      (image) =>
+        `<link rel="preload" as="image" type="${attr(image.type)}" imagesrcset="${attr(image.srcSet)}" imagesizes="${attr(image.sizes)}" fetchpriority="high" />`,
+    ),
+    ...(page.structuredData ?? []).map(
+      (data) => `<script type="application/ld+json" data-seo>${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`,
+    ),
   ];
   return [START, ...tags, END].join('\n    ');
 }
 
 // lastmod is the day the site was built, so search engines see each deploy as fresh.
-const sitemap = (site: SeoSite, lastmod = new Date().toISOString().slice(0, 10)) => [
-  '<?xml version="1.0" encoding="UTF-8"?>',
-  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...site.routes.filter((route) => !site.head(route).robots.includes('noindex')).map((route) => `  <url><loc>${site.siteUrl}${route}</loc><lastmod>${lastmod}</lastmod></url>`),
-  '</urlset>',
-  '',
-].join('\n');
+const sitemap = (site: SeoSite, lastmod = new Date().toISOString().slice(0, 10)) =>
+  [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...site.routes
+      .filter((route) => !site.head(route).robots.includes('noindex'))
+      .map((route) => `  <url><loc>${site.siteUrl}${route}</loc><lastmod>${lastmod}</lastmod></url>`),
+    '</urlset>',
+    '',
+  ].join('\n');
 
 export function seoPages(site: SeoSite): Plugin {
   let outDir = '';

@@ -5,7 +5,15 @@
 const KRABI = 'Asia/Bangkok';
 export const KRABI_UTC_OFFSET_HOURS = 7;
 
-const krabiParts = new Intl.DateTimeFormat('en-CA', { timeZone: KRABI, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+const krabiParts = new Intl.DateTimeFormat('en-CA', {
+  timeZone: KRABI,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
 
 /** Today's date and the minutes past midnight, at the club. */
 export function krabiNow(at = new Date()): { date: string; minutes: number } {
@@ -16,7 +24,9 @@ export function krabiNow(at = new Date()): { date: string; minutes: number } {
 const asUTC = (iso: string) => new Date(`${iso}T00:00:00Z`);
 
 export function isISODate(value: string | null): value is string {
-  return !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(asUTC(value).getTime()) && asUTC(value).toISOString().startsWith(value);
+  return (
+    !!value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(asUTC(value).getTime()) && asUTC(value).toISOString().startsWith(value)
+  );
 }
 
 export function addDays(iso: string, days: number): string {
@@ -28,8 +38,12 @@ export function addDays(iso: string, days: number): string {
 export const daysBetween = (from: string, to: string) => Math.round((asUTC(to).getTime() - asUTC(from).getTime()) / 86_400_000);
 export const isWeekend = (iso: string) => [0, 6].includes(asUTC(iso).getUTCDay());
 
-export const toMinutes = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
-export const fromMinutes = (minutes: number) => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+export const toMinutes = (hhmm: string) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+};
+export const fromMinutes = (minutes: number) =>
+  `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 
 const fmt = (options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', ...options });
 const long = fmt({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -59,7 +73,8 @@ export function timeLabel(hhmm: string): string {
 
 /** "2 hrs 15 min", "1 hour", "45 min" */
 export function durationLabel(minutes: number): string {
-  const h = Math.floor(minutes / 60), m = minutes % 60;
+  const h = Math.floor(minutes / 60),
+    m = minutes % 60;
   if (!h) return `${m} min`;
   const hours = h === 1 ? '1 hour' : `${h} hrs`;
   return m ? `${hours} ${m} min` : hours;

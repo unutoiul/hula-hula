@@ -4,5 +4,4 @@
 // hands it down — that's where the Supabase, Stripe and cron settings live.
 import { spawn } from 'node:child_process';
 
-spawn('vercel', ['dev', '--listen', '3001', '--yes'], { stdio: 'inherit', shell: true })
-  .on('exit', (code) => process.exit(code ?? 0));
+spawn('vercel', ['dev', '--listen', '3001', '--yes'], { stdio: 'inherit', shell: true }).on('exit', (code) => process.exit(code ?? 0));

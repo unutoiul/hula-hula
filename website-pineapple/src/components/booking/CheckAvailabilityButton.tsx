@@ -5,7 +5,9 @@ import { BOOKING_ENGINE, ONSITE_BOOKING, useBookingSearch } from '../../context/
 import { useContactForm } from '../../context/ContactFormContext';
 import { linkClick } from '../../router';
 
-const prefetchBooking = () => { void import('../../booking/BookingApp'); };
+const prefetchBooking = () => {
+  void import('../../booking/BookingApp');
+};
 
 // The one booking CTA, shared by the hero search bar, the Arrival panel and
 // the room pages, so they all look and behave the same. In order of
@@ -16,20 +18,52 @@ export function CheckAvailabilityButton({ fullWidth = true, room }: { fullWidth?
   const { bookHref, siteMinderUrl } = useBookingSearch();
   const openContact = useContactForm();
   if (ONSITE_BOOKING) {
-    return <Button href={bookHref} onClick={linkClick(bookHref)} onPointerEnter={prefetchBooking} onFocus={prefetchBooking} variant="contained" fullWidth={fullWidth} endIcon={<East />} sx={{ whiteSpace: 'nowrap' }}>
-      Check availability
-    </Button>;
+    return (
+      <Button
+        href={bookHref}
+        onClick={linkClick(bookHref)}
+        onPointerEnter={prefetchBooking}
+        onFocus={prefetchBooking}
+        variant="contained"
+        fullWidth={fullWidth}
+        endIcon={<East />}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        Check availability
+      </Button>
+    );
   }
   if (BOOKING_ENGINE) {
-    return <Button href={siteMinderUrl} target="_blank" rel="noopener" variant="contained" fullWidth={fullWidth} endIcon={<ArrowOutward />} sx={{ whiteSpace: 'nowrap' }}>
-      Check availability
-    </Button>;
+    return (
+      <Button
+        href={siteMinderUrl}
+        target="_blank"
+        rel="noopener"
+        variant="contained"
+        fullWidth={fullWidth}
+        endIcon={<ArrowOutward />}
+        sx={{ whiteSpace: 'nowrap' }}
+      >
+        Check availability
+      </Button>
+    );
   }
-  return <Button variant="contained" fullWidth={fullWidth} endIcon={<East />} sx={{ whiteSpace: 'nowrap' }}
-    onClick={() => openContact({
-      topic: 'Room booking & availability', booking: true, page: room ?? 'Booking search',
-      message: room ? `Hello Royal Pineapple! We’d love to stay in the ${room}.` : 'Hello Royal Pineapple! We’d love to stay with you.',
-    })}>
-    Request these dates
-  </Button>;
+  return (
+    <Button
+      variant="contained"
+      fullWidth={fullWidth}
+      endIcon={<East />}
+      sx={{ whiteSpace: 'nowrap' }}
+      onClick={() =>
+        openContact({
+          topic: 'Room booking & availability',
+          booking: true,
+          page: room ?? 'Booking search',
+          message: room ? `Hello Royal Pineapple! We’d love to stay in the ${room}.` : 'Hello Royal Pineapple! We’d love to stay with you.',
+        })
+      }
+    >
+      Request these dates
+    </Button>
+  );
 }

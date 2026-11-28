@@ -5,10 +5,18 @@ import { seoPages } from './seoPlugin';
 import { pageHead, PUBLIC_ROUTES, SITE_NAME, SITE_URL, SOCIAL_IMAGE, SOCIAL_IMAGE_ALT } from './src/seo';
 
 export default defineConfig({
-  plugins: [react(), seoPages({
-    siteName: SITE_NAME, siteUrl: SITE_URL, image: SOCIAL_IMAGE, imageAlt: SOCIAL_IMAGE_ALT,
-    head: pageHead, routes: PUBLIC_ROUTES, entries: ['/', '/book'],
-  })],
+  plugins: [
+    react(),
+    seoPages({
+      siteName: SITE_NAME,
+      siteUrl: SITE_URL,
+      image: SOCIAL_IMAGE,
+      imageAlt: SOCIAL_IMAGE_ALT,
+      head: pageHead,
+      routes: PUBLIC_ROUTES,
+      entries: ['/', '/book'],
+    }),
+  ],
   build: {
     rollupOptions: {
       input: {

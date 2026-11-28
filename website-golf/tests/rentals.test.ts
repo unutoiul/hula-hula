@@ -18,7 +18,7 @@ describe('dynamic rental equipment', () => {
       assert.ok(offered.length > 0, `${activity.name} needs equipment`);
       if (['golf', 'range'].includes(activity.id)) {
         assert.equal(offered.length, 4);
-        assert.ok(offered.every(item => item.price > 0));
+        assert.ok(offered.every((item) => item.price > 0));
       } else {
         assert.equal(offered.length, 1);
         assert.equal(offered[0].price, 0);
@@ -29,8 +29,14 @@ describe('dynamic rental equipment', () => {
     }
   });
   it('offers only equipment assigned to the selected sport, even for a new sport', () => {
-    assert.deepEqual(rentalsFor({ id: 'pickleball', rentals: false }, catalog).map(item => item.id), ['racket', 'ball']);
-    assert.deepEqual(rentalsFor({ id: 'golf', rentals: true }, catalog).map(item => item.id), ['premium-a', 'normal-a']);
+    assert.deepEqual(
+      rentalsFor({ id: 'pickleball', rentals: false }, catalog).map((item) => item.id),
+      ['racket', 'ball'],
+    );
+    assert.deepEqual(
+      rentalsFor({ id: 'golf', rentals: true }, catalog).map((item) => item.id),
+      ['premium-a', 'normal-a'],
+    );
     assert.deepEqual(rentalsFor({ id: 'new-sport', rentals: true }, catalog), []);
   });
   it('allows a racket and several balls for the same player', () => {

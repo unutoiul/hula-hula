@@ -21,17 +21,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const permission = await fetch(`${url.replace(/\/$/, '')}/rest/v1/rpc/is_admin`, {
-      method: 'POST', headers: { apikey: key, Authorization: authorization, 'Content-Type': 'application/json' },
-      body: '{}', signal: AbortSignal.timeout(15_000),
+      method: 'POST',
+      headers: { apikey: key, Authorization: authorization, 'Content-Type': 'application/json' },
+      body: '{}',
+      signal: AbortSignal.timeout(15_000),
     });
     if (permission.status === 401) return res.status(401).json({ error: 'Please sign in again.' });
     if (permission.status === 403) return res.status(403).json({ error: 'Admin access required.' });
     if (!permission.ok) throw new Error(`Admin verification failed (${permission.status})`);
-    if (await permission.json() !== true) return res.status(403).json({ error: 'Admin access required.' });
+    if ((await permission.json()) !== true) return res.status(403).json({ error: 'Admin access required.' });
 
     const booking = await getByRef(ref);
     if (!booking) return res.status(404).json({ error: 'Booking not found.' });
-    if (!canInquire(booking)) return res.status(409).json({ error: 'This booking has no checkout in the current Stripe mode. Its saved payment details are unchanged.' });
+    if (!canInquire(booking))
+      return res
+        .status(409)
+        .json({ error: 'This booking has no checkout in the current Stripe mode. Its saved payment details are unchanged.' });
     const updated = await confirmPayment(booking.invoice_no, 'admin');
     if (!updated) return res.status(404).json({ error: 'Booking not found.' });
     return res.status(200).json({ ok: true });

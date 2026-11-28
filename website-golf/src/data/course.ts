@@ -21,8 +21,6 @@ export function golfHole(number: number) {
 /** A single map per physical hole; Golf's second round reuses the same layout. */
 export function courseMapImage(activity: 'golf' | 'footgolf', number: number) {
   if (!Number.isInteger(number) || number < 1 || number > 18) throw new RangeError('Choose a hole from 1 to 18.');
-  const name = activity === 'footgolf'
-    ? `footgolf-hole-${String(number).padStart(2, '0')}`
-    : `golf-guide-${golfHole(number).physical - 1}`;
+  const name = activity === 'footgolf' ? `footgolf-hole-${String(number).padStart(2, '0')}` : `golf-guide-${golfHole(number).physical - 1}`;
   return `/images/course-guides/${name}.svg`;
 }

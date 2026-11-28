@@ -14,7 +14,11 @@ export interface TemplateEmail {
   idempotencyKey?: string;
 }
 
-export interface SendResult { ok: boolean; status: number; body: string }
+export interface SendResult {
+  ok: boolean;
+  status: number;
+  body: string;
+}
 
 function apiKey(): string {
   const key = process.env.RESEND_API_KEY;
@@ -25,7 +29,11 @@ function apiKey(): string {
 async function post(payload: Record<string, unknown>, idempotencyKey?: string): Promise<SendResult> {
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey()}`, 'Content-Type': 'application/json', ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }) },
+    headers: {
+      Authorization: `Bearer ${apiKey()}`,
+      'Content-Type': 'application/json',
+      ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }),
+    },
     body: JSON.stringify(payload),
   });
   return { ok: response.ok, status: response.status, body: response.ok ? '' : await response.text() };
@@ -52,17 +60,43 @@ export function withCopies(to: string[], bcc: string[] = []): string[] {
   return [...copies].filter(([key]) => !sentTo.has(key)).map(([, address]) => address);
 }
 
-export function sendTemplate({ from, to: recipients, bcc: asked, replyTo, subject, template, variables, idempotencyKey }: TemplateEmail): Promise<SendResult> {
+export function sendTemplate({
+  from,
+  to: recipients,
+  bcc: asked,
+  replyTo,
+  subject,
+  template,
+  variables,
+  idempotencyKey,
+}: TemplateEmail): Promise<SendResult> {
   const to = visibleTo(recipients);
   const bcc = withCopies(to, asked);
-  return post({ from, to, ...(bcc.length && { bcc }), ...(replyTo && { reply_to: replyTo }), subject, template: { id: template, variables } }, idempotencyKey);
+  return post(
+    { from, to, ...(bcc.length && { bcc }), ...(replyTo && { reply_to: replyTo }), subject, template: { id: template, variables } },
+    idempotencyKey,
+  );
 }
 
 /** A plain-text note for the team, for things that need a human (a payment we can't match, a handoff that keeps failing). */
-export function sendText({ from, to: asked, subject, text }: { from: string; to: string[]; subject: string; text: string }): Promise<SendResult> {
+export function sendText({
+  from,
+  to: asked,
+  subject,
+  text,
+}: {
+  from: string;
+  to: string[];
+  subject: string;
+  text: string;
+}): Promise<SendResult> {
   const to = visibleTo(asked);
   const bcc = withCopies(to);
   return post({ from, to, ...(bcc.length && { bcc }), subject, text });
 }
 
-export const splitAddresses = (value: string) => value.split(',').map((address) => address.trim()).filter(Boolean);
+export const splitAddresses = (value: string) =>
+  value
+    .split(',')
+    .map((address) => address.trim())
+    .filter(Boolean);

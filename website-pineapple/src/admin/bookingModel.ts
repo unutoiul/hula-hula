@@ -70,15 +70,24 @@ export interface DeskBooking {
 }
 
 type Tone = 'success' | 'warning' | 'error' | 'default' | 'info';
-export interface Badge { label: string; tone: Tone }
+export interface Badge {
+  label: string;
+  tone: Tone;
+}
 
 export const isReversed = (b: DeskBooking) => isReversedPayment(b.resp_code);
 export const isPaid = (b: DeskBooking) => !isReversed(b) && (b.status === 'paid' || b.status === 'delivered');
 export const isTest = (b: DeskBooking) => b.flags.includes('test_payment');
-export const guestName = (b: DeskBooking) => [b.guest_first_name, b.guest_last_name].filter(Boolean).join(' ') || (b.pii_wiped_at ? 'Details deleted' : 'No name');
+export const guestName = (b: DeskBooking) =>
+  [b.guest_first_name, b.guest_last_name].filter(Boolean).join(' ') || (b.pii_wiped_at ? 'Details deleted' : 'No name');
 export const roomCount = (b: DeskBooking) => b.items.reduce((sum, item) => sum + item.quantity, 0);
-export const guestCount = (b: DeskBooking) => b.items.reduce((sum, item) => ({ adults: sum.adults + item.adults * item.quantity, children: sum.children + item.children * item.quantity }), { adults: 0, children: 0 });
-export const nightCount = (b: DeskBooking) => Math.round((Date.parse(`${b.check_out}T00:00:00Z`) - Date.parse(`${b.check_in}T00:00:00Z`)) / 86_400_000);
+export const guestCount = (b: DeskBooking) =>
+  b.items.reduce(
+    (sum, item) => ({ adults: sum.adults + item.adults * item.quantity, children: sum.children + item.children * item.quantity }),
+    { adults: 0, children: 0 },
+  );
+export const nightCount = (b: DeskBooking) =>
+  Math.round((Date.parse(`${b.check_out}T00:00:00Z`) - Date.parse(`${b.check_in}T00:00:00Z`)) / 86_400_000);
 export const savingsOf = (b: DeskBooking) => b.items.reduce((sum, item) => sum + (item.offer?.savings ?? 0) * item.quantity, 0);
 
 export function paymentBadge(b: DeskBooking, now = Date.now()): Badge {
@@ -109,9 +118,19 @@ export const FLAG_LABELS: Record<string, string> = {
   test_payment: 'Test payment: nothing was charged.',
 };
 
-
-const CHANNELS: Record<string, string> = { VI: 'Visa', MA: 'Mastercard', JC: 'JCB', AM: 'American Express', UP: 'UnionPay', DI: 'Diners Club', PPQR: 'PromptPay QR', QR: 'QR payment', TRUEMONEY: 'TrueMoney', SHPPAY: 'ShopeePay' };
-export const channelName = (code: string | null) => (code ? CHANNELS[code.toUpperCase()] ?? code : null);
+const CHANNELS: Record<string, string> = {
+  VI: 'Visa',
+  MA: 'Mastercard',
+  JC: 'JCB',
+  AM: 'American Express',
+  UP: 'UnionPay',
+  DI: 'Diners Club',
+  PPQR: 'PromptPay QR',
+  QR: 'QR payment',
+  TRUEMONEY: 'TrueMoney',
+  SHPPAY: 'ShopeePay',
+};
+export const channelName = (code: string | null) => (code ? (CHANNELS[code.toUpperCase()] ?? code) : null);
 
 // ── Filters ─────────────────────────────────────────────────────────────
 
@@ -143,11 +162,23 @@ export const SORTS: { value: Sort; label: string }[] = [
   { value: 'arrivalDesc', label: 'Arrival, latest first' },
 ];
 
-export interface Filters { view: View; query: string; stay: StayFilter; from: string; to: string; hideTests: boolean; sort: Sort }
+export interface Filters {
+  view: View;
+  query: string;
+  stay: StayFilter;
+  from: string;
+  to: string;
+  hideTests: boolean;
+  sort: Sort;
+}
 export const DEFAULT_FILTERS: Filters = { view: 'all', query: '', stay: 'any', from: '', to: '', hideTests: false, sort: 'booked' };
 
 export const todayInBangkok = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
-export const addDays = (iso: string, days: number) => { const d = new Date(`${iso}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };
+export const addDays = (iso: string, days: number) => {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
 
 export function inView(b: DeskBooking, view: View): boolean {
   if (view === 'archived') return !!b.archived_at;
@@ -160,14 +191,22 @@ export function inView(b: DeskBooking, view: View): boolean {
 
 function inStay(b: DeskBooking, f: Filters, today: string): boolean {
   switch (f.stay) {
-    case 'today': return b.check_in === today;
-    case 'week': return b.check_in >= today && b.check_in <= addDays(today, 7);
-    case 'month': return b.check_in >= today && b.check_in <= addDays(today, 30);
-    case 'inHouse': return b.check_in <= today && b.check_out > today;
-    case 'upcoming': return b.check_in >= today;
-    case 'past': return b.check_out < today;
-    case 'custom': return (!f.from || b.check_in >= f.from) && (!f.to || b.check_in <= f.to);
-    default: return true;
+    case 'today':
+      return b.check_in === today;
+    case 'week':
+      return b.check_in >= today && b.check_in <= addDays(today, 7);
+    case 'month':
+      return b.check_in >= today && b.check_in <= addDays(today, 30);
+    case 'inHouse':
+      return b.check_in <= today && b.check_out > today;
+    case 'upcoming':
+      return b.check_in >= today;
+    case 'past':
+      return b.check_out < today;
+    case 'custom':
+      return (!f.from || b.check_in >= f.from) && (!f.to || b.check_in <= f.to);
+    default:
+      return true;
   }
 }
 
@@ -175,9 +214,12 @@ function matches(b: DeskBooking, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
   const digits = q.replace(/\D/g, '');
-  return [b.ref, b.invoice_no, guestName(b), b.guest_email, b.tran_ref, b.siteminder_res_id, b.approval_code, b.promo_code]
-    .some((value) => value?.toLowerCase().includes(q))
-    || (digits.length >= 4 && !!b.guest_phone?.replace(/\D/g, '').includes(digits));
+  return (
+    [b.ref, b.invoice_no, guestName(b), b.guest_email, b.tran_ref, b.siteminder_res_id, b.approval_code, b.promo_code].some((value) =>
+      value?.toLowerCase().includes(q),
+    ) ||
+    (digits.length >= 4 && !!b.guest_phone?.replace(/\D/g, '').includes(digits))
+  );
 }
 
 export function applyFilters(rows: DeskBooking[], f: Filters): DeskBooking[] {
@@ -190,12 +232,28 @@ export function applyFilters(rows: DeskBooking[], f: Filters): DeskBooking[] {
 
 // ── Formatting ──────────────────────────────────────────────────────────
 
-const stamp = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
-const stampShort = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
+const stamp = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Bangkok',
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+const stampShort = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Bangkok',
+  day: 'numeric',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
 /** "3 Nov 2026, 02:42" in resort time. */
 export const stampLabel = (iso: string) => stamp.format(new Date(iso));
 /** "3 Nov, 02:42" this year, with the year otherwise. */
-export const stampShortLabel = (iso: string) => (iso.slice(0, 4) === todayInBangkok().slice(0, 4) ? stampShort : stamp).format(new Date(iso));
+export const stampShortLabel = (iso: string) =>
+  (iso.slice(0, 4) === todayInBangkok().slice(0, 4) ? stampShort : stamp).format(new Date(iso));
 
 /** Everything SiteMinder asks for, in the order it's keyed in, for the clipboard. */
 export function siteMinderText(b: DeskBooking): string {
@@ -208,12 +266,17 @@ export function siteMinderText(b: DeskBooking): string {
     b.guest_country && `Country: ${countryName(b.guest_country)}`,
     `Stay: ${dayLabel(b.check_in)} → ${dayLabel(b.check_out)} (${nightCount(b)} nights)`,
     `Guests: ${adults} adults${children ? `, ${children} children` : ''}`,
-    ...b.items.map((item) => `Room: ${item.quantity} × ${item.roomTypeName}${item.siteMinderName ? ` (${item.siteMinderName})` : ''} — ${item.rateName} (${item.adults} adults${item.children ? `, ${item.children} children` : ''} each)${item.offer ? ` · offer “${item.offer.title}”${item.offer.percent ? ` −${item.offer.percent}%` : ''}${item.offer.perks.length ? `, perks: ${item.offer.perks.join(', ')}` : ''}` : ''}`),
+    ...b.items.map(
+      (item) =>
+        `Room: ${item.quantity} × ${item.roomTypeName}${item.siteMinderName ? ` (${item.siteMinderName})` : ''} — ${item.rateName} (${item.adults} adults${item.children ? `, ${item.children} children` : ''} each)${item.offer ? ` · offer “${item.offer.title}”${item.offer.percent ? ` −${item.offer.percent}%` : ''}${item.offer.perks.length ? `, perks: ${item.offer.perks.join(', ')}` : ''}` : ''}`,
+    ),
     isReversed(b)
       ? `Total: ${money(b.total_amount, b.currency)} · payment ${paymentBadge(b).label.toLowerCase()} — review the payment amount and reservation before confirming a balance`
       : `Total: ${money(b.total_amount, b.currency)} · paid ${money(b.paid_amount ?? b.deposit_amount, b.currency)} online${b.balance_amount > 0 ? ` · ${money(b.balance_amount, b.currency)} to pay at the hotel` : ''}`,
     b.tran_ref && `Payment reference: ${b.tran_ref} (invoice ${b.invoice_no})`,
     b.arrival_time && `Arrival time: ${b.arrival_time}`,
     b.special_requests && `Special requests: ${b.special_requests}`,
-  ].filter(Boolean).join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 }

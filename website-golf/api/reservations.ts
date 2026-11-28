@@ -40,7 +40,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 async function book(req: VercelRequest, res: VercelResponse) {
-  const fail = (code: number, error: string, kind?: ErrorResponse['code']) => res.status(code).json({ error, ...(kind && { code: kind }) } satisfies ErrorResponse);
+  const fail = (code: number, error: string, kind?: ErrorResponse['code']) =>
+    res.status(code).json({ error, ...(kind && { code: kind }) } satisfies ErrorResponse);
 
   const body = readJsonBody(req);
   if (body.hp) return fail(400, 'Please try again.');
@@ -56,15 +57,28 @@ async function book(req: VercelRequest, res: VercelResponse) {
   const date = text(body.date, 10);
   const time = text(body.time, 5);
   const players = Number(body.players);
-  if (!activity || !option || !isISODate(date) || !isBookableDay(date, site.club.booking.windowDays) || !/^\d\d:\d\d$/.test(time)
-    || !Number.isInteger(players) || players < activity.minPlayers || players > activity.maxPlayers) {
+  if (
+    !activity ||
+    !option ||
+    !isISODate(date) ||
+    !isBookableDay(date, site.club.booking.windowDays) ||
+    !/^\d\d:\d\d$/.test(time) ||
+    !Number.isInteger(players) ||
+    players < activity.minPlayers ||
+    players > activity.maxPlayers
+  ) {
     return fail(400, 'Something about this booking doesn’t add up. Please pick your time again.', 'invalid');
   }
 
   const g = (body.guest ?? {}) as Record<string, unknown>;
   const guest: Guest = {
-    firstName: text(g.firstName, 60), lastName: text(g.lastName, 60), email: text(g.email, 120).toLowerCase(), phone: text(g.phone, 30),
-    country: text(g.country, 2).toUpperCase(), handicap: activity.askHandicap ? text(g.handicap, 5) : '', notes: text(g.notes, 1000),
+    firstName: text(g.firstName, 60),
+    lastName: text(g.lastName, 60),
+    email: text(g.email, 120).toLowerCase(),
+    phone: text(g.phone, 30),
+    country: text(g.country, 2).toUpperCase(),
+    handicap: activity.askHandicap ? text(g.handicap, 5) : '',
+    notes: text(g.notes, 1000),
   };
   if (!guest.firstName || !guest.lastName || !EMAIL.test(guest.email) || !PHONE.test(guest.phone) || !/^[A-Z]{2}$/.test(guest.country)) {
     return fail(400, 'Please check your name, email, phone and country.', 'invalid');
@@ -95,25 +109,49 @@ async function book(req: VercelRequest, res: VercelResponse) {
     const total = totalOf(lines);
     const deposit = depositFor(activity, players, total);
     const needsPayment = deposit > 0;
-    if (needsPayment && !paymentConfigured()) return fail(503, 'Online payment isn’t switched on yet — please WhatsApp us and we’ll book you in.', 'unavailable');
+    if (needsPayment && !paymentConfigured())
+      return fail(503, 'Online payment isn’t switched on yet — please WhatsApp us and we’ll book you in.', 'unavailable');
 
     const ref = await rest<string>('/rpc/golf_book', {
       method: 'POST',
       body: {
         p_booking: {
-          activity: activity.id, option: option.id, play_date: date, start_time: time, minutes: option.minutes, players, rentals,
-          transfer, pickup_from: transfer || privateTransfer ? pickupFrom : '', experience, first_name: guest.firstName, last_name: guest.lastName,
-          email: guest.email, phone: guest.phone, country: guest.country, handicap: guest.handicap, notes: guest.notes, lines, total, source: 'online',
+          activity: activity.id,
+          option: option.id,
+          play_date: date,
+          start_time: time,
+          minutes: option.minutes,
+          players,
+          rentals,
+          transfer,
+          pickup_from: transfer || privateTransfer ? pickupFrom : '',
+          experience,
+          first_name: guest.firstName,
+          last_name: guest.lastName,
+          email: guest.email,
+          phone: guest.phone,
+          country: guest.country,
+          handicap: guest.handicap,
+          notes: guest.notes,
+          lines,
+          total,
+          source: 'online',
           ...(needsPayment && { status: 'pending', expires_at: new Date(Date.now() + HOLD_MINUTES * 60_000).toISOString(), deposit }),
         },
-        p_capacity: activity.capacity, p_units: activity.units, p_private: activity.privateGroup, p_force: false,
+        p_capacity: activity.capacity,
+        p_units: activity.units,
+        p_private: activity.privateGroup,
+        p_force: false,
       },
     });
 
     const origin = siteUrl(req);
     const key = newAccessKey();
     const invoiceNo = invoiceNoFor(ref);
-    const [booking] = await updateBookings(`ref=eq.${ref}`, { access_key_hash: sha256Hex(key), ...(needsPayment && { invoice_no: invoiceNo, test_payment: isTestMode() }) });
+    const [booking] = await updateBookings(`ref=eq.${ref}`, {
+      access_key_hash: sha256Hex(key),
+      ...(needsPayment && { invoice_no: invoiceNo, test_payment: isTestMode() }),
+    });
     console.info('Golf booking saved', ref, activity.id, date, time, players, needsPayment ? 'awaiting payment' : 'nothing to pay');
 
     if (!needsPayment) {
@@ -139,7 +177,8 @@ async function book(req: VercelRequest, res: VercelResponse) {
       return fail(502, 'Our payment provider isn’t responding — please try again in a few minutes.', 'unavailable');
     }
   } catch (error) {
-    if (error instanceof DbError && error.message.includes('taken')) return fail(409, 'Sorry — that time was just taken. Please pick another.', 'taken');
+    if (error instanceof DbError && error.message.includes('taken'))
+      return fail(409, 'Sorry — that time was just taken. Please pick another.', 'taken');
     console.error('Golf booking failed', error);
     return fail(500, 'We couldn’t save your booking just now. Please try again, or WhatsApp us.');
   }
@@ -154,8 +193,16 @@ async function status(req: VercelRequest, res: VercelResponse) {
     let booking = await getBooking(`ref=eq.${ref}`);
     if (!booking?.access_key_hash || !sameHash(sha256Hex(key), booking.access_key_hash)) return notFound();
     if (booking.status === 'pending' && booking.invoice_no) {
-      const [won] = await updateBookings(`id=eq.${booking.id}&status=eq.pending&or=(last_inquiry_at.is.null,last_inquiry_at.lt.${new Date(Date.now() - INQUIRY_EVERY_MS).toISOString()})`, { last_inquiry_at: new Date().toISOString() });
-      if (won) booking = (await confirmBookingPayment(booking.invoice_no, 'status').catch((error) => { console.error('Booking status: inquiry failed', ref, error); return null; })) ?? booking;
+      const [won] = await updateBookings(
+        `id=eq.${booking.id}&status=eq.pending&or=(last_inquiry_at.is.null,last_inquiry_at.lt.${new Date(Date.now() - INQUIRY_EVERY_MS).toISOString()})`,
+        { last_inquiry_at: new Date().toISOString() },
+      );
+      if (won)
+        booking =
+          (await confirmBookingPayment(booking.invoice_no, 'status').catch((error) => {
+            console.error('Booking status: inquiry failed', ref, error);
+            return null;
+          })) ?? booking;
     }
     return res.status(200).json(viewOf(booking, await loadSite()));
   } catch (error) {

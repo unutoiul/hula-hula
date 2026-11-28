@@ -14,7 +14,14 @@ import { addDays, krabiNow } from '../src/booking/dates.ts';
 
 const REF = invoiceNoFor('HE7K3M9Q');
 const realFetch = globalThis.fetch;
-const ENV = { PAYSO_API_KEY: 'the-api-key', PAYSO_SECRET_KEY: 'the-secret', PAYSO_MERCHANT_ID: '12345678', PAYSO_TERMINAL_ID: 'TID00001', SUPABASE_URL: 'https://db.test', SUPABASE_SERVICE_ROLE_KEY: 'sb_secret_x' };
+const ENV = {
+  PAYSO_API_KEY: 'the-api-key',
+  PAYSO_SECRET_KEY: 'the-secret',
+  PAYSO_MERCHANT_ID: '12345678',
+  PAYSO_TERMINAL_ID: 'TID00001',
+  SUPABASE_URL: 'https://db.test',
+  SUPABASE_SERVICE_ROLE_KEY: 'sb_secret_x',
+};
 let sent: { url: string; init?: RequestInit }[];
 
 const answerWith = (body: string, status = 200) => {
@@ -23,7 +30,16 @@ const answerWith = (body: string, status = 200) => {
     return new Response(body, { status });
   }) as typeof fetch;
 };
-const paidRow = (overrides = {}) => ({ ReferenceNo: REF, OrderNo: '1', MerchantID: '12345678', Total: 3000.0, CardType: 'V', Status: 'CP', StatusName: 'COMPLETE', ...overrides });
+const paidRow = (overrides = {}) => ({
+  ReferenceNo: REF,
+  OrderNo: '1',
+  MerchantID: '12345678',
+  Total: 3000.0,
+  CardType: 'V',
+  Status: 'CP',
+  StatusName: 'COMPLETE',
+  ...overrides,
+});
 
 beforeEach(() => {
   sent = [];
@@ -31,7 +47,9 @@ beforeEach(() => {
   delete process.env.PAYSO_DEMO;
   delete process.env.RESEND_API_KEY;
 });
-afterEach(() => { globalThis.fetch = realFetch; });
+afterEach(() => {
+  globalThis.fetch = realFetch;
+});
 
 describe('payment reference', () => {
   it('fits Payso: 12 digits, no leading zero, the same for the same order', () => {
@@ -55,20 +73,46 @@ describe('settings', () => {
 });
 
 describe('createPayment', () => {
-  const request = { referenceNo: REF, description: 'Pro <Day> & "dinner"', amount: 3000, email: 'bo@example.com', returnUrl: 'https://site/return', postbackUrl: 'https://site/postback?refno=1' };
-  const ok = JSON.stringify({ status: { statusCode: '2A002', message: 'request successful.' }, transactionId: 'T1', redirectUrl: 'https://apis.paysolutions.asia/landing/view/redirect/T1' });
+  const request = {
+    referenceNo: REF,
+    description: 'Pro <Day> & "dinner"',
+    amount: 3000,
+    email: 'bo@example.com',
+    returnUrl: 'https://site/return',
+    postbackUrl: 'https://site/postback?refno=1',
+  };
+  const ok = JSON.stringify({
+    status: { statusCode: '2A002', message: 'request successful.' },
+    transactionId: 'T1',
+    redirectUrl: 'https://apis.paysolutions.asia/landing/view/redirect/T1',
+  });
 
   it('sends what Payso asks for and returns its payment page', async () => {
     answerWith(ok);
-    assert.deepEqual(await createPayment(request), { redirectUrl: 'https://apis.paysolutions.asia/landing/view/redirect/T1', transactionId: 'T1' });
+    assert.deepEqual(await createPayment(request), {
+      redirectUrl: 'https://apis.paysolutions.asia/landing/view/redirect/T1',
+      transactionId: 'T1',
+    });
     const [{ url, init }] = sent;
     assert.equal(url, 'https://apis.paysolutions.asia/payment/gateway/v2/ui-payments');
     const headers = new Headers(init!.headers);
     assert.equal(headers.get('apiKey'), 'the-api-key');
     assert.equal(headers.get('secretKey'), 'the-secret');
     assert.deepEqual(JSON.parse(String(init!.body)), {
-      merchantId: '12345678', terminalId: 'TID00001', keyVersion: 1, customerEmail: 'bo@example.com', referenceNo: REF, description: 'Pro Day dinner',
-      amount: 3000, paymentChannel: 'ALL', paymentGateway: '', installmentTerm: '', currencyCode: '00', lang: 'EN', returnUrl: 'https://site/return', postbackUrl: 'https://site/postback?refno=1',
+      merchantId: '12345678',
+      terminalId: 'TID00001',
+      keyVersion: 1,
+      customerEmail: 'bo@example.com',
+      referenceNo: REF,
+      description: 'Pro Day dinner',
+      amount: 3000,
+      paymentChannel: 'ALL',
+      paymentGateway: '',
+      installmentTerm: '',
+      currencyCode: '00',
+      lang: 'EN',
+      returnUrl: 'https://site/return',
+      postbackUrl: 'https://site/postback?refno=1',
     });
   });
 
@@ -130,7 +174,17 @@ describe('paymentInquiry', () => {
 });
 
 describe('postback', () => {
-  const pendingOrder = { id: 'o1', ref: 'HE7K3M9Q', invoice_no: REF, status: 'pending', flags: [], total: 3000, expires_at: new Date(Date.now() + 600_000).toISOString(), resp_code: null, emailed_at: null };
+  const pendingOrder = {
+    id: 'o1',
+    ref: 'HE7K3M9Q',
+    invoice_no: REF,
+    status: 'pending',
+    flags: [],
+    total: 3000,
+    expires_at: new Date(Date.now() + 600_000).toISOString(),
+    resp_code: null,
+    emailed_at: null,
+  };
   let patches: Record<string, unknown>[];
 
   // Supabase holds one pending order; Payso answers the inquiry with `inquiry`.
@@ -149,7 +203,21 @@ describe('postback', () => {
   };
   const deliver = async (request: Partial<VercelRequest>) => {
     const result = { status: 0 };
-    const res = { setHeader() { return res; }, status(code: number) { result.status = code; return res; }, json() { return res; }, end() { return res; } };
+    const res = {
+      setHeader() {
+        return res;
+      },
+      status(code: number) {
+        result.status = code;
+        return res;
+      },
+      json() {
+        return res;
+      },
+      end() {
+        return res;
+      },
+    };
     await postback({ method: 'GET', query: {}, headers: {}, ...request } as VercelRequest, res as unknown as VercelResponse);
     return result.status;
   };
@@ -184,15 +252,21 @@ describe('postback', () => {
 
   it('turns away anything that isn’t one of our references, without touching the database', async () => {
     world('');
-    for (const refno of ['', 'GEVHE7K3M9Q', '012345678901', `${REF}&status=eq.paid`]) assert.equal(await deliver({ query: { refno } }), 400);
+    for (const refno of ['', 'GEVHE7K3M9Q', '012345678901', `${REF}&status=eq.paid`])
+      assert.equal(await deliver({ query: { refno } }), 400);
     assert.deepEqual(sent, []);
   });
 
   it('asks Payso to retry when the inquiry can’t be made', async () => {
-    globalThis.fetch = (async (url: string) => (String(url).includes('orderdetailpost') ? new Response('oops', { status: 500 }) : Response.json([pendingOrder]))) as typeof fetch;
+    globalThis.fetch = (async (url: string) =>
+      String(url).includes('orderdetailpost') ? new Response('oops', { status: 500 }) : Response.json([pendingOrder])) as typeof fetch;
     const error = console.error;
     console.error = () => {};
-    try { assert.equal(await deliver({ query: { refno: REF } }), 500); } finally { console.error = error; }
+    try {
+      assert.equal(await deliver({ query: { refno: REF } }), 500);
+    } finally {
+      console.error = error;
+    }
   });
 });
 
@@ -205,22 +279,77 @@ describe('paying for a tee time', () => {
   const BOOKING = 'HHG-ABC234';
   const INVOICE = invoiceNoFor(BOOKING);
   const pending = {
-    id: 'b1', ref: BOOKING, invoice_no: INVOICE, access_key_hash: sha256Hex(key), activity: 'golf', option: option.id, play_date: day, start_time: `${time}:00`, minutes: option.minutes, players: 2,
-    rentals: {}, transfer: null, pickup_from: '', experience: '', first_name: 'Bo', last_name: 'Chan', email: 'bo@example.com', phone: '+66 89 000 1111', country: 'GB', handicap: '', notes: '',
-    lines: [], total: 3000, deposit: 3000, paid_amount: null, balance_paid_at: null, status: 'pending', test_payment: false, flags: [], expires_at: new Date(Date.now() + 600_000).toISOString(), paid_at: null, resp_code: null, emailed_at: null, emails_claimed_at: null,
+    id: 'b1',
+    ref: BOOKING,
+    invoice_no: INVOICE,
+    access_key_hash: sha256Hex(key),
+    activity: 'golf',
+    option: option.id,
+    play_date: day,
+    start_time: `${time}:00`,
+    minutes: option.minutes,
+    players: 2,
+    rentals: {},
+    transfer: null,
+    pickup_from: '',
+    experience: '',
+    first_name: 'Bo',
+    last_name: 'Chan',
+    email: 'bo@example.com',
+    phone: '+66 89 000 1111',
+    country: 'GB',
+    handicap: '',
+    notes: '',
+    lines: [],
+    total: 3000,
+    deposit: 3000,
+    paid_amount: null,
+    balance_paid_at: null,
+    status: 'pending',
+    test_payment: false,
+    flags: [],
+    expires_at: new Date(Date.now() + 600_000).toISOString(),
+    paid_at: null,
+    resp_code: null,
+    emailed_at: null,
+    emails_claimed_at: null,
   };
-  const paysoOk = JSON.stringify({ status: { statusCode: '2A002', message: 'ok' }, transactionId: 'T9', redirectUrl: 'https://pay.test/T9' });
+  const paysoOk = JSON.stringify({
+    status: { statusCode: '2A002', message: 'ok' },
+    transactionId: 'T9',
+    redirectUrl: 'https://pay.test/T9',
+  });
   let rpc: { p_booking: Record<string, unknown> } | null;
   let patches: Record<string, unknown>[];
   let paysoBody: Record<string, unknown> | null;
 
-  const world = ({ payso = paysoOk, inquiry = '', row = pending, activities = DEFAULT_SITE.activities, settings = [] }: { payso?: string; inquiry?: string; row?: typeof pending; activities?: typeof DEFAULT_SITE.activities; settings?: unknown[] } = {}) => {
-    rpc = null; patches = []; paysoBody = null;
+  const world = ({
+    payso = paysoOk,
+    inquiry = '',
+    row = pending,
+    activities = DEFAULT_SITE.activities,
+    settings = [],
+  }: {
+    payso?: string;
+    inquiry?: string;
+    row?: typeof pending;
+    activities?: typeof DEFAULT_SITE.activities;
+    settings?: unknown[];
+  } = {}) => {
+    rpc = null;
+    patches = [];
+    paysoBody = null;
     globalThis.fetch = (async (input: string, init?: RequestInit) => {
       const url = String(input);
       sent.push({ url, init });
-      if (url.includes('/rpc/golf_book')) { rpc = JSON.parse(String(init!.body)); return Response.json(BOOKING); }
-      if (url.includes('ui-payments')) { paysoBody = JSON.parse(String(init!.body)); return new Response(payso); }
+      if (url.includes('/rpc/golf_book')) {
+        rpc = JSON.parse(String(init!.body));
+        return Response.json(BOOKING);
+      }
+      if (url.includes('ui-payments')) {
+        paysoBody = JSON.parse(String(init!.body));
+        return new Response(payso);
+      }
       if (url.includes('orderdetailpost')) return new Response(inquiry);
       if (url.includes('/golf_activities')) return Response.json(activities.map((a) => ({ id: a.id, data: a })));
       if (url.includes('/golf_settings')) return Response.json(settings);
@@ -236,17 +365,63 @@ describe('paying for a tee time', () => {
   const call = async (handler: (req: VercelRequest, res: VercelResponse) => unknown, request: Partial<VercelRequest>) => {
     const result = { status: 0, body: {} as Record<string, unknown>, location: '' };
     const res = {
-      setHeader(name: string, value: string) { if (name === 'Location') result.location = value; return res; },
-      status(code: number) { result.status = code; return res; }, json(body: Record<string, unknown>) { result.body = body; return res; }, end() { return res; },
+      setHeader(name: string, value: string) {
+        if (name === 'Location') result.location = value;
+        return res;
+      },
+      status(code: number) {
+        result.status = code;
+        return res;
+      },
+      json(body: Record<string, unknown>) {
+        result.body = body;
+        return res;
+      },
+      end() {
+        return res;
+      },
     };
-    await handler({ method: 'GET', query: {}, headers: { host: 'golf.test' }, ...request } as VercelRequest, res as unknown as VercelResponse);
+    await handler(
+      { method: 'GET', query: {}, headers: { host: 'golf.test' }, ...request } as VercelRequest,
+      res as unknown as VercelResponse,
+    );
     return result;
   };
-  const book = (rentals: Record<string, number> = {}) => call(reservations, { method: 'POST', body: {
-    activity: 'golf', option: option.id, date: day, time, players: 2, rentals, transfer: null, pickupFrom: '', experience: '', hp: '', elapsedMs: 5000,
-    guest: { firstName: 'Bo', lastName: 'Chan', email: 'bo@example.com', phone: '+66 89 000 1111', country: 'GB', handicap: '', notes: '' },
-  } });
-  const quietly = async <T,>(work: () => Promise<T>) => { const error = console.error; console.error = () => {}; try { return await work(); } finally { console.error = error; } };
+  const book = (rentals: Record<string, number> = {}) =>
+    call(reservations, {
+      method: 'POST',
+      body: {
+        activity: 'golf',
+        option: option.id,
+        date: day,
+        time,
+        players: 2,
+        rentals,
+        transfer: null,
+        pickupFrom: '',
+        experience: '',
+        hp: '',
+        elapsedMs: 5000,
+        guest: {
+          firstName: 'Bo',
+          lastName: 'Chan',
+          email: 'bo@example.com',
+          phone: '+66 89 000 1111',
+          country: 'GB',
+          handicap: '',
+          notes: '',
+        },
+      },
+    });
+  const quietly = async <T>(work: () => Promise<T>) => {
+    const error = console.error;
+    console.error = () => {};
+    try {
+      return await work();
+    } finally {
+      console.error = error;
+    }
+  };
 
   it('holds the time and sends the guest to Payso for the server’s own price', async () => {
     world();
@@ -269,7 +444,17 @@ describe('paying for a tee time', () => {
   });
 
   it('charges only for rentals offered on the sport being booked', async () => {
-    world({ settings: [{ key: 'rentals', value: [{ id: 'p-a', label: 'Set A', price: 500, group: 'Premium', activities: ['golf'] }, { id: 'paddle', label: 'Paddle', price: 100, group: 'Gear', activities: ['pickleball'] }] }] });
+    world({
+      settings: [
+        {
+          key: 'rentals',
+          value: [
+            { id: 'p-a', label: 'Set A', price: 500, group: 'Premium', activities: ['golf'] },
+            { id: 'paddle', label: 'Paddle', price: 100, group: 'Gear', activities: ['pickleball'] },
+          ],
+        },
+      ],
+    });
     const unavailable = await book({ 'p-a': 1, paddle: 1 });
     assert.equal(unavailable.status, 400);
     assert.equal(rpc, null);
@@ -280,10 +465,17 @@ describe('paying for a tee time', () => {
   });
 
   it('charges independent equipment types together using their database allowances', async () => {
-    world({ settings: [{ key: 'rentals', value: [
-      { id: 'racket', label: 'Racket', price: 100, unit: 'racket', activities: ['golf'] },
-      { id: 'ball', label: 'Ball', price: 20, unit: 'ball', maxPerPlayer: 3, activities: ['golf'] },
-    ] }] });
+    world({
+      settings: [
+        {
+          key: 'rentals',
+          value: [
+            { id: 'racket', label: 'Racket', price: 100, unit: 'racket', activities: ['golf'] },
+            { id: 'ball', label: 'Ball', price: 20, unit: 'ball', maxPerPlayer: 3, activities: ['golf'] },
+          ],
+        },
+      ],
+    });
     const result = await book({ racket: 2, ball: 6 });
     assert.equal(result.status, 200);
     assert.equal(rpc!.p_booking.total, option.price * 2 + 200 + 120);
@@ -315,10 +507,31 @@ describe('paying for a tee time', () => {
 
   it('saves a private transfer as a pick-up address with no shuttle time', async () => {
     world();
-    const request = (extra: Record<string, unknown>) => call(reservations, { method: 'POST', body: {
-      activity: 'golf', option: option.id, date: day, time, players: 2, rentals: {}, experience: '', hp: '', elapsedMs: 5000,
-      guest: { firstName: 'Bo', lastName: 'Chan', email: 'bo@example.com', phone: '+66 89 000 1111', country: 'GB', handicap: '', notes: '' }, ...extra,
-    } });
+    const request = (extra: Record<string, unknown>) =>
+      call(reservations, {
+        method: 'POST',
+        body: {
+          activity: 'golf',
+          option: option.id,
+          date: day,
+          time,
+          players: 2,
+          rentals: {},
+          experience: '',
+          hp: '',
+          elapsedMs: 5000,
+          guest: {
+            firstName: 'Bo',
+            lastName: 'Chan',
+            email: 'bo@example.com',
+            phone: '+66 89 000 1111',
+            country: 'GB',
+            handicap: '',
+            notes: '',
+          },
+          ...extra,
+        },
+      });
     assert.equal((await request({ privateTransfer: true, transfer: null, pickupFrom: '' })).status, 400);
     assert.equal((await request({ privateTransfer: true, transfer: null, pickupFrom: 'Railay Beach' })).status, 200);
     assert.equal(rpc!.p_booking.transfer, null);
@@ -333,7 +546,10 @@ describe('paying for a tee time', () => {
   });
 
   it('books something free straight away, with no payment page', async () => {
-    world({ row: { ...pending, status: 'booked', total: 0 }, activities: DEFAULT_SITE.activities.map((a) => (a.id === 'golf' ? { ...a, options: a.options.map((o) => ({ ...o, price: 0 })) } : a)) });
+    world({
+      row: { ...pending, status: 'booked', total: 0 },
+      activities: DEFAULT_SITE.activities.map((a) => (a.id === 'golf' ? { ...a, options: a.options.map((o) => ({ ...o, price: 0 })) } : a)),
+    });
     const { status, body } = await book();
     assert.equal(status, 200);
     assert.equal(body.webPaymentUrl, null);
@@ -369,7 +585,10 @@ describe('paying for a tee time', () => {
   });
 
   it('sends the guest back to the right confirmation page', async () => {
-    assert.equal((await call(paymentReturn, { query: { booking: BOOKING, key } })).location, `/book/confirmation?ref=${BOOKING}&key=${key}`);
+    assert.equal(
+      (await call(paymentReturn, { query: { booking: BOOKING, key } })).location,
+      `/book/confirmation?ref=${BOOKING}&key=${key}`,
+    );
     assert.equal((await call(paymentReturn, { query: { ref: 'HE7K3M9Q', key } })).location, `/events/order?ref=HE7K3M9Q&key=${key}`);
   });
 });

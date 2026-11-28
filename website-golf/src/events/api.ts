@@ -8,7 +8,13 @@ import { watchContent } from '../data/contentSync';
 // following an order once the guest is back (/api/event-order).
 
 export class EventApiError extends Error {
-  constructor(message: string, readonly code?: ErrorResponse['code'], readonly status?: number) { super(message); }
+  constructor(
+    message: string,
+    readonly code?: ErrorResponse['code'],
+    readonly status?: number,
+  ) {
+    super(message);
+  }
 }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -18,14 +24,23 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new EventApiError('We couldn’t reach the website. Check your connection and try again.');
   }
-  const body = await response.json().catch(() => null) as (T & Partial<ErrorResponse>) | null;
-  if (!response.ok || !body) throw new EventApiError(body?.error ?? 'Something went wrong on our side. Please try again, or WhatsApp us.', body?.code, response.status);
+  const body = (await response.json().catch(() => null)) as (T & Partial<ErrorResponse>) | null;
+  if (!response.ok || !body)
+    throw new EventApiError(
+      body?.error ?? 'Something went wrong on our side. Please try again, or WhatsApp us.',
+      body?.code,
+      response.status,
+    );
   return body;
 }
 
 export const fetchEvents = async () => (await call<EventsResponse>('/api/events')).events;
-export const fetchEvent = async (slug: string) => { const r = await call<EventsResponse>(`/api/events?slug=${encodeURIComponent(slug)}`); return { event: r.events[0], testPayments: r.testPayments }; };
-export const startOrder = (request: EventOrderRequest) => call<EventOrderStarted>('/api/event-order', { method: 'POST', body: JSON.stringify(request) });
+export const fetchEvent = async (slug: string) => {
+  const r = await call<EventsResponse>(`/api/events?slug=${encodeURIComponent(slug)}`);
+  return { event: r.events[0], testPayments: r.testPayments };
+};
+export const startOrder = (request: EventOrderRequest) =>
+  call<EventOrderStarted>('/api/event-order', { method: 'POST', body: JSON.stringify(request) });
 export const fetchOrder = (ref: string, key: string) => call<EventOrderView>(`/api/event-order?${new URLSearchParams({ ref, key })}`);
 
 /** Upcoming published events for the homepage; `loaded` once the answer is in (an empty list if it fails). */
@@ -39,10 +54,13 @@ export function useUpcomingEvents(enabled = true): { events: PublicEvent[]; load
         const events = await fetchEvents();
         if (alive) setState({ events, loaded: true });
       } catch {
-        if (alive) setState(previous => ({ ...previous, loaded: true }));
+        if (alive) setState((previous) => ({ ...previous, loaded: true }));
       }
     });
-    return () => { alive = false; stop(); };
+    return () => {
+      alive = false;
+      stop();
+    };
   }, [enabled]);
   return state;
 }

@@ -31,37 +31,74 @@ export default function BookingApp() {
   useEffect(() => {
     const previous = document.title;
     document.title = 'Book a tee time — Hula Hula Golf Club';
-    return () => { document.title = previous; };
+    return () => {
+      document.title = previous;
+    };
   }, []);
 
   // Prices and times must be the live ones before anything can be held or priced.
   const { ready } = useSiteData();
-  if (!ready) return <PublicPageLayout><Box sx={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}><CircularProgress aria-label="Loading" /></Box></PublicPageLayout>;
-  return <BookingFlowProvider initial={initial}><BookingShell /></BookingFlowProvider>;
+  if (!ready)
+    return (
+      <PublicPageLayout>
+        <Box sx={{ minHeight: '60vh', display: 'grid', placeItems: 'center' }}>
+          <CircularProgress aria-label="Loading" />
+        </Box>
+      </PublicPageLayout>
+    );
+  return (
+    <BookingFlowProvider initial={initial}>
+      <BookingShell />
+    </BookingFlowProvider>
+  );
 }
 
 function BookingShell() {
   const { pathname, query } = useLocation();
   const { time } = useBookingFlow();
-  const step = Math.max(0, STEPS.findIndex((s) => s.path === pathname));
+  const step = Math.max(
+    0,
+    STEPS.findIndex((s) => s.path === pathname),
+  );
 
   // Steps can't be skipped: no time held → back to the tee sheet; no booking in the link → no confirmation.
-  const blockedTo = (pathname === '/book/extras' || pathname === '/book/details') && !time ? '/book'
-    : pathname === '/book/confirmation' && !query.get('ref') ? '/book'
-    : null;
-  useEffect(() => { if (blockedTo) navigate(blockedTo, { replace: true }); }, [blockedTo]);
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
+  const blockedTo =
+    (pathname === '/book/extras' || pathname === '/book/details') && !time
+      ? '/book'
+      : pathname === '/book/confirmation' && !query.get('ref')
+        ? '/book'
+        : null;
+  useEffect(() => {
+    if (blockedTo) navigate(blockedTo, { replace: true });
+  }, [blockedTo]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pathname]);
 
-  return <PublicPageLayout mobileActionSpace={step === 0 && !!time}>
-    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 6, md: 8 } }}>
-      <Stepper activeStep={pathname === '/book/confirmation' ? STEPS.length : step} alternativeLabel sx={{ my: { xs: 3, md: 4 }, '& .MuiStepLabel-label': { fontSize: { xs: 11, sm: 13 }, mt: '6px !important' } }}>
-        {STEPS.map((s) => <Step key={s.path}><StepLabel>{s.label}</StepLabel></Step>)}
-      </Stepper>
-      {blockedTo ? null
-        : pathname === '/book/extras' ? <ExtrasStep />
-        : pathname === '/book/details' ? <DetailsStep />
-        : pathname === '/book/confirmation' ? <ConfirmationStep />
-        : <TeeTimeStep />}
-    </Container>
-  </PublicPageLayout>;
+  return (
+    <PublicPageLayout mobileActionSpace={step === 0 && !!time}>
+      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 6, md: 8 } }}>
+        <Stepper
+          activeStep={pathname === '/book/confirmation' ? STEPS.length : step}
+          alternativeLabel
+          sx={{ my: { xs: 3, md: 4 }, '& .MuiStepLabel-label': { fontSize: { xs: 11, sm: 13 }, mt: '6px !important' } }}
+        >
+          {STEPS.map((s) => (
+            <Step key={s.path}>
+              <StepLabel>{s.label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+        {blockedTo ? null : pathname === '/book/extras' ? (
+          <ExtrasStep />
+        ) : pathname === '/book/details' ? (
+          <DetailsStep />
+        ) : pathname === '/book/confirmation' ? (
+          <ConfirmationStep />
+        ) : (
+          <TeeTimeStep />
+        )}
+      </Container>
+    </PublicPageLayout>
+  );
 }

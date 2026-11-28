@@ -79,7 +79,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   try {
-    const upstream = await sendTemplate({ from, to: [to], bcc, replyTo: email, subject: `New enquiry: ${topic} — ${name}`, template: TEMPLATE, variables });
+    const upstream = await sendTemplate({
+      from,
+      to: [to],
+      bcc,
+      replyTo: email,
+      subject: `New enquiry: ${topic} — ${name}`,
+      template: TEMPLATE,
+      variables,
+    });
     if (!upstream.ok) {
       console.error('Resend refused the enquiry', upstream.status, upstream.body);
       return res.status(502).json({ error: 'The email service refused the message' });
@@ -94,7 +102,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // fails the request — the enquiry itself is already delivered.
   try {
     const confirmation = await sendTemplate({
-      from, to: [email], replyTo: to, subject: 'We’ve got your message — Royal Pineapple Hotel', template: CONFIRMATION_TEMPLATE,
+      from,
+      to: [email],
+      replyTo: to,
+      subject: 'We’ve got your message — Royal Pineapple Hotel',
+      template: CONFIRMATION_TEMPLATE,
       variables: {
         GUEST_FIRST_NAME: escape(name.split(/\s+/)[0]),
         TOPIC: escape(topic),

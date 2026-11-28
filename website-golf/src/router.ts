@@ -22,7 +22,8 @@ export function navigate(to: string, { replace = false }: { replace?: boolean } 
   if (to === `${window.location.pathname}${window.location.search}${window.location.hash}`) return;
   window.history[replace ? 'replaceState' : 'pushState'](null, '', to);
   window.dispatchEvent(new Event(NAVIGATE_EVENT));
-  if (window.location.hash) requestAnimationFrame(() => document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView());
+  if (window.location.hash)
+    requestAnimationFrame(() => document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView());
 }
 
 /** The current path and query, re-rendering on every navigation. */
@@ -36,7 +37,14 @@ export function useLocation(): { pathname: string; query: URLSearchParams } {
 
 /** onClick for an <a href> that should navigate in-app — but still lets ctrl/⌘-click open a new tab. */
 export function linkClick(to: string) {
-  return (event: { preventDefault: () => void; button: number; metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey: boolean }) => {
+  return (event: {
+    preventDefault: () => void;
+    button: number;
+    metaKey: boolean;
+    ctrlKey: boolean;
+    shiftKey: boolean;
+    altKey: boolean;
+  }) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     navigate(to);

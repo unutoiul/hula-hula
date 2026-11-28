@@ -18,16 +18,25 @@ export type MarkSize = keyof typeof MARK_SIZES;
 // transitions. `white` is for pink and plum backgrounds. Just the artwork: the
 // header wraps it in its home link (HomeLogo), everywhere else in ClubMark's.
 export function ClubMarkArt({ size = 'default', white = false }: { size?: MarkSize; white?: boolean }) {
-  return <Box component="img" src={white ? '/logo/royal-pineapple-white.svg' : '/logo/royal-pineapple.svg'} alt="" sx={{
-    height: MARK_SIZES[size],
-    width: 'auto',
-    aspectRatio: '863 / 733',
-    transition: 'height .35s ease',
-  }} />;
+  return (
+    <Box
+      component="img"
+      src={white ? '/logo/royal-pineapple-white.svg' : '/logo/royal-pineapple.svg'}
+      alt=""
+      sx={{
+        height: MARK_SIZES[size],
+        width: 'auto',
+        aspectRatio: '863 / 733',
+        transition: 'height .35s ease',
+      }}
+    />
+  );
 }
 
 export function ClubMark({ size = 'default', white = false }: { size?: MarkSize; white?: boolean }) {
-  return <Link href="/" onClick={linkClick('/')} aria-label="Royal Pineapple Hotel home" sx={{ display: 'inline-flex', lineHeight: 0 }}>
-    <ClubMarkArt size={size} white={white} />
-  </Link>;
+  return (
+    <Link href="/" onClick={linkClick('/')} aria-label="Royal Pineapple Hotel home" sx={{ display: 'inline-flex', lineHeight: 0 }}>
+      <ClubMarkArt size={size} white={white} />
+    </Link>
+  );
 }

@@ -23,6 +23,7 @@ export const newAccessKey = () => randomBytes(32).toString('base64url');
 export const sha256Hex = (value: string) => createHash('sha256').update(value).digest('hex');
 
 export function sameHash(a: string, b: string) {
-  const left = Buffer.from(a), right = Buffer.from(b);
+  const left = Buffer.from(a),
+    right = Buffer.from(b);
   return left.length === right.length && timingSafeEqual(left, right);
 }

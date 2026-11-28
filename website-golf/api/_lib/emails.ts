@@ -22,14 +22,26 @@ export const TEMPLATES = {
   eventNotification: 'golf-event-notification',
 } as const;
 
-export interface TemplateMessage { subject: string; template: string; variables: Record<string, string | undefined> }
+export interface TemplateMessage {
+  subject: string;
+  template: string;
+  variables: Record<string, string | undefined>;
+}
 
-const CELL = 'padding:12px 0;border-top:1px solid #d6e1ce;font:400 14px/1.6 \'Trebuchet MS\', \'Segoe UI\', Arial, sans-serif;color:#173c2c;vertical-align:top;';
+const CELL =
+  "padding:12px 0;border-top:1px solid #d6e1ce;font:400 14px/1.6 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;color:#173c2c;vertical-align:top;";
 
 // The price lines as table rows: "Golf · 9 holes / 2 players × ฿1,600 ……… ฿3,200".
-const linesHtml = (lines: PriceLine[]) => clip(lines.map((line) =>
-  `<tr><td style="${CELL}"><strong>${escape(line.label)}</strong>${line.detail ? `<br><span style="color:#4b6457;">${escape(line.detail)}</span>` : ''}</td>`
-  + `<td align="right" style="${CELL}white-space:nowrap;padding-left:12px;">${escape(money(line.amount))}</td></tr>`).join(''));
+const linesHtml = (lines: PriceLine[]) =>
+  clip(
+    lines
+      .map(
+        (line) =>
+          `<tr><td style="${CELL}"><strong>${escape(line.label)}</strong>${line.detail ? `<br><span style="color:#4b6457;">${escape(line.detail)}</span>` : ''}</td>` +
+          `<td align="right" style="${CELL}white-space:nowrap;padding-left:12px;">${escape(money(line.amount))}</td></tr>`,
+      )
+      .join(''),
+  );
 
 function clubDetails(site: SiteData, siteUrl: string) {
   const contact = contactLinks(site.club.contact);
@@ -43,8 +55,10 @@ const flagVars = (flags: string[]) => ({
 });
 
 const BOOKING_FLAG_TEXT: Record<string, string> = {
-  paid_after_expiry: 'Paid after the hold on this time ran out. Check the tee sheet isn’t overbooked; if it is, refund the guest in the Payso control panel and let them know.',
-  amount_mismatch: 'Payso reports a different amount from the one the guest was asked to pay. Check the payment in the Payso control panel.',
+  paid_after_expiry:
+    'Paid after the hold on this time ran out. Check the tee sheet isn’t overbooked; if it is, refund the guest in the Payso control panel and let them know.',
+  amount_mismatch:
+    'Payso reports a different amount from the one the guest was asked to pay. Check the payment in the Payso control panel.',
 };
 
 function bookingPaidLabel(r: Reservation, depositBreakdown: string) {
@@ -56,7 +70,9 @@ function bookingPaidLabel(r: Reservation, depositBreakdown: string) {
 /** How the guest is getting to the club, for the confirmation; undefined when they're making their own way. */
 function pickupLine(r: Reservation) {
   if (r.privateTransfer) return `Private transfer from ${r.pickupFrom} — we’ll confirm the price and pick-up time on WhatsApp.`;
-  return r.transfer ? `Free shuttle pick-up at ${timeLabel(r.transfer)} from ${r.pickupFrom} — we’ll confirm the spot on WhatsApp.` : undefined;
+  return r.transfer
+    ? `Free shuttle pick-up at ${timeLabel(r.transfer)} from ${r.pickupFrom} — we’ll confirm the spot on WhatsApp.`
+    : undefined;
 }
 
 function summary(r: Reservation, site: SiteData) {
@@ -64,27 +80,46 @@ function summary(r: Reservation, site: SiteData) {
   const people = plural(r.players, activity?.peopleNoun ?? 'player', activity?.peopleNoun === 'person' ? 'people' : 'players');
   const depositBreakdown = activity && r.balance > 0 ? depositDetail(activity, r.players, r.deposit) : '';
   return {
-    wear: activity?.wear ?? '', people, depositBreakdown, when: `${timeLabel(r.time)} · ${dayLabel(r.date)}`,
-    vars: { BOOKING_REF: escape(r.ref), TEE_TIME: timeLabel(r.time), TEE_DAY: dayLabel(r.date), ACTIVITY: escape(`${r.activityName} · ${r.optionLabel}`), GROUP: escape(`${people} · about ${durationLabel(r.minutes)}`), LINES_HTML: linesHtml(r.lines), TOTAL: escape(money(r.total)), PAID_LABEL: escape(bookingPaidLabel(r, depositBreakdown)), PAID_AMOUNT: escape(money(r.deposit)),
-      BALANCE: r.balance > 0 ? escape(money(r.balance)) : undefined, BALANCE_DISPLAY: r.balance > 0 ? 'table-cell' : undefined },
+    wear: activity?.wear ?? '',
+    people,
+    depositBreakdown,
+    when: `${timeLabel(r.time)} · ${dayLabel(r.date)}`,
+    vars: {
+      BOOKING_REF: escape(r.ref),
+      TEE_TIME: timeLabel(r.time),
+      TEE_DAY: dayLabel(r.date),
+      ACTIVITY: escape(`${r.activityName} · ${r.optionLabel}`),
+      GROUP: escape(`${people} · about ${durationLabel(r.minutes)}`),
+      LINES_HTML: linesHtml(r.lines),
+      TOTAL: escape(money(r.total)),
+      PAID_LABEL: escape(bookingPaidLabel(r, depositBreakdown)),
+      PAID_AMOUNT: escape(money(r.deposit)),
+      BALANCE: r.balance > 0 ? escape(money(r.balance)) : undefined,
+      BALANCE_DISPLAY: r.balance > 0 ? 'table-cell' : undefined,
+    },
   };
 }
 
 export function bookingConfirmation(r: Reservation, guest: Guest, siteUrl: string, site: SiteData): TemplateMessage {
   const { wear, when, vars, depositBreakdown } = summary(r, site);
   const { contact, vars: club } = clubDetails(site, siteUrl);
-  const rules = clubRules(wear, site.club, r.balance > 0 ? bookingDepositTerms(r.deposit, depositBreakdown) : '').filter((rule) => rule.text);
+  const rules = clubRules(wear, site.club, r.balance > 0 ? bookingDepositTerms(r.deposit, depositBreakdown) : '').filter(
+    (rule) => rule.text,
+  );
   const pickup = pickupLine(r);
   return {
     subject: `Booked: ${r.activityName} ${when} — ${r.ref}`,
     template: TEMPLATES.bookingConfirmation,
     variables: {
-      ...vars, ...club,
+      ...vars,
+      ...club,
       PREVIEW: escape(`You’re on the tee sheet — ${when} · booking ${r.ref}`),
       GUEST_FIRST_NAME: guest.firstName ? escape(guest.firstName) : undefined,
       PICKUP_LINE: pickup ? escape(pickup) : undefined,
       PICKUP_DISPLAY: pickup ? 'block' : undefined,
-      RULES_HTML: clip(rules.map((rule) => `<strong style="color:#173c2c;">${escape(rule.title)}.</strong> ${escape(rule.text)}`).join('<br>')),
+      RULES_HTML: clip(
+        rules.map((rule) => `<strong style="color:#173c2c;">${escape(rule.title)}.</strong> ${escape(rule.text)}`).join('<br>'),
+      ),
       WHATSAPP_URL: escape(`${contact.whatsapp}?text=${encodeURIComponent(`Hi! About my booking ${r.ref}: `)}`),
       CLUB_PHONE: escape(contact.phone),
       CLUB_TEL: escape(contact.tel),
@@ -92,18 +127,33 @@ export function bookingConfirmation(r: Reservation, guest: Guest, siteUrl: strin
   };
 }
 
-export function bookingNotification(r: Reservation, guest: Guest, experience: string, siteUrl: string, site: SiteData, flags: string[] = []): TemplateMessage {
+export function bookingNotification(
+  r: Reservation,
+  guest: Guest,
+  experience: string,
+  siteUrl: string,
+  site: SiteData,
+  flags: string[] = [],
+): TemplateMessage {
   const { people, when, vars } = summary(r, site);
   const { vars: club } = clubDetails(site, siteUrl);
   const name = `${guest.firstName} ${guest.lastName}`.trim();
   const whatsapp = whatsappLink(guest.phone);
-  const checks = [...(r.testPayment ? ['TEST payment on a Payso demo account — no money was taken.'] : []), ...flags.map((flag) => BOOKING_FLAG_TEXT[flag]).filter(Boolean)];
-  const rentals = site.rentals.filter((rent) => (r.rentals[rent.id] ?? 0) > 0).map((rent) => `${r.rentals[rent.id]} × ${rentalName(rent)}`).join(', ');
+  const checks = [
+    ...(r.testPayment ? ['TEST payment on a Payso demo account — no money was taken.'] : []),
+    ...flags.map((flag) => BOOKING_FLAG_TEXT[flag]).filter(Boolean),
+  ];
+  const rentals = site.rentals
+    .filter((rent) => (r.rentals[rent.id] ?? 0) > 0)
+    .map((rent) => `${r.rentals[rent.id]} × ${rentalName(rent)}`)
+    .join(', ');
   return {
     subject: `New booking: ${r.activityName} ${when} — ${name} (${r.players})`,
     template: TEMPLATES.bookingNotification,
     variables: {
-      ...vars, ...club, ...flagVars(checks),
+      ...vars,
+      ...club,
+      ...flagVars(checks),
       PREVIEW: escape(`${name} · ${r.activityName} · ${when} · ${people}`),
       GUEST_NAME: escape(name),
       GUEST_EMAIL: escape(guest.email),
@@ -112,7 +162,11 @@ export function bookingNotification(r: Reservation, guest: Guest, experience: st
       HANDICAP: guest.handicap ? escape(guest.handicap) : undefined,
       EXPERIENCE: experience ? escape(experience) : undefined,
       RENTALS: rentals ? escape(rentals) : undefined,
-      SHUTTLE: r.privateTransfer ? escape(`Private transfer from ${r.pickupFrom}. Please agree the price and pick-up time with the guest.`) : r.transfer ? escape(`Free shuttle: ${timeLabel(r.transfer)} pick-up from ${r.pickupFrom}`) : undefined,
+      SHUTTLE: r.privateTransfer
+        ? escape(`Private transfer from ${r.pickupFrom}. Please agree the price and pick-up time with the guest.`)
+        : r.transfer
+          ? escape(`Free shuttle: ${timeLabel(r.transfer)} pick-up from ${r.pickupFrom}`)
+          : undefined,
       NOTES: guest.notes ? clip(escape(guest.notes).replace(/\n/g, '<br>')) : undefined,
       WHATSAPP_URL: whatsapp,
       WHATSAPP_DISPLAY: whatsapp ? 'inline-block' : undefined,
@@ -122,10 +176,19 @@ export function bookingNotification(r: Reservation, guest: Guest, experience: st
 
 // ── Event packages ─────────────────────────────────────────────────────────
 
-export interface PaidOrder extends EventOrderView { firstName: string; lastName: string; phone: string; country: string; notes: string; unitPrice: number; flags: string[] }
+export interface PaidOrder extends EventOrderView {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  country: string;
+  notes: string;
+  unitPrice: number;
+  flags: string[];
+}
 
 const FLAG_TEXT: Record<string, string> = {
-  paid_after_expiry: 'Paid after the hold on these places ran out. Check the package isn’t oversold; if it is, refund the guest in the Payso control panel and let them know.',
+  paid_after_expiry:
+    'Paid after the hold on these places ran out. Check the package isn’t oversold; if it is, refund the guest in the Payso control panel and let them know.',
   amount_mismatch: 'Payso reports a different amount from the order total. Check the payment in the Payso control panel.',
 };
 
@@ -134,10 +197,16 @@ function orderSummary(o: PaidOrder, siteUrl: string, site: SiteData) {
   const when = `${dayLabel(o.startsOn)}${time}`;
   const { contact, vars: club } = clubDetails(site, siteUrl);
   return {
-    contact, when,
+    contact,
+    when,
     vars: {
-      ...club, ORDER_REF: escape(o.ref), EVENT_TITLE: escape(o.eventTitle), EVENT_WHEN: escape(when), PACKAGE_NAME: escape(o.packageName),
-      PACKAGE_DETAIL: escape(`${plural(o.quantity, 'place')} × ${money(o.unitPrice)}`), TOTAL: escape(money(o.total)),
+      ...club,
+      ORDER_REF: escape(o.ref),
+      EVENT_TITLE: escape(o.eventTitle),
+      EVENT_WHEN: escape(when),
+      PACKAGE_NAME: escape(o.packageName),
+      PACKAGE_DETAIL: escape(`${plural(o.quantity, 'place')} × ${money(o.unitPrice)}`),
+      TOTAL: escape(money(o.total)),
       PAID_LABEL: o.testPayment ? 'Paid (test — nothing was charged)' : 'Paid online',
     },
   };
@@ -165,7 +234,10 @@ export function eventNotification(o: PaidOrder, siteUrl: string, site: SiteData)
   const { vars } = orderSummary(o, siteUrl, site);
   const name = `${o.firstName} ${o.lastName}`.trim();
   const whatsapp = whatsappLink(o.phone);
-  const flags = [...(o.testPayment ? ['TEST payment on a Payso demo account — no money was taken.'] : []), ...o.flags.map((flag) => FLAG_TEXT[flag]).filter(Boolean)];
+  const flags = [
+    ...(o.testPayment ? ['TEST payment on a Payso demo account — no money was taken.'] : []),
+    ...o.flags.map((flag) => FLAG_TEXT[flag]).filter(Boolean),
+  ];
   return {
     subject: `Event order: ${o.packageName} × ${o.quantity} — ${name}${o.testPayment ? ' (test)' : ''}`,
     template: TEMPLATES.eventNotification,

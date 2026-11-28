@@ -13,8 +13,19 @@ import { normaliseRentalSelection } from './rentals';
 // the tab forgets it. Activities, prices and rules are the live ones staff set
 // in /admin (useSite).
 
-export interface Search { activity: string; option: string; date: string; players: number }
-export interface Extras { rentals: Record<string, number>; transfer: string | null; privateTransfer: boolean; pickupFrom: string; experience: string }
+export interface Search {
+  activity: string;
+  option: string;
+  date: string;
+  players: number;
+}
+export interface Extras {
+  rentals: Record<string, number>;
+  transfer: string | null;
+  privateTransfer: boolean;
+  pickupFrom: string;
+  experience: string;
+}
 export type GuestForm = Guest & { acceptedPolicies: boolean };
 
 interface FlowState {
@@ -27,7 +38,16 @@ interface FlowState {
 
 const STORE = 'hhg-booking';
 const emptyExtras: Extras = { rentals: {}, transfer: null, privateTransfer: false, pickupFrom: '', experience: '' };
-const emptyGuest: GuestForm = { firstName: '', lastName: '', email: '', phone: '', country: '', handicap: '', notes: '', acceptedPolicies: false };
+const emptyGuest: GuestForm = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  country: '',
+  handicap: '',
+  notes: '',
+  acceptedPolicies: false,
+};
 
 /** A search from a link (/book?activity=footgolf&option=18&date=…&players=3), with anything unknown dropped. */
 export function searchFromQuery(query: URLSearchParams): Partial<Search> {
@@ -52,7 +72,11 @@ export function normalise(search: Partial<Search>, site: SiteData): Search {
 }
 
 export const bookHref = (search: Partial<Search>) => {
-  const params = new URLSearchParams(Object.entries(search).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)]));
+  const params = new URLSearchParams(
+    Object.entries(search)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, String(v)]),
+  );
   return `/book${params.size ? `?${params}` : ''}`;
 };
 
@@ -63,7 +87,9 @@ function load(site: SiteData): FlowState {
       const held = !!saved.heldUntil && saved.heldUntil > Date.now();
       return { ...saved, search: normalise(saved.search, site), heldUntil: held ? saved.heldUntil : null, time: held ? saved.time : null };
     }
-  } catch { /* start fresh */ }
+  } catch {
+    /* start fresh */
+  }
   return { search: normalise({}, site), time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest };
 }
 
@@ -103,16 +129,23 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
   const [holdExpired, setHoldExpired] = useState(false);
 
   useEffect(() => {
-    try { sessionStorage.setItem(STORE, JSON.stringify(state)); } catch { /* still works for this page view */ }
+    try {
+      sessionStorage.setItem(STORE, JSON.stringify(state));
+    } catch {
+      /* still works for this page view */
+    }
   }, [state]);
 
   // Let the time go when its hold runs out.
   useEffect(() => {
     if (!state.heldUntil) return;
-    const id = window.setTimeout(() => {
-      setState((s) => ({ ...s, time: null, heldUntil: null }));
-      setHoldExpired(true);
-    }, Math.max(0, state.heldUntil - Date.now()));
+    const id = window.setTimeout(
+      () => {
+        setState((s) => ({ ...s, time: null, heldUntil: null }));
+        setHoldExpired(true);
+      },
+      Math.max(0, state.heldUntil - Date.now()),
+    );
     return () => window.clearTimeout(id);
   }, [state.heldUntil]);
 
@@ -120,46 +153,93 @@ export function BookingFlowProvider({ initial, children }: { initial: Partial<Se
   const activity = findActivity({ activities: online }, state.search.activity) ?? online[0];
   const option = activity.options.find((o) => o.id === state.search.option) ?? activity.options[0];
 
-  const setSearch = useCallback((change: Partial<Search>) => setState((s) => {
-    const search = normalise({ ...s.search, ...change }, site);
-    const changedActivity = search.activity !== s.search.activity;
-    // A different activity, option, day or group size means picking a time again.
-    return { ...s, search, time: null, heldUntil: null, extras: changedActivity ? emptyExtras : { ...s.extras, transfer: null } };
-  }), [site]);
+  const setSearch = useCallback(
+    (change: Partial<Search>) =>
+      setState((s) => {
+        const search = normalise({ ...s.search, ...change }, site);
+        const changedActivity = search.activity !== s.search.activity;
+        // A different activity, option, day or group size means picking a time again.
+        return { ...s, search, time: null, heldUntil: null, extras: changedActivity ? emptyExtras : { ...s.extras, transfer: null } };
+      }),
+    [site],
+  );
 
-  const selectTime = useCallback((time: string) => {
-    setHoldExpired(false);
-    setState((s) => ({ ...s, time, heldUntil: Date.now() + site.club.booking.holdMinutes * 60_000, extras: { ...s.extras, transfer: s.extras.transfer && pickupFor(time, site.club) === s.extras.transfer ? s.extras.transfer : null } }));
-  }, [site]);
+  const selectTime = useCallback(
+    (time: string) => {
+      setHoldExpired(false);
+      setState((s) => ({
+        ...s,
+        time,
+        heldUntil: Date.now() + site.club.booking.holdMinutes * 60_000,
+        extras: { ...s.extras, transfer: s.extras.transfer && pickupFor(time, site.club) === s.extras.transfer ? s.extras.transfer : null },
+      }));
+    },
+    [site],
+  );
   const releaseTime = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null })), []);
   const updateExtras = useCallback((change: Partial<Extras>) => setState((s) => ({ ...s, extras: { ...s.extras, ...change } })), []);
   const updateGuest = useCallback((change: Partial<GuestForm>) => setState((s) => ({ ...s, guest: { ...s.guest, ...change } })), []);
   const startOver = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras })), []);
-  const forgetGuest = useCallback(() => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest })), []);
+  const forgetGuest = useCallback(
+    () => setState((s) => ({ ...s, time: null, heldUntil: null, extras: emptyExtras, guest: emptyGuest })),
+    [],
+  );
 
   // Equipment types have independent allowances; alternatives can share one.
-  const rentals = useMemo(() => normaliseRentalSelection(rentalsFor(activity, site.rentals), state.search.players, state.extras.rentals),
-    [activity, site.rentals, state.extras.rentals, state.search.players]);
-  const lines = useMemo(() => priceLines(activity, option, state.search.players, rentals, site.rentals), [activity, option, state.search.players, rentals, site.rentals]);
+  const rentals = useMemo(
+    () => normaliseRentalSelection(rentalsFor(activity, site.rentals), state.search.players, state.extras.rentals),
+    [activity, site.rentals, state.extras.rentals, state.search.players],
+  );
+  const lines = useMemo(
+    () => priceLines(activity, option, state.search.players, rentals, site.rentals),
+    [activity, option, state.search.players, rentals, site.rentals],
+  );
 
-  const confirm = useCallback(async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }) => {
-    if (!state.time) return { error: 'Please pick a time first.' };
-    try {
-      const { acceptedPolicies: _accepted, ...guest } = state.guest;
-      return await createReservation({
-        ...state.search, time: state.time, rentals, transfer: state.extras.transfer, privateTransfer: !!state.extras.privateTransfer,
-        pickupFrom: state.extras.transfer || state.extras.privateTransfer ? state.extras.pickupFrom.trim() : '', experience: state.extras.experience,
-        guest, hp, elapsedMs,
-      });
-    } catch (error) {
-      return { error: error instanceof ApiError ? error.message : 'We couldn’t reach the booking system. Please try again, or WhatsApp us.', taken: error instanceof ApiError && error.code === 'taken' };
-    }
-  }, [state, rentals]);
+  const confirm = useCallback(
+    async ({ hp, elapsedMs }: { hp: string; elapsedMs: number }) => {
+      if (!state.time) return { error: 'Please pick a time first.' };
+      try {
+        const { acceptedPolicies: _accepted, ...guest } = state.guest;
+        return await createReservation({
+          ...state.search,
+          time: state.time,
+          rentals,
+          transfer: state.extras.transfer,
+          privateTransfer: !!state.extras.privateTransfer,
+          pickupFrom: state.extras.transfer || state.extras.privateTransfer ? state.extras.pickupFrom.trim() : '',
+          experience: state.extras.experience,
+          guest,
+          hp,
+          elapsedMs,
+        });
+      } catch (error) {
+        return {
+          error: error instanceof ApiError ? error.message : 'We couldn’t reach the booking system. Please try again, or WhatsApp us.',
+          taken: error instanceof ApiError && error.code === 'taken',
+        };
+      }
+    },
+    [state, rentals],
+  );
 
   const total = totalOf(lines);
   const value: BookingFlow = {
-    ...state, extras: { ...state.extras, rentals }, activity, option, lines, total, deposit: depositFor(activity, state.search.players, total), holdExpired,
-    setSearch, selectTime, releaseTime, updateExtras, updateGuest, confirm, startOver, forgetGuest,
+    ...state,
+    extras: { ...state.extras, rentals },
+    activity,
+    option,
+    lines,
+    total,
+    deposit: depositFor(activity, state.search.players, total),
+    holdExpired,
+    setSearch,
+    selectTime,
+    releaseTime,
+    updateExtras,
+    updateGuest,
+    confirm,
+    startOver,
+    forgetGuest,
   };
   return <BookingFlowContext.Provider value={value}>{children}</BookingFlowContext.Provider>;
 }

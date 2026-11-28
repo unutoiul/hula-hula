@@ -30,55 +30,103 @@ export function BookingPanel() {
   const { checkIn, checkOut, selectDay, selectingCheckout, adults, setAdults, children, setChildren } = useBookingSearch();
   const nights = Math.round((checkOut.getTime() - checkIn.getTime()) / MS_PER_NIGHT);
 
-  return <>
-    <Box sx={{ containerType: 'inline-size', containerName: 'booking-panel' }}>
-      <Box sx={{
-        display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', [SIDEBAR]: { gridTemplateColumns: 'minmax(0,1fr) 280px' },
-        border: '1px solid', borderColor: 'divider', borderTop: '5px solid #c92f6b', bgcolor: 'background.paper', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 16px 36px rgba(90,36,72,.09)',
-      }}>
-        <RangeCalendar checkIn={checkIn} checkOut={checkOut} minDate={today} onSelectDay={selectDay} selectingCheckout={selectingCheckout} fill />
+  return (
+    <>
+      <Box sx={{ containerType: 'inline-size', containerName: 'booking-panel' }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0,1fr)',
+            [SIDEBAR]: { gridTemplateColumns: 'minmax(0,1fr) 280px' },
+            border: '1px solid',
+            borderColor: 'divider',
+            borderTop: '5px solid #c92f6b',
+            bgcolor: 'background.paper',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            boxShadow: '0 16px 36px rgba(90,36,72,.09)',
+          }}
+        >
+          <RangeCalendar
+            checkIn={checkIn}
+            checkOut={checkOut}
+            minDate={today}
+            onSelectDay={selectDay}
+            selectingCheckout={selectingCheckout}
+            fill
+          />
 
-        <Box sx={{
-          display: 'flex', flexDirection: 'column', p: { xs: 2.5, md: 3 }, borderTop: '1px solid', borderColor: 'divider',
-          backgroundImage: 'linear-gradient(165deg, rgba(253,230,238,.6), transparent 70%)',
-          [SIDEBAR]: { borderTop: 0, borderLeft: '1px solid', borderLeftColor: 'divider', p: '28px 24px 24px' },
-        }}>
-          <Box sx={{
-            display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', columnGap: '32px', rowGap: '16px',
-            [TWO_COLUMN_SUMMARY]: { gridTemplateColumns: 'repeat(2,minmax(0,1fr))' },
-            [SIDEBAR]: { gridTemplateColumns: 'minmax(0,1fr)', rowGap: '24px' },
-          }}>
-            <Box>
-              <Typography variant="overline" sx={{ color: 'text.secondary' }}>Your stay</Typography>
-              <Stack direction="row" justifyContent="space-between" spacing={2} sx={{ mt: 1 }}>
-                <Box>
-                  <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>{panelDateFmt.format(checkIn)}</Typography>
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Check-in</Typography>
-                </Box>
-                <Box sx={{ textAlign: 'right' }}>
-                  <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>{panelDateFmt.format(checkOut)}</Typography>
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Check-out</Typography>
-                </Box>
-              </Stack>
-              <Typography variant="overline" sx={{ display: 'block', color: 'secondary.dark', mt: 1 }}>{nights} night{nights !== 1 ? 's' : ''}</Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              p: { xs: 2.5, md: 3 },
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              backgroundImage: 'linear-gradient(165deg, rgba(253,230,238,.6), transparent 70%)',
+              [SIDEBAR]: { borderTop: 0, borderLeft: '1px solid', borderLeftColor: 'divider', p: '28px 24px 24px' },
+            }}
+          >
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(0,1fr)',
+                columnGap: '32px',
+                rowGap: '16px',
+                [TWO_COLUMN_SUMMARY]: { gridTemplateColumns: 'repeat(2,minmax(0,1fr))' },
+                [SIDEBAR]: { gridTemplateColumns: 'minmax(0,1fr)', rowGap: '24px' },
+              }}
+            >
+              <Box>
+                <Typography variant="overline" sx={{ color: 'text.secondary' }}>
+                  Your stay
+                </Typography>
+                <Stack direction="row" justifyContent="space-between" spacing={2} sx={{ mt: 1 }}>
+                  <Box>
+                    <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>
+                      {panelDateFmt.format(checkIn)}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Check-in</Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography sx={{ fontFamily: fonts.playful, fontWeight: 400, fontSize: 17 }}>
+                      {panelDateFmt.format(checkOut)}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Check-out</Typography>
+                  </Box>
+                </Stack>
+                <Typography variant="overline" sx={{ display: 'block', color: 'secondary.dark', mt: 1 }}>
+                  {nights} night{nights !== 1 ? 's' : ''}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  pt: '16px',
+                  borderTop: '1px solid',
+                  borderColor: 'divider',
+                  [TWO_COLUMN_SUMMARY]: { pt: 0, borderTop: 0 },
+                  [SIDEBAR]: { pt: '24px', borderTop: '1px solid', borderTopColor: 'divider' },
+                }}
+              >
+                <Typography variant="overline" sx={{ color: 'text.secondary' }}>
+                  Who’s coming
+                </Typography>
+                <Stack spacing={2} sx={{ mt: 1 }}>
+                  <GuestStepper label="Adults" value={adults} min={1} onChange={setAdults} />
+                  <GuestStepper label="Children" value={children} min={0} onChange={setChildren} />
+                </Stack>
+              </Box>
             </Box>
-            <Box sx={{
-              pt: '16px', borderTop: '1px solid', borderColor: 'divider',
-              [TWO_COLUMN_SUMMARY]: { pt: 0, borderTop: 0 },
-              [SIDEBAR]: { pt: '24px', borderTop: '1px solid', borderTopColor: 'divider' },
-            }}>
-              <Typography variant="overline" sx={{ color: 'text.secondary' }}>Who’s coming</Typography>
-              <Stack spacing={2} sx={{ mt: 1 }}>
-                <GuestStepper label="Adults" value={adults} min={1} onChange={setAdults} />
-                <GuestStepper label="Children" value={children} min={0} onChange={setChildren} />
-              </Stack>
+            {/* In the sidebar the button sits at the bottom, level with the calendar's last row. */}
+            <Box sx={{ mt: '20px', [SIDEBAR]: { mt: 'auto', pt: '24px' } }}>
+              <CheckAvailabilityButton />
             </Box>
           </Box>
-          {/* In the sidebar the button sits at the bottom, level with the calendar's last row. */}
-          <Box sx={{ mt: '20px', [SIDEBAR]: { mt: 'auto', pt: '24px' } }}><CheckAvailabilityButton /></Box>
         </Box>
       </Box>
-    </Box>
-    <Box sx={{ mt: 2.5 }}><PaymentMethods centered compact /></Box>
-  </>;
+      <Box sx={{ mt: 2.5 }}>
+        <PaymentMethods centered compact />
+      </Box>
+    </>
+  );
 }

@@ -15,7 +15,11 @@ export interface TemplateEmail {
   idempotencyKey?: string;
 }
 
-export interface SendResult { ok: boolean; status: number; body: string }
+export interface SendResult {
+  ok: boolean;
+  status: number;
+  body: string;
+}
 
 export const emailConfigured = () => !!process.env.RESEND_API_KEY;
 
@@ -40,15 +44,39 @@ export function withCopies(to: string[], bcc: string[] = []): string[] {
   return [...copies].filter(([key]) => !sentTo.has(key)).map(([, address]) => address);
 }
 
-export async function sendTemplate({ from, to: recipients, bcc: asked, replyTo, subject, template, variables, idempotencyKey }: TemplateEmail): Promise<SendResult> {
+export async function sendTemplate({
+  from,
+  to: recipients,
+  bcc: asked,
+  replyTo,
+  subject,
+  template,
+  variables,
+  idempotencyKey,
+}: TemplateEmail): Promise<SendResult> {
   const to = visibleTo(recipients);
   const bcc = withCopies(to, asked);
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json', ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }) },
-    body: JSON.stringify({ from, to, ...(bcc.length && { bcc }), ...(replyTo && { reply_to: replyTo }), subject, template: { id: template, variables } }),
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+      ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }),
+    },
+    body: JSON.stringify({
+      from,
+      to,
+      ...(bcc.length && { bcc }),
+      ...(replyTo && { reply_to: replyTo }),
+      subject,
+      template: { id: template, variables },
+    }),
   });
   return { ok: response.ok, status: response.status, body: response.ok ? '' : await response.text() };
 }
 
-export const splitAddresses = (value: string) => value.split(',').map((address) => address.trim()).filter(Boolean);
+export const splitAddresses = (value: string) =>
+  value
+    .split(',')
+    .map((address) => address.trim())
+    .filter(Boolean);

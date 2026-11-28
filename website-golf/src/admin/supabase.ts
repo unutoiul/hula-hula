@@ -124,6 +124,11 @@ export interface StaffOrder {
 }
 
 /** Places a package has used: paid, plus online orders still inside their payment window. */
-export const takenPlaces = (orders: StaffOrder[], packageId: string) => orders
-  .filter((o) => o.package_id === packageId && (o.status === 'paid' || (o.status === 'pending' && !!o.expires_at && Date.parse(o.expires_at) > Date.now())))
-  .reduce((sum, o) => sum + o.quantity, 0);
+export const takenPlaces = (orders: StaffOrder[], packageId: string) =>
+  orders
+    .filter(
+      (o) =>
+        o.package_id === packageId &&
+        (o.status === 'paid' || (o.status === 'pending' && !!o.expires_at && Date.parse(o.expires_at) > Date.now())),
+    )
+    .reduce((sum, o) => sum + o.quantity, 0);

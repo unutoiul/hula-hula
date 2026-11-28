@@ -15,7 +15,10 @@ export interface DepositQuote {
   nights: { gross: number; discount: number; promoDiscount: number }[];
 }
 
-export interface DepositRule { depositType: string | null; depositAmount: number | null }
+export interface DepositRule {
+  depositType: string | null;
+  depositAmount: number | null;
+}
 
 const KNOWN = new Set(['full-amount', 'first-night', 'fixed-amount', 'percentage']);
 
@@ -28,18 +31,27 @@ function firstNight({ total, nights }: DepositQuote): number {
   if (Math.abs(effective.reduce((sum, n) => sum + n, 0) - total) <= 100) return effective[0];
   if (Math.abs(nights.reduce((sum, n) => sum + n.gross, 0) - total) <= 100) return nights[0].gross;
   const grossSum = nights.reduce((sum, n) => sum + n.gross, 0);
-  return grossSum > 0 ? Math.round(total * nights[0].gross / grossSum) : total;
+  return grossSum > 0 ? Math.round((total * nights[0].gross) / grossSum) : total;
 }
 
 export function depositFor(quote: DepositQuote, rule: DepositRule, fallback: DefaultDeposit): { type: DepositType; dueNow: number } {
-  const type = rule.depositType && KNOWN.has(rule.depositType) ? rule.depositType as Exclude<DepositType, null> : null;
+  const type = rule.depositType && KNOWN.has(rule.depositType) ? (rule.depositType as Exclude<DepositType, null>) : null;
   let dueNow: number;
   switch (type) {
-    case 'full-amount': dueNow = quote.total; break;
-    case 'first-night': dueNow = firstNight(quote); break;
-    case 'percentage': dueNow = Math.round(quote.total * Math.min(100, Math.max(0, rule.depositAmount ?? 100)) / 100); break;
-    case 'fixed-amount': dueNow = Math.round((rule.depositAmount ?? 0) * 100); break;
-    default: dueNow = 0;
+    case 'full-amount':
+      dueNow = quote.total;
+      break;
+    case 'first-night':
+      dueNow = firstNight(quote);
+      break;
+    case 'percentage':
+      dueNow = Math.round((quote.total * Math.min(100, Math.max(0, rule.depositAmount ?? 100))) / 100);
+      break;
+    case 'fixed-amount':
+      dueNow = Math.round((rule.depositAmount ?? 0) * 100);
+      break;
+    default:
+      dueNow = 0;
   }
   dueNow = Math.min(quote.total, Math.max(0, dueNow));
   if (dueNow > 0) return { type, dueNow };

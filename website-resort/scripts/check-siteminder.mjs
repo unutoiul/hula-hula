@@ -9,8 +9,10 @@ const propertyId = process.env.SITEMINDER_PROPERTY_ID;
 assert.ok(key && propertyId, 'SITEMINDER_API_KEY and SITEMINDER_PROPERTY_ID must be configured');
 
 const [checkIn, checkOut] = process.argv.slice(2);
-assert.ok(checkIn && checkOut && /^\d{4}-\d{2}-\d{2}$/.test(checkIn) && /^\d{4}-\d{2}-\d{2}$/.test(checkOut) && checkOut > checkIn,
-  'Pass check-in and check-out dates: scripts/check-siteminder.mjs YYYY-MM-DD YYYY-MM-DD');
+assert.ok(
+  checkIn && checkOut && /^\d{4}-\d{2}-\d{2}$/.test(checkIn) && /^\d{4}-\d{2}-\d{2}$/.test(checkOut) && checkOut > checkIn,
+  'Pass check-in and check-out dates: scripts/check-siteminder.mjs YYYY-MM-DD YYYY-MM-DD',
+);
 const originalFetch = globalThis.fetch;
 const requests = [];
 globalThis.fetch = async (input, init) => {
@@ -35,20 +37,26 @@ try {
     assert.ok(catalog.rates.has(quote.roomRateUuid), 'Quote rate is missing from the catalog');
     assert.ok(Number.isFinite(quote.price.gross));
   }
-  console.log(JSON.stringify({
-    property: catalog.property.name,
-    currency: catalog.property.currencyIsoCode,
-    propertyMatchesProvidedId: propertyId === '45ff11cb-12fb-4e6a-ab72-c9d8f285c798',
-    roomTypes: catalog.roomTypes.size,
-    roomRates: catalog.rates.size,
-    stay: { checkIn, checkOut, adults: 2, children: 0 },
-    quotes: quotes.length,
-    availableQuotes: quotes.filter(quote => quote.availability > 0).length,
-    bookingEngineConfigured: Boolean(catalog.property.bookingEngineUrl),
-    reservationDelivery: 'email for manual SiteMinder entry',
-    requests,
-    writes: 0,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        property: catalog.property.name,
+        currency: catalog.property.currencyIsoCode,
+        propertyMatchesProvidedId: propertyId === '45ff11cb-12fb-4e6a-ab72-c9d8f285c798',
+        roomTypes: catalog.roomTypes.size,
+        roomRates: catalog.rates.size,
+        stay: { checkIn, checkOut, adults: 2, children: 0 },
+        quotes: quotes.length,
+        availableQuotes: quotes.filter((quote) => quote.availability > 0).length,
+        bookingEngineConfigured: Boolean(catalog.property.bookingEngineUrl),
+        reservationDelivery: 'email for manual SiteMinder entry',
+        requests,
+        writes: 0,
+      },
+      null,
+      2,
+    ),
+  );
 } catch (error) {
   console.error(JSON.stringify({ error: error instanceof Error ? error.message : 'Smoke test failed', requests, writes: 0 }, null, 2));
   process.exitCode = 1;

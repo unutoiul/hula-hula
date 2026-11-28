@@ -1,3 +1,4 @@
+import { roomTypeName } from './roomTypeName.js';
 // SiteMinder's Direct Booking API (read-only): property, room types, room
 // rates and live quotes. Server-side only — the key must never reach a
 // browser — and limited to 100 calls a minute per key, so everything that
@@ -7,11 +8,25 @@ const BASE = 'https://directbooking.siteminder.com/public-api/api';
 const CATALOG_TTL_MS = 60 * 60 * 1000;
 
 export class SiteMinderError extends Error {
-  constructor(readonly status: number, message: string) { super(message); }
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
 }
 
-export interface SmPenaltyRule { daysPriorCheckIn: number; penaltyType: string; amount: number | null }
-export interface SmPenalty { isDefault?: boolean; startDate: string | null; endDate: string | null; penaltyRules: SmPenaltyRule[] }
+export interface SmPenaltyRule {
+  daysPriorCheckIn: number;
+  penaltyType: string;
+  amount: number | null;
+}
+export interface SmPenalty {
+  isDefault?: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  penaltyRules: SmPenaltyRule[];
+}
 
 export interface SmProperty {
   name: string;
@@ -23,33 +38,68 @@ export interface SmProperty {
 }
 
 export interface SmRoomType {
-  uuid: string; name: string; description: string | null;
-  roomSize: number | null; roomSizeUnit: string | null;
-  maxOccupancy: number | null; maxAdultOccupancy: number | null; maxChildOccupancy: number | null;
+  uuid: string;
+  name: string;
+  description: string | null;
+  /** SiteMinder's room code, e.g. ONE_BEDROOM_VILLA. */
+  code?: string | null;
+  roomSize: number | null;
+  roomSizeUnit: string | null;
+  maxOccupancy: number | null;
+  maxAdultOccupancy: number | null;
+  maxChildOccupancy: number | null;
 }
 
 export interface SmRoomRate {
-  uuid: string; roomTypeUuid: string; ratePlanUuid: string; name: string; description: string | null;
-  promotionOnly: boolean; breakfastIncluded: boolean; lunchIncluded: boolean; dinnerIncluded: boolean;
-  maxOccupancy: number | null; maxAdultOccupancy: number | null; maxChildOccupancy: number | null;
-  depositType: string | null; depositAmount: number | null; maxNumberOfRooms: number | null;
+  uuid: string;
+  roomTypeUuid: string;
+  ratePlanUuid: string;
+  name: string;
+  description: string | null;
+  promotionOnly: boolean;
+  breakfastIncluded: boolean;
+  lunchIncluded: boolean;
+  dinnerIncluded: boolean;
+  maxOccupancy: number | null;
+  maxAdultOccupancy: number | null;
+  maxChildOccupancy: number | null;
+  depositType: string | null;
+  depositAmount: number | null;
+  maxNumberOfRooms: number | null;
   cancellationPenalties?: SmPenalty[];
 }
 
-export interface SmBreakdownDay { date: string; gross: number; discount: { amount: number } | null; promoDiscount: { code: string; amount: number } | null }
+export interface SmBreakdownDay {
+  date: string;
+  gross: number;
+  discount: { amount: number } | null;
+  promoDiscount: { code: string; amount: number } | null;
+}
 
 export interface SmQuote {
-  roomTypeUuid: string; roomRateUuid: string; lengthOfStay: number; availability: number;
+  roomTypeUuid: string;
+  roomRateUuid: string;
+  lengthOfStay: number;
+  availability: number;
   price: { gross: number; currency: string };
-  depositType: string | null; depositAmount: number | null;
+  depositType: string | null;
+  depositAmount: number | null;
   breakdown: SmBreakdownDay[];
 }
 
-interface Page<T> { results: T[]; page: number; totalPages: number }
+interface Page<T> {
+  results: T[];
+  page: number;
+  totalPages: number;
+}
 
 export const isSiteMinderConfigured = () => Boolean(process.env.SITEMINDER_API_KEY && process.env.SITEMINDER_PROPERTY_ID);
 
-export interface Catalog { property: SmProperty; roomTypes: Map<string, SmRoomType>; rates: Map<string, SmRoomRate> }
+export interface Catalog {
+  property: SmProperty;
+  roomTypes: Map<string, SmRoomType>;
+  rates: Map<string, SmRoomRate>;
+}
 
 function config() {
   const apiKey = process.env.SITEMINDER_API_KEY;
@@ -60,7 +110,10 @@ function config() {
 
 async function smGet<T>(path: string): Promise<T> {
   const { apiKey, propertyId } = config();
-  const response = await fetch(`${BASE}/properties/${propertyId}${path}`, { headers: { 'x-sm-api-key': apiKey, accept: 'application/json' }, signal: AbortSignal.timeout(20_000) });
+  const response = await fetch(`${BASE}/properties/${propertyId}${path}`, {
+    headers: { 'x-sm-api-key': apiKey, accept: 'application/json' },
+    signal: AbortSignal.timeout(20_000),
+  });
   if (!response.ok) {
     const trace = response.headers.get('x-sm-trace-token');
     console.error('SiteMinder request failed', response.status, path.split('?')[0], trace ?? '');
@@ -89,8 +142,8 @@ async function loadCatalog(): Promise<Catalog> {
   const detailed = await Promise.all(rates.map((rate) => smGet<SmRoomRate>(`/room-rates/${rate.uuid}`).catch(() => rate)));
   return {
     property,
-    roomTypes: new Map(roomTypes.map((roomType) => [roomType.uuid, roomType])),
-    rates: new Map(detailed.map((rate) => [rate.uuid, rate])),
+    roomTypes: new Map(roomTypes.map((roomType) => [roomType.uuid, { ...roomType, name: roomTypeName(roomType) }])),
+    rates: new Map(detailed.map((rate) => [rate.uuid, { ...rate, name: rate.name?.trim() || 'Room rate' }])),
   };
 }
 
@@ -100,15 +153,30 @@ export function getCatalog(): Promise<Catalog> {
   if (!catalog || Date.now() - catalog.loadedAt > CATALOG_TTL_MS) {
     const promise = loadCatalog();
     catalog = { loadedAt: Date.now(), promise };
-    promise.catch(() => { if (catalog?.promise === promise) catalog = null; });
+    promise.catch(() => {
+      if (catalog?.promise === promise) catalog = null;
+    });
   }
   return catalog.promise;
 }
 
-export interface QuoteSearch { checkIn: string; checkOut: string; adults: number; children: number; promo?: string }
+export interface QuoteSearch {
+  checkIn: string;
+  checkOut: string;
+  adults: number;
+  children: number;
+  promo?: string;
+}
 
 export function getQuotes({ checkIn, checkOut, adults, children, promo }: QuoteSearch): Promise<SmQuote[]> {
-  const params = new URLSearchParams({ checkIn, checkOut, adults: String(adults), children: String(children), infants: '0', withBreakdown: 'true' });
+  const params = new URLSearchParams({
+    checkIn,
+    checkOut,
+    adults: String(adults),
+    children: String(children),
+    infants: '0',
+    withBreakdown: 'true',
+  });
   if (promo) params.set('promocode', promo);
   return smGet<SmQuote[]>(`/quotes?${params}`);
 }

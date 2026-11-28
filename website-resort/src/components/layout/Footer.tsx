@@ -12,32 +12,61 @@ import { TropicalBackdrop, tropicalSectionSx } from '../common/TropicalBackdrop'
 // the logo, where we are, how to reach us, the rest of the family, how guests
 // can pay and the small print.
 export function Footer() {
-  return <Box component="footer" sx={{
-    ...tropicalSectionSx,
-    py: { xs: 6, sm: 7 },
-    // Its own sunny closing block; the SectionSeam above it (a sun rising
-    // behind the wave) is what separates it from the contact section.
-    bgcolor: 'secondary.main',
-  }}>
-    <TropicalBackdrop side="right" anchor="bottom" />
-    <Container maxWidth="xl">
-      <Stack alignItems="center" spacing={2.5} textAlign="center">
-        <Typography variant="h2" sx={{ fontSize: { xs: 31, md: 48 }, lineHeight: 1.1, maxWidth: { xs: 280, sm: 'none' }, textWrap: 'balance' }}>See you on the sunny side.</Typography>
-        <ClubMark size="large" />
-        <Typography variant="overline" sx={{ maxWidth: 380, lineHeight: 1.6 }}>Hula Hula Resort, Ao Nang Beach<br />{CONTACT.address}</Typography>
-        <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
-          <a href={CONTACT.tel}>{CONTACT.phone}</a> · <a href={CONTACT.landlineTel}>{CONTACT.landline}</a><br /><Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>{CONTACT.email}</Box>
-        </Typography>
-        <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
-          Part of the Hula Hula family<br />
-          {SITES.filter(site => site.id !== 'resort').map((site, i) => <Fragment key={site.id}>{i > 0 && ' · '}<a href={site.url} target="_blank" rel="noopener noreferrer">{site.name}</a></Fragment>)}
-        </Typography>
-        <Box sx={{ pt: 2.5, pb: .5, borderTop: '1px solid rgba(23,60,44,.16)', width: '100%', maxWidth: 380 }}>
-          <PaymentMethods centered />
-        </Box>
-        <Typography variant="overline">© {new Date().getFullYear()} Hula Hula Resort<MotionToggleLink /></Typography>
-        <DesignCredit />
-      </Stack>
-    </Container>
-  </Box>;
+  return (
+    <Box
+      component="footer"
+      sx={{
+        ...tropicalSectionSx,
+        py: { xs: 6, sm: 7 },
+        // Its own sunny closing block; the SectionSeam above it (a sun rising
+        // behind the wave) is what separates it from the contact section.
+        bgcolor: 'secondary.main',
+      }}
+    >
+      <TropicalBackdrop side="right" anchor="bottom" />
+      <Container maxWidth="xl">
+        <Stack alignItems="center" spacing={2.5} textAlign="center">
+          <Typography
+            variant="h2"
+            sx={{ fontSize: { xs: 31, md: 48 }, lineHeight: 1.1, maxWidth: { xs: 280, sm: 'none' }, textWrap: 'balance' }}
+          >
+            See you on the sunny side.
+          </Typography>
+          <ClubMark size="large" />
+          <Typography variant="overline" sx={{ maxWidth: 380, lineHeight: 1.6 }}>
+            Hula Hula Resort, Ao Nang Beach
+            <br />
+            {CONTACT.address}
+          </Typography>
+          <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
+            <a href={CONTACT.tel}>{CONTACT.phone}</a> · <a href={CONTACT.landlineTel}>{CONTACT.landline}</a>
+            <br />
+            <Box component="a" href={`mailto:${CONTACT.email}`} sx={{ textTransform: 'none' }}>
+              {CONTACT.email}
+            </Box>
+          </Typography>
+          <Typography variant="overline" sx={{ lineHeight: 1.8, '& a': { color: 'inherit' } }}>
+            Part of the Hula Hula family
+            <br />
+            {SITES.filter((site) => site.id !== 'resort').map((site, i) => (
+              <Fragment key={site.id}>
+                {i > 0 && ' · '}
+                <a href={site.url} target="_blank" rel="noopener noreferrer">
+                  {site.name}
+                </a>
+              </Fragment>
+            ))}
+          </Typography>
+          <Box sx={{ pt: 2.5, pb: 0.5, borderTop: '1px solid rgba(23,60,44,.16)', width: '100%', maxWidth: 380 }}>
+            <PaymentMethods centered />
+          </Box>
+          <Typography variant="overline">
+            © {new Date().getFullYear()} Hula Hula Resort
+            <MotionToggleLink />
+          </Typography>
+          <DesignCredit />
+        </Stack>
+      </Container>
+    </Box>
+  );
 }

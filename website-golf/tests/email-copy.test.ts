@@ -16,9 +16,12 @@ async function captured(send: () => Promise<unknown>): Promise<Payload> {
     payload = JSON.parse(init.body);
     return new Response('{}', { status: 200 });
   }) as typeof fetch;
-  try { await send(); } finally {
+  try {
+    await send();
+  } finally {
     globalThis.fetch = previousFetch;
-    if (previousKey === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = previousKey;
+    if (previousKey === undefined) delete process.env.RESEND_API_KEY;
+    else process.env.RESEND_API_KEY = previousKey;
   }
   assert.ok(payload, 'no email was sent');
   return payload;
@@ -31,19 +34,45 @@ const hidden = (payload: Payload) => {
 };
 
 it('a guest confirmation carries the hidden copy', async () => {
-  hidden(await captured(() => sendTemplate({ from: 'Hotel <reservation@example.com>', to: ['guest@example.org'], subject: 'Booked', template: 'booking-confirmation', variables: {} })));
+  hidden(
+    await captured(() =>
+      sendTemplate({
+        from: 'Hotel <reservation@example.com>',
+        to: ['guest@example.org'],
+        subject: 'Booked',
+        template: 'booking-confirmation',
+        variables: {},
+      }),
+    ),
+  );
 });
 
 it('a team notification keeps its own blind copies and adds the hidden one once', async () => {
-  const payload = await captured(() => sendTemplate({ from: 'Hotel <reservation@example.com>', to: ['reservation@example.com'], bcc: ['CONTACT@bluetrendy.com', 'manager@example.com'], subject: 'New booking', template: 'booking-notification', variables: {} }));
+  const payload = await captured(() =>
+    sendTemplate({
+      from: 'Hotel <reservation@example.com>',
+      to: ['reservation@example.com'],
+      bcc: ['CONTACT@bluetrendy.com', 'manager@example.com'],
+      subject: 'New booking',
+      template: 'booking-notification',
+      variables: {},
+    }),
+  );
   hidden(payload);
   assert.equal(payload.bcc?.filter((address) => address.toLowerCase() === ALWAYS_BCC).length, 1);
   assert.ok(payload.bcc?.includes('manager@example.com'));
 });
 
 it('a misconfigured inbox that lists Bluetrendy still keeps it hidden', async () => {
-  const payload = await captured(() => sendTemplate({ from: 'Hotel <reservation@example.com>', to: ['reservation@example.com', 'contact@bluetrendy.com'], subject: 'New enquiry', template: 'contact-enquiry', variables: {} }));
+  const payload = await captured(() =>
+    sendTemplate({
+      from: 'Hotel <reservation@example.com>',
+      to: ['reservation@example.com', 'contact@bluetrendy.com'],
+      subject: 'New enquiry',
+      template: 'contact-enquiry',
+      variables: {},
+    }),
+  );
   hidden(payload);
   assert.deepEqual(payload.to, ['reservation@example.com']);
 });
-

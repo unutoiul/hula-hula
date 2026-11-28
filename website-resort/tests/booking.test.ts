@@ -42,8 +42,6 @@ describe('references', () => {
     }
     assert.match(newAccessKey(), ACCESS_KEY_PATTERN);
   });
-
-
 });
 
 describe('who sleeps where', () => {
@@ -58,8 +56,14 @@ describe('who sleeps where', () => {
   });
 
   it('spreads a party across rooms, one adult in each', () => {
-    assert.deepEqual(distributeGuests([double, double], 3, 1), [{ adults: 2, children: 0 }, { adults: 1, children: 1 }]);
-    assert.deepEqual(distributeGuests([family, double], 4, 2), [{ adults: 3, children: 1 }, { adults: 1, children: 1 }]);
+    assert.deepEqual(distributeGuests([double, double], 3, 1), [
+      { adults: 2, children: 0 },
+      { adults: 1, children: 1 },
+    ]);
+    assert.deepEqual(distributeGuests([family, double], 4, 2), [
+      { adults: 3, children: 1 },
+      { adults: 1, children: 1 },
+    ]);
     assert.equal(distributeGuests([double], 2, 1), null);
     assert.equal(distributeGuests([double, double], 1, 0), null);
   });
@@ -68,8 +72,20 @@ describe('who sleeps where', () => {
 describe('special offers', async () => {
   const { bestDeal, daysAhead, isEligible, nightlyDiscounts } = await import('../api/_lib/dealRules.ts');
   const base = {
-    id: 'a', title: 'Book direct', badge: 'Special offer', discountPercent: 10, perks: [], promoCode: null,
-    validFrom: null, validTo: null, stayFrom: null, stayTo: null, minNights: null, minAdvanceDays: null, roomTypeUuids: [], sortOrder: 0,
+    id: 'a',
+    title: 'Book direct',
+    badge: 'Special offer',
+    discountPercent: 10,
+    perks: [],
+    promoCode: null,
+    validFrom: null,
+    validTo: null,
+    stayFrom: null,
+    stayTo: null,
+    minNights: null,
+    minAdvanceDays: null,
+    roomTypeUuids: [],
+    sortOrder: 0,
   };
   const ctx = { today: '2026-11-01', nightDates: ['2026-12-10', '2026-12-11', '2026-12-12'], roomTypeUuid: 'deluxe' };
 
@@ -98,7 +114,11 @@ describe('special offers', async () => {
   });
 
   it('picks the single best offer — biggest discount, then most perks', () => {
-    const offers = [{ ...base, id: 'small', discountPercent: 5 }, { ...base, id: 'big', discountPercent: 15 }, { ...base, id: 'perks', discountPercent: 15, perks: ['Welcome drink'] }];
+    const offers = [
+      { ...base, id: 'small', discountPercent: 5 },
+      { ...base, id: 'big', discountPercent: 15 },
+      { ...base, id: 'perks', discountPercent: 15, perks: ['Welcome drink'] },
+    ];
     assert.equal(bestDeal(offers, ctx)?.id, 'perks');
     assert.equal(bestDeal([], ctx), null);
   });
@@ -124,25 +144,59 @@ describe('special offers', async () => {
   // only, on every night, and a bigger offer never blocks a smaller one.
   describe('Early Bird / Minimum 4 Nights / Direct Promotion', () => {
     const offers = [
-      { ...base, id: 'direct', title: 'Direct Promotion', discountPercent: 50, minNights: 1, stayFrom: '2026-11-09', stayTo: '2027-04-01', sortOrder: 40 },
-      { ...base, id: 'min4', title: 'Minimum 4 Nights', discountPercent: 53, minNights: 4, stayFrom: '2026-11-27', stayTo: '2027-04-30', sortOrder: 50 },
+      {
+        ...base,
+        id: 'direct',
+        title: 'Direct Promotion',
+        discountPercent: 50,
+        minNights: 1,
+        stayFrom: '2026-11-09',
+        stayTo: '2027-04-01',
+        sortOrder: 40,
+      },
+      {
+        ...base,
+        id: 'min4',
+        title: 'Minimum 4 Nights',
+        discountPercent: 53,
+        minNights: 4,
+        stayFrom: '2026-11-27',
+        stayTo: '2027-04-30',
+        sortOrder: 50,
+      },
       { ...base, id: 'early', title: 'Early Bird', discountPercent: 55, minAdvanceDays: 60, stayTo: '2027-04-30', sortOrder: 60 },
     ];
-    const stay = (checkIn: string, nights: number) => Array.from({ length: nights }, (_, i) => {
-      const d = new Date(`${checkIn}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + i); return d.toISOString().slice(0, 10);
-    });
-    const pick = (today: string, checkIn: string, nights: number) => bestDeal(offers, { today, nightDates: stay(checkIn, nights), roomTypeUuid: 'deluxe' });
+    const stay = (checkIn: string, nights: number) =>
+      Array.from({ length: nights }, (_, i) => {
+        const d = new Date(`${checkIn}T00:00:00Z`);
+        d.setUTCDate(d.getUTCDate() + i);
+        return d.toISOString().slice(0, 10);
+      });
+    const pick = (today: string, checkIn: string, nights: number) =>
+      bestDeal(offers, { today, nightDates: stay(checkIn, nights), roomTypeUuid: 'deluxe' });
 
     it('26–28 Jan booked on 27 Nov: Early Bird on both nights', () => {
       const deal = pick('2026-11-27', '2027-01-26', 2);
       assert.equal(deal?.id, 'early');
-      assert.deepEqual(nightlyDiscounts(deal!, stay('2027-01-26', 2).map((date) => ({ date, amount: 400000 }))), [220000, 220000]);
+      assert.deepEqual(
+        nightlyDiscounts(
+          deal!,
+          stay('2027-01-26', 2).map((date) => ({ date, amount: 400000 })),
+        ),
+        [220000, 220000],
+      );
     });
 
     it('the same stay booked later: Direct 50% on both nights, not blocked', () => {
       const deal = pick('2026-12-01', '2027-01-26', 2);
       assert.equal(deal?.id, 'direct');
-      assert.deepEqual(nightlyDiscounts(deal!, stay('2027-01-26', 2).map((date) => ({ date, amount: 400000 }))), [200000, 200000]);
+      assert.deepEqual(
+        nightlyDiscounts(
+          deal!,
+          stay('2027-01-26', 2).map((date) => ({ date, amount: 400000 })),
+        ),
+        [200000, 200000],
+      );
     });
 
     it('4+ nights without the 60 days: Minimum 4 Nights', () => {
@@ -167,15 +221,38 @@ describe('Stripe Checkout', async () => {
   const { isReversedPayment, isSuccessfulPayment } = await import('../shared/paymentStatus.ts');
   const card = (card: Record<string, unknown>) => ({ type: 'card', card });
   const session = (over: Record<string, unknown> = {}, charge: Record<string, unknown> = {}) => ({
-    id: 'cs_test_1', client_secret: null, status: 'complete' as const, payment_status: 'paid' as const, amount_total: 1100050, currency: 'thb',
+    id: 'cs_test_1',
+    client_secret: null,
+    status: 'complete' as const,
+    payment_status: 'paid' as const,
+    amount_total: 1100050,
+    currency: 'thb',
     metadata: { ref: 'HH7K3M9Q', invoice_no: 'WEBHH7K3M9Q' },
-    payment_intent: { id: 'pi_1', latest_charge: { id: 'ch_1', amount_refunded: 0, refunded: false, currency: 'thb', payment_method_details: card({ brand: 'visa', wallet: null }), ...charge } },
+    payment_intent: {
+      id: 'pi_1',
+      latest_charge: {
+        id: 'ch_1',
+        amount_refunded: 0,
+        refunded: false,
+        currency: 'thb',
+        payment_method_details: card({ brand: 'visa', wallet: null }),
+        ...charge,
+      },
+    },
     ...over,
   });
 
   it('encodes nested params the way Stripe reads them', () => {
-    const body = formEncode({ mode: 'payment', line_items: [{ quantity: 1, price_data: { currency: 'thb', unit_amount: 1100050 } }], metadata: { ref: 'HH1' }, skipped: undefined });
-    assert.equal(decodeURIComponent(body.toString()), 'mode=payment&line_items[0][quantity]=1&line_items[0][price_data][currency]=thb&line_items[0][price_data][unit_amount]=1100050&metadata[ref]=HH1');
+    const body = formEncode({
+      mode: 'payment',
+      line_items: [{ quantity: 1, price_data: { currency: 'thb', unit_amount: 1100050 } }],
+      metadata: { ref: 'HH1' },
+      skipped: undefined,
+    });
+    assert.equal(
+      decodeURIComponent(body.toString()),
+      'mode=payment&line_items[0][quantity]=1&line_items[0][price_data][currency]=thb&line_items[0][price_data][unit_amount]=1100050&metadata[ref]=HH1',
+    );
   });
 
   it('reads a paid session as paid, in baht, with how it was paid', () => {
@@ -186,8 +263,17 @@ describe('Stripe Checkout', async () => {
     assert.equal(paid.tranRef, 'pi_1');
     assert.equal(paid.referenceNo, 'ch_1');
     assert.equal(paid.channelCode, 'Stripe · Visa');
-    assert.equal(inquiryFromSession(session({}, { payment_method_details: card({ brand: 'mastercard', wallet: { type: 'apple_pay' } }) }), 'WEBHH7K3M9Q').channelCode, 'Stripe · Apple Pay (Mastercard)');
-    assert.equal(inquiryFromSession(session({}, { payment_method_details: { type: 'promptpay' } }), 'WEBHH7K3M9Q').channelCode, 'Stripe · PromptPay');
+    assert.equal(
+      inquiryFromSession(
+        session({}, { payment_method_details: card({ brand: 'mastercard', wallet: { type: 'apple_pay' } }) }),
+        'WEBHH7K3M9Q',
+      ).channelCode,
+      'Stripe · Apple Pay (Mastercard)',
+    );
+    assert.equal(
+      inquiryFromSession(session({}, { payment_method_details: { type: 'promptpay' } }), 'WEBHH7K3M9Q').channelCode,
+      'Stripe · PromptPay',
+    );
   });
 
   it('reads full and partial refunds as reversed', () => {
@@ -198,7 +284,11 @@ describe('Stripe Checkout', async () => {
   });
 
   it('treats an unpaid or expired page as nothing final yet', () => {
-    for (const over of [{ status: 'open', payment_status: 'unpaid', payment_intent: null }, { status: 'expired', payment_status: 'unpaid', payment_intent: null }, { status: 'complete', payment_status: 'unpaid' }]) {
+    for (const over of [
+      { status: 'open', payment_status: 'unpaid', payment_intent: null },
+      { status: 'expired', payment_status: 'unpaid', payment_intent: null },
+      { status: 'complete', payment_status: 'unpaid' },
+    ]) {
       const answer = inquiryFromSession(session(over), 'WEBHH7K3M9Q');
       assert.ok(!isSuccessfulPayment(answer.respCode) && !isReversedPayment(answer.respCode));
       assert.equal(answer.respCode, '2001');
@@ -207,5 +297,15 @@ describe('Stripe Checkout', async () => {
 
   it('refuses a session that belongs to another booking', () => {
     assert.throws(() => inquiryFromSession(session(), 'WEBHHXXXXXX'), /does not belong/);
+  });
+});
+
+describe('room types without a name in SiteMinder', async () => {
+  const { roomTypeName } = await import('../api/_lib/roomTypeName.ts');
+  it('uses the name when there is one, else the room code in words, else "Room"', () => {
+    assert.equal(roomTypeName({ name: ' Deluxe Twin Room ', code: 'DELUXE' }), 'Deluxe Twin Room');
+    // Royal Pineapple's one-bedroom villa arrived as name: null on 28 Nov 2026 and crashed /book.
+    assert.equal(roomTypeName({ name: null, code: 'ONE_BEDROOM_VILLA' }), 'One bedroom villa');
+    assert.equal(roomTypeName({ name: '', code: null }), 'Room');
   });
 });

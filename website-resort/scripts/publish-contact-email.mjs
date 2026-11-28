@@ -117,14 +117,19 @@ for (const template of TEMPLATES) {
   const undeclared = [...used].filter((key) => !declared.has(key));
   const unused = [...declared].filter((key) => !used.has(key));
   if (undeclared.length || unused.length) {
-    console.error(`${template.file}: template and variables don't match.${undeclared.length ? ` Undeclared: ${undeclared.join(', ')}.` : ''}${unused.length ? ` Unused: ${unused.join(', ')}.` : ''}`);
+    console.error(
+      `${template.file}: template and variables don't match.${undeclared.length ? ` Undeclared: ${undeclared.join(', ')}.` : ''}${unused.length ? ` Unused: ${unused.join(', ')}.` : ''}`,
+    );
     process.exit(1);
   }
 }
 
 // Validate or export the exact upload payload without calling Resend. A
 // filtered publish avoids changing unrelated contact templates.
-const requested = process.argv.find((arg) => arg.startsWith('--only='))?.slice(7).split(',');
+const requested = process.argv
+  .find((arg) => arg.startsWith('--only='))
+  ?.slice(7)
+  .split(',');
 const selected = requested ? TEMPLATES.filter(({ alias }) => requested.includes(alias)) : TEMPLATES;
 if (requested?.some((alias) => !TEMPLATES.some((template) => template.alias === alias))) {
   console.error('Unknown template alias in --only.');

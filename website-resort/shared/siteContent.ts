@@ -49,4 +49,8 @@ export interface Offer {
   ctaLabel: string | null;
 }
 
-export interface SiteContent { activities: Activity[]; events: SiteEvent[]; offers: Offer[] }
+export interface SiteContent {
+  activities: Activity[];
+  events: SiteEvent[];
+  offers: Offer[];
+}

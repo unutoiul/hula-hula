@@ -9,8 +9,30 @@ import { useMotionPreference } from '../../context/MotionPreferenceContext';
 export function MotionToggleLink() {
   const { reduced, systemReduced, toggle } = useMotionPreference();
   if (systemReduced) return null;
-  return <>{' · '}<Box component="button" type="button" onClick={toggle} aria-pressed={reduced} sx={{
-    p: 0, border: 0, bgcolor: 'transparent', color: 'inherit', font: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', cursor: 'pointer',
-    textDecoration: 'underline', textUnderlineOffset: 3, '&:hover': { textDecorationThickness: 2 },
-  }}>{reduced ? 'Turn animations on' : 'Pause animations'}</Box></>;
+  return (
+    <>
+      {' · '}
+      <Box
+        component="button"
+        type="button"
+        onClick={toggle}
+        aria-pressed={reduced}
+        sx={{
+          p: 0,
+          border: 0,
+          bgcolor: 'transparent',
+          color: 'inherit',
+          font: 'inherit',
+          letterSpacing: 'inherit',
+          textTransform: 'inherit',
+          cursor: 'pointer',
+          textDecoration: 'underline',
+          textUnderlineOffset: 3,
+          '&:hover': { textDecorationThickness: 2 },
+        }}
+      >
+        {reduced ? 'Turn animations on' : 'Pause animations'}
+      </Box>
+    </>
+  );
 }

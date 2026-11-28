@@ -10,7 +10,11 @@ import { watchContent } from '../data/contentSync';
 
 const CACHE = 'hhg-site-v2';
 
-interface SiteDataValue { site: SiteData; ready: boolean; reload: () => Promise<void> }
+interface SiteDataValue {
+  site: SiteData;
+  ready: boolean;
+  reload: () => Promise<void>;
+}
 
 const SiteDataContext = createContext<SiteDataValue>({ site: DEFAULT_SITE, ready: false, reload: async () => {} });
 
@@ -18,14 +22,20 @@ function fromJson(raw: unknown): SiteData | null {
   const data = raw as Partial<SiteData> | null;
   if (!data || !Array.isArray(data.activities)) return null;
   return {
-    activities: data.activities.map((a) => normaliseActivity(a as unknown as Record<string, unknown>, String((a as { id?: unknown }).id ?? ''))).filter((a) => a.id),
+    activities: data.activities
+      .map((a) => normaliseActivity(a as unknown as Record<string, unknown>, String((a as { id?: unknown }).id ?? '')))
+      .filter((a) => a.id),
     rentals: normaliseRentals(data.rentals),
     club: normaliseClub(data.club),
   };
 }
 
 function cached(): SiteData | null {
-  try { return fromJson(JSON.parse(localStorage.getItem(CACHE) ?? 'null')); } catch { return null; }
+  try {
+    return fromJson(JSON.parse(localStorage.getItem(CACHE) ?? 'null'));
+  } catch {
+    return null;
+  }
 }
 
 export function SiteDataProvider({ children }: { children: ReactNode }) {
@@ -38,9 +48,15 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       const live = response.ok ? fromJson(await response.json()) : null;
       if (live) {
         setSite(live);
-        try { localStorage.setItem(CACHE, JSON.stringify(live)); } catch { /* still fine for this visit */ }
+        try {
+          localStorage.setItem(CACHE, JSON.stringify(live));
+        } catch {
+          /* still fine for this visit */
+        }
       }
-    } catch { /* keep what we have */ }
+    } catch {
+      /* keep what we have */
+    }
     setReady(true);
   }, []);
 

@@ -3,11 +3,50 @@ import type { Activity, EventCta, Offer, SiteContent, SiteEvent } from '../share
 import { dbConfigured, rest } from './_lib/db.js';
 import { allowMethods } from './_lib/http.js';
 
-interface ActivityRow { id: string; kicker: string; title: string; detail: string; images: string[]; cta_label: string | null; weekday: number | null; place: string | null; time_label: string | null; transport: string | null; price_note: string | null; free_bus: boolean | null }
-interface EventRow { id: string; title: string; summary: string; image_url: string | null; gallery?: string[] | null; starts_on: string | null; ends_on: string | null; time_label: string | null; cta_type: EventCta; cta_label: string | null; cta_url: string | null }
+interface ActivityRow {
+  id: string;
+  kicker: string;
+  title: string;
+  detail: string;
+  images: string[];
+  cta_label: string | null;
+  weekday: number | null;
+  place: string | null;
+  time_label: string | null;
+  transport: string | null;
+  price_note: string | null;
+  free_bus: boolean | null;
+}
+interface EventRow {
+  id: string;
+  title: string;
+  summary: string;
+  image_url: string | null;
+  gallery?: string[] | null;
+  starts_on: string | null;
+  ends_on: string | null;
+  time_label: string | null;
+  cta_type: EventCta;
+  cta_label: string | null;
+  cta_url: string | null;
+}
 interface OfferRow {
-  id: string; kicker: string | null; title: string; description: string; image_url: string | null; promo_code: string | null; valid_from: string | null; valid_to: string | null;
-  discount_percent: number | string; badge: string | null; perks: string[]; stay_from: string | null; stay_to: string | null; min_nights: number | null; min_advance_days?: number | null; cta_label: string | null;
+  id: string;
+  kicker: string | null;
+  title: string;
+  description: string;
+  image_url: string | null;
+  promo_code: string | null;
+  valid_from: string | null;
+  valid_to: string | null;
+  discount_percent: number | string;
+  badge: string | null;
+  perks: string[];
+  stay_from: string | null;
+  stay_to: string | null;
+  min_nights: number | null;
+  min_advance_days?: number | null;
+  cta_label: string | null;
 }
 
 // GET /api/content — the 7-day programme (activities), events and offers staff edit at /admin.
@@ -23,25 +62,64 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   try {
     const [activities, events, offers] = await Promise.all([
-      rest<ActivityRow[]>('/activities?select=id,kicker,title,detail,images,cta_label,weekday,place,time_label,transport,price_note,free_bus&order=weekday.asc.nullslast,sort_order.asc,created_at.asc', { role: 'anon' }),
+      rest<ActivityRow[]>(
+        '/activities?select=id,kicker,title,detail,images,cta_label,weekday,place,time_label,transport,price_note,free_bus&order=weekday.asc.nullslast,sort_order.asc,created_at.asc',
+        { role: 'anon' },
+      ),
       // select=* so the site keeps working before the gallery column exists (0008/0009_event_gallery.sql).
       rest<EventRow[]>('/events?select=*&order=sort_order.asc,starts_on.asc.nullslast', { role: 'anon' }),
       rest<OfferRow[]>('/offers?select=*&order=sort_order.asc,created_at.asc', { role: 'anon' }),
     ]);
     const content: SiteContent = {
-      activities: activities.map((a): Activity => ({
-        id: a.id, kicker: a.kicker, title: a.title, detail: a.detail, images: a.images, ctaLabel: a.cta_label,
-        weekday: a.weekday, place: a.place, timeLabel: a.time_label, transport: a.transport, priceNote: a.price_note, freeBus: !!a.free_bus,
-      })),
-      events: events.map((e): SiteEvent => ({
-        id: e.id, title: e.title, summary: e.summary, imageUrl: e.image_url, gallery: e.gallery ?? [], startsOn: e.starts_on, endsOn: e.ends_on, timeLabel: e.time_label,
-        cta: { type: e.cta_type, label: e.cta_label, url: e.cta_url },
-      })),
-      offers: offers.map((o): Offer => ({
-        id: o.id, kicker: o.kicker, title: o.title, description: o.description, imageUrl: o.image_url,
-        promoCode: o.promo_code, validFrom: o.valid_from, validTo: o.valid_to, ctaLabel: o.cta_label,
-        discountPercent: Number(o.discount_percent) || 0, badge: o.badge, perks: o.perks ?? [], stayFrom: o.stay_from, stayTo: o.stay_to, minNights: o.min_nights, minAdvanceDays: o.min_advance_days ?? null,
-      })),
+      activities: activities.map(
+        (a): Activity => ({
+          id: a.id,
+          kicker: a.kicker,
+          title: a.title,
+          detail: a.detail,
+          images: a.images,
+          ctaLabel: a.cta_label,
+          weekday: a.weekday,
+          place: a.place,
+          timeLabel: a.time_label,
+          transport: a.transport,
+          priceNote: a.price_note,
+          freeBus: !!a.free_bus,
+        }),
+      ),
+      events: events.map(
+        (e): SiteEvent => ({
+          id: e.id,
+          title: e.title,
+          summary: e.summary,
+          imageUrl: e.image_url,
+          gallery: e.gallery ?? [],
+          startsOn: e.starts_on,
+          endsOn: e.ends_on,
+          timeLabel: e.time_label,
+          cta: { type: e.cta_type, label: e.cta_label, url: e.cta_url },
+        }),
+      ),
+      offers: offers.map(
+        (o): Offer => ({
+          id: o.id,
+          kicker: o.kicker,
+          title: o.title,
+          description: o.description,
+          imageUrl: o.image_url,
+          promoCode: o.promo_code,
+          validFrom: o.valid_from,
+          validTo: o.valid_to,
+          ctaLabel: o.cta_label,
+          discountPercent: Number(o.discount_percent) || 0,
+          badge: o.badge,
+          perks: o.perks ?? [],
+          stayFrom: o.stay_from,
+          stayTo: o.stay_to,
+          minNights: o.min_nights,
+          minAdvanceDays: o.min_advance_days ?? null,
+        }),
+      ),
     };
     res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=86400');
     return res.status(200).json(content);

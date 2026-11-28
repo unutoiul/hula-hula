@@ -7,7 +7,12 @@ export type { Guest, ReservationRequest, ReservationStarted, ReservationView } f
 // which read and write the bookings in Supabase.
 
 export class ApiError extends Error {
-  constructor(message: string, readonly code?: ErrorResponse['code']) { super(message); }
+  constructor(
+    message: string,
+    readonly code?: ErrorResponse['code'],
+  ) {
+    super(message);
+  }
 }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -17,8 +22,9 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new ApiError('We couldn’t reach the booking system. Check your connection and try again.');
   }
-  const body = await response.json().catch(() => null) as (T & Partial<ErrorResponse>) | null;
-  if (!response.ok || !body) throw new ApiError(body?.error ?? 'Something went wrong on our side. Please try again, or WhatsApp us.', body?.code);
+  const body = (await response.json().catch(() => null)) as (T & Partial<ErrorResponse>) | null;
+  if (!response.ok || !body)
+    throw new ApiError(body?.error ?? 'Something went wrong on our side. Please try again, or WhatsApp us.', body?.code);
   return body;
 }
 

@@ -18,11 +18,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const activity = findActivity(site, queryString(req, 'activity'));
   const option = activity?.options.find((o) => o.id === queryString(req, 'option'));
   const date = queryString(req, 'date');
-  if (!activity?.bookOnline || !option || !isISODate(date)) return res.status(400).json({ error: 'That isn’t something we can show a tee sheet for.', code: 'invalid' });
+  if (!activity?.bookOnline || !option || !isISODate(date))
+    return res.status(400).json({ error: 'That isn’t something we can show a tee sheet for.', code: 'invalid' });
 
   try {
     const { bookings, blocks } = await loadDay(activity.id, date);
-    return res.status(200).json({ slots: buildSheet(activity, option, date, bookings, blocks, { rules: rulesFrom(site.club) }) } satisfies TeeSheetResponse);
+    return res
+      .status(200)
+      .json({ slots: buildSheet(activity, option, date, bookings, blocks, { rules: rulesFrom(site.club) }) } satisfies TeeSheetResponse);
   } catch (error) {
     console.error('Tee sheet failed', error);
     return res.status(500).json({ error: 'We couldn’t load the tee sheet just now. Please try again, or WhatsApp us.' });

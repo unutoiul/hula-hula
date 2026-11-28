@@ -9,11 +9,18 @@ export type DepositType = 'full-amount' | 'first-night' | 'fixed-amount' | 'perc
 export type PaymentProvider = 'stripe';
 
 /** Stripe's embedded form for one booking: its session's client secret and the account's publishable key. */
-export interface StripeCheckout { clientSecret: string; publishableKey: string }
+export interface StripeCheckout {
+  clientSecret: string;
+  publishableKey: string;
+}
 
 /** How many people one room can take. `children` 0 means the room isn't set up
  * for children separately, so a child simply takes an adult's place. */
-export interface RoomCapacity { guests: number; adults: number; children: number }
+export interface RoomCapacity {
+  guests: number;
+  adults: number;
+  children: number;
+}
 
 /** A special offer from /admin applied to a rate: a discount, perks, or both. */
 export interface RateDeal {
@@ -84,7 +91,11 @@ export interface GuestDetails {
 
 /** One room each — a cart line of two rooms becomes two entries, each with
  * the guests who'll sleep in it. */
-export interface BookingRoomRequest { roomRateUuid: string; adults: number; children: number }
+export interface BookingRoomRequest {
+  roomRateUuid: string;
+  adults: number;
+  children: number;
+}
 
 export interface CreateBookingRequest {
   checkIn: string;
@@ -101,19 +112,36 @@ export type CreateBookingErrorCode = 'INVALID' | 'SOLD_OUT' | 'SITEMINDER_UNAVAI
 
 export type CreateBookingResponse =
   | {
-    ok: true; ref: string; accessKey: string; currency: string; total: number; deposit: number; balance: number; expiresAt: string; testPayment: boolean; paymentProvider: PaymentProvider;
-    /** Kept for older API clients; Stripe's form shows on our payment step. */
-    webPaymentUrl: null;
-    /** What the payment step mounts Stripe's embedded form with. */
-    stripe: StripeCheckout;
-  }
+      ok: true;
+      ref: string;
+      accessKey: string;
+      currency: string;
+      total: number;
+      deposit: number;
+      balance: number;
+      expiresAt: string;
+      testPayment: boolean;
+      paymentProvider: PaymentProvider;
+      /** Kept for older API clients; Stripe's form shows on our payment step. */
+      webPaymentUrl: null;
+      /** What the payment step mounts Stripe's embedded form with. */
+      stripe: StripeCheckout;
+    }
   | { ok: false; code: CreateBookingErrorCode; message: string };
 
 /** What the guest's browser may see. `confirmed` = paid and handed to the
  * resort; there is deliberately no personal data in here. */
 export type PublicBookingStatus = 'pending' | 'confirmed' | 'expired' | 'failed' | 'voided' | 'refunded';
 
-export interface BookingLine { roomTypeName: string; rateName: string; quantity: number; adults: number; children: number; offerTitle?: string; perks?: string[] }
+export interface BookingLine {
+  roomTypeName: string;
+  rateName: string;
+  quantity: number;
+  adults: number;
+  children: number;
+  offerTitle?: string;
+  perks?: string[];
+}
 
 export interface BookingStatusResponse {
   ref: string;

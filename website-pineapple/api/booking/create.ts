@@ -28,12 +28,14 @@ const shortDate = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'sho
 // BOOKING_HOLD_MINUTES, and asks Stripe for a payment form for that amount. The
 // answer carries that page plus the booking reference and a private key the
 // browser uses to follow its status.
-const shownRate = (p: PricedRate) => guestRate(p.rate.name, { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded });
+const shownRate = (p: PricedRate) =>
+  guestRate(p.rate.name, { breakfast: p.rate.breakfastIncluded, lunch: p.rate.lunchIncluded, dinner: p.rate.dinnerIncluded });
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!allowMethods(req, res, ['POST'])) return;
   res.setHeader('Cache-Control', 'no-store');
-  const fail = (status: number, code: CreateBookingErrorCode, message: string) => res.status(status).json({ ok: false, code, message } satisfies CreateBookingResponse);
+  const fail = (status: number, code: CreateBookingErrorCode, message: string) =>
+    res.status(status).json({ ok: false, code, message } satisfies CreateBookingResponse);
 
   const body = readJsonBody(req);
   if (body.hp_ref) {
@@ -66,14 +68,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [holds, deals] = await Promise.all([softHolds(stay.checkIn, stay.checkOut), loadDeals()]);
     const occupancies = [...new Set(rooms.map((room) => `${room.adults}|${room.children}`))];
     priced = new Map();
-    await Promise.all(occupancies.map(async (key) => {
-      const [adults, children] = key.split('|').map(Number);
-      const quotes = await getQuotes({ ...stay, adults, children });
-      for (const p of priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit(), deals)) priced.set(`${p.rate.uuid}|${key}`, p);
-    }));
+    await Promise.all(
+      occupancies.map(async (key) => {
+        const [adults, children] = key.split('|').map(Number);
+        const quotes = await getQuotes({ ...stay, adults, children });
+        for (const p of priceQuotes(quotes, catalog, holds, stay.checkIn, stay.promo, defaultDeposit(), deals))
+          priced.set(`${p.rate.uuid}|${key}`, p);
+      }),
+    );
   } catch (error) {
     console.error('Booking: re-pricing failed', error);
-    return fail(error instanceof SiteMinderError && error.status === 429 ? 429 : 502, 'SITEMINDER_UNAVAILABLE', 'We couldn’t confirm today’s prices — please try again in a minute.');
+    return fail(
+      error instanceof SiteMinderError && error.status === 429 ? 429 : 502,
+      'SITEMINDER_UNAVAILABLE',
+      'We couldn’t confirm today’s prices — please try again in a minute.',
+    );
   }
 
   const lines = new Map<string, { p: PricedRate; room: BookingRoomRequest; quantity: number }>();
@@ -83,23 +92,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const key = `${room.roomRateUuid}|${room.adults}|${room.children}`;
     const p = priced.get(key);
     if (!p) return fail(409, 'SOLD_OUT', 'One of your rooms has just been booked by someone else — please choose again.');
-    if (!fits(p.capacity, room.adults, room.children)) return fail(400, 'INVALID', `The ${p.roomType.name} sleeps up to ${p.capacity.guests} — please add another room.`);
+    if (!fits(p.capacity, room.adults, room.children))
+      return fail(400, 'INVALID', `The ${p.roomType.name} sleeps up to ${p.capacity.guests} — please add another room.`);
     perRoomType.set(p.roomType.uuid, (perRoomType.get(p.roomType.uuid) ?? 0) + 1);
     perRate.set(p.rate.uuid, (perRate.get(p.rate.uuid) ?? 0) + 1);
-    if (perRoomType.get(p.roomType.uuid)! > p.available) return fail(409, 'SOLD_OUT', `Only ${p.available} ${p.roomType.name} ${p.available === 1 ? 'is' : 'are'} left for these dates — please choose again.`);
-    if (p.rate.maxNumberOfRooms && perRate.get(p.rate.uuid)! > p.rate.maxNumberOfRooms) return fail(400, 'INVALID', `${shownRate(p).name} can be booked for up to ${p.rate.maxNumberOfRooms} rooms at a time.`);
+    if (perRoomType.get(p.roomType.uuid)! > p.available)
+      return fail(
+        409,
+        'SOLD_OUT',
+        `Only ${p.available} ${p.roomType.name} ${p.available === 1 ? 'is' : 'are'} left for these dates — please choose again.`,
+      );
+    if (p.rate.maxNumberOfRooms && perRate.get(p.rate.uuid)! > p.rate.maxNumberOfRooms)
+      return fail(400, 'INVALID', `${shownRate(p).name} can be booked for up to ${p.rate.maxNumberOfRooms} rooms at a time.`);
     const line = lines.get(key);
-    if (line) line.quantity += 1; else lines.set(key, { p, room, quantity: 1 });
+    if (line) line.quantity += 1;
+    else lines.set(key, { p, room, quantity: 1 });
   }
 
   const items: BookingItem[] = [...lines.values()].map(({ p, room, quantity }) => ({
-    roomTypeUuid: p.roomType.uuid, roomTypeName: guestRoomName(p.roomType.uuid, p.roomType.name), roomRateUuid: p.rate.uuid,
+    roomTypeUuid: p.roomType.uuid,
+    roomTypeName: guestRoomName(p.roomType.uuid, p.roomType.name),
+    roomRateUuid: p.rate.uuid,
     ...(guestRoomName(p.roomType.uuid, p.roomType.name) !== p.roomType.name ? { siteMinderName: p.roomType.name } : {}),
     // The name and meals the guest saw on the booking page (shared/rateNames.ts).
-    rateName: shownRate(p).name, meals: shownRate(p).meals,
-    cancellation: p.cancellation.summary, depositType: p.depositType,
-    adults: room.adults, children: room.children, quantity,
-    unitTotal: fromSatang(p.total), unitOriginalTotal: fromSatang(p.originalTotal), unitDeposit: fromSatang(p.dueNow),
+    rateName: shownRate(p).name,
+    meals: shownRate(p).meals,
+    cancellation: p.cancellation.summary,
+    depositType: p.depositType,
+    adults: room.adults,
+    children: room.children,
+    quantity,
+    unitTotal: fromSatang(p.total),
+    unitOriginalTotal: fromSatang(p.originalTotal),
+    unitDeposit: fromSatang(p.dueNow),
     offer: p.offer ? { title: p.offer.title, percent: p.offer.percent, perks: p.offer.perks, savings: fromSatang(p.offer.savings) } : null,
     nightly: p.nightly.map((n) => ({ date: n.date, amount: fromSatang(n.amount) })),
     promoDiscount: fromSatang(p.promoDiscount),
@@ -118,11 +143,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const ref = newRef();
     try {
       booking = await insertPending({
-        ref, invoice_no: invoiceNoFor(ref), access_key_hash: sha256Hex(accessKey),
-        check_in: stay.checkIn, check_out: stay.checkOut, promo_code: stay.promo ?? null, items, currency,
-        total_amount: fromSatang(totalSatang), deposit_amount: fromSatang(depositSatang),
-        guest_first_name: guest.firstName, guest_last_name: guest.lastName, guest_email: guest.email, guest_phone: guest.phone,
-        guest_country: guest.country, arrival_time: guest.arrivalTime ?? null, special_requests: guest.specialRequests ?? null,
+        ref,
+        invoice_no: invoiceNoFor(ref),
+        access_key_hash: sha256Hex(accessKey),
+        check_in: stay.checkIn,
+        check_out: stay.checkOut,
+        promo_code: stay.promo ?? null,
+        items,
+        currency,
+        total_amount: fromSatang(totalSatang),
+        deposit_amount: fromSatang(depositSatang),
+        guest_first_name: guest.firstName,
+        guest_last_name: guest.lastName,
+        guest_email: guest.email,
+        guest_phone: guest.phone,
+        guest_country: guest.country,
+        arrival_time: guest.arrivalTime ?? null,
+        special_requests: guest.specialRequests ?? null,
         expires_at: expiresAt.toISOString(),
       });
       break;
@@ -143,8 +180,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // paid, Stripe sends them to their confirmation, which checks with
       // Stripe itself. The form closes a minute after the hold, so Stripe's
       // 30-minute minimum is met even with a little clock drift.
-      invoiceNo: booking.invoice_no, ref: booking.ref, description,
-      amount: fromSatang(depositSatang), currencyCode: currency, expiresAt: new Date(expiresAt.getTime() + 60_000),
+      invoiceNo: booking.invoice_no,
+      ref: booking.ref,
+      description,
+      amount: fromSatang(depositSatang),
+      currencyCode: currency,
+      expiresAt: new Date(expiresAt.getTime() + 60_000),
       returnUrl: `${site}/book/confirmation?ref=${booking.ref}&key=${accessKey}`,
       email: guest.email,
     });
@@ -152,9 +193,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await updateWhere(`id=eq.${booking.id}`, { payment_token: paymentToken });
     console.info('Booking pending payment', booking.ref, booking.invoice_no, provider);
     return res.status(200).json({
-      ok: true, ref: booking.ref, accessKey, webPaymentUrl: null, currency,
-      total: fromSatang(totalSatang), deposit: fromSatang(depositSatang), balance: fromSatang(totalSatang - depositSatang),
-      expiresAt: expiresAt.toISOString(), testPayment: isTestMode(), paymentProvider: provider, stripe,
+      ok: true,
+      ref: booking.ref,
+      accessKey,
+      webPaymentUrl: null,
+      currency,
+      total: fromSatang(totalSatang),
+      deposit: fromSatang(depositSatang),
+      balance: fromSatang(totalSatang - depositSatang),
+      expiresAt: expiresAt.toISOString(),
+      testPayment: isTestMode(),
+      paymentProvider: provider,
+      stripe,
     } satisfies CreateBookingResponse);
   } catch (error) {
     console.error(`Booking: ${provider} payment page failed`, booking.ref, error);
@@ -165,13 +215,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 function parseRooms(value: unknown): BookingRoomRequest[] | string {
   if (!Array.isArray(value) || value.length === 0) return 'Please choose at least one room.';
-  if (value.length > maxRoomsPerBooking()) return `Online bookings are for up to ${maxRoomsPerBooking()} rooms — please contact us for groups.`;
+  if (value.length > maxRoomsPerBooking())
+    return `Online bookings are for up to ${maxRoomsPerBooking()} rooms — please contact us for groups.`;
   const rooms: BookingRoomRequest[] = [];
   for (const raw of value as Record<string, unknown>[]) {
     const { roomRateUuid, adults, children } = raw ?? {};
     if (typeof roomRateUuid !== 'string' || !/^[\w-]{1,64}$/.test(roomRateUuid)) return 'Please choose your rooms again.';
-    if (!Number.isInteger(adults) || (adults as number) < 1 || (adults as number) > MAX_ADULTS) return 'Each room needs at least one adult.';
-    if (!Number.isInteger(children) || (children as number) < 0 || (children as number) > MAX_CHILDREN) return 'Please check the number of children.';
+    if (!Number.isInteger(adults) || (adults as number) < 1 || (adults as number) > MAX_ADULTS)
+      return 'Each room needs at least one adult.';
+    if (!Number.isInteger(children) || (children as number) < 0 || (children as number) > MAX_CHILDREN)
+      return 'Please check the number of children.';
     rooms.push({ roomRateUuid, adults: adults as number, children: children as number });
   }
   return rooms;
@@ -181,9 +234,13 @@ function parseGuest(value: unknown): GuestDetails | string {
   const raw = (value ?? {}) as Record<string, unknown>;
   const text = (key: string, max: number) => (typeof raw[key] === 'string' ? (raw[key] as string).trim().slice(0, max) : '');
   const guest: GuestDetails = {
-    firstName: text('firstName', 60), lastName: text('lastName', 60), email: text('email', 120).toLowerCase(),
-    phone: text('phone', 30), country: text('country', 2).toUpperCase(),
-    arrivalTime: text('arrivalTime', 40) || undefined, specialRequests: text('specialRequests', 1000) || undefined,
+    firstName: text('firstName', 60),
+    lastName: text('lastName', 60),
+    email: text('email', 120).toLowerCase(),
+    phone: text('phone', 30),
+    country: text('country', 2).toUpperCase(),
+    arrivalTime: text('arrivalTime', 40) || undefined,
+    specialRequests: text('specialRequests', 1000) || undefined,
   };
   if (!guest.firstName || !guest.lastName) return 'Please add the guest’s first and last name.';
   if (!EMAIL.test(guest.email)) return 'Please add a valid email address — your confirmation goes there.';

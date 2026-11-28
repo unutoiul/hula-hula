@@ -7,11 +7,21 @@ import { dbConfigured, rest } from './db.js';
 // without offers rather than not at all.
 
 interface OfferRow {
-  id: string; title: string; badge: string | null; discount_percent: number | string; perks: string[]; promo_code: string | null;
-  valid_from: string | null; valid_to: string | null; stay_from: string | null; stay_to: string | null; min_nights: number | null;
+  id: string;
+  title: string;
+  badge: string | null;
+  discount_percent: number | string;
+  perks: string[];
+  promo_code: string | null;
+  valid_from: string | null;
+  valid_to: string | null;
+  stay_from: string | null;
+  stay_to: string | null;
+  min_nights: number | null;
   /** Missing until supabase/migrations/0010_offer_book_ahead.sql has run. */
   min_advance_days?: number | null;
-  room_type_uuids: string[]; sort_order: number;
+  room_type_uuids: string[];
+  sort_order: number;
 }
 
 // Every column (not a list), so pricing keeps working whether or not a newer
@@ -25,11 +35,24 @@ export async function loadDeals(): Promise<Deal[]> {
   if (cache && Date.now() - cache.loadedAt < TTL_MS) return cache.deals;
   try {
     const rows = await rest<OfferRow[]>(`/offers?select=${COLUMNS}&active=eq.true&order=sort_order.asc`);
-    const deals = rows.map((row): Deal => ({
-      id: row.id, title: row.title, badge: row.badge, discountPercent: Number(row.discount_percent) || 0, perks: row.perks ?? [],
-      promoCode: row.promo_code, validFrom: row.valid_from, validTo: row.valid_to, stayFrom: row.stay_from, stayTo: row.stay_to,
-      minNights: row.min_nights, minAdvanceDays: row.min_advance_days ?? null, roomTypeUuids: row.room_type_uuids ?? [], sortOrder: row.sort_order,
-    }));
+    const deals = rows.map(
+      (row): Deal => ({
+        id: row.id,
+        title: row.title,
+        badge: row.badge,
+        discountPercent: Number(row.discount_percent) || 0,
+        perks: row.perks ?? [],
+        promoCode: row.promo_code,
+        validFrom: row.valid_from,
+        validTo: row.valid_to,
+        stayFrom: row.stay_from,
+        stayTo: row.stay_to,
+        minNights: row.min_nights,
+        minAdvanceDays: row.min_advance_days ?? null,
+        roomTypeUuids: row.room_type_uuids ?? [],
+        sortOrder: row.sort_order,
+      }),
+    );
     cache = { loadedAt: Date.now(), deals };
     return deals;
   } catch (error) {

@@ -21,16 +21,34 @@ const logoSet = (ext: string) => [160, 320, 480].map((w) => `${LOGO}-${w}.${ext}
 export function ClubMarkArt({ size = 'default' }: { size?: MarkSize }) {
   const { xs, md } = MARK_SIZES[size];
   const sizes = `(min-width: 900px) ${md}px, ${xs}px`;
-  return <Box component="picture" sx={{ display: 'contents' }}>
-    <source type="image/avif" srcSet={logoSet('avif')} sizes={sizes} />
-    <Box component="img" src={`${LOGO}-320.webp`} srcSet={logoSet('webp')} sizes={sizes} alt="" width="600" height="600"
-      sx={{ display: 'block', height: MARK_SIZES[size], width: 'auto', objectFit: 'contain', transition: 'height .35s ease' }} />
-  </Box>;
+  return (
+    <Box component="picture" sx={{ display: 'contents' }}>
+      <source type="image/avif" srcSet={logoSet('avif')} sizes={sizes} />
+      <Box
+        component="img"
+        src={`${LOGO}-320.webp`}
+        srcSet={logoSet('webp')}
+        sizes={sizes}
+        alt=""
+        width="600"
+        height="600"
+        sx={{ display: 'block', height: MARK_SIZES[size], width: 'auto', objectFit: 'contain', transition: 'height .35s ease' }}
+      />
+    </Box>
+  );
 }
 
 // The mark as a link: "#top" scrolls the homepage; any other path navigates in-app.
 export function ClubMark({ size = 'default', href = '#top' }: { size?: MarkSize; href?: string }) {
-  return <Link href={href} onClick={href.startsWith('/') ? linkClick(href) : undefined} aria-label="Hula Hula Golf Club home" underline="none" sx={{ display: 'inline-flex', lineHeight: 0 }}>
-    <ClubMarkArt size={size} />
-  </Link>;
+  return (
+    <Link
+      href={href}
+      onClick={href.startsWith('/') ? linkClick(href) : undefined}
+      aria-label="Hula Hula Golf Club home"
+      underline="none"
+      sx={{ display: 'inline-flex', lineHeight: 0 }}
+    >
+      <ClubMarkArt size={size} />
+    </Link>
+  );
 }

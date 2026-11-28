@@ -12,8 +12,15 @@ import type { ActivityIconKey } from './config';
 
 // The icons staff can pick for an activity in /admin.
 export const ICON_COMPONENTS: Record<ActivityIconKey, typeof GolfCourseRounded> = {
-  golf: GolfCourseRounded, football: SportsSoccerRounded, flag: FlagRounded, range: SportsGolfRounded,
-  lesson: SchoolRounded, racket: SportsTennisRounded, trophy: EmojiEventsRounded, group: GroupsRounded, star: StarRounded,
+  golf: GolfCourseRounded,
+  football: SportsSoccerRounded,
+  flag: FlagRounded,
+  range: SportsGolfRounded,
+  lesson: SchoolRounded,
+  racket: SportsTennisRounded,
+  trophy: EmojiEventsRounded,
+  group: GroupsRounded,
+  star: StarRounded,
 };
 
 export function ActivityIcon({ icon, ...props }: { icon: ActivityIconKey | undefined } & SvgIconProps) {

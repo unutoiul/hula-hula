@@ -5,9 +5,32 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { buildSheet, fits, isBookableDay, rulesFrom } from '../src/booking/availability.ts';
-import { clubRules, DEFAULT_CLUB, DEFAULT_SITE, findActivity, isPrivateTransfer, normaliseActivity, normaliseClub, onlineActivities, openingHoursLines, pickupFor, slugify } from '../src/booking/config.ts';
+import {
+  clubRules,
+  DEFAULT_CLUB,
+  DEFAULT_SITE,
+  findActivity,
+  isPrivateTransfer,
+  normaliseActivity,
+  normaliseClub,
+  onlineActivities,
+  openingHoursLines,
+  pickupFor,
+  slugify,
+} from '../src/booking/config.ts';
 import { addDays, fromMinutes, isISODate, krabiNow, timeLabel, toMinutes } from '../src/booking/dates.ts';
-import { balanceDue, bookingDepositTerms, depositDetail, depositFor, money, onlineAmount, paymentNote, perPersonDepositTerms, priceLines, totalOf } from '../src/booking/pricing.ts';
+import {
+  balanceDue,
+  bookingDepositTerms,
+  depositDetail,
+  depositFor,
+  money,
+  onlineAmount,
+  paymentNote,
+  perPersonDepositTerms,
+  priceLines,
+  totalOf,
+} from '../src/booking/pricing.ts';
 
 const golf = findActivity(DEFAULT_SITE, 'golf')!;
 const range = findActivity(DEFAULT_SITE, 'range')!;
@@ -17,8 +40,12 @@ const rules = rulesFrom(DEFAULT_CLUB);
 // A fixed "now": Krabi, 06:00 on Monday 2 November 2026; most tests look at the Wednesday.
 const now = { date: '2026-11-02', minutes: 6 * 60 };
 const day = '2026-11-04';
-const sheet = (activity: typeof golf, optionId: string, bookings: { time: string; minutes: number; players: number }[] = [], blocks: { start: string; end: string }[] = []) =>
-  buildSheet(activity, option(activity, optionId), day, bookings, blocks, { rules, now });
+const sheet = (
+  activity: typeof golf,
+  optionId: string,
+  bookings: { time: string; minutes: number; players: number }[] = [],
+  blocks: { start: string; end: string }[] = [],
+) => buildSheet(activity, option(activity, optionId), day, bookings, blocks, { rules, now });
 const at = (slots: ReturnType<typeof buildSheet>, time: string) => slots.find((s) => s.time === time)!;
 
 describe('prices (from the club brochure)', () => {
@@ -82,7 +109,10 @@ describe('the deposit', () => {
     assert.equal(paymentNote({ deposit: 0, peopleNoun: 'player' }), 'paid online when you book');
     assert.equal(perPersonDepositTerms({ deposit: 0, peopleNoun: 'player' }), '');
     const payment = (terms?: string) => clubRules('', DEFAULT_CLUB, terms).find((rule) => rule.title === 'Payment')!.text;
-    assert.match(payment(bookingDepositTerms(2000, '4 players × ฿500')), /^A ฿2,000 deposit \(4 players × ฿500\) is paid online.*The rest is paid at the club\.$/);
+    assert.match(
+      payment(bookingDepositTerms(2000, '4 players × ฿500')),
+      /^A ฿2,000 deposit \(4 players × ฿500\) is paid online.*The rest is paid at the club\.$/,
+    );
     assert.match(payment(perPersonDepositTerms({ deposit: 500, peopleNoun: 'person' })), /^A ฿500 deposit per person is paid online/);
     assert.match(payment(), /^Paid online when you book/);
     const cancelling = (terms?: string) => clubRules('', DEFAULT_CLUB, terms).find((rule) => rule.title === 'Changes & cancellation')!.text;
@@ -140,7 +170,10 @@ describe('the tee sheet', () => {
     assert.equal(sheet(golf, '9').at(-1)!.time, option(golf, '9').lastStart);
   });
   it('only online activities reach the booking pages', () => {
-    assert.deepEqual(onlineActivities(DEFAULT_SITE).map((a) => a.id), ['golf', 'footgolf', 'puttgolf', 'range', 'lesson']);
+    assert.deepEqual(
+      onlineActivities(DEFAULT_SITE).map((a) => a.id),
+      ['golf', 'footgolf', 'puttgolf', 'range', 'lesson'],
+    );
     assert.equal(option(golf, '18').price, 2400);
     assert.equal(findActivity(DEFAULT_SITE, 'footgolf')!.options[0].label, '18 holes');
   });
@@ -194,7 +227,10 @@ describe('what staff save in /admin', () => {
     assert.ok(activity.capacity >= 1 && activity.maxPlayers >= activity.minPlayers);
   });
   it('never lets bad values through', () => {
-    const activity = normaliseActivity({ name: 'X', options: [{ label: 'Y', price: -5, lastStart: '25:99' }], capacity: 0, icon: 'rocket' }, 'x');
+    const activity = normaliseActivity(
+      { name: 'X', options: [{ label: 'Y', price: -5, lastStart: '25:99' }], capacity: 0, icon: 'rocket' },
+      'x',
+    );
     assert.equal(activity.options[0].price, 0);
     assert.equal(activity.options[0].lastStart, '16:00');
     assert.equal(activity.capacity, 1);

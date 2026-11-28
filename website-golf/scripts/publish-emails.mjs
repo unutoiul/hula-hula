@@ -55,7 +55,9 @@ const TEMPLATES = [
     subject: 'You’re on the tee sheet — Hula Hula Golf Club',
     file: 'golf-booking-confirmation.html',
     variables: [
-      ...TEE_TIME, ...CLUB, ...CLUB_CONTACT,
+      ...TEE_TIME,
+      ...CLUB,
+      ...CLUB_CONTACT,
       { key: 'GUEST_FIRST_NAME', type: 'string', fallback_value: 'there' },
       { key: 'PICKUP_LINE', type: 'string', fallback_value: '' },
       { key: 'PICKUP_DISPLAY', type: 'string', fallback_value: HIDDEN },
@@ -68,7 +70,8 @@ const TEMPLATES = [
     subject: 'New online tee time',
     file: 'golf-booking-notification.html',
     variables: [
-      ...TEE_TIME, ...CLUB,
+      ...TEE_TIME,
+      ...CLUB,
       { key: 'GUEST_NAME', type: 'string' },
       { key: 'GUEST_EMAIL', type: 'string' },
       { key: 'GUEST_PHONE', type: 'string' },
@@ -90,7 +93,9 @@ const TEMPLATES = [
     subject: 'You’re in! — Hula Hula Golf Club',
     file: 'golf-event-confirmation.html',
     variables: [
-      ...ORDER, ...CLUB, ...CLUB_CONTACT,
+      ...ORDER,
+      ...CLUB,
+      ...CLUB_CONTACT,
       { key: 'GUEST_FIRST_NAME', type: 'string', fallback_value: 'there' },
       { key: 'PLACES_TEXT', type: 'string', fallback_value: 'your place is booked and paid' },
       { key: 'EVENT_URL', type: 'string' },
@@ -102,7 +107,8 @@ const TEMPLATES = [
     subject: 'New event order',
     file: 'golf-event-notification.html',
     variables: [
-      ...ORDER, ...CLUB,
+      ...ORDER,
+      ...CLUB,
       { key: 'GUEST_NAME', type: 'string' },
       { key: 'GUEST_EMAIL', type: 'string', fallback_value: 'Not given' },
       { key: 'GUEST_PHONE', type: 'string' },
@@ -125,7 +131,9 @@ for (const template of TEMPLATES) {
   const undeclared = [...used].filter((key) => !declared.has(key));
   const unused = [...declared].filter((key) => !used.has(key));
   if (undeclared.length || unused.length || declared.size !== template.variables.length) {
-    console.error(`${template.file}: template and variables don't match.${undeclared.length ? ` Undeclared: ${undeclared.join(', ')}.` : ''}${unused.length ? ` Unused: ${unused.join(', ')}.` : ''}${declared.size !== template.variables.length ? ' A variable is declared twice.' : ''}`);
+    console.error(
+      `${template.file}: template and variables don't match.${undeclared.length ? ` Undeclared: ${undeclared.join(', ')}.` : ''}${unused.length ? ` Unused: ${unused.join(', ')}.` : ''}${declared.size !== template.variables.length ? ' A variable is declared twice.' : ''}`,
+    );
     process.exit(1);
   }
 }

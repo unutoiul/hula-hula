@@ -29,9 +29,14 @@ const ROWS_PER_REQUEST = 1000; // the most Supabase returns at once
 function useAutoRefresh(refresh: () => void) {
   useEffect(() => {
     const id = window.setInterval(refresh, 60_000);
-    const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
     document.addEventListener('visibilitychange', onVisible);
-    return () => { window.clearInterval(id); document.removeEventListener('visibilitychange', onVisible); };
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [refresh]);
 }
 
@@ -54,25 +59,41 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
   const [adding, setAdding] = useState(false);
   const [blocking, setBlocking] = useState(false);
 
-  useEffect(() => { if (jumpTo) setDate(jumpTo.split('#')[0]); }, [jumpTo]);
+  useEffect(() => {
+    if (jumpTo) setDate(jumpTo.split('#')[0]);
+  }, [jumpTo]);
   // The calendar follows the day, wherever the day was changed from.
-  useEffect(() => { setMonth(date.slice(0, 7)); }, [date]);
+  useEffect(() => {
+    setMonth(date.slice(0, 7));
+  }, [date]);
 
   const load = useCallback(async () => {
     setLoading(true);
     const [b, k] = await Promise.all([
       // Guests still paying, or who never finished, aren't on the sheet yet.
-      supabase!.from('golf_bookings').select('*').eq('play_date', date).not('status', 'in', '(pending,expired)').order('start_time').order('created_at'),
+      supabase!
+        .from('golf_bookings')
+        .select('*')
+        .eq('play_date', date)
+        .not('status', 'in', '(pending,expired)')
+        .order('start_time')
+        .order('created_at'),
       supabase!.from('golf_blocks').select('*').eq('play_date', date).order('start_time'),
     ]);
     setLoading(false);
-    if (b.error || k.error) { setError((b.error ?? k.error)!.message); return; }
+    if (b.error || k.error) {
+      setError((b.error ?? k.error)!.message);
+      return;
+    }
     setError(null);
     setBookings(b.data as StaffBooking[]);
     setBlocks(k.data as StaffBlock[]);
   }, [date]);
 
-  useEffect(() => { setBookings(null); void load(); }, [load]);
+  useEffect(() => {
+    setBookings(null);
+    void load();
+  }, [load]);
   useAutoRefresh(load);
 
   // Each day's numbers for the calendar, counted the same way as the day's own
@@ -80,10 +101,18 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
   const loadMonth = useCallback(async () => {
     const days = new Map<string, DayTotals>();
     for (let from = 0; ; from += ROWS_PER_REQUEST) {
-      const { data, error: monthError } = await supabase!.from('golf_bookings').select('play_date,players')
-        .gte('play_date', `${month}-01`).lt('play_date', `${shiftMonth(month, 1)}-01`).not('status', 'in', '(pending,expired,cancelled)')
-        .order('id').range(from, from + ROWS_PER_REQUEST - 1);
-      if (monthError) { setError(monthError.message); return; }
+      const { data, error: monthError } = await supabase!
+        .from('golf_bookings')
+        .select('play_date,players')
+        .gte('play_date', `${month}-01`)
+        .lt('play_date', `${shiftMonth(month, 1)}-01`)
+        .not('status', 'in', '(pending,expired,cancelled)')
+        .order('id')
+        .range(from, from + ROWS_PER_REQUEST - 1);
+      if (monthError) {
+        setError(monthError.message);
+        return;
+      }
       for (const row of data as { play_date: string; players: number }[]) {
         const day = days.get(row.play_date) ?? { bookings: 0, people: 0 };
         days.set(row.play_date, { bookings: day.bookings + 1, people: day.people + row.players });
@@ -93,10 +122,15 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
     setMonthTotals({ month, days });
   }, [month]);
 
-  useEffect(() => { void loadMonth(); }, [loadMonth]);
+  useEffect(() => {
+    void loadMonth();
+  }, [loadMonth]);
   useAutoRefresh(loadMonth);
 
-  const refresh = useCallback(() => { void load(); void loadMonth(); }, [load, loadMonth]);
+  const refresh = useCallback(() => {
+    void load();
+    void loadMonth();
+  }, [load, loadMonth]);
 
   const active = useMemo(() => (bookings ?? []).filter((b) => b.status !== 'cancelled'), [bookings]);
   const shown = (bookings ?? []).filter((b) => (filter === 'all' || b.activity === filter) && (showCancelled || b.status !== 'cancelled'));
@@ -112,96 +146,255 @@ export function DaySheet({ jumpTo }: { jumpTo: string | null }) {
   // The day as one timeline: each start time with its bookings, blocked times slotted in.
   const timeline = useMemo(() => {
     const rows: { time: string; node: ReactNode }[] = [];
-    for (const block of shownBlocks) rows.push({ time: hhmm(block.start_time), node: <BlockRow key={block.id} block={block} onRemoved={load} /> });
-    for (const booking of shown) rows.push({ time: hhmm(booking.start_time), node: <BookingCard key={booking.id} booking={booking} onChanged={refresh} /> });
+    for (const block of shownBlocks)
+      rows.push({ time: hhmm(block.start_time), node: <BlockRow key={block.id} block={block} onRemoved={load} /> });
+    for (const booking of shown)
+      rows.push({ time: hhmm(booking.start_time), node: <BookingCard key={booking.id} booking={booking} onChanged={refresh} /> });
     return rows.sort((a, b) => a.time.localeCompare(b.time));
   }, [shown, shownBlocks, load, refresh]);
 
   // On a wide screen the calendar stays in view beside the day.
-  return <Grid container spacing={{ xs: 2, lg: 3 }} sx={{ alignItems: 'flex-start' }}>
-    <Grid size={{ xs: 12, lg: 5 }} sx={{ position: { lg: 'sticky' }, top: { lg: 124 } }}>
-      <BookingCalendar value={date} today={today} month={month} totals={monthTotals?.month === month ? monthTotals.days : null}
-        onSelect={setDate} onMonthChange={setMonth} onToday={() => { setDate(today); setMonth(today.slice(0, 7)); }} onRefresh={refresh} />
-    </Grid>
+  return (
+    <Grid container spacing={{ xs: 2, lg: 3 }} sx={{ alignItems: 'flex-start' }}>
+      <Grid size={{ xs: 12, lg: 5 }} sx={{ position: { lg: 'sticky' }, top: { lg: 124 } }}>
+        <BookingCalendar
+          value={date}
+          today={today}
+          month={month}
+          totals={monthTotals?.month === month ? monthTotals.days : null}
+          onSelect={setDate}
+          onMonthChange={setMonth}
+          onToday={() => {
+            setDate(today);
+            setMonth(today.slice(0, 7));
+          }}
+          onRefresh={refresh}
+        />
+      </Grid>
 
-    <Grid size={{ xs: 12, lg: 7 }}>
-    {/* The day */}
-    <Stack direction="row" alignItems="center" spacing={1}>
-      <IconButton aria-label="Previous day" onClick={() => setDate(addDays(date, -1))} sx={{ border: '1px solid', borderColor: 'divider' }}><ChevronLeft /></IconButton>
-      <Typography component="h2" aria-live="polite" sx={{ flex: 1, textAlign: 'center', fontFamily: fonts.playful, fontSize: { xs: 20, sm: 23 }, lineHeight: 1.2 }}>
-        {date === today ? 'Today · ' : date === addDays(today, 1) ? 'Tomorrow · ' : ''}{shortDayLabel(date)}
-      </Typography>
-      <IconButton aria-label="Next day" onClick={() => setDate(addDays(date, 1))} sx={{ border: '1px solid', borderColor: 'divider' }}><ChevronRight /></IconButton>
-    </Stack>
-    <Box sx={{ height: 4, mt: 1 }}>{loading && <LinearProgress sx={{ borderRadius: 2 }} />}</Box>
-
-    {error && <Alert severity="error" sx={{ mt: 1 }} action={<Button color="inherit" size="small" onClick={refresh}>Retry</Button>}>{error}</Alert>}
-
-    {/* The numbers */}
-    <Grid container spacing={1} sx={{ mt: 1 }}>
-      <Stat label="Bookings" value={String(active.length)} />
-      <Stat label="People" value={String(active.reduce((sum, b) => sum + b.players, 0))} />
-      <Stat label="Arrived" value={`${active.filter((b) => b.status === 'checked_in').length}/${active.filter((b) => b.status !== 'no_show').length}`} />
-      <Stat label="Due" value={money(active.filter((b) => b.status !== 'no_show').reduce((sum, b) => sum + balanceDue(b), 0))} />
-    </Grid>
-
-    {/* For the driver */}
-    {pickups.length > 0 && <Card variant="outlined" sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'secondary.light', borderColor: 'secondary.main' }}>
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: .75 }}><AirportShuttleRounded sx={{ fontSize: 20 }} /><Typography sx={{ fontWeight: 700 }}>Shuttle pick-ups</Typography></Stack>
-      {pickups.map(([time, list]) => <Box key={time} sx={{ mt: .75 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{timeLabel(time)} · {plural(list.reduce((sum, b) => sum + b.players, 0), 'person', 'people')}</Typography>
-        {list.map((b) => <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary' }}>{b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} · <Link href={`tel:${b.phone.replace(/[^\d+]/g, '')}`}>{b.phone}</Link></Typography>)}
-      </Box>)}
-    </Card>}
-    {privateTransfers.length > 0 && <Card variant="outlined" sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'primary.light', borderColor: 'primary.main' }}>
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: .75 }}><DirectionsCarRounded sx={{ fontSize: 20 }} /><Typography sx={{ fontWeight: 700 }}>Private transfers to arrange</Typography></Stack>
-      {privateTransfers.map((b) => <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary', mt: .5 }}>{timeLabel(hhmm(b.start_time))} start · {b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} · <Link href={`tel:${b.phone.replace(/[^\d+]/g, '')}`}>{b.phone}</Link></Typography>)}
-    </Card>}
-
-    {/* What to show: a row to swipe on a phone, wrapping where there's room. */}
-    <Stack direction="row" useFlexGap gap={1} sx={{ mt: 2, flexWrap: { xs: 'nowrap', sm: 'wrap' }, overflowX: { xs: 'auto', sm: 'visible' }, pb: .5, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
-      {/* Every live activity, plus any removed one that still has bookings on this day. */}
-      {['all', ...new Set([...site.activities.map((a) => a.id), ...active.map((b) => b.activity)])].map((id) => {
-        const count = id === 'all' ? active.length : active.filter((b) => b.activity === id).length;
-        return <Chip key={id} clickable onClick={() => setFilter(id)} color={filter === id ? 'primary' : 'default'} variant={filter === id ? 'filled' : 'outlined'}
-          icon={id === 'all' ? undefined : <ActivityIcon icon={findActivity(site, id)?.icon} />} label={`${id === 'all' ? 'All' : activityName(site, id)} · ${count}`} sx={{ flexShrink: 0, fontWeight: 700 }} />;
-      })}
-    </Stack>
-
-    {/* The timeline */}
-    <Stack spacing={1.25} sx={{ mt: 2 }}>
-      {bookings === null && !error && <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 6 }}>Loading the tee sheet…</Typography>}
-      {bookings !== null && timeline.length === 0 && <EmptyState title={`Nothing booked${filter === 'all' ? '' : ` for ${activityName(site, filter)}`} yet`}>Online bookings appear here by themselves. Add phone and walk-in bookings with the button below.</EmptyState>}
-      {timeline.map((row, i) => <Box key={i}>
-        {(i === 0 || timeline[i - 1].time !== row.time) && <Typography sx={{ fontFamily: fonts.playful, fontSize: 17, color: 'primary.main', mt: i ? 1 : 0, mb: .75 }}>{timeLabel(row.time)}</Typography>}
-        {row.node}
-      </Box>)}
-      {cancelled > 0 && <Button size="small" onClick={() => setShowCancelled((s) => !s)} sx={{ alignSelf: 'center' }}>{showCancelled ? 'Hide' : 'Show'} {plural(cancelled, 'cancelled booking')}</Button>}
-    </Stack>
-
-    {/* The desk's two buttons — pinned to the bottom of a phone. */}
-    <Box sx={{ position: { xs: 'fixed', md: 'static' }, left: 0, right: 0, bottom: 0, zIndex: 10, mt: { md: 3 }, pt: { xs: 1.25, md: 0 }, pb: { xs: 'calc(10px + env(safe-area-inset-bottom))', md: 0 }, bgcolor: { xs: 'background.paper', md: 'transparent' }, borderTop: { xs: '1px solid', md: 0 }, borderColor: 'divider', boxShadow: { xs: '0 -8px 24px rgba(23,60,44,.10)', md: 'none' } }}>
-      <AdminContainer sx={{ px: { md: 0 } }}>
-        <Stack direction="row" spacing={1.25}>
-          <Button fullWidth variant="contained" startIcon={<AddRounded />} onClick={() => setAdding(true)}>Add booking</Button>
-          <Button fullWidth variant="outlined" startIcon={<BlockRounded />} onClick={() => setBlocking(true)}>Block time</Button>
+      <Grid size={{ xs: 12, lg: 7 }}>
+        {/* The day */}
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <IconButton
+            aria-label="Previous day"
+            onClick={() => setDate(addDays(date, -1))}
+            sx={{ border: '1px solid', borderColor: 'divider' }}
+          >
+            <ChevronLeft />
+          </IconButton>
+          <Typography
+            component="h2"
+            aria-live="polite"
+            sx={{ flex: 1, textAlign: 'center', fontFamily: fonts.playful, fontSize: { xs: 20, sm: 23 }, lineHeight: 1.2 }}
+          >
+            {date === today ? 'Today · ' : date === addDays(today, 1) ? 'Tomorrow · ' : ''}
+            {shortDayLabel(date)}
+          </Typography>
+          <IconButton aria-label="Next day" onClick={() => setDate(addDays(date, 1))} sx={{ border: '1px solid', borderColor: 'divider' }}>
+            <ChevronRight />
+          </IconButton>
         </Stack>
-      </AdminContainer>
-    </Box>
+        <Box sx={{ height: 4, mt: 1 }}>{loading && <LinearProgress sx={{ borderRadius: 2 }} />}</Box>
 
-    <AddBookingDialog open={adding} date={date} bookings={active} blocks={blocks} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); refresh(); }} />
-    <BlockDialog open={blocking} date={date} onClose={() => setBlocking(false)} onSaved={() => { setBlocking(false); void load(); }} />
+        {error && (
+          <Alert
+            severity="error"
+            sx={{ mt: 1 }}
+            action={
+              <Button color="inherit" size="small" onClick={refresh}>
+                Retry
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        )}
+
+        {/* The numbers */}
+        <Grid container spacing={1} sx={{ mt: 1 }}>
+          <Stat label="Bookings" value={String(active.length)} />
+          <Stat label="People" value={String(active.reduce((sum, b) => sum + b.players, 0))} />
+          <Stat
+            label="Arrived"
+            value={`${active.filter((b) => b.status === 'checked_in').length}/${active.filter((b) => b.status !== 'no_show').length}`}
+          />
+          <Stat label="Due" value={money(active.filter((b) => b.status !== 'no_show').reduce((sum, b) => sum + balanceDue(b), 0))} />
+        </Grid>
+
+        {/* For the driver */}
+        {pickups.length > 0 && (
+          <Card
+            variant="outlined"
+            sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'secondary.light', borderColor: 'secondary.main' }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.75 }}>
+              <AirportShuttleRounded sx={{ fontSize: 20 }} />
+              <Typography sx={{ fontWeight: 700 }}>Shuttle pick-ups</Typography>
+            </Stack>
+            {pickups.map(([time, list]) => (
+              <Box key={time} sx={{ mt: 0.75 }}>
+                <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
+                  {timeLabel(time)} ·{' '}
+                  {plural(
+                    list.reduce((sum, b) => sum + b.players, 0),
+                    'person',
+                    'people',
+                  )}
+                </Typography>
+                {list.map((b) => (
+                  <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary' }}>
+                    {b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} ·{' '}
+                    <Link href={`tel:${b.phone.replace(/[^\d+]/g, '')}`}>{b.phone}</Link>
+                  </Typography>
+                ))}
+              </Box>
+            ))}
+          </Card>
+        )}
+        {privateTransfers.length > 0 && (
+          <Card variant="outlined" sx={{ mt: 1.5, p: 1.75, borderRadius: '18px', bgcolor: 'primary.light', borderColor: 'primary.main' }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.75 }}>
+              <DirectionsCarRounded sx={{ fontSize: 20 }} />
+              <Typography sx={{ fontWeight: 700 }}>Private transfers to arrange</Typography>
+            </Stack>
+            {privateTransfers.map((b) => (
+              <Typography key={b.id} sx={{ fontSize: 13, color: 'text.secondary', mt: 0.5 }}>
+                {timeLabel(hhmm(b.start_time))} start · {b.first_name} {b.last_name} ({b.players}) — {b.pickup_from} ·{' '}
+                <Link href={`tel:${b.phone.replace(/[^\d+]/g, '')}`}>{b.phone}</Link>
+              </Typography>
+            ))}
+          </Card>
+        )}
+
+        {/* What to show: a row to swipe on a phone, wrapping where there's room. */}
+        <Stack
+          direction="row"
+          useFlexGap
+          gap={1}
+          sx={{
+            mt: 2,
+            flexWrap: { xs: 'nowrap', sm: 'wrap' },
+            overflowX: { xs: 'auto', sm: 'visible' },
+            pb: 0.5,
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+          }}
+        >
+          {/* Every live activity, plus any removed one that still has bookings on this day. */}
+          {['all', ...new Set([...site.activities.map((a) => a.id), ...active.map((b) => b.activity)])].map((id) => {
+            const count = id === 'all' ? active.length : active.filter((b) => b.activity === id).length;
+            return (
+              <Chip
+                key={id}
+                clickable
+                onClick={() => setFilter(id)}
+                color={filter === id ? 'primary' : 'default'}
+                variant={filter === id ? 'filled' : 'outlined'}
+                icon={id === 'all' ? undefined : <ActivityIcon icon={findActivity(site, id)?.icon} />}
+                label={`${id === 'all' ? 'All' : activityName(site, id)} · ${count}`}
+                sx={{ flexShrink: 0, fontWeight: 700 }}
+              />
+            );
+          })}
+        </Stack>
+
+        {/* The timeline */}
+        <Stack spacing={1.25} sx={{ mt: 2 }}>
+          {bookings === null && !error && (
+            <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 6 }}>Loading the tee sheet…</Typography>
+          )}
+          {bookings !== null && timeline.length === 0 && (
+            <EmptyState title={`Nothing booked${filter === 'all' ? '' : ` for ${activityName(site, filter)}`} yet`}>
+              Online bookings appear here by themselves. Add phone and walk-in bookings with the button below.
+            </EmptyState>
+          )}
+          {timeline.map((row, i) => (
+            <Box key={i}>
+              {(i === 0 || timeline[i - 1].time !== row.time) && (
+                <Typography sx={{ fontFamily: fonts.playful, fontSize: 17, color: 'primary.main', mt: i ? 1 : 0, mb: 0.75 }}>
+                  {timeLabel(row.time)}
+                </Typography>
+              )}
+              {row.node}
+            </Box>
+          ))}
+          {cancelled > 0 && (
+            <Button size="small" onClick={() => setShowCancelled((s) => !s)} sx={{ alignSelf: 'center' }}>
+              {showCancelled ? 'Hide' : 'Show'} {plural(cancelled, 'cancelled booking')}
+            </Button>
+          )}
+        </Stack>
+
+        {/* The desk's two buttons — pinned to the bottom of a phone. */}
+        <Box
+          sx={{
+            position: { xs: 'fixed', md: 'static' },
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10,
+            mt: { md: 3 },
+            pt: { xs: 1.25, md: 0 },
+            pb: { xs: 'calc(10px + env(safe-area-inset-bottom))', md: 0 },
+            bgcolor: { xs: 'background.paper', md: 'transparent' },
+            borderTop: { xs: '1px solid', md: 0 },
+            borderColor: 'divider',
+            boxShadow: { xs: '0 -8px 24px rgba(23,60,44,.10)', md: 'none' },
+          }}
+        >
+          <AdminContainer sx={{ px: { md: 0 } }}>
+            <Stack direction="row" spacing={1.25}>
+              <Button fullWidth variant="contained" startIcon={<AddRounded />} onClick={() => setAdding(true)}>
+                Add booking
+              </Button>
+              <Button fullWidth variant="outlined" startIcon={<BlockRounded />} onClick={() => setBlocking(true)}>
+                Block time
+              </Button>
+            </Stack>
+          </AdminContainer>
+        </Box>
+
+        <AddBookingDialog
+          open={adding}
+          date={date}
+          bookings={active}
+          blocks={blocks}
+          onClose={() => setAdding(false)}
+          onSaved={() => {
+            setAdding(false);
+            refresh();
+          }}
+        />
+        <BlockDialog
+          open={blocking}
+          date={date}
+          onClose={() => setBlocking(false)}
+          onSaved={() => {
+            setBlocking(false);
+            void load();
+          }}
+        />
+      </Grid>
     </Grid>
-  </Grid>;
+  );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
-  return <Grid size={{ xs: 6, sm: 3 }}>
-    <Card variant="outlined" sx={{ p: { xs: 1.25, sm: 1.75 }, borderRadius: '16px' }}>
-      <Typography noWrap sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'text.secondary' }}>{label}</Typography>
-      <Typography noWrap sx={{ fontFamily: fonts.playful, fontSize: { xs: 22, sm: 26 }, lineHeight: 1.2, mt: .25 }}>{value}</Typography>
-    </Card>
-  </Grid>;
+  return (
+    <Grid size={{ xs: 6, sm: 3 }}>
+      <Card variant="outlined" sx={{ p: { xs: 1.25, sm: 1.75 }, borderRadius: '16px' }}>
+        <Typography
+          noWrap
+          sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'text.secondary' }}
+        >
+          {label}
+        </Typography>
+        <Typography noWrap sx={{ fontFamily: fonts.playful, fontSize: { xs: 22, sm: 26 }, lineHeight: 1.2, mt: 0.25 }}>
+          {value}
+        </Typography>
+      </Card>
+    </Grid>
+  );
 }
 
 function BlockRow({ block, onRemoved }: { block: StaffBlock; onRemoved: () => void }) {
@@ -213,12 +406,24 @@ function BlockRow({ block, onRemoved }: { block: StaffBlock; onRemoved: () => vo
     setBusy(false);
     onRemoved();
   };
-  return <Stack direction="row" alignItems="center" spacing={1.5} sx={{ p: 1.5, borderRadius: '16px', border: '1px dashed', borderColor: 'text.secondary', bgcolor: 'rgba(23,60,44,.04)' }}>
-    <BlockRounded sx={{ color: 'text.secondary' }} />
-    <Box sx={{ flex: 1, minWidth: 0 }}>
-      <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Closed {timeLabel(hhmm(block.start_time))} – {timeLabel(hhmm(block.end_time))} · {block.activity ? activityName(site, block.activity) : 'Everything'}</Typography>
-      {block.reason && <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{block.reason}</Typography>}
-    </Box>
-    <IconButton aria-label="Remove this block" disabled={busy} onClick={() => void remove()}><CloseRounded /></IconButton>
-  </Stack>;
+  return (
+    <Stack
+      direction="row"
+      alignItems="center"
+      spacing={1.5}
+      sx={{ p: 1.5, borderRadius: '16px', border: '1px dashed', borderColor: 'text.secondary', bgcolor: 'rgba(23,60,44,.04)' }}
+    >
+      <BlockRounded sx={{ color: 'text.secondary' }} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+          Closed {timeLabel(hhmm(block.start_time))} – {timeLabel(hhmm(block.end_time))} ·{' '}
+          {block.activity ? activityName(site, block.activity) : 'Everything'}
+        </Typography>
+        {block.reason && <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{block.reason}</Typography>}
+      </Box>
+      <IconButton aria-label="Remove this block" disabled={busy} onClick={() => void remove()}>
+        <CloseRounded />
+      </IconButton>
+    </Stack>
+  );
 }

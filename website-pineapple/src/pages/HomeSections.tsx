@@ -21,22 +21,28 @@ import { WellnessSection } from '../components/sections/WellnessSection';
  * HotelPage's `& > section` styles rely on.
  */
 export default function HomeSections() {
-  return <>
-    <WelcomeSection />
-    <RoomsSection />
-    {/* Offers, then what's on: two sections of their own. */}
-    <Container maxWidth="xl"><HighlightsSection kind="offer" /></Container>
-    <Container maxWidth="xl"><HighlightsSection kind="event" /></Container>
-    <TickTockSection />
-    <DineSection />
-    <WellnessSection />
-    <ProgrammeSection />
-    <FacilitiesSection />
-    <MeetSection />
-    <ExploreSection />
-    <GallerySection />
-    <ArrivalSection />
-    <ContactSection />
-    <Footer />
-  </>;
+  return (
+    <>
+      <WelcomeSection />
+      <RoomsSection />
+      {/* Offers, then what's on: two sections of their own. */}
+      <Container maxWidth="xl">
+        <HighlightsSection kind="offer" />
+      </Container>
+      <Container maxWidth="xl">
+        <HighlightsSection kind="event" />
+      </Container>
+      <TickTockSection />
+      <DineSection />
+      <WellnessSection />
+      <ProgrammeSection />
+      <FacilitiesSection />
+      <MeetSection />
+      <ExploreSection />
+      <GallerySection />
+      <ArrivalSection />
+      <ContactSection />
+      <Footer />
+    </>
+  );
 }
