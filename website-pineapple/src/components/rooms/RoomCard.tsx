@@ -26,7 +26,7 @@ export function RoomFacts({ room, light = false }: { room: RoomContent; light?: 
       }}
     >
       {[
-        [SquareFootRounded, `${room.sqm} m²`],
+        ...(room.sqm ? [[SquareFootRounded, `${room.sqm} m²`]] : []),
         [BedRounded, room.beds],
         [PeopleRounded, `Sleeps ${room.sleeps}`],
       ].map(([Icon, text]) => {

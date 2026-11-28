@@ -154,38 +154,6 @@ export const photoAssets = {
     "height": 1067,
     "source": "assets/ROYAL PINEAPPLE HOTEL/Chaba Restaurant/4P3A1894.jpg"
   },
-  "meetingBanquet": {
-    "src": "/images/pineapple/meetingBanquet-1600.webp",
-    "srcSet": "/images/pineapple/meetingBanquet-480.webp 480w, /images/pineapple/meetingBanquet-960.webp 960w, /images/pineapple/meetingBanquet-1600.webp 1600w",
-    "avifSrcSet": "/images/pineapple/meetingBanquet-480.avif 480w, /images/pineapple/meetingBanquet-960.avif 960w, /images/pineapple/meetingBanquet-1600.avif 1600w",
-    "width": 1600,
-    "height": 1067,
-    "source": "assets/ROYAL PINEAPPLE HOTEL/Meeting/4P3A2252.jpg"
-  },
-  "meetingClassroom": {
-    "src": "/images/pineapple/meetingClassroom-1600.webp",
-    "srcSet": "/images/pineapple/meetingClassroom-480.webp 480w, /images/pineapple/meetingClassroom-960.webp 960w, /images/pineapple/meetingClassroom-1600.webp 1600w",
-    "avifSrcSet": "/images/pineapple/meetingClassroom-480.avif 480w, /images/pineapple/meetingClassroom-960.avif 960w, /images/pineapple/meetingClassroom-1600.avif 1600w",
-    "width": 1600,
-    "height": 1067,
-    "source": "assets/ROYAL PINEAPPLE HOTEL/Meeting/4P3A2283.jpg"
-  },
-  "meetingSmall": {
-    "src": "/images/pineapple/meetingSmall-1600.webp",
-    "srcSet": "/images/pineapple/meetingSmall-480.webp 480w, /images/pineapple/meetingSmall-960.webp 960w, /images/pineapple/meetingSmall-1600.webp 1600w",
-    "avifSrcSet": "/images/pineapple/meetingSmall-480.avif 480w, /images/pineapple/meetingSmall-960.avif 960w, /images/pineapple/meetingSmall-1600.avif 1600w",
-    "width": 1600,
-    "height": 1067,
-    "source": "assets/ROYAL PINEAPPLE HOTEL/Meeting/4P3A2315.jpg"
-  },
-  "meetingBoard": {
-    "src": "/images/pineapple/meetingBoard-1600.webp",
-    "srcSet": "/images/pineapple/meetingBoard-480.webp 480w, /images/pineapple/meetingBoard-960.webp 960w, /images/pineapple/meetingBoard-1600.webp 1600w",
-    "avifSrcSet": "/images/pineapple/meetingBoard-480.avif 480w, /images/pineapple/meetingBoard-960.avif 960w, /images/pineapple/meetingBoard-1600.avif 1600w",
-    "width": 1600,
-    "height": 1067,
-    "source": "assets/ROYAL PINEAPPLE HOTEL/Meeting/4P3A2321.jpg"
-  },
   "gym": {
     "src": "/images/pineapple/gym-1600.webp",
     "srcSet": "/images/pineapple/gym-480.webp 480w, /images/pineapple/gym-960.webp 960w, /images/pineapple/gym-1600.webp 1280w",
@@ -633,6 +601,238 @@ export const photoAssets = {
     "width": 1280,
     "height": 854,
     "source": "website-pineapple/assets/sunday-panurat-temple-v2.webp"
+  },
+  "villaPool": {
+    "src": "/images/pineapple/villaPool-1600.webp",
+    "srcSet": "/images/pineapple/villaPool-480.webp 480w, /images/pineapple/villaPool-960.webp 960w, /images/pineapple/villaPool-1600.webp 1280w",
+    "avifSrcSet": "/images/pineapple/villaPool-480.avif 480w, /images/pineapple/villaPool-960.avif 960w, /images/pineapple/villaPool-1600.avif 1280w",
+    "width": 1280,
+    "height": 836,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/OTAs-Activity.png"
+  },
+  "villa1Bedroom": {
+    "src": "/images/pineapple/villa1Bedroom-1600.webp",
+    "srcSet": "/images/pineapple/villa1Bedroom-480.webp 480w, /images/pineapple/villa1Bedroom-960.webp 960w, /images/pineapple/villa1Bedroom-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa1Bedroom-480.avif 480w, /images/pineapple/villa1Bedroom-960.avif 960w, /images/pineapple/villa1Bedroom-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_10.jpg"
+  },
+  "villa1Living": {
+    "src": "/images/pineapple/villa1Living-1600.webp",
+    "srcSet": "/images/pineapple/villa1Living-480.webp 480w, /images/pineapple/villa1Living-960.webp 960w, /images/pineapple/villa1Living-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa1Living-480.avif 480w, /images/pineapple/villa1Living-960.avif 960w, /images/pineapple/villa1Living-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_5.jpg"
+  },
+  "villa1Lounge": {
+    "src": "/images/pineapple/villa1Lounge-1600.webp",
+    "srcSet": "/images/pineapple/villa1Lounge-480.webp 480w, /images/pineapple/villa1Lounge-960.webp 960w, /images/pineapple/villa1Lounge-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa1Lounge-480.avif 480w, /images/pineapple/villa1Lounge-960.avif 960w, /images/pineapple/villa1Lounge-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_9.jpg"
+  },
+  "villa1Bath": {
+    "src": "/images/pineapple/villa1Bath-1600.webp",
+    "srcSet": "/images/pineapple/villa1Bath-480.webp 480w, /images/pineapple/villa1Bath-960.webp 960w, /images/pineapple/villa1Bath-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa1Bath-480.avif 480w, /images/pineapple/villa1Bath-960.avif 960w, /images/pineapple/villa1Bath-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_1.jpg"
+  },
+  "villa1Basin": {
+    "src": "/images/pineapple/villa1Basin-1600.webp",
+    "srcSet": "/images/pineapple/villa1Basin-480.webp 480w, /images/pineapple/villa1Basin-960.webp 960w, /images/pineapple/villa1Basin-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa1Basin-480.avif 480w, /images/pineapple/villa1Basin-960.avif 960w, /images/pineapple/villa1Basin-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/1-bedroom pool villa with shared pool  สนามกอล์ฟ r3/LINE_ALBUM_r.3 villa_260205_4.jpg"
+  },
+  "villa2Living": {
+    "src": "/images/pineapple/villa2Living-1600.webp",
+    "srcSet": "/images/pineapple/villa2Living-480.webp 480w, /images/pineapple/villa2Living-960.webp 960w, /images/pineapple/villa2Living-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa2Living-480.avif 480w, /images/pineapple/villa2Living-960.avif 960w, /images/pineapple/villa2Living-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051409.jpg"
+  },
+  "villa2Dining": {
+    "src": "/images/pineapple/villa2Dining-1600.webp",
+    "srcSet": "/images/pineapple/villa2Dining-480.webp 480w, /images/pineapple/villa2Dining-960.webp 960w, /images/pineapple/villa2Dining-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa2Dining-480.avif 480w, /images/pineapple/villa2Dining-960.avif 960w, /images/pineapple/villa2Dining-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051410_0.jpg"
+  },
+  "villa2Lounge": {
+    "src": "/images/pineapple/villa2Lounge-1600.webp",
+    "srcSet": "/images/pineapple/villa2Lounge-480.webp 480w, /images/pineapple/villa2Lounge-960.webp 960w, /images/pineapple/villa2Lounge-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa2Lounge-480.avif 480w, /images/pineapple/villa2Lounge-960.avif 960w, /images/pineapple/villa2Lounge-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051411_0.jpg"
+  },
+  "villa2Bedroom": {
+    "src": "/images/pineapple/villa2Bedroom-1600.webp",
+    "srcSet": "/images/pineapple/villa2Bedroom-480.webp 480w, /images/pineapple/villa2Bedroom-960.webp 960w, /images/pineapple/villa2Bedroom-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa2Bedroom-480.avif 480w, /images/pineapple/villa2Bedroom-960.avif 960w, /images/pineapple/villa2Bedroom-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051412_0.jpg"
+  },
+  "villa2Master": {
+    "src": "/images/pineapple/villa2Master-1600.webp",
+    "srcSet": "/images/pineapple/villa2Master-480.webp 480w, /images/pineapple/villa2Master-960.webp 960w, /images/pineapple/villa2Master-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa2Master-480.avif 480w, /images/pineapple/villa2Master-960.avif 960w, /images/pineapple/villa2Master-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051414_0.jpg"
+  },
+  "villa2MasterBed": {
+    "src": "/images/pineapple/villa2MasterBed-1600.webp",
+    "srcSet": "/images/pineapple/villa2MasterBed-480.webp 480w, /images/pineapple/villa2MasterBed-960.webp 960w, /images/pineapple/villa2MasterBed-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa2MasterBed-480.avif 480w, /images/pineapple/villa2MasterBed-960.avif 960w, /images/pineapple/villa2MasterBed-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051415_0.jpg"
+  },
+  "villa2Twin": {
+    "src": "/images/pineapple/villa2Twin-1600.webp",
+    "srcSet": "/images/pineapple/villa2Twin-480.webp 480w, /images/pineapple/villa2Twin-960.webp 960w, /images/pineapple/villa2Twin-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/villa2Twin-480.avif 480w, /images/pineapple/villa2Twin-960.avif 960w, /images/pineapple/villa2Twin-1600.avif 1600w",
+    "width": 1600,
+    "height": 739,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/1051418.jpg"
+  },
+  "golfClubhouse": {
+    "src": "/images/pineapple/golfClubhouse-1600.webp",
+    "srcSet": "/images/pineapple/golfClubhouse-480.webp 480w, /images/pineapple/golfClubhouse-960.webp 960w, /images/pineapple/golfClubhouse-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/golfClubhouse-480.avif 480w, /images/pineapple/golfClubhouse-960.avif 960w, /images/pineapple/golfClubhouse-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/11.png"
+  },
+  "golfCafe": {
+    "src": "/images/pineapple/golfCafe-1600.webp",
+    "srcSet": "/images/pineapple/golfCafe-480.webp 480w, /images/pineapple/golfCafe-960.webp 960w, /images/pineapple/golfCafe-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/golfCafe-480.avif 480w, /images/pineapple/golfCafe-960.avif 960w, /images/pineapple/golfCafe-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/12.png"
+  },
+  "golfFairway": {
+    "src": "/images/pineapple/golfFairway-1600.webp",
+    "srcSet": "/images/pineapple/golfFairway-480.webp 480w, /images/pineapple/golfFairway-960.webp 960w, /images/pineapple/golfFairway-1600.webp 1600w",
+    "avifSrcSet": "/images/pineapple/golfFairway-480.avif 480w, /images/pineapple/golfFairway-960.avif 960w, /images/pineapple/golfFairway-1600.avif 1600w",
+    "width": 1600,
+    "height": 1067,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/2-bedroom pool villa with shared pool  สนามกอล์ฟ/6.png"
+  },
+  "breakfastYoghurt": {
+    "src": "/images/pineapple/breakfastYoghurt-1600.webp",
+    "srcSet": "/images/pineapple/breakfastYoghurt-480.webp 480w, /images/pineapple/breakfastYoghurt-960.webp 960w, /images/pineapple/breakfastYoghurt-1600.webp 1448w",
+    "avifSrcSet": "/images/pineapple/breakfastYoghurt-480.avif 480w, /images/pineapple/breakfastYoghurt-960.avif 960w, /images/pineapple/breakfastYoghurt-1600.avif 1448w",
+    "width": 1448,
+    "height": 1086,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Breakfast/b1.png"
+  },
+  "breakfastRoom": {
+    "src": "/images/pineapple/breakfastRoom-1600.webp",
+    "srcSet": "/images/pineapple/breakfastRoom-480.webp 480w, /images/pineapple/breakfastRoom-960.webp 960w, /images/pineapple/breakfastRoom-1600.webp 1449w",
+    "avifSrcSet": "/images/pineapple/breakfastRoom-480.avif 480w, /images/pineapple/breakfastRoom-960.avif 960w, /images/pineapple/breakfastRoom-1600.avif 1449w",
+    "width": 1449,
+    "height": 1086,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Breakfast/b2.png"
+  },
+  "breakfastBuffet": {
+    "src": "/images/pineapple/breakfastBuffet-1600.webp",
+    "srcSet": "/images/pineapple/breakfastBuffet-480.webp 480w, /images/pineapple/breakfastBuffet-960.webp 960w, /images/pineapple/breakfastBuffet-1600.webp 1086w",
+    "avifSrcSet": "/images/pineapple/breakfastBuffet-480.avif 480w, /images/pineapple/breakfastBuffet-960.avif 960w, /images/pineapple/breakfastBuffet-1600.avif 1086w",
+    "width": 1086,
+    "height": 1448,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Breakfast/b3.png"
+  },
+  "breakfastCollage": {
+    "src": "/images/pineapple/breakfastCollage-1600.webp",
+    "srcSet": "/images/pineapple/breakfastCollage-480.webp 480w, /images/pineapple/breakfastCollage-960.webp 960w, /images/pineapple/breakfastCollage-1600.webp 1536w",
+    "avifSrcSet": "/images/pineapple/breakfastCollage-480.avif 480w, /images/pineapple/breakfastCollage-960.avif 960w, /images/pineapple/breakfastCollage-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Breakfast/b4.png"
+  },
+  "meetingChaba": {
+    "src": "/images/pineapple/meetingChaba-1600.webp",
+    "srcSet": "/images/pineapple/meetingChaba-480.webp 480w, /images/pineapple/meetingChaba-960.webp 960w, /images/pineapple/meetingChaba-1600.webp 1536w",
+    "avifSrcSet": "/images/pineapple/meetingChaba-480.avif 480w, /images/pineapple/meetingChaba-960.avif 960w, /images/pineapple/meetingChaba-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Meeting Room/Chaba/F1.png"
+  },
+  "meetingChabaClassroom": {
+    "src": "/images/pineapple/meetingChabaClassroom-1600.webp",
+    "srcSet": "/images/pineapple/meetingChabaClassroom-480.webp 480w, /images/pineapple/meetingChabaClassroom-960.webp 960w, /images/pineapple/meetingChabaClassroom-1600.webp 1536w",
+    "avifSrcSet": "/images/pineapple/meetingChabaClassroom-480.avif 480w, /images/pineapple/meetingChabaClassroom-960.avif 960w, /images/pineapple/meetingChabaClassroom-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Meeting Room/Chaba/F1.1.png"
+  },
+  "meetingSandSea": {
+    "src": "/images/pineapple/meetingSandSea-1600.webp",
+    "srcSet": "/images/pineapple/meetingSandSea-480.webp 480w, /images/pineapple/meetingSandSea-960.webp 960w, /images/pineapple/meetingSandSea-1600.webp 1536w",
+    "avifSrcSet": "/images/pineapple/meetingSandSea-480.avif 480w, /images/pineapple/meetingSandSea-960.avif 960w, /images/pineapple/meetingSandSea-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Meeting Room/Sandsea/F2.png"
+  },
+  "meetingSummer": {
+    "src": "/images/pineapple/meetingSummer-1600.webp",
+    "srcSet": "/images/pineapple/meetingSummer-480.webp 480w, /images/pineapple/meetingSummer-960.webp 960w, /images/pineapple/meetingSummer-1600.webp 1536w",
+    "avifSrcSet": "/images/pineapple/meetingSummer-480.avif 480w, /images/pineapple/meetingSummer-960.avif 960w, /images/pineapple/meetingSummer-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Meeting Room/Summer/F3.png"
+  },
+  "meetingSunshine": {
+    "src": "/images/pineapple/meetingSunshine-1600.webp",
+    "srcSet": "/images/pineapple/meetingSunshine-480.webp 480w, /images/pineapple/meetingSunshine-960.webp 960w, /images/pineapple/meetingSunshine-1600.webp 1536w",
+    "avifSrcSet": "/images/pineapple/meetingSunshine-480.avif 480w, /images/pineapple/meetingSunshine-960.avif 960w, /images/pineapple/meetingSunshine-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Meeting Room/Sunshine/F4.png"
+  },
+  "meetingSunshineClassroom": {
+    "src": "/images/pineapple/meetingSunshineClassroom-1600.webp",
+    "srcSet": "/images/pineapple/meetingSunshineClassroom-480.webp 480w, /images/pineapple/meetingSunshineClassroom-960.webp 960w, /images/pineapple/meetingSunshineClassroom-1600.webp 1536w",
+    "avifSrcSet": "/images/pineapple/meetingSunshineClassroom-480.avif 480w, /images/pineapple/meetingSunshineClassroom-960.avif 960w, /images/pineapple/meetingSunshineClassroom-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Meeting Room/Sunshine/F4.1.png"
+  },
+  "poolParty": {
+    "src": "/images/pineapple/poolParty-1600.webp",
+    "srcSet": "/images/pineapple/poolParty-480.webp 480w, /images/pineapple/poolParty-960.webp 960w, /images/pineapple/poolParty-1600.webp 1448w",
+    "avifSrcSet": "/images/pineapple/poolParty-480.avif 480w, /images/pineapple/poolParty-960.avif 960w, /images/pineapple/poolParty-1600.avif 1448w",
+    "width": 1448,
+    "height": 1086,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Meeting Room/Poolside/P1.png"
+  },
+  "poolBanquet": {
+    "src": "/images/pineapple/poolBanquet-1600.webp",
+    "srcSet": "/images/pineapple/poolBanquet-480.webp 480w, /images/pineapple/poolBanquet-960.webp 960w, /images/pineapple/poolBanquet-1600.webp 1448w",
+    "avifSrcSet": "/images/pineapple/poolBanquet-480.avif 480w, /images/pineapple/poolBanquet-960.avif 960w, /images/pineapple/poolBanquet-1600.avif 1448w",
+    "width": 1448,
+    "height": 1086,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Meeting Room/Poolside/p2.png"
+  },
+  "poolFruitBasket": {
+    "src": "/images/pineapple/poolFruitBasket-1600.webp",
+    "srcSet": "/images/pineapple/poolFruitBasket-480.webp 480w, /images/pineapple/poolFruitBasket-960.webp 960w, /images/pineapple/poolFruitBasket-1600.webp 1536w",
+    "avifSrcSet": "/images/pineapple/poolFruitBasket-480.avif 480w, /images/pineapple/poolFruitBasket-960.avif 960w, /images/pineapple/poolFruitBasket-1600.avif 1536w",
+    "width": 1536,
+    "height": 1024,
+    "source": "assets/RP WEBSITE PHOTOS UPDATE/Spa/s1.png"
   }
 } satisfies Record<string, PhotoAsset>;
 

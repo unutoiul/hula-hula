@@ -20,7 +20,8 @@ export interface RoomContent extends CarouselCardData {
   siteminderRoomTypeUuid?: string;
   /** What the room is called on the OTAs today (Agoda, Booking.com…), which SiteMinder may still use. */
   otaName: string;
-  sqm: number;
+  /** Left out when the hotel hasn't given a size. */
+  sqm?: number;
   beds: string;
   sleeps: number;
   view: string;
@@ -29,6 +30,10 @@ export interface RoomContent extends CarouselCardData {
   /** What makes it this room, for its own page. */
   highlights: string[];
   about: string;
+  /** Set for a stay away from the hotel (the golf-club villas): where it is, shown on its page. */
+  location?: { name: string; detail: string; mapsUrl: string };
+  /** What's in it, when that isn't the hotel rooms' list (roomFeatures). */
+  features?: string[];
 }
 
 export interface Meal {

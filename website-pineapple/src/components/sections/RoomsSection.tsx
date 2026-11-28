@@ -158,10 +158,10 @@ export function RoomsSection() {
     >
       <Container maxWidth="xl">
         <Typography variant="overline" color="primary.main" sx={{ display: 'block', mb: 1, letterSpacing: '.18em' }}>
-          72 rooms. Eight ways to feel at home.
+          72 rooms in town. Two pool villas at the golf club.
         </Typography>
         <DragCarousel
-          sectionKicker="72 rooms, eight ways to stay"
+          sectionKicker="72 rooms in town, two villas at the golf club"
           onDark={false}
           items={rooms}
           itemLabel="room"

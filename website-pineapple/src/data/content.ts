@@ -37,6 +37,26 @@ export const roomFeatures = [
   'Free Wi-Fi',
 ];
 
+/** Where the pool villas are: at the golf club, not the hotel. */
+const villaLocation = {
+  name: 'Hula Hula Golf Club',
+  detail: 'Near Krabi International Airport, not at the hotel in Krabi Town.',
+  mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Hula+Hula+Golf+Club+Krabi',
+};
+
+/** In both villas, from SiteMinder's description and the hotel's photos. */
+const villaFeatures = [
+  'Air conditioning',
+  'Living room',
+  'Shared pool',
+  'Flat-screen TV with cable',
+  'Fridge',
+  'Electric kettle',
+  'Safe',
+  'Private bathroom',
+  'Toiletries',
+];
+
 // siteminderRoomTypeUuid: from SiteMinder's room types (GET /room-types) —
 // what links these photos to the live rates on the booking page. Until the
 // hotel's SiteMinder keys are in, rooms are matched by their OTA name.
@@ -174,6 +194,77 @@ export const rooms: RoomContent[] = [
       'On the fifth and top floor: a separate bedroom, a living room with a sofa through the arch, and windows looking out over the green of Krabi Town to the limestone hills.',
     images: [p.suite.src, p.suiteBedroom.src, p.suiteArch.src, p.suiteView.src],
   },
+  // The two villas are not at the hotel: they share a pool at Hula Hula Golf
+  // Club, near the airport, but are sold through Royal Pineapple's SiteMinder.
+  // Photos: assets/RP WEBSITE PHOTOS UPDATE. Sizes, beds and guests are
+  // SiteMinder's; the 2-bedroom villa has no size there yet.
+  {
+    id: 'one-bedroom-pool-villa',
+    siteminderRoomTypeUuid: '8390f184-a617-4c3b-b945-ba15a288547a',
+    otaName: '1-bedroom pool villa with shared pool',
+    kicker: 'At Hula Hula Golf Club',
+    title: '1-Bedroom Pool Villa',
+    detail: 'A villa of your own at our sister golf club: a bedroom, a living room looking onto the shared pool, and a freestanding bathtub.',
+    sqm: 42,
+    beds: 'Double bed',
+    sleeps: 2,
+    view: 'Shared pool · Hula Hula Golf Club',
+    bestFor: 'Couples & golfers',
+    highlights: [
+      'Separate bedroom and living room',
+      'Big picture window onto the shared pool',
+      'Freestanding bathtub',
+      'Fridge and microwave',
+      'Fairways and the clubhouse café nearby',
+    ],
+    about:
+      'Swap town for the fairways. This villa sits by a shared pool at Hula Hula Golf Club, near Krabi International Airport, with a bedroom, a living room whose big window looks onto the pool, a fridge and microwave, and a bathroom with a freestanding tub.',
+    location: villaLocation,
+    features: villaFeatures,
+    images: [
+      p.villa1Living.src,
+      p.villaPool.src,
+      p.villa1Bedroom.src,
+      p.villa1Bath.src,
+      p.villa1Lounge.src,
+      p.villa1Basin.src,
+      p.golfFairway.src,
+    ],
+  },
+  {
+    id: 'two-bedroom-pool-villa',
+    siteminderRoomTypeUuid: '67989485-da6a-4503-9d96-f5fb51fbdb39',
+    otaName: '2-bedroom pool villa with shared pool',
+    kicker: 'At Hula Hula Golf Club',
+    title: '2-Bedroom Pool Villa',
+    detail: 'Room for four at our sister golf club: a living and dining room, a big main bedroom, a twin room and a shared pool outside.',
+    beds: 'Double & twin beds',
+    sleeps: 4,
+    view: 'Shared pool · Hula Hula Golf Club',
+    bestFor: 'Families & friends',
+    highlights: [
+      'Living room and dining table under a carved wooden arch',
+      'Main bedroom with wardrobes, a desk and a TV',
+      'Twin room for the kids or friends',
+      'Shared pool with loungers',
+      'Fairways and the clubhouse café nearby',
+    ],
+    about:
+      'A whole house for a family or a few friends, by a shared pool at Hula Hula Golf Club, near Krabi International Airport. There’s a living room with a big TV, a dining table under a carved wooden arch, a main bedroom with its own wardrobes and desk, and a twin room.',
+    location: villaLocation,
+    features: villaFeatures,
+    images: [
+      p.villaPool.src,
+      p.villa2Master.src,
+      p.villa2Living.src,
+      p.villa2Dining.src,
+      p.villa2Bedroom.src,
+      p.villa2MasterBed.src,
+      p.villa2Twin.src,
+      p.villa2Lounge.src,
+      p.golfFairway.src,
+    ],
+  },
 ];
 
 export const meals: Meal[] = [
@@ -181,7 +272,8 @@ export const meals: Meal[] = [
     name: 'Breakfast',
     hours: '6:30 – 10:00 am',
     detail: 'Thai favourites, international classics and fresh fruit, served in the arched dining room.',
-    image: p.chabaBuffet.src,
+    objectPosition: 'center 62%',
+    image: p.breakfastBuffet.src,
   },
   {
     name: 'Lunch',
@@ -289,7 +381,7 @@ export const programme: ProgrammeDay[] = [
     freeBus: true,
     detail:
       'A morning on our sister golf club’s fairways: FootGolf or Crolf, then a cold drink at the clubhouse café. No golf skills needed.',
-    images: [p.dayTuesday.src],
+    images: [p.dayTuesday.src, p.golfFairway.src, p.golfCafe.src, p.golfClubhouse.src],
   },
   {
     id: 'wednesday',
@@ -499,7 +591,7 @@ export const venues: Venue[] = [
     banquet: '100',
     uShape: '80',
     cocktail: '150',
-    image: p.meetingBanquet.src,
+    image: p.meetingSunshine.src,
   },
   {
     name: 'Summer',
@@ -511,7 +603,7 @@ export const venues: Venue[] = [
     banquet: '120',
     uShape: '100',
     cocktail: '150',
-    image: p.meetingClassroom.src,
+    image: p.meetingSummer.src,
   },
   {
     name: 'Sand Sea',
@@ -523,7 +615,7 @@ export const venues: Venue[] = [
     banquet: '60',
     uShape: '50',
     cocktail: '80',
-    image: p.meetingSmall.src,
+    image: p.meetingSandSea.src,
   },
   {
     name: 'Chaba',
@@ -535,9 +627,9 @@ export const venues: Venue[] = [
     banquet: '30',
     uShape: '25',
     cocktail: '50',
-    image: p.meetingBoard.src,
+    image: p.meetingChaba.src,
   },
-  { name: 'Pool Terrace', floor: 'Outdoors', sqm: 150, theatre: '180', banquet: '120', cocktail: '150', image: p.poolLoungers.src },
+  { name: 'Pool Terrace', floor: 'Outdoors', sqm: 150, theatre: '180', banquet: '120', cocktail: '150', image: p.poolParty.src },
 ];
 
 // ── Takanta Event Hall ──────────────────────────────────────────────────────
@@ -688,6 +780,10 @@ export const galleryPhotos: GalleryPhoto[] = [
   { image: p.lobby.src, title: 'Arches and old Krabi tiles', category: 'The hotel' },
   { image: p.emerald.src, title: 'From your bed to the pool', category: 'Rooms' },
   { image: p.blackCrab.src, title: 'Poo Dam, Krabi’s black crab', category: 'Krabi' },
+  { image: p.breakfastRoom.src, title: 'Breakfast at Chaba', category: 'Good food' },
+  { image: p.breakfastYoghurt.src, title: 'Yoghurt in blue-and-white pots', category: 'Good food' },
+  { image: p.poolFruitBasket.src, title: 'A fruit basket by the pool', category: 'Pool days' },
+  { image: p.villaPool.src, title: 'The villas’ pool at the golf club', category: 'Rooms' },
 ];
 
 export const CONTACT: ContactInfo = {

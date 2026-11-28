@@ -66,6 +66,7 @@ export function DineSection() {
                 image={meals[active].image}
                 alt={`Chaba Restaurant at ${meals[active].name.toLowerCase()}`}
                 sizes="(max-width: 1200px) 92vw, 50vw"
+                sx={{ objectPosition: meals[active].objectPosition ?? 'center' }}
               />
             </PostcardFrame>
             <Stack

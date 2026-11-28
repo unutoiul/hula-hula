@@ -82,8 +82,8 @@ export function MeetingsPage() {
       <PageIntro
         eyebrow="Meetings, events & weddings"
         title="Transform meetings into memorable experiences."
-        image={p.meetingClassroom.src}
-        imageAlt="The Summer room set up classroom-style with a projector screen"
+        image={p.meetingSunshineClassroom.src}
+        imageAlt="The Sunshine room set up classroom-style with a projector screen"
         description="Work, meet and recharge in Krabi Town: four meeting rooms and the pool terrace for 10 to 200 people, rooms upstairs, food from our own kitchen and Krabi on the doorstep. Company retreats, workshops, team building, parties and weddings."
         crumbs={[{ label: 'Meet & celebrate', href: '/#meet' }, { label: 'Meetings & events' }]}
       >
@@ -121,7 +121,7 @@ export function MeetingsPage() {
           {venues.map((v) => (
             <Box key={v.name}>
               <PostcardFrame sx={{ aspectRatio: '4 / 3' }}>
-                <ResortPhoto image={v.image ?? p.meetingBanquet.src} alt={`The ${v.name} room`} sizes="(max-width: 900px) 46vw, 18vw" />
+                <ResortPhoto image={v.image ?? p.meetingSummer.src} alt={`The ${v.name} room`} sizes="(max-width: 900px) 46vw, 18vw" />
               </PostcardFrame>
               <Typography sx={{ fontFamily: fonts.playful, fontSize: 22, mt: 1.25 }}>{v.name}</Typography>
               <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
@@ -192,8 +192,8 @@ export function MeetingsPage() {
         >
           <PostcardFrame sx={{ aspectRatio: '4 / 3' }}>
             <ResortPhoto
-              image={p.poolLoungers.src}
-              alt="The pool terrace with pink loungers in front of the hotel’s arches"
+              image={p.poolBanquet.src}
+              alt="A long table set by the pool in front of the hotel’s yellow arches"
               sizes="(max-width: 900px) 92vw, 46vw"
             />
           </PostcardFrame>

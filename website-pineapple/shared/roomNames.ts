@@ -14,6 +14,8 @@ export const WEBSITE_ROOM_NAMES: Record<string, string> = {
   '0ff2e747-0c2e-41f2-986c-3bd48703784e': 'Triple Coco',
   '18bb9bc3-07a3-4454-8bad-a38515a3925a': 'Triple Blue Sky',
   'fbdbba82-9f7d-4c30-9244-43296f66ddf6': 'Family/Friend Suite',
+  '8390f184-a617-4c3b-b945-ba15a288547a': '1-Bedroom Pool Villa',
+  '67989485-da6a-4503-9d96-f5fb51fbdb39': '2-Bedroom Pool Villa',
 };
 
 export const guestRoomName = (roomTypeUuid: string, siteMinderName: string) => WEBSITE_ROOM_NAMES[roomTypeUuid] ?? siteMinderName;
@@ -21,10 +23,10 @@ export const guestRoomName = (roomTypeUuid: string, siteMinderName: string) => W
 /**
  * SiteMinder room types the website doesn't sell, by SiteMinder room code:
  * they're dropped as soon as the room list is read, so they never show on
- * /book and can't be booked. ONE_BEDROOM_VILLA is the hotel's unnamed
- * placeholder, to be replaced by ONE_BEDROOM_IN_VILLA and TWO_BEDROOM_IN_VILLA.
- * Take a code out of this list to start selling that room.
+ * /book and can't be booked. Add a code here to stop selling that room.
+ * (ONE_BEDROOM_VILLA was hidden until it had a name and photos; it is the
+ * 1-bedroom pool villa at the golf club, sold since 28 Nov 2026.)
  */
-export const HIDDEN_ROOM_CODES: ReadonlySet<string> = new Set(['ONE_BEDROOM_VILLA']);
+export const HIDDEN_ROOM_CODES: ReadonlySet<string> = new Set<string>();
 
 export const isSoldOnline = (roomType: { code?: string | null }) => !HIDDEN_ROOM_CODES.has(roomType.code ?? '');

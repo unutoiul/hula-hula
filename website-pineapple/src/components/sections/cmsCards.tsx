@@ -172,7 +172,7 @@ export function eventHighlight(event: SiteEvent): Highlight {
     perks: [],
     note: [dates, event.timeLabel].filter(Boolean).join(' · ') || null,
     // No cover picked: the first photo from the gallery, then a hotel photo.
-    image: event.imageUrl ?? gallery.find(isPicture) ?? p.meetingBanquet.src,
+    image: event.imageUrl ?? gallery.find(isPicture) ?? p.meetingSummer.src,
     media: [...new Set([...(event.imageUrl ? [event.imageUrl] : []), ...gallery])],
     link: eventPath(event),
     ctaLabel: 'See details',

@@ -3,6 +3,7 @@ import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import OpenInFull from '@mui/icons-material/OpenInFull';
+import PlaceRounded from '@mui/icons-material/PlaceRounded';
 import WhatsApp from '@mui/icons-material/WhatsApp';
 import { Box, Button, Container, Dialog, IconButton, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -29,11 +30,11 @@ export function RoomPage({ id }: { id: string }) {
   return (
     <PageShell>
       <PageIntro
-        eyebrow={`${room.kicker} · ${room.sqm} m²`}
+        eyebrow={room.sqm ? `${room.kicker} · ${room.sqm} m²` : room.kicker}
         title={room.title}
         description={room.about}
         image={room.images[0]}
-        imageAlt={`${room.title} at Royal Pineapple Hotel`}
+        imageAlt={`${room.title} at ${room.location?.name ?? 'Royal Pineapple Hotel'}`}
         crumbs={[{ label: 'Rooms', href: '/#rooms' }, { label: room.title }]}
       >
         <BookButtons room={room} />
@@ -68,6 +69,29 @@ export function RoomPage({ id }: { id: string }) {
                 {room.view}
                 {room.otaName !== room.title ? ` · listed on booking sites as ${room.otaName}` : ''}
               </Typography>
+              {room.location && (
+                <Stack
+                  direction="row"
+                  spacing={1.25}
+                  alignItems="flex-start"
+                  sx={{ mt: 2, p: 1.75, borderRadius: '16px', bgcolor: 'primary.light' }}
+                >
+                  <PlaceRounded sx={{ color: 'primary.main', fontSize: 21, mt: '1px' }} />
+                  <Box>
+                    <Typography sx={{ fontSize: 15, fontWeight: 700 }}>{room.location.name}</Typography>
+                    <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: 0.25 }}>{room.location.detail}</Typography>
+                    <Box
+                      component="a"
+                      href={room.location.mapsUrl}
+                      target="_blank"
+                      rel="noopener"
+                      sx={{ display: 'inline-block', mt: 0.5, fontSize: 14, fontWeight: 700, color: 'primary.main' }}
+                    >
+                      Open in Google Maps
+                    </Box>
+                  </Box>
+                </Stack>
+              )}
               <Typography sx={{ fontWeight: 700, mt: 3 }}>What makes it this room</Typography>
               <Stack component="ul" spacing={1} sx={{ listStyle: 'none', p: 0, m: 0, mt: 1.25 }}>
                 {room.highlights.map((h) => (
@@ -79,7 +103,7 @@ export function RoomPage({ id }: { id: string }) {
               </Stack>
               <Typography sx={{ fontWeight: 700, mt: 3 }}>In the room</Typography>
               <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, mt: 1.25, display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                {roomFeatures.map((f) => (
+                {(room.features ?? roomFeatures).map((f) => (
                   <Box
                     component="li"
                     key={f}

@@ -56,8 +56,8 @@ export function MeetSection() {
           >
             <PostcardFrame sx={{ aspectRatio: '4 / 3' }}>
               <ResortPhoto
-                image={p.meetingBanquet.src}
-                alt="The Sunshine room set for a banquet, with green tablecloths and arched windows"
+                image={p.meetingSummer.src}
+                alt="The Summer room set for a banquet, with round tables and pink tablecloths"
                 sizes="(max-width: 900px) 92vw, 46vw"
               />
             </PostcardFrame>

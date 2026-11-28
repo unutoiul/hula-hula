@@ -156,7 +156,7 @@ const pages: Record<string, Page> = {
     rooms.map((room): [string, Page] => [
       `/rooms/${room.id}`,
       {
-        title: `${/suite$/i.test(room.title) ? room.title : `${room.title} Room`} | Royal Pineapple Hotel, Krabi`,
+        title: `${/(suite|villa)$/i.test(room.title) ? room.title : `${room.title} Room`} | Royal Pineapple Hotel, Krabi`,
         description: `${room.detail} ${room.beds}, sleeps ${room.sleeps}, ${room.view.toLowerCase()}. Book direct on our official website.`,
         trail: [[room.title, `/rooms/${room.id}`]],
         extra: [
@@ -167,7 +167,7 @@ const pages: Record<string, Page> = {
             description: room.about,
             image: room.images.map((image) => `${SITE_URL}${image}`),
             bed: room.beds,
-            floorSize: { '@type': 'QuantitativeValue', value: room.sqm, unitCode: 'MTK' },
+            ...(room.sqm ? { floorSize: { '@type': 'QuantitativeValue', value: room.sqm, unitCode: 'MTK' } } : {}),
             occupancy: { '@type': 'QuantitativeValue', maxValue: room.sleeps },
             containedInPlace: { '@id': HOTEL_ID },
           },

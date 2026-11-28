@@ -25,7 +25,7 @@ export const previewOffers: Highlight[] = [
     description: 'Three nights, long breakfasts and absolutely no reason to rush your first coffee.',
     perks: ['A three-night little getaway', 'Breakfast for two, each morning', 'A balcony and a little time together'],
     note: 'Sample package. Availability and inclusions to be confirmed.',
-    image: '/images/pineapple/floatingBreakfast-1600.webp',
+    image: '/images/pineapple/breakfastCollage-1600.webp',
     ctaLabel: 'Ask about a slow escape',
   },
 ];
